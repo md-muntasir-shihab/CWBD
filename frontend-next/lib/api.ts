@@ -1,4 +1,4 @@
-import { ApiListResponse, BackupRow, DueRow, ExpenseRow, FinanceSummary, NoticeRow, PlanRow, StaffPayoutRow, StudentDashboardProfile, StudentRow, TicketRow } from './types';
+import { ApiListResponse, BackupRow, CurrentUserPayload, DueRow, ExpenseRow, FinanceSummary, NoticeRow, PaymentRow, PlanRow, RuntimeSettingsPayload, StaffPayoutRow, StudentDashboardProfile, StudentRow, TicketRow } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5000';
 const ADMIN_PATH = process.env.NEXT_PUBLIC_ADMIN_PATH || 'campusway-secure-admin';
@@ -28,12 +28,59 @@ export async function getAdminStudents(token: string): Promise<ApiListResponse<S
   return request<ApiListResponse<StudentRow>>(`/api/${ADMIN_PATH}/students?limit=20`, token);
 }
 
+export async function createAdminStudent(
+  token: string,
+  payload: {
+    fullName: string;
+    username: string;
+    email: string;
+    password?: string;
+    phoneNumber?: string;
+    status?: 'active' | 'suspended' | 'blocked' | 'pending';
+    planCode?: string;
+  },
+): Promise<{ message?: string; student?: StudentRow; generatedPassword?: string }> {
+  return request<{ message?: string; student?: StudentRow; generatedPassword?: string }>(
+    `/api/${ADMIN_PATH}/students`,
+    token,
+    'POST',
+    payload,
+  );
+}
+
+export async function assignStudentPlan(
+  token: string,
+  studentId: string,
+  payload: {
+    planCode: string;
+    isActive?: boolean;
+    startDate?: string;
+    expiryDate?: string;
+    durationDays?: number;
+  },
+): Promise<{ message?: string }> {
+  return request<{ message?: string }>(
+    `/api/${ADMIN_PATH}/students/${studentId}/subscription`,
+    token,
+    'PUT',
+    payload,
+  );
+}
+
+export async function getCurrentUser(token: string): Promise<CurrentUserPayload> {
+  return request<CurrentUserPayload>(`/api/auth/me`, token);
+}
+
 export async function getAdminPlans(token: string): Promise<ApiListResponse<PlanRow>> {
   return request<ApiListResponse<PlanRow>>(`/api/${ADMIN_PATH}/subscription-plans`, token);
 }
 
 export async function getFinanceSummary(token: string): Promise<FinanceSummary> {
   return request<FinanceSummary>(`/api/${ADMIN_PATH}/finance/summary`, token);
+}
+
+export async function getPayments(token: string): Promise<ApiListResponse<PaymentRow>> {
+  return request<ApiListResponse<PaymentRow>>(`/api/${ADMIN_PATH}/payments?limit=20`, token);
 }
 
 export async function getExpenses(token: string): Promise<ApiListResponse<ExpenseRow>> {
@@ -48,6 +95,23 @@ export async function getDues(token: string): Promise<ApiListResponse<DueRow>> {
   return request<ApiListResponse<DueRow>>(`/api/${ADMIN_PATH}/dues?status=due&limit=20`, token);
 }
 
+export async function updateDue(
+  token: string,
+  studentId: string,
+  payload: { computedDue: number; manualAdjustment?: number; waiverAmount?: number; note?: string },
+): Promise<{ message?: string }> {
+  return request<{ message?: string }>(
+    `/api/${ADMIN_PATH}/dues/${studentId}`,
+    token,
+    'PATCH',
+    payload,
+  );
+}
+
+export async function sendDueReminder(token: string, studentId: string): Promise<{ message?: string }> {
+  return request<{ message?: string }>(`/api/${ADMIN_PATH}/dues/${studentId}/remind`, token, 'POST', {});
+}
+
 export async function getNotices(token: string): Promise<ApiListResponse<NoticeRow>> {
   return request<ApiListResponse<NoticeRow>>(`/api/${ADMIN_PATH}/notices?limit=20`, token);
 }
@@ -56,12 +120,99 @@ export async function getSupportTickets(token: string): Promise<ApiListResponse<
   return request<ApiListResponse<TicketRow>>(`/api/${ADMIN_PATH}/support-tickets?limit=20`, token);
 }
 
+export async function updateSupportTicketStatus(
+  token: string,
+  ticketId: string,
+  status: 'open' | 'in_progress' | 'resolved' | 'closed',
+): Promise<{ message?: string }> {
+  return request<{ message?: string }>(
+    `/api/${ADMIN_PATH}/support-tickets/${ticketId}/status`,
+    token,
+    'PATCH',
+    { status },
+  );
+}
+
+export async function replySupportTicket(
+  token: string,
+  ticketId: string,
+  message: string,
+): Promise<{ message?: string }> {
+  return request<{ message?: string }>(
+    `/api/${ADMIN_PATH}/support-tickets/${ticketId}/reply`,
+    token,
+    'POST',
+    { message },
+  );
+}
+
 export async function getBackups(token: string): Promise<ApiListResponse<BackupRow>> {
   return request<ApiListResponse<BackupRow>>(`/api/${ADMIN_PATH}/backups?limit=20`, token);
 }
 
 export async function runBackup(token: string, type: 'full' | 'incremental' = 'incremental', storage: 'local' | 's3' | 'both' = 'local'): Promise<{ message?: string }> {
   return request<{ message?: string }>(`/api/${ADMIN_PATH}/backups/run`, token, 'POST', { type, storage });
+}
+
+export async function restoreBackup(token: string, backupId: string, confirmation: string): Promise<{ message?: string }> {
+  return request<{ message?: string }>(
+    `/api/${ADMIN_PATH}/backups/${backupId}/restore`,
+    token,
+    'POST',
+    { confirmation },
+  );
+}
+
+export async function createPayment(
+  token: string,
+  payload: {
+    studentId: string;
+    amount: number;
+    method: 'bkash' | 'cash' | 'manual' | 'bank';
+    entryType?: 'subscription' | 'due_settlement' | 'other_income';
+    reference?: string;
+    notes?: string;
+  },
+): Promise<{ message?: string }> {
+  return request<{ message?: string }>(`/api/${ADMIN_PATH}/payments`, token, 'POST', payload);
+}
+
+export async function createExpense(
+  token: string,
+  payload: {
+    category: 'server' | 'marketing' | 'staff_salary' | 'moderator_salary' | 'tools' | 'misc';
+    amount: number;
+    vendor?: string;
+    notes?: string;
+  },
+): Promise<{ message?: string }> {
+  return request<{ message?: string }>(`/api/${ADMIN_PATH}/expenses`, token, 'POST', payload);
+}
+
+export async function getRuntimeSettings(token: string): Promise<RuntimeSettingsPayload> {
+  return request<RuntimeSettingsPayload>(`/api/${ADMIN_PATH}/settings/runtime`, token);
+}
+
+export async function adminMfaConfirm(token: string, password: string): Promise<{ message?: string; mfaToken?: string }> {
+  return request<{ message?: string; mfaToken?: string }>(
+    `/api/${ADMIN_PATH}/auth/mfa/confirm`,
+    token,
+    'POST',
+    { password },
+  );
+}
+
+export async function adminRevealStudentPassword(
+  token: string,
+  studentId: string,
+  payload: { mfaToken: string; reason: string },
+): Promise<{ message?: string; password?: string }> {
+  return request<{ message?: string; password?: string }>(
+    `/api/${ADMIN_PATH}/students/${studentId}/password/reveal`,
+    token,
+    'POST',
+    payload,
+  );
 }
 
 export async function createSupportTicket(token: string, payload: { subject: string; message: string; priority?: 'low' | 'medium' | 'high' }): Promise<{ message?: string }> {

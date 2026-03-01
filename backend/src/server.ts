@@ -33,6 +33,20 @@ function parseCorsOrigins(raw: string | undefined): string[] {
 
 const allowedCorsOrigins = parseCorsOrigins(process.env.CORS_ORIGIN);
 
+function isLoopbackOrigin(origin: string): boolean {
+    const normalized = origin.trim();
+    if (!normalized) return false;
+    if (normalized === 'null') return true;
+    const loopbackPattern = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|::1)(?::\d+)?$/i;
+    if (loopbackPattern.test(normalized)) return true;
+    try {
+        const parsed = new URL(normalized);
+        return ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+    } catch {
+        return false;
+    }
+}
+
 // =============
 // Middleware
 // =============
@@ -53,10 +67,11 @@ app.use(cors({
             callback(null, true);
             return;
         }
-        if (allowedCorsOrigins.includes(origin)) {
+        if (allowedCorsOrigins.includes(origin) || isLoopbackOrigin(origin)) {
             callback(null, true);
             return;
         }
+        console.warn('[cors] blocked origin', origin);
         callback(new Error('CORS origin not allowed'));
     },
     credentials: true,

@@ -461,6 +461,7 @@ router.put('/users/admin/profile', authorize('superadmin', 'admin', 'moderator',
 
 router.get('/users', authorize('superadmin'), adminGetUsers);
 router.get('/users/activity', authorize('superadmin', 'admin'), adminGetUserActivity);
+router.get('/users/stream', authorize('superadmin', 'admin'), adminUserStream);
 router.get('/users/:id', authorize('superadmin', 'admin'), adminGetUserById);
 router.post('/users', authorize('superadmin'), adminCreateUser);
 router.put('/users/:id', authorize('superadmin'), adminUpdateUser);

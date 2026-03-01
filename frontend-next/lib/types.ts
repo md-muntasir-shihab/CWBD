@@ -10,13 +10,23 @@ export type StudentRow = {
   _id: string;
   username?: string;
   full_name?: string;
+  fullName?: string;
   email?: string;
   role?: string;
   status?: string;
+  userUniqueId?: string;
+  phoneNumber?: string;
+  batch?: string;
+  department?: string;
+  admittedAt?: string;
+  groups?: Array<{ _id: string; name: string; slug?: string }>;
   subscription?: {
+    plan?: string;
     planCode?: string;
+    planName?: string;
     expiryDate?: string | null;
     isActive?: boolean;
+    daysLeft?: number;
   };
 };
 
@@ -38,6 +48,12 @@ export type PaymentRow = {
   date: string;
   entryType: 'subscription' | 'due_settlement' | 'other_income';
   reference?: string;
+  studentId?: {
+    _id: string;
+    username?: string;
+    email?: string;
+    full_name?: string;
+  };
 };
 
 export type ExpenseRow = {
@@ -116,5 +132,35 @@ export type StudentDashboardProfile = {
     planCode?: string;
     expiryDate?: string | null;
     isActive?: boolean;
+  };
+};
+
+export type RuntimeSettingsPayload = {
+  featureFlags?: {
+    studentRegistrationEnabled?: boolean;
+    passwordRevealEnabled?: boolean;
+    financeDashboardV1?: boolean;
+    smsReminderEnabled?: boolean;
+    emailReminderEnabled?: boolean;
+    backupS3MirrorEnabled?: boolean;
+    nextAdminEnabled?: boolean;
+    nextStudentEnabled?: boolean;
+  };
+};
+
+export type CurrentUserPayload = {
+  user?: {
+    _id: string;
+    username?: string;
+    email?: string;
+    role?: string;
+    permissions?: {
+      canRevealPasswords?: boolean;
+      canManageFinance?: boolean;
+      canManagePlans?: boolean;
+      canManageTickets?: boolean;
+      canManageBackups?: boolean;
+      canManageStudents?: boolean;
+    };
   };
 };

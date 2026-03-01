@@ -45,6 +45,26 @@ export default function ServicesPanel() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState<string>('all');
 
+    const getServiceTitleEn = (service: Partial<ApiService>) =>
+        String(service.title_en || service.service_title || 'Untitled Service');
+    const getServiceTitleBn = (service: Partial<ApiService>) =>
+        String(service.title_bn || service.title_en || service.service_title || 'Untitled Service');
+    const getServiceCategoryId = (service: Partial<ApiService>) => {
+        const category = service.category as ApiServiceCategory | string | undefined;
+        if (!category) return '';
+        if (typeof category === 'string') return category;
+        return String(category._id || '');
+    };
+    const getServiceCategoryName = (service: Partial<ApiService>) => {
+        const category = service.category as ApiServiceCategory | string | undefined;
+        if (!category) return 'Uncategorized';
+        if (typeof category === 'string') {
+            const matched = categories.find((item) => item._id === category);
+            return matched?.name_en || 'Uncategorized';
+        }
+        return category.name_en || category.name || 'Uncategorized';
+    };
+
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
@@ -178,7 +198,7 @@ export default function ServicesPanel() {
                     <div className="space-y-3">
                         {services.filter(s => s.is_featured).map(s => (
                             <div key={s._id} className="flex items-center justify-between p-3 bg-slate-950/65 rounded-xl border border-indigo-500/5">
-                                <span className="text-sm text-slate-200 truncate">{s.title_en}</span>
+                                <span className="text-sm text-slate-200 truncate">{getServiceTitleEn(s)}</span>
                                 <span className="text-xs px-2 py-1 bg-amber-500/10 text-amber-400 rounded-lg">Featured</span>
                             </div>
                         ))}
@@ -192,7 +212,7 @@ export default function ServicesPanel() {
                     </h3>
                     <div className="space-y-3">
                         {categories.map(c => {
-                            const count = services.filter(s => s.category?._id === c._id).length;
+                            const count = services.filter(s => getServiceCategoryId(s) === c._id).length;
                             return (
                                 <div key={c._id} className="flex items-center justify-between p-3 bg-slate-950/65 rounded-xl border border-indigo-500/5">
                                     <span className="text-sm text-slate-200">{c.name_en}</span>
@@ -210,11 +230,13 @@ export default function ServicesPanel() {
        RENDER - SERVICES LIST
        ═══════════════════════════════ */
     const filteredServices = services.filter(s => {
-        const matchesSearch = s.title_en.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.title_bn.includes(searchQuery);
-        const matchesCategory = filterCategory === 'all' || s.category?._id === filterCategory;
+        const titleEn = getServiceTitleEn(s);
+        const titleBn = getServiceTitleBn(s);
+        const matchesSearch = titleEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            titleBn.includes(searchQuery);
+        const matchesCategory = filterCategory === 'all' || getServiceCategoryId(s) === filterCategory;
         return matchesSearch && matchesCategory;
-    }).sort((a, b) => a.display_order - b.display_order);
+    }).sort((a, b) => Number(a.display_order || 0) - Number(b.display_order || 0));
 
     const renderServicesList = () => (
         <div className="animate-in fade-in duration-500 space-y-4">
@@ -268,14 +290,14 @@ export default function ServicesPanel() {
                                             {s.icon_url ? <img src={s.icon_url} alt="" className="w-6 h-6 object-contain" /> : <Box className="w-5 h-5 text-indigo-400" />}
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-white">{s.title_en}</p>
-                                            <p className="text-xs text-slate-400 font-bengali">{s.title_bn}</p>
+                                            <p className="font-semibold text-white">{getServiceTitleEn(s)}</p>
+                                            <p className="text-xs text-slate-400 font-bengali">{getServiceTitleBn(s)}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="p-4">
                                     <span className="px-2 py-1 bg-indigo-500/10 text-indigo-300 text-xs rounded-lg whitespace-nowrap">
-                                        {s.category?.name_en || 'Uncategorized'}
+                                        {getServiceCategoryName(s)}
                                     </span>
                                 </td>
                                 <td className="p-4 text-center">
@@ -293,7 +315,7 @@ export default function ServicesPanel() {
                                         <button onClick={() => { setEditingService(s); setShowServiceForm(true); }} className="p-2 hover:bg-indigo-500/20 rounded-lg text-indigo-400 transition-colors">
                                             <Edit className="w-4 h-4" />
                                         </button>
-                                        <button onClick={() => handleDeleteService(s._id, s.title_en)} className="p-2 hover:bg-rose-500/20 rounded-lg text-rose-400 transition-colors">
+                                        <button onClick={() => handleDeleteService(s._id, getServiceTitleEn(s))} className="p-2 hover:bg-rose-500/20 rounded-lg text-rose-400 transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>

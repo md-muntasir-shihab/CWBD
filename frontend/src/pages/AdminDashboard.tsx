@@ -1100,9 +1100,12 @@ export default function AdminDashboard() {
         if (!isAdmin) return;
         setLoading(true);
         try {
+            const shouldFetchUsers = user?.role === 'superadmin';
             const [examRes, userRes, uniRes, groupRes] = await Promise.all([
                 adminGetExams({ view: 'cards', includeMetrics: 'true', limit: 200 }).catch(() => ({ data: { exams: [] } })),
-                adminGetUsers().catch(() => ({ data: { users: [] } })),
+                shouldFetchUsers
+                    ? adminGetUsers().catch(() => ({ data: { users: [] } }))
+                    : Promise.resolve({ data: { users: [] } }),
                 adminGetUniversities({ page: 1, limit: 25 }).catch(() => ({ data: { universities: [] } })),
                 adminGetStudentGroups().catch(() => ({ data: { items: [] } })),
             ]);
@@ -1112,7 +1115,7 @@ export default function AdminDashboard() {
             setStudentGroups(groupRes.data.items || []);
         } catch { /* silent */ }
         finally { setLoading(false); }
-    }, [isAdmin]);
+    }, [isAdmin, user?.role]);
 
     useEffect(() => {
         if (isAuthenticated && isAdmin) fetchAll();

@@ -80,23 +80,70 @@ export async function getServiceBySlug(req: Request, res: Response): Promise<voi
 export async function adminGetServices(req: Request, res: Response): Promise<void> {
     try {
         const { is_active, category, page = '1', limit = '50' } = req.query;
-        const pageNum = parseInt(page as string, 10);
-        const limitNum = parseInt(limit as string, 10);
+        const parsedPage = parseInt(String(page), 10);
+        const parsedLimit = parseInt(String(limit), 10);
+        const pageNum = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+        const limitNum = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50;
 
         const filter: any = {};
         if (is_active !== undefined) filter.is_active = is_active === 'true';
         if (category && category !== 'all') filter.category = category;
 
-        const services = await Service.find(filter)
+        const rawServices = await Service.find(filter)
             .sort({ display_order: 1, createdAt: -1 })
             .skip((pageNum - 1) * limitNum)
             .limit(limitNum)
-            .populate('category', 'name_en name_bn')
             .lean();
+
+        const categoryIds = Array.from(
+            new Set(
+                rawServices
+                    .map((service: any) => {
+                        const categoryValue = service?.category;
+                        if (!categoryValue) return '';
+                        if (typeof categoryValue === 'string') return categoryValue;
+                        if (typeof categoryValue === 'object' && categoryValue._id) return String(categoryValue._id);
+                        return String(categoryValue);
+                    })
+                    .filter((id: string) => /^[a-f0-9]{24}$/i.test(id))
+            )
+        );
+
+        const categories = categoryIds.length
+            ? await ServiceCategory.find({ _id: { $in: categoryIds } })
+                .select('name_en name_bn')
+                .lean()
+            : [];
+
+        const categoryMap = new Map<string, { name_en?: string; name_bn?: string }>(
+            categories.map((item: any) => [String(item._id), { name_en: item.name_en, name_bn: item.name_bn }])
+        );
+
+        const services = rawServices.map((service: any) => {
+            const categoryValue = service?.category;
+            const categoryId = categoryValue
+                ? (typeof categoryValue === 'string'
+                    ? categoryValue
+                    : typeof categoryValue === 'object' && categoryValue._id
+                        ? String(categoryValue._id)
+                        : String(categoryValue))
+                : '';
+            const mappedCategory = categoryId ? categoryMap.get(categoryId) : undefined;
+
+            return {
+                ...service,
+                category: mappedCategory
+                    ? { _id: categoryId, ...mappedCategory }
+                    : (categoryValue && typeof categoryValue === 'object' && 'name_en' in categoryValue
+                        ? categoryValue
+                        : null),
+            };
+        });
 
         const total = await Service.countDocuments(filter);
         res.json({ services, total, page: pageNum, pages: Math.ceil(total / limitNum) });
     } catch (err) {
+        console.error('adminGetServices error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 }
