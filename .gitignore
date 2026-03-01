@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.log
+INITIAL_ADMIN_ACCESS.txt
+INITIAL_ADMIN_ACCESS.txt.gpg
+INITIAL_ACCESS_INFO.txt
+.DS_Store
+Thumbs.db
+qa-artifacts/
+backend/.e2e-security-backup.json
+frontend/playwright-report/

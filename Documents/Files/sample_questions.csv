@@ -1,0 +1,16 @@
+question,optionA,optionB,optionC,optionD,correctAnswer,explanation,subject,chapter,class,marks,difficulty,category,tags
+What is the capital of Bangladesh?,Dhaka,Chittagong,Sylhet,Rajshahi,A,Dhaka is the capital of Bangladesh.,General Knowledge,Capital Cities,All,1,easy,general,"gk, bangladesh"
+Which planet is known as the Red Planet?,Venus,Mars,Jupiter,Saturn,B,Mars appears red due to iron oxide on its surface.,Science,Solar System,All,1,easy,general,"science, space"
+What is the largest mammal in the world?,Elephant,Blue Whale,Giraffe,Orca,B,The blue whale is the largest known mammal.,Science,Animals,All,1,easy,general,"science, biology"
+"Who wrote ""Gitanjali""?",Kazi Nazrul Islam,Rabindranath Tagore,Jibanananda Das,Jasimuddin,B,Rabindranath Tagore won the Nobel Prize for Gitanjali in 1913.,Literature,Poetry,All,1,medium,general,"literature, bengali"
+What is the boiling point of water at sea level?,50°C,100°C,150°C,200°C,B,Water boils at 100 degrees Celsius at 1 atm pressure.,Science,Physics,All,1,easy,general,"science, physics"
+Which is the longest river in the world?,Amazon,Nile,Yangtze,Mississippi,B,The Nile is traditionally considered the longest river.,Geography,Rivers,All,1,medium,general,"geography, world"
+What is the chemical symbol for Gold?,Ag,Au,Pb,Fe,B,Au comes from the Latin word aurum.,Science,Chemistry,All,1,medium,general,"science, chemistry"
+Bangladesh became independent in which year?,1947,1952,1971,1990,C,Bangladesh gained independence in 1971.,History,Liberation War,All,1,easy,general,"history, bangladesh"
+Who is known as the inventor of the World Wide Web?,Bill Gates,Steve Jobs,Tim Berners-Lee,Mark Zuckerberg,C,Tim Berners-Lee invented the WWW in 1989.,ICT,Internet,All,1,medium,general,"ict, technology"
+What is the square root of 144?,10,12,14,16,B,12 * 12 = 144.,Mathematics,Algebra,All,1,easy,general,math
+বাংলাদেশের জাতীয় ফল কী?,আম,কাঁঠাল,লিচু,কলা,B,কাঁঠাল বাংলাদেশের জাতীয় ফল।,General Knowledge,National Info,All,1,easy,general,"gk, bangladesh"
+কম্পিউটারের ব্রেইন কাকে বলা হয়?,RAM,Monitor,CPU,Hard Disk,C,CPU (Central Processing Unit) কে কম্পিউটারের ব্রেইন বলা হয়।,ICT,Hardware,All,1,easy,general,"ict, components"
+সূর্যমুখী ফুল কোন দিকে মুখ করে থাকে?,পূর্ব,পশ্চিম,উত্তর,সূর্যের দিকে,D,সূর্যমুখী ফুল সবসময় সূর্যের দিকে মুখ করে থাকে।,Science,Botany,All,1,easy,general,"science, plants"
+বাংলাদেশের প্রথম রাষ্ট্রপতি কে ছিলেন?,তাজউদ্দীন আহমদ,বঙ্গবন্ধু শেখ মুজিবুর রহমান,সৈয়দ নজরুল ইসলাম,জিয়াউর রহমান,B,বঙ্গবন্ধু শেখ মুজিবুর রহমান ছিলেন বাংলাদেশের প্রথম রাষ্ট্রপতি।,History,Politics,All,1,medium,general,"history, bangladesh"
+১ মেগাবাইট (MB) সমান কত কিলোবাইট (KB)?,১০০০,১০২৪,১০৪৮,৫১২,B,১ মেগাবাইট = ১০২৪ কিলোবাইট।,ICT,Data Storage,All,1,medium,general,"ict, data"

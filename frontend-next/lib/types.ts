@@ -1,0 +1,120 @@
+export type ApiListResponse<T> = {
+  items?: T[];
+  total?: number;
+  page?: number;
+  pages?: number;
+  message?: string;
+};
+
+export type StudentRow = {
+  _id: string;
+  username?: string;
+  full_name?: string;
+  email?: string;
+  role?: string;
+  status?: string;
+  subscription?: {
+    planCode?: string;
+    expiryDate?: string | null;
+    isActive?: boolean;
+  };
+};
+
+export type PlanRow = {
+  _id: string;
+  code: string;
+  name: string;
+  durationDays?: number;
+  durationValue?: number;
+  durationUnit?: 'days' | 'months';
+  price?: number;
+  isActive?: boolean;
+};
+
+export type PaymentRow = {
+  _id: string;
+  amount: number;
+  method: 'bkash' | 'cash' | 'manual' | 'bank';
+  date: string;
+  entryType: 'subscription' | 'due_settlement' | 'other_income';
+  reference?: string;
+};
+
+export type ExpenseRow = {
+  _id: string;
+  category: string;
+  amount: number;
+  date: string;
+  vendor?: string;
+};
+
+export type StaffPayoutRow = {
+  _id: string;
+  role: string;
+  amount: number;
+  paidAt: string;
+  periodMonth: string;
+};
+
+export type DueRow = {
+  _id: string;
+  studentId?: {
+    _id: string;
+    username?: string;
+    email?: string;
+  };
+  netDue: number;
+  computedDue: number;
+  manualAdjustment: number;
+  waiverAmount: number;
+  updatedAt?: string;
+};
+
+export type NoticeRow = {
+  _id: string;
+  title: string;
+  message: string;
+  isActive?: boolean;
+  startAt?: string | null;
+  endAt?: string | null;
+};
+
+export type TicketRow = {
+  _id: string;
+  ticketNo: string;
+  subject: string;
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high';
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BackupRow = {
+  _id: string;
+  type: 'full' | 'incremental';
+  storage: 'local' | 's3' | 'both';
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  createdAt: string;
+  localPath?: string;
+  s3Key?: string;
+};
+
+export type FinanceSummary = {
+  totalIncome: number;
+  totalExpenses: number;
+  directExpenses: number;
+  salaryPayouts: number;
+  netProfit: number;
+};
+
+export type StudentDashboardProfile = {
+  user?: {
+    username?: string;
+    email?: string;
+  };
+  subscription?: {
+    planCode?: string;
+    expiryDate?: string | null;
+    isActive?: boolean;
+  };
+};

@@ -1,0 +1,1490 @@
+import { Response } from 'express';
+import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
+import { AuthRequest } from '../middlewares/auth';
+import Exam from '../models/Exam';
+import Question from '../models/Question';
+import ExamResult from '../models/ExamResult';
+import ExamSession from '../models/ExamSession';
+import ExamEvent from '../models/ExamEvent';
+import User from '../models/User';
+import StudentGroup from '../models/StudentGroup';
+import { broadcastStudentDashboardEvent } from '../realtime/studentDashboardStream';
+import { submitExamAsSystem } from './examController';
+import { broadcastExamAttemptEventByMeta } from '../realtime/examAttemptStream';
+import { addAdminLiveStreamClient, broadcastAdminLiveEvent } from '../realtime/adminLiveStream';
+import { getSignedUploadForBanner } from '../services/uploadProvider';
+import { getExamCardMetrics } from '../services/examCardMetricsService';
+
+interface PopulatedStudent { username: string; fullName: string; email: string; }
+function asStudent(s: unknown): PopulatedStudent { return s as PopulatedStudent; }
+
+function asStringArray(input: unknown): string[] {
+    if (Array.isArray(input)) return input.map((x) => String(x).trim()).filter(Boolean);
+    if (typeof input === 'string') return input.split(',').map((x) => x.trim()).filter(Boolean);
+    return [];
+}
+
+function slugifyText(value: unknown): string {
+    return String(value || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        .slice(0, 120);
+}
+
+function generateExamSlugSeed(exam: Record<string, unknown>): string {
+    const title = String(exam.title || '').trim();
+    const subject = String(exam.subject || '').trim();
+    const seed = slugifyText(`${title}-${subject}`);
+    return seed || `exam-${Date.now()}`;
+}
+
+function createUniqueShareSlug(base: string): string {
+    const suffix = Math.random().toString(36).slice(2, 7);
+    return `${base}-${suffix}`.replace(/-+/g, '-');
+}
+
+function normalizeObjectIdArray(input: unknown): string[] {
+    if (!Array.isArray(input)) return [];
+    return Array.from(new Set(input.map((item) => String(item || '').trim()).filter(Boolean)));
+}
+
+function statusBadgeForExam(exam: Record<string, unknown>, now = new Date()): 'upcoming' | 'live' | 'completed' | 'draft' {
+    const isPublished = Boolean(exam.isPublished);
+    if (!isPublished) return 'draft';
+    const start = new Date(String(exam.startDate || ''));
+    const end = new Date(String(exam.endDate || ''));
+    if (!Number.isNaN(start.getTime()) && now < start) return 'upcoming';
+    if (!Number.isNaN(end.getTime()) && now > end) return 'completed';
+    return 'live';
+}
+
+function normalizeDeliveryMode(payload: Record<string, unknown>): void {
+    const incomingDeliveryMode = String(payload.deliveryMode || '').trim().toLowerCase();
+    const normalizedDeliveryMode = incomingDeliveryMode === 'external_link' || incomingDeliveryMode === 'internal'
+        ? incomingDeliveryMode
+        : (payload.externalExamUrl ? 'external_link' : 'internal');
+    payload.deliveryMode = normalizedDeliveryMode;
+
+    const incomingBannerSource = String(payload.bannerSource || '').trim().toLowerCase();
+    if (incomingBannerSource === 'upload' || incomingBannerSource === 'url' || incomingBannerSource === 'default') {
+        payload.bannerSource = incomingBannerSource;
+        return;
+    }
+    payload.bannerSource = payload.bannerImageUrl ? 'url' : 'default';
+}
+
+function normalizeExamPayload(body: Record<string, unknown>): Record<string, unknown> {
+    const payload: Record<string, unknown> = { ...body };
+    if (payload.marksPerQuestion !== undefined && payload.defaultMarksPerQuestion === undefined) {
+        payload.defaultMarksPerQuestion = Number(payload.marksPerQuestion || 1);
+    }
+    if (payload.negativeMarksValue !== undefined && payload.negativeMarkValue === undefined) {
+        payload.negativeMarkValue = Number(payload.negativeMarksValue || 0);
+    }
+    if (payload.maxAnswerChangeLimit !== undefined && payload.answerEditLimitPerQuestion === undefined) {
+        payload.answerEditLimitPerQuestion = Number(payload.maxAnswerChangeLimit || 0);
+    }
+    if (payload.scheduleStart && !payload.startDate) {
+        payload.startDate = payload.scheduleStart;
+    }
+    if (payload.scheduleEnd && !payload.endDate) {
+        payload.endDate = payload.scheduleEnd;
+    }
+    if (!payload.resultPublishDate && payload.endDate) {
+        payload.resultPublishDate = payload.endDate;
+    }
+    if (payload.branchFilters !== undefined) {
+        payload.branchFilters = asStringArray(payload.branchFilters);
+    }
+    if (payload.batchFilters !== undefined) {
+        payload.batchFilters = asStringArray(payload.batchFilters);
+    }
+    normalizeDeliveryMode(payload);
+    return payload;
+}
+
+async function broadcastExamMetricsSnapshot(examId: string, source: string): Promise<void> {
+    try {
+        const exam = await Exam.findById(examId)
+            .select('_id accessControl allowedUsers allowed_user_ids')
+            .lean();
+        if (!exam) return;
+        const metricsMap = await getExamCardMetrics([exam as unknown as Record<string, unknown>]);
+        const metrics = metricsMap.get(String(exam._id)) || {
+            examId: String(exam._id),
+            totalParticipants: 0,
+            attemptedUsers: 0,
+            remainingUsers: 0,
+            activeUsers: 0,
+        };
+        broadcastAdminLiveEvent('exam-metrics-updated', {
+            source,
+            ...metrics,
+        });
+    } catch {
+        // non-blocking metrics broadcast
+    }
+}
+
+/* ─────── EXAM CRUD ─────── */
+
+export async function adminGetExams(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { page = '1', limit = '20', q, search, subject, status, groupCategory, includeMetrics, view, groupBy } = req.query;
+        const pageNum = Math.max(1, parseInt(page as string));
+        const limitNum = Math.min(100, parseInt(limit as string));
+        const filter: Record<string, unknown> = {};
+        const queryText = String(q || search || '').trim();
+        if (queryText) {
+            filter.$or = [
+                { title: { $regex: queryText, $options: 'i' } },
+                { subject: { $regex: queryText, $options: 'i' } },
+                { subjectBn: { $regex: queryText, $options: 'i' } },
+                { group_category: { $regex: queryText, $options: 'i' } },
+            ];
+        }
+        if (subject) filter.subject = subject;
+        if (groupCategory) filter.group_category = groupCategory;
+        if (status && String(status).toLowerCase() === 'draft') filter.isPublished = false;
+        if (status && String(status).toLowerCase() !== 'draft') {
+            const now = new Date();
+            if (String(status).toLowerCase() === 'upcoming') {
+                filter.isPublished = true;
+                filter.startDate = { $gt: now };
+            } else if (String(status).toLowerCase() === 'completed') {
+                filter.isPublished = true;
+                filter.endDate = { $lt: now };
+            } else if (String(status).toLowerCase() === 'live') {
+                filter.isPublished = true;
+                filter.startDate = { $lte: now };
+                filter.endDate = { $gte: now };
+            }
+        }
+
+        const total = await Exam.countDocuments(filter);
+        const examsRaw = await Exam.find(filter)
+            .sort({ createdAt: -1 })
+            .skip((pageNum - 1) * limitNum)
+            .limit(limitNum)
+            .populate('createdBy', 'username fullName')
+            .lean();
+
+        const shouldIncludeMetrics = String(includeMetrics || '').toLowerCase() === 'true' || String(view || '').toLowerCase() === 'cards';
+        const metrics = shouldIncludeMetrics ? await getExamCardMetrics(examsRaw as Array<Record<string, unknown>>) : new Map();
+
+        const groupIdSet = new Set<string>();
+        for (const exam of examsRaw as Array<Record<string, unknown>>) {
+            const accessControl = (exam.accessControl as Record<string, unknown> | undefined) || {};
+            for (const groupId of normalizeObjectIdArray(accessControl.allowedGroupIds)) {
+                groupIdSet.add(groupId);
+            }
+        }
+        const groupRows = groupIdSet.size > 0
+            ? await StudentGroup.find({ _id: { $in: Array.from(groupIdSet) } }).select('name slug').lean()
+            : [];
+        const groupNameMap = new Map<string, string>(
+            groupRows.map((group) => [String(group._id), String(group.name || group.slug || '')]),
+        );
+
+        const now = new Date();
+        const exams: Array<Record<string, unknown>> = (examsRaw as Array<Record<string, unknown>>).map((exam) => {
+            const examId = String(exam._id || '');
+            const accessControl = (exam.accessControl as Record<string, unknown> | undefined) || {};
+            const allowedGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+            const groupNames = allowedGroupIds
+                .map((id) => groupNameMap.get(id))
+                .filter(Boolean) as string[];
+            const metric = metrics.get(examId) || {
+                examId,
+                totalParticipants: 0,
+                attemptedUsers: 0,
+                remainingUsers: 0,
+                activeUsers: 0,
+            };
+            return {
+                ...exam,
+                accessControl: {
+                    ...(exam.accessControl as Record<string, unknown> || {}),
+                    allowedGroupIds,
+                },
+                groupNames,
+                statusBadge: statusBadgeForExam(exam, now),
+                totalParticipants: Number(metric.totalParticipants || 0),
+                attemptedUsers: Number(metric.attemptedUsers || 0),
+                remainingUsers: Number(metric.remainingUsers || 0),
+                activeUsers: Number(metric.activeUsers || 0),
+                shareUrl: exam.share_link ? `/exam/take/${String(exam.share_link)}` : '',
+            };
+        });
+
+        if (String(groupBy || '').toLowerCase() === 'category') {
+            const groupedByCategory = exams.reduce<Record<string, Record<string, unknown>[]>>((acc, exam) => {
+                const key = String(exam.group_category || 'Custom');
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(exam);
+                return acc;
+            }, {});
+            res.json({
+                exams,
+                grouped: { byCategory: groupedByCategory },
+                pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) },
+            });
+            return;
+        }
+        if (String(groupBy || '').toLowerCase() === 'status') {
+            const groupedByStatus = exams.reduce<Record<string, Record<string, unknown>[]>>((acc, exam) => {
+                const key = String((exam as Record<string, unknown>).statusBadge || 'draft');
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(exam);
+                return acc;
+            }, {});
+            res.json({
+                exams,
+                grouped: { byStatus: groupedByStatus },
+                pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) },
+            });
+            return;
+        }
+
+        res.json({ exams, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } });
+    } catch (err) {
+        console.error('[adminGetExams]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminGetExamById(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const exam = await Exam.findById(req.params.id).populate('createdBy', 'username fullName').lean();
+        if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
+        const questionCount = await Question.countDocuments({ exam: req.params.id });
+        const accessControl = (exam.accessControl as Record<string, unknown> | undefined) || {};
+        const allowedGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+        const allowedGroups = allowedGroupIds.length > 0
+            ? await StudentGroup.find({ _id: { $in: allowedGroupIds } }).select('name slug').lean()
+            : [];
+        res.json({
+            exam: {
+                ...exam,
+                questionCount,
+                accessControl: {
+                    ...(exam.accessControl as Record<string, unknown> || {}),
+                    allowedGroupIds,
+                },
+                allowedGroups,
+                shareUrl: (exam as Record<string, unknown>).share_link ? `/exam/take/${String((exam as Record<string, unknown>).share_link)}` : '',
+            }
+        });
+    } catch (err) {
+        console.error('[adminGetExamById]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminCreateExam(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const payload = normalizeExamPayload(req.body as Record<string, unknown>);
+        const incomingShareLink = String(payload.share_link || '').trim();
+        payload.share_link = incomingShareLink || await ensureUniqueExamShareLink(generateExamSlugSeed(payload));
+        payload.short_link = String(payload.short_link || payload.share_link || '');
+        const exam = await Exam.create({ ...payload, createdBy: req.user!._id });
+        broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'create', examId: String(exam._id) } });
+        void broadcastExamMetricsSnapshot(String(exam._id), 'exam_create');
+        res.status(201).json({ exam, message: 'Exam created successfully.' });
+    } catch (err) {
+        console.error('[adminCreateExam]', err);
+        res.status(500).json({
+            message: 'Server error',
+            ...(process.env.NODE_ENV === 'production'
+                ? {}
+                : { error: err instanceof Error ? err.message : String(err) }),
+        });
+    }
+}
+
+export async function adminUpdateExam(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const payload = normalizeExamPayload(req.body as Record<string, unknown>);
+        if (payload.share_link !== undefined) {
+            const requestedShareLink = String(payload.share_link || '').trim();
+            payload.share_link = requestedShareLink
+                ? await ensureUniqueExamShareLink(slugifyText(requestedShareLink) || generateExamSlugSeed(payload), String(req.params.id || ''))
+                : '';
+        }
+        const exam = await Exam.findByIdAndUpdate(
+            req.params.id,
+            { ...payload, updatedAt: new Date() },
+            { new: true, runValidators: true }
+        );
+        if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
+        broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'update', examId: String(exam._id) } });
+        void broadcastExamMetricsSnapshot(String(exam._id), 'exam_update');
+        res.json({ exam, message: 'Exam updated successfully.' });
+    } catch (err) {
+        console.error('[adminUpdateExam]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminDeleteExam(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const exam = await Exam.findById(req.params.id);
+        if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
+        await Promise.all([
+            Exam.findByIdAndDelete(req.params.id),
+            Question.deleteMany({ exam: req.params.id }),
+            ExamResult.deleteMany({ exam: req.params.id }),
+            ExamSession.deleteMany({ exam: req.params.id }),
+        ]);
+        broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'delete', examId: req.params.id } });
+        res.json({ message: 'Exam and all related data deleted.' });
+    } catch (err) {
+        console.error('[adminDeleteExam]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminPublishExam(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const exam = await Exam.findByIdAndUpdate(req.params.id, { isPublished: true }, { new: true });
+        if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
+        broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'publish', examId: String(exam._id) } });
+        res.json({ message: 'Exam published.', exam });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminCloneExam(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const source = await Exam.findById(req.params.id).lean();
+        if (!source) {
+            res.status(404).json({ message: 'Exam not found' });
+            return;
+        }
+
+        const clonedExamPayload = {
+            ...source,
+            _id: undefined,
+            title: `${String(source.title || 'Exam')} (Clone)`,
+            isPublished: false,
+            status: 'draft',
+            share_link: '',
+            short_link: '',
+            createdBy: req.user?._id,
+            createdAt: undefined,
+            updatedAt: undefined,
+        };
+        const clonedExam = await Exam.create(clonedExamPayload);
+
+        const sourceQuestions = await Question.find({ exam: source._id }).lean();
+        if (sourceQuestions.length > 0) {
+            await Question.insertMany(sourceQuestions.map((q) => ({
+                ...q,
+                _id: undefined,
+                exam: clonedExam._id,
+                createdAt: undefined,
+                updatedAt: undefined,
+            })));
+            await Exam.findByIdAndUpdate(clonedExam._id, { totalQuestions: sourceQuestions.length });
+        }
+
+        broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'clone', examId: String(clonedExam._id) } });
+        res.status(201).json({ exam: clonedExam, message: 'Exam cloned successfully.' });
+    } catch (err) {
+        console.error('[adminCloneExam]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+async function ensureUniqueExamShareLink(baseSlug: string, excludeExamId?: string): Promise<string> {
+    const normalizedBase = slugifyText(baseSlug) || `exam-${Date.now()}`;
+    let candidate = normalizedBase;
+    let attempt = 0;
+    while (attempt < 15) {
+        const conflict = await Exam.exists({
+            share_link: candidate,
+            ...(excludeExamId ? { _id: { $ne: excludeExamId } } : {}),
+        });
+        if (!conflict) return candidate;
+        candidate = createUniqueShareSlug(normalizedBase);
+        attempt += 1;
+    }
+    return `${normalizedBase}-${Date.now()}`;
+}
+
+export async function adminRegenerateExamShareLink(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const exam = await Exam.findById(req.params.id);
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found' });
+            return;
+        }
+
+        const base = generateExamSlugSeed(exam.toObject() as unknown as Record<string, unknown>);
+        const share_link = await ensureUniqueExamShareLink(base, String(exam._id));
+        exam.share_link = share_link;
+        exam.short_link = share_link;
+        await exam.save();
+
+        broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'share_link_regenerated', examId: String(exam._id) } });
+        void broadcastExamMetricsSnapshot(String(exam._id), 'share_link_regenerated');
+        res.json({
+            message: 'Share URL regenerated.',
+            share_link,
+            shareUrl: `/exam/take/${share_link}`,
+            examId: String(exam._id),
+        });
+    } catch (err) {
+        console.error('[adminRegenerateExamShareLink]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminSignExamBannerUpload(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const filename = String(req.body?.filename || '').trim();
+        const mimeType = String(req.body?.mimeType || 'application/octet-stream');
+        if (!filename) {
+            res.status(400).json({ message: 'filename is required.' });
+            return;
+        }
+        const signed = await getSignedUploadForBanner(filename, mimeType);
+        res.json(signed);
+    } catch (err) {
+        console.error('[adminSignExamBannerUpload]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminForceSubmit(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const examId = String(req.params.examId || '');
+        const studentId = String(req.params.studentId || '');
+        const submitResult = await submitExamAsSystem({
+            examId,
+            studentId,
+            sourceReq: req,
+            reason: `admin_force_submit:${req.user?._id || 'unknown'}`,
+            submissionType: 'forced',
+        });
+
+        if (submitResult.statusCode >= 400) {
+            res.status(submitResult.statusCode).json(submitResult.body);
+            return;
+        }
+
+        broadcastExamAttemptEventByMeta(
+            { studentId, examId },
+            'forced-submit',
+            {
+                source: 'admin',
+                actorId: String(req.user?._id || ''),
+            },
+        );
+        broadcastAdminLiveEvent('forced-submit', {
+            examId,
+            studentId,
+            actorId: String(req.user?._id || ''),
+        });
+        void broadcastExamMetricsSnapshot(examId, 'admin_force_submit');
+
+        res.json({
+            message: 'Session force-submitted.',
+            ...(submitResult.body as Record<string, unknown>),
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminPublishResult(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const exam = await Exam.findByIdAndUpdate(
+            req.params.id,
+            { resultPublishDate: new Date() },
+            { new: true }
+        );
+        if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
+        res.json({ message: 'Result published immediately.', exam });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminEvaluateResult(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { resultId } = req.params;
+        const { obtainedMarks, correctCount, wrongCount, status } = req.body;
+
+        const result = await ExamResult.findById(resultId);
+        if (!result) { res.status(404).json({ message: 'Result not found' }); return; }
+
+        if (obtainedMarks !== undefined) result.obtainedMarks = obtainedMarks;
+        if (correctCount !== undefined) result.correctCount = correctCount;
+        if (wrongCount !== undefined) result.wrongCount = wrongCount;
+        if (status) (result as any).status = status;
+
+        if (obtainedMarks !== undefined && result.totalMarks > 0) {
+            result.percentage = (result.obtainedMarks / result.totalMarks) * 100;
+        }
+
+        await result.save();
+        res.json({ message: 'Result evaluated successfully.', result });
+    } catch (err) {
+        console.error('[adminEvaluateResult]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── QUESTION CRUD ─────── */
+
+export async function adminGetQuestions(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { examId } = req.params;
+        const questions = await Question.find({ exam: examId }).sort({ order: 1 }).lean();
+        res.json({ questions, count: questions.length });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminCreateQuestion(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { examId } = req.params;
+        const count = await Question.countDocuments({ exam: examId });
+        const question = await Question.create({ ...req.body, exam: examId, order: count + 1 });
+        // Update totalQuestions count on exam
+        await Exam.findByIdAndUpdate(examId, { $inc: { totalQuestions: 1 } });
+        res.status(201).json({ question, message: 'Question created.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminUpdateQuestion(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const question = await Question.findByIdAndUpdate(req.params.questionId, req.body, { new: true });
+        if (!question) { res.status(404).json({ message: 'Question not found' }); return; }
+        res.json({ question, message: 'Question updated.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminDeleteQuestion(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const question = await Question.findByIdAndDelete(req.params.questionId);
+        if (!question) { res.status(404).json({ message: 'Question not found' }); return; }
+        await Exam.findByIdAndUpdate(question.exam, { $inc: { totalQuestions: -1 } });
+        res.json({ message: 'Question deleted.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminReorderQuestions(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { orders } = req.body; // [{ questionId, order }]
+        const updates = (orders as { questionId: string; order: number }[]).map(o =>
+            Question.findByIdAndUpdate(o.questionId, { order: o.order })
+        );
+        await Promise.all(updates);
+        res.json({ message: 'Questions reordered.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── EXCEL IMPORT ─────── */
+
+export async function adminImportQuestionsFromExcel(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { examId } = req.params;
+        const exam = await Exam.findById(examId);
+        if (!exam) { res.status(404).json({ message: 'Exam not found.' }); return; }
+
+        const questionsList = req.body;
+        if (!Array.isArray(questionsList) || questionsList.length === 0) {
+            res.status(400).json({ message: 'Payload must be a non-empty array of mapped questions.' });
+            return;
+        }
+
+        const existingCount = await Question.countDocuments({ exam: examId });
+        let currentOrder = existingCount + 1;
+
+        const toInsert = questionsList.map(q => ({
+            exam: new mongoose.Types.ObjectId(examId as string),
+            question: q.question,
+            optionA: q.options?.A || q.optionA || '',
+            optionB: q.options?.B || q.optionB || '',
+            optionC: q.options?.C || q.optionC || '',
+            optionD: q.options?.D || q.optionD || '',
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || q.explanation_text || '',
+            marks: Number(q.marks) || 1,
+            subject: q.subject || '',
+            chapter: q.chapter || '',
+            difficulty: ['easy', 'medium', 'hard'].includes(q.difficulty) ? q.difficulty : 'medium',
+            category: ['Science', 'Arts', 'Commerce', 'Mixed'].includes(q.category) ? q.category : 'Mixed',
+            tags: Array.isArray(q.tags) ? q.tags : (typeof q.tags === 'string' ? q.tags.split(',').map((t: string) => t.trim()) : []),
+            active: true,
+            order: currentOrder++
+        }));
+
+        await Question.insertMany(toInsert);
+        await Exam.findByIdAndUpdate(examId, { $inc: { totalQuestions: toInsert.length } });
+
+        res.status(201).json({
+            message: `Import complete. ${toInsert.length} questions added.`,
+            imported: toInsert.length,
+            duplicatesSkipped: 0,
+            duplicateRows: []
+        });
+    } catch (err) {
+        console.error('[adminImportQuestionsFromExcel]', err);
+        res.status(500).json({ message: 'Server error during import.' });
+    }
+}
+
+/* ─────── ANALYTICS ─────── */
+
+export async function adminGetExamAnalytics(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { examId } = req.params;
+        const exam = await Exam.findById(examId).lean();
+        if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
+
+        const results = await ExamResult.find({ exam: examId })
+            .populate('student', 'username fullName email')
+            .lean();
+
+        const questions = await Question.find({ exam: examId }).select('question totalAttempted totalCorrect').lean();
+        const questionAccuracy = questions.map(q => ({
+            question: q.question.substring(0, 80) + (q.question.length > 80 ? '…' : ''),
+            totalAttempted: q.totalAttempted,
+            totalCorrect: q.totalCorrect,
+            accuracy: q.totalAttempted > 0 ? ((q.totalCorrect / q.totalAttempted) * 100).toFixed(1) + '%' : 'N/A',
+        }));
+
+        const deviceBreakdown: Record<string, number> = {};
+        const browserBreakdown: Record<string, number> = {};
+        let totalTabSwitches = 0;
+
+        results.forEach(r => {
+            deviceBreakdown[r.deviceInfo || 'Unknown'] = (deviceBreakdown[r.deviceInfo || 'Unknown'] || 0) + 1;
+            browserBreakdown[r.browserInfo || 'Unknown'] = (browserBreakdown[r.browserInfo || 'Unknown'] || 0) + 1;
+            totalTabSwitches += r.tabSwitchCount || 0;
+        });
+
+        res.json({
+            exam,
+            totalParticipants: results.length,
+            avgScore: exam.avgScore,
+            highestScore: exam.highestScore,
+            lowestScore: exam.lowestScore,
+            questionAccuracy,
+            deviceBreakdown,
+            browserBreakdown,
+            totalTabSwitches,
+            students: results.map(r => ({
+                attemptNo: Number((r as Record<string, unknown>).attemptNo || 1),
+                username: asStudent(r.student)?.username,
+                fullName: asStudent(r.student)?.fullName,
+                obtainedMarks: r.obtainedMarks,
+                totalMarks: r.totalMarks,
+                percentage: r.percentage,
+                rank: r.rank,
+                correctCount: r.correctCount,
+                wrongCount: r.wrongCount,
+                timeTaken: r.timeTaken,
+                deviceInfo: r.deviceInfo,
+                browserInfo: r.browserInfo,
+                ipAddress: r.ipAddress,
+                tabSwitchCount: r.tabSwitchCount,
+                submittedAt: r.submittedAt,
+                isAutoSubmitted: r.isAutoSubmitted,
+                cheat_flags: (r as any).cheat_flags || [],
+                writtenUploads: Array.isArray(r.answers)
+                    ? r.answers
+                        .map((ans) => (ans as unknown as Record<string, unknown>).writtenAnswerUrl)
+                        .filter(Boolean)
+                    : [],
+                answers: r.answers,
+                status: (r as any).status || 'evaluated',
+                _id: r._id,
+            })),
+        });
+    } catch (err) {
+        console.error('[adminGetExamAnalytics]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── MFA CONFIRMATION ─────── */
+
+export async function adminMfaConfirm(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { password } = req.body;
+        if (!password) { res.status(400).json({ message: 'Password required for MFA confirmation.' }); return; }
+
+        const user = await User.findById(req.user!._id).select('+password');
+        if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) { res.status(401).json({ message: 'Invalid password. MFA failed.' }); return; }
+
+        // Generate a simple short-lived token (Base64 encoded for simplicity)
+        const mfaToken = Buffer.from(`${user._id}:${Date.now() + 15 * 60 * 1000}`).toString('base64');
+        res.json({ message: 'MFA confirmed successfully.', mfaToken });
+    } catch (err) {
+        console.error('[adminMfaConfirm]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── EXCEL EXPORT ─────── */
+
+export async function adminExportExamResults(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { examId } = req.params;
+        const exam = await Exam.findById(examId).lean();
+        if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
+
+        const results = await ExamResult.find({ exam: examId })
+            .populate('student', 'username fullName email')
+            .lean();
+
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'CampusWay Admin';
+        workbook.created = new Date();
+
+        const sheet = workbook.addWorksheet('Results');
+        sheet.columns = [
+            { header: 'Rank', key: 'rank', width: 10 },
+            { header: 'Username', key: 'username', width: 20 },
+            { header: 'Full Name', key: 'fullName', width: 25 },
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Obtained Marks', key: 'obtainedMarks', width: 15 },
+            { header: 'Total Marks', key: 'totalMarks', width: 15 },
+            { header: 'Percentage', key: 'percentage', width: 15 },
+            { header: 'Correct', key: 'correctCount', width: 10 },
+            { header: 'Wrong', key: 'wrongCount', width: 10 },
+            { header: 'Unanswered', key: 'unansweredCount', width: 15 },
+            { header: 'Time Taken (s)', key: 'timeTaken', width: 15 },
+            { header: 'Device', key: 'deviceInfo', width: 20 },
+            { header: 'Browser', key: 'browserInfo', width: 20 },
+            { header: 'IP Address', key: 'ipAddress', width: 15 },
+            { header: 'Tab Switches', key: 'tabSwitchCount', width: 15 },
+            { header: 'Auto Submitted', key: 'isAutoSubmitted', width: 15 },
+            { header: 'Submitted At', key: 'submittedAt', width: 25 }
+        ];
+
+        // Styling the header row
+        sheet.getRow(1).font = { bold: true };
+        sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+
+        results.forEach((r, i) => {
+            sheet.addRow({
+                rank: r.rank || i + 1,
+                username: asStudent(r.student)?.username || '',
+                fullName: asStudent(r.student)?.fullName || '',
+                email: asStudent(r.student)?.email || '',
+                obtainedMarks: r.obtainedMarks,
+                totalMarks: r.totalMarks,
+                percentage: r.percentage + '%',
+                correctCount: r.correctCount,
+                wrongCount: r.wrongCount,
+                unansweredCount: r.unansweredCount,
+                timeTaken: r.timeTaken,
+                deviceInfo: r.deviceInfo || '',
+                browserInfo: r.browserInfo || '',
+                ipAddress: r.ipAddress || '',
+                tabSwitchCount: r.tabSwitchCount || 0,
+                isAutoSubmitted: r.isAutoSubmitted ? 'Yes' : 'No',
+                submittedAt: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : ''
+            });
+        });
+
+        const summarySheet = workbook.addWorksheet('Summary');
+        summarySheet.columns = [
+            { header: 'Metric', key: 'metric', width: 30 },
+            { header: 'Value', key: 'value', width: 30 }
+        ];
+        summarySheet.getRow(1).font = { bold: true };
+        summarySheet.addRows([
+            { metric: 'Exam Title', value: exam.title },
+            { metric: 'Subject', value: exam.subject },
+            { metric: 'Total Participants', value: results.length },
+            { metric: 'Average Score', value: exam.avgScore },
+            { metric: 'Highest Score', value: exam.highestScore },
+            { metric: 'Lowest Score', value: exam.lowestScore },
+            { metric: 'Export Date', value: new Date().toLocaleString() }
+        ]);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${exam.title.replace(/[^a-z0-9]/gi, '_')}_results.xlsx"`);
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error('[adminExportExamResults]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminExportExamEvents(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const examId = String(req.params.id || req.params.examId || '');
+        const format = String(req.query.format || 'csv').toLowerCase();
+        const exam = await Exam.findById(examId).lean();
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found' });
+            return;
+        }
+
+        const events = await ExamEvent.find({ exam: examId })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const rows = events.map((event) => ({
+            eventId: String(event._id),
+            attemptId: String(event.attempt),
+            studentId: String(event.student),
+            eventType: String(event.eventType),
+            createdAt: event.createdAt ? new Date(event.createdAt).toISOString() : '',
+            ip: String(event.ip || ''),
+            userAgent: String(event.userAgent || ''),
+            metadata: JSON.stringify(event.metadata || {}),
+        }));
+
+        if (format === 'xlsx') {
+            const workbook = new ExcelJS.Workbook();
+            workbook.creator = 'CampusWay Admin';
+            const sheet = workbook.addWorksheet('Event Logs');
+            sheet.columns = [
+                { header: 'Event ID', key: 'eventId', width: 28 },
+                { header: 'Attempt ID', key: 'attemptId', width: 28 },
+                { header: 'Student ID', key: 'studentId', width: 28 },
+                { header: 'Event Type', key: 'eventType', width: 18 },
+                { header: 'Created At', key: 'createdAt', width: 28 },
+                { header: 'IP', key: 'ip', width: 18 },
+                { header: 'User Agent', key: 'userAgent', width: 40 },
+                { header: 'Metadata', key: 'metadata', width: 80 },
+            ];
+            sheet.getRow(1).font = { bold: true };
+            rows.forEach((row) => sheet.addRow(row));
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${exam.title.replace(/[^a-z0-9]/gi, '_')}_events.xlsx"`);
+            await workbook.xlsx.write(res);
+            res.end();
+            return;
+        }
+
+        const header = ['eventId', 'attemptId', 'studentId', 'eventType', 'createdAt', 'ip', 'userAgent', 'metadata'];
+        const csvRows = [
+            header.join(','),
+            ...rows.map((row) => header
+                .map((key) => {
+                    const value = String((row as Record<string, unknown>)[key] || '');
+                    const escaped = value.replace(/"/g, '""');
+                    return `"${escaped}"`;
+                })
+                .join(',')),
+        ];
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${exam.title.replace(/[^a-z0-9]/gi, '_')}_events.csv"`);
+        res.send(csvRows.join('\n'));
+    } catch (err) {
+        console.error('[adminExportExamEvents]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+function sanitizeQuestionForPreview(question: Record<string, unknown>): Record<string, unknown> {
+    const {
+        correctAnswer,
+        explanation,
+        solutionImage,
+        solution,
+        explanation_text,
+        explanation_image_url,
+        explanation_formula,
+        negativeMarks,
+        ...safe
+    } = question;
+    return {
+        ...safe,
+        questionType: String(safe.questionType || '').toLowerCase() === 'written' ? 'written' : 'mcq',
+    };
+}
+
+export async function adminStartExamPreview(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const examId = String(req.params.id || req.params.examId || '');
+        const adminId = String(req.user?._id || '');
+        const exam = await Exam.findById(examId).lean();
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found' });
+            return;
+        }
+
+        let session = await ExamSession.findOne({
+            exam: examId,
+            student: adminId,
+            isActive: true,
+            attemptNo: 0,
+        });
+
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + Number(exam.duration || 0) * 60 * 1000);
+        const rawQuestions = await Question.find({ exam: examId, active: { $ne: false } })
+            .sort({ order: 1 })
+            .lean();
+        const questions = rawQuestions.map((q) => sanitizeQuestionForPreview(q as unknown as Record<string, unknown>));
+
+        if (!session) {
+            session = await ExamSession.create({
+                exam: examId,
+                student: adminId,
+                attemptNo: 0,
+                attemptRevision: 0,
+                startedAt: now,
+                expiresAt,
+                ipAddress: req.ip || '',
+                userAgent: req.get('User-Agent') || '',
+                deviceInfo: 'Admin Preview',
+                browserInfo: 'Admin Preview',
+                deviceFingerprint: `admin-preview:${adminId}`,
+                sessionLocked: false,
+                isActive: true,
+                status: 'in_progress',
+                answers: questions.map((q) => ({
+                    questionId: String(q._id || ''),
+                    selectedAnswer: '',
+                    changeCount: 0,
+                })),
+                cheat_flags: [{ reason: 'admin_preview', timestamp: now }],
+            });
+        }
+
+        res.json({
+            preview: true,
+            exam: {
+                _id: exam._id,
+                title: exam.title,
+                subject: exam.subject,
+                duration: exam.duration,
+                totalQuestions: exam.totalQuestions,
+                totalMarks: exam.totalMarks,
+                instructions: exam.instructions || '',
+                require_instructions_agreement: Boolean((exam as any).require_instructions_agreement),
+                security_policies: (exam as any).security_policies || {},
+            },
+            session: {
+                sessionId: session._id,
+                startedAt: session.startedAt,
+                expiresAt: session.expiresAt,
+                attemptNo: 0,
+                attemptRevision: Number((session as any).attemptRevision || 0),
+                isPreview: true,
+            },
+            questions,
+            serverNow: new Date().toISOString(),
+        });
+    } catch (err) {
+        console.error('[adminStartExamPreview]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── DAILY REPORT ─────── */
+
+export async function adminDailyReport(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { date } = req.query;
+        const targetDate = date ? new Date(date as string) : new Date();
+        const start = new Date(targetDate.setHours(0, 0, 0, 0));
+        const end = new Date(targetDate.setHours(23, 59, 59, 999));
+
+        const [examsCount, submissions] = await Promise.all([
+            Exam.countDocuments({ startDate: { $gte: start, $lte: end } }),
+            ExamResult.find({ submittedAt: { $gte: start, $lte: end } }).lean(),
+        ]);
+
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'CampusWay Admin';
+        const sheet = workbook.addWorksheet('Daily Report');
+
+        sheet.columns = [
+            { header: 'Metric', key: 'metric', width: 30 },
+            { header: 'Value', key: 'value', width: 25 },
+        ];
+        sheet.getRow(1).font = { bold: true };
+
+        const avgScore = submissions.length > 0
+            ? (submissions.reduce((a, s) => a + s.percentage, 0) / submissions.length).toFixed(1) + '%'
+            : 'N/A';
+
+        sheet.addRows([
+            { metric: 'Date', value: start.toLocaleDateString() },
+            { metric: 'Exams Conducted', value: examsCount },
+            { metric: 'Total Submissions', value: submissions.length },
+            { metric: 'Unique Participants', value: new Set(submissions.map(s => s.student.toString())).size },
+            { metric: 'Average Score', value: avgScore }
+        ]);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="daily_report_${start.toISOString().split('T')[0]}.xlsx"`);
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error('[adminDailyReport]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── USER MANAGEMENT ─────── */
+
+export async function adminGetUsers(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { page = '1', limit = '20', q, role } = req.query;
+        const pageNum = Math.max(1, parseInt(page as string));
+        const limitNum = Math.min(100, parseInt(limit as string));
+        const filter: Record<string, unknown> = {};
+        if (role) filter.role = role;
+        if (q) filter.$or = [
+            { username: { $regex: q, $options: 'i' } },
+            { fullName: { $regex: q, $options: 'i' } },
+            { email: { $regex: q, $options: 'i' } },
+        ];
+        const total = await User.countDocuments(filter);
+        const users = await User.find(filter)
+            .select('-password -twoFactorSecret')
+            .sort({ createdAt: -1 })
+            .skip((pageNum - 1) * limitNum)
+            .limit(limitNum)
+            .lean();
+        res.json({ users, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminUpdateUserSubscription(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { userId } = req.params;
+        const {
+            plan,
+            planCode,
+            planName,
+            startDate,
+            expiryDate,
+            isActive,
+        } = req.body as {
+            plan?: string;
+            planCode?: string;
+            planName?: string;
+            startDate?: string | Date;
+            expiryDate?: string | Date;
+            isActive?: boolean;
+        };
+        const normalizedPlanCode = String(planCode || plan || '').trim().toLowerCase();
+        const normalizedPlanName = String(planName || plan || '').trim();
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                subscription: {
+                    plan: normalizedPlanCode,
+                    planCode: normalizedPlanCode,
+                    planName: normalizedPlanName,
+                    startDate: startDate ? new Date(startDate) : undefined,
+                    expiryDate: expiryDate ? new Date(expiryDate) : undefined,
+                    isActive: Boolean(isActive),
+                    assignedBy: req.user?._id,
+                    assignedAt: new Date(),
+                }
+            },
+            { new: true }
+        ).select('-password');
+        if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+        res.json({ user, message: 'Subscription updated.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminToggleUserStatus(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const user = await User.findById(req.params.userId);
+        if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+        user.status = user.status === 'active' ? 'suspended' : 'active';
+        await user.save();
+        res.json({ message: `User status changed to ${user.status}.`, status: user.status });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminResetExamAttempt(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { examId, userId } = req.params;
+        await Promise.all([
+            ExamResult.deleteOne({ exam: examId, student: userId }),
+            ExamSession.deleteOne({ exam: examId, student: userId }),
+        ]);
+        res.json({ message: 'Exam attempt reset for student.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── STUDENT REPORT ─────── */
+export async function adminGetStudentReport(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { userId } = req.params;
+        const student = await User.findById(userId).select('username fullName email phone role').lean();
+        if (!student) { res.status(404).json({ message: 'Student not found.' }); return; }
+
+        const results = await ExamResult.find({ student: userId })
+            .populate('exam', 'title subject totalMarks duration negativeMarking startDate endDate')
+            .sort({ submittedAt: -1 })
+            .lean();
+
+        const sessions = await ExamSession.find({ student: userId }).lean();
+        const sessionMap = new Map(sessions.map(s => [s.exam.toString(), s]));
+
+        const report = results.map(r => {
+            const s = sessionMap.get(r.exam.toString());
+            return {
+                examId: (r.exam as unknown as Record<string, unknown>)?._id || r.exam,
+                examTitle: (r.exam as unknown as Record<string, unknown>)?.title || 'Unknown',
+                obtainedMarks: r.obtainedMarks,
+                totalMarks: r.totalMarks,
+                percentage: r.percentage,
+                rank: r.rank,
+                correctCount: r.correctCount,
+                wrongCount: r.wrongCount,
+                unansweredCount: r.unansweredCount,
+                timeTaken: r.timeTaken,
+                tabSwitchCount: r.tabSwitchCount || 0,
+                isAutoSubmitted: r.isAutoSubmitted,
+                submittedAt: r.submittedAt,
+                sessionStartedAt: s?.startedAt,
+                autoSaves: s?.autoSaves || 0,
+            };
+        });
+
+        const totalExams = results.length;
+        const avgPercentage = totalExams > 0 ? Math.round((results.reduce((s, r) => s + r.percentage, 0) / totalExams) * 10) / 10 : 0;
+
+        res.json({
+            student,
+            summary: { totalExams, avgPercentage },
+            exams: report,
+        });
+    } catch (err) {
+        console.error('[adminGetStudentReport]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+/* ─────── BULK UNIVERSITY IMPORT ─────── */
+export async function adminBulkImportUniversities(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        if (!req.file) {
+            res.status(400).json({ message: 'No file uploaded.' });
+            return;
+        }
+
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, { defval: '' });
+
+        if (rows.length === 0) {
+            res.status(400).json({ message: 'File is empty.' });
+            return;
+        }
+
+        const headers = Object.keys(rows[0]);
+        function findKey(candidates: string[]): string {
+            for (const c of candidates) {
+                const found = headers.find(h => h.trim().toLowerCase() === c.toLowerCase());
+                if (found) return found;
+            }
+            return '';
+        }
+
+        // Mapping Keys explicitly matching user request
+        const catKey = findKey(['category', 'categorie']);
+        const nameKey = findKey(['name', 'university name']);
+        const phoneKey = findKey(['contact number', 'contact_number', 'phone']);
+        const shortKey = findKey(['short form', 'short_form']);
+        const estKey = findKey(['established', 'est']);
+        const addrKey = findKey(['address', 'location']);
+        const emailKey = findKey(['email address', 'email']);
+        const webKey = findKey(['corrected website', 'website']);
+        const admWebKey = findKey(['corrected admission link', 'admission_link', 'admission url']);
+        const totalSeatsKey = findKey(['total seats', 'total_seats']);
+        const sciSeatsKey = findKey(['science / eng. seats', 'science_seats', 'science seats']);
+        const artSeatsKey = findKey(['arts / hum. seats', 'arts_seats', 'arts seats']);
+        const comSeatsKey = findKey(['business seats', 'commerce seats', 'business_seats']);
+        const sciExamKey = findKey(['science exam', 'science_exam_date']);
+        const artExamKey = findKey(['arts exam', 'arts_exam_date']);
+        const comExamKey = findKey(['commerce exam', 'commerce_exam_date']);
+        const featuredKey = findKey(['featured (yes/no)', 'featured_status', 'featured']);
+        const statusKey = findKey(['status (active/hidden)', 'status']);
+        const remarksKey = findKey(['remarks']);
+
+        if (!nameKey) {
+            res.status(400).json({
+                message: 'Required column "NAME" not found.',
+                detectedHeaders: headers,
+            });
+            return;
+        }
+
+        const University = (await import('../models/University')).default;
+        const errors: { row: number; reason: string }[] = [];
+        let imported = 0;
+        let updated = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const rowNum = i + 2;
+            const name = String(row[nameKey] || '').trim();
+            if (!name) { errors.push({ row: rowNum, reason: 'Empty name' }); continue; }
+
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            const shortForm = shortKey ? String(row[shortKey] || '').trim().toUpperCase() : name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5);
+
+            const isFeatured = featuredKey ? (String(row[featuredKey]).toLowerCase().includes('yes') || String(row[featuredKey]).toLowerCase() === 'true') : false;
+            const isActive = statusKey ? !String(row[statusKey]).toLowerCase().includes('hidden') : true;
+
+            const updateData = {
+                name,
+                shortForm,
+                category: catKey ? String(row[catKey] || 'Public').trim() : 'Public',
+                contactNumber: phoneKey ? String(row[phoneKey] || '').trim() : '',
+                established: estKey ? (parseInt(String(row[estKey])) || undefined) : undefined,
+                address: addrKey ? String(row[addrKey] || '').trim() : '',
+                email: emailKey ? String(row[emailKey] || '').trim() : '',
+                website: webKey ? String(row[webKey] || '').trim() : '',
+                admissionWebsite: admWebKey ? String(row[admWebKey] || '').trim() : '',
+                totalSeats: totalSeatsKey && row[totalSeatsKey] ? String(row[totalSeatsKey]).trim() : 'N/A',
+                scienceSeats: sciSeatsKey && row[sciSeatsKey] ? String(row[sciSeatsKey]).trim() : 'N/A',
+                artsSeats: artSeatsKey && row[artSeatsKey] ? String(row[artSeatsKey]).trim() : 'N/A',
+                businessSeats: comSeatsKey && row[comSeatsKey] ? String(row[comSeatsKey]).trim() : 'N/A',
+                scienceExamDate: sciExamKey && row[sciExamKey] ? String(row[sciExamKey]).trim() : 'N/A',
+                artsExamDate: artExamKey && row[artExamKey] ? String(row[artExamKey]).trim() : 'N/A',
+                businessExamDate: comExamKey && row[comExamKey] ? String(row[comExamKey]).trim() : 'N/A',
+                featured: isFeatured,
+                isActive,
+                remarks: remarksKey ? String(row[remarksKey] || '').trim() : '',
+            };
+
+            const existing = await University.findOne({
+                name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+            });
+
+            if (existing) {
+                await University.updateOne({ _id: existing._id }, { $set: updateData });
+                updated++;
+            } else {
+                await University.create({ ...updateData, slug });
+                imported++;
+            }
+        }
+
+        res.json({
+            message: `Import complete. ${imported} added, ${updated} updated.`,
+            imported,
+            updated,
+            errors,
+        });
+    } catch (err) {
+        console.error('[adminBulkImportUniversities]', err);
+        res.status(500).json({ message: 'Server error during import.' });
+    }
+}
+
+export const adminGetLiveExamSessions = async (req: AuthRequest, res: Response) => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 50;
+        const examId = req.query.examId as string;
+
+        const q: any = { isActive: true, status: 'in_progress' };
+        if (examId) q.exam = examId;
+
+        const total = await ExamSession.countDocuments(q);
+        const rawSessions = await ExamSession.find(q)
+            .populate('student', 'username fullName email')
+            .populate('exam', 'title subject')
+            .sort({ lastSavedAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .lean();
+
+        const sessions = rawSessions.map((session: any) => {
+            const cheatFlags = Array.isArray(session.cheat_flags) ? session.cheat_flags : [];
+            const copyPasteViolations = cheatFlags.filter((flag: any) =>
+                String(flag?.reason || '').startsWith('copy_attempt')
+            ).length;
+            const fullscreenExits = cheatFlags.filter((flag: any) =>
+                String(flag?.reason || '').startsWith('fullscreen_exit')
+            ).length;
+            const answers = Array.isArray(session.answers) ? session.answers : [];
+            const answered = answers.filter((a: any) => Boolean(a?.selectedAnswer || a?.writtenAnswerUrl)).length;
+            const progressPercent = answers.length > 0 ? Math.round((answered / answers.length) * 100) : 0;
+            return {
+                ...session,
+                copyPasteViolations,
+                fullscreenExits,
+                currentQuestionId: session.currentQuestionId || '',
+                violationsCount: Number(session.violationsCount || 0),
+                progressPercent,
+                deviceIp: String(session.ipAddress || ''),
+                isSuspicious: copyPasteViolations > 0 || fullscreenExits > 0 || Number(session.tabSwitchCount || 0) > 0,
+            };
+        });
+
+        res.json({
+            sessions,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
+    } catch (err) {
+        console.error('[adminGetLiveExamSessions]', err);
+        res.status(500).json({ message: 'Server error fetching live exam sessions.' });
+    }
+};
+
+export async function adminLiveStream(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        addAdminLiveStreamClient(res);
+    } catch (err) {
+        console.error('[adminLiveStream]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminLiveAttemptAction(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const attemptId = String(req.params.attemptId || '');
+        if (!attemptId || !mongoose.Types.ObjectId.isValid(attemptId)) {
+            res.status(400).json({ message: 'Invalid attempt id.' });
+            return;
+        }
+
+        const body = (req.body || {}) as Record<string, unknown>;
+        const action = String(body.action || '').trim().toLowerCase();
+        if (!['warn', 'force_submit', 'lock', 'message'].includes(action)) {
+            res.status(400).json({ message: 'Invalid action.' });
+            return;
+        }
+
+        const session = await ExamSession.findById(attemptId).lean();
+        if (!session) {
+            res.status(404).json({ message: 'Attempt not found.' });
+            return;
+        }
+
+        const examId = String(session.exam || '');
+        const studentId = String(session.student || '');
+        const actorId = String(req.user?._id || '');
+
+        if (action === 'force_submit') {
+            const submitResult = await submitExamAsSystem({
+                examId,
+                studentId,
+                sourceReq: req,
+                reason: `admin_live_force_submit:${actorId}`,
+                submissionType: 'forced',
+            });
+            if (submitResult.statusCode >= 400) {
+                res.status(submitResult.statusCode).json(submitResult.body);
+                return;
+            }
+            broadcastExamAttemptEventByMeta({ examId, studentId }, 'forced-submit', { source: 'admin', actorId });
+            broadcastAdminLiveEvent('forced-submit', { attemptId, examId, studentId, actorId });
+            void broadcastExamMetricsSnapshot(examId, 'live_force_submit');
+            await ExamEvent.create({
+                attempt: attemptId,
+                student: studentId,
+                exam: examId,
+                eventType: 'admin_action',
+                metadata: { action, actorId },
+                ip: req.ip || '',
+                userAgent: req.get('User-Agent') || '',
+            });
+            res.json({ action, status: 'ok', message: 'Attempt force-submitted.' });
+            return;
+        }
+
+        if (action === 'lock') {
+            await ExamSession.updateOne(
+                { _id: attemptId },
+                { $set: { sessionLocked: true, lockReason: `admin_lock:${actorId}` }, $inc: { violationsCount: 1 } },
+            );
+            broadcastExamAttemptEventByMeta({ examId, studentId }, 'attempt-locked', { source: 'admin', actorId, reason: `admin_lock:${actorId}` });
+            broadcastAdminLiveEvent('attempt-locked', { attemptId, examId, studentId, actorId });
+            void broadcastExamMetricsSnapshot(examId, 'live_lock');
+            await ExamEvent.create({
+                attempt: attemptId,
+                student: studentId,
+                exam: examId,
+                eventType: 'admin_action',
+                metadata: { action, actorId },
+                ip: req.ip || '',
+                userAgent: req.get('User-Agent') || '',
+            });
+            res.json({ action, status: 'ok', message: 'Attempt locked.' });
+            return;
+        }
+
+        if (action === 'warn') {
+            const message = String(body.message || 'Security warning from proctor.');
+            broadcastExamAttemptEventByMeta({ examId, studentId }, 'policy-warning', { source: 'admin', actorId, message });
+            broadcastAdminLiveEvent('warn-sent', { attemptId, examId, studentId, actorId, message });
+            await ExamEvent.create({
+                attempt: attemptId,
+                student: studentId,
+                exam: examId,
+                eventType: 'warn_sent',
+                metadata: { action, actorId, message },
+                ip: req.ip || '',
+                userAgent: req.get('User-Agent') || '',
+            });
+            res.json({ action, status: 'ok', message: 'Warning sent.' });
+            return;
+        }
+
+        const message = String(body.message || '').trim();
+        if (!message) {
+            res.status(400).json({ message: 'Message is required.' });
+            return;
+        }
+        broadcastExamAttemptEventByMeta({ examId, studentId }, 'policy-warning', { source: 'admin_message', actorId, message });
+        broadcastAdminLiveEvent('attempt-updated', { attemptId, examId, studentId, actorId, message });
+        await ExamEvent.create({
+            attempt: attemptId,
+            student: studentId,
+            exam: examId,
+            eventType: 'message_sent',
+            metadata: { action, actorId, message },
+            ip: req.ip || '',
+            userAgent: req.get('User-Agent') || '',
+        });
+        res.json({ action, status: 'ok', message: 'Message sent.' });
+    } catch (err) {
+        console.error('[adminLiveAttemptAction]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
