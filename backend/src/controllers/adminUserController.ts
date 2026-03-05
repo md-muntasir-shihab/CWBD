@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { Readable } from 'stream';
@@ -15,6 +15,8 @@ import StudentApplication from '../models/StudentApplication';
 import LoginActivity from '../models/LoginActivity';
 import ExamResult from '../models/ExamResult';
 import ProfileUpdateRequest from '../models/ProfileUpdateRequest';
+import ManualPayment from '../models/ManualPayment';
+import StudentDueLedger from '../models/StudentDueLedger';
 import { AuthRequest } from '../middlewares/auth';
 import { getClientIp } from '../utils/requestMeta';
 import { resolvePermissions } from '../utils/permissions';
@@ -22,11 +24,7 @@ import { addUserStreamClient, broadcastUserEvent } from '../realtime/userStream'
 import { broadcastStudentDashboardEvent } from '../realtime/studentDashboardStream';
 import { getRuntimeSettingsSnapshot } from '../services/runtimeSettingsService';
 import { revealCredentialMirror, upsertCredentialMirror } from '../services/credentialVaultService';
-
-const STUDENT_REQUIRED_FIELDS = [
-    'full_name', 'phone', 'guardian_phone', 'ssc_batch', 'hsc_batch', 'department', 'college_name', 'dob',
-];
-const STUDENT_OPTIONAL_FIELDS = ['profile_photo_url', 'college_address', 'present_address', 'district'];
+import { computeStudentProfileScore } from '../services/studentProfileScoreService';
 
 function normalizeRole(value: unknown, fallback: UserRole = 'student'): UserRole {
     const role = String(value || '').trim().toLowerCase();
@@ -53,12 +51,7 @@ function normalizeRow(input: Record<string, unknown>): Record<string, string> {
 }
 
 function computeProfileCompletion(profile: Record<string, unknown>): number {
-    const all = [...STUDENT_REQUIRED_FIELDS, ...STUDENT_OPTIONAL_FIELDS];
-    const filled = all.filter((field) => {
-        const value = profile[field];
-        return value != null && String(value).trim() !== '';
-    }).length;
-    return Math.round((filled / all.length) * 100);
+    return computeStudentProfileScore(profile).score;
 }
 
 function newRandomPassword(length = 12): string {
@@ -207,7 +200,7 @@ async function createAuditLog(
 }
 
 async function loadStudentDetails(userId: string) {
-    const [profile, applications, examHistory, loginHistory] = await Promise.all([
+    const [profile, applications, examHistory, loginHistory, payments, dueLedger, user] = await Promise.all([
         StudentProfile.findOne({ user_id: userId }).lean(),
         StudentApplication.find({ student_id: userId })
             .populate('university_id', 'name slug')
@@ -222,9 +215,42 @@ async function loadStudentDetails(userId: string) {
             .sort({ createdAt: -1 })
             .limit(30)
             .lean(),
+        ManualPayment.find({ studentId: userId })
+            .populate('recordedBy', 'username full_name role')
+            .sort({ date: -1, createdAt: -1 })
+            .lean(),
+        StudentDueLedger.findOne({ studentId: userId }).lean(),
+        User.findById(userId).select('email profile_photo').lean(),
     ]);
 
-    return { profile, applications, examHistory, loginHistory };
+    const scoreResult = computeStudentProfileScore(
+        profile as unknown as Record<string, unknown>,
+        user as unknown as Record<string, unknown>
+    );
+    const totalPaid = payments.reduce((sum, row) => sum + Number((row as { amount?: number }).amount || 0), 0);
+    const pendingDue = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
+    const paymentStatus = pendingDue > 0 ? 'pending' : (payments.length > 0 ? 'paid' : 'clear');
+
+    return {
+        profile: profile
+            ? {
+                ...profile,
+                profileScore: scoreResult.score,
+                profileScoreBreakdown: scoreResult.breakdown,
+                missingProfileFields: scoreResult.missingFields,
+            }
+            : null,
+        applications,
+        examHistory,
+        loginHistory,
+        payments,
+        dueLedger: dueLedger || null,
+        paymentSummary: {
+            totalPaid,
+            pendingDue,
+            status: paymentStatus,
+        },
+    };
 }
 
 function mapUserForClient(raw: Record<string, unknown>) {
@@ -1507,7 +1533,7 @@ async function listStudentRows() {
         .lean();
 
     const userIds = users.map((user) => user._id);
-    const [profiles, groupCountsRaw, examStatsRaw] = await Promise.all([
+    const [profiles, groupCountsRaw, examStatsRaw, dueLedgers, paymentAgg] = await Promise.all([
         StudentProfile.find({ user_id: { $in: userIds } })
             .select('user_id user_unique_id full_name phone phone_number ssc_batch hsc_batch department admittedAt groupIds')
             .lean(),
@@ -1524,6 +1550,22 @@ async function listStudentRows() {
                     avgPercentage: { $avg: '$percentage' },
                     bestPercentage: { $max: '$percentage' },
                     lastSubmittedAt: { $max: '$submittedAt' },
+                },
+            },
+        ]),
+        StudentDueLedger.find({ studentId: { $in: userIds } })
+            .select('studentId netDue')
+            .lean(),
+        ManualPayment.aggregate([
+            { $match: { studentId: { $in: userIds } } },
+            { $sort: { date: -1, createdAt: -1 } },
+            {
+                $group: {
+                    _id: '$studentId',
+                    totalPaid: { $sum: '$amount' },
+                    paymentCount: { $sum: 1 },
+                    lastPaymentAt: { $first: '$date' },
+                    lastMethod: { $first: '$method' },
                 },
             },
         ]),
@@ -1544,10 +1586,33 @@ async function listStudentRows() {
     const profileMap = new Map(profiles.map((profile) => [String(profile.user_id), profile]));
     const examStatsMap = new Map(examStatsRaw.map((item) => [String(item._id), item]));
     const groupCountMap = new Map(groupCountsRaw.map((item) => [String(item._id), Number(item.studentCount || 0)]));
+    const dueLedgerMap = new Map(
+        dueLedgers.map((row) => [String((row as { studentId: mongoose.Types.ObjectId }).studentId), Number((row as { netDue?: number }).netDue || 0)])
+    );
+    const paymentMap = new Map(
+        paymentAgg.map((row) => [String(row._id), {
+            totalPaid: Number(row.totalPaid || 0),
+            paymentCount: Number(row.paymentCount || 0),
+            lastPaymentAt: row.lastPaymentAt || null,
+            lastMethod: String(row.lastMethod || ''),
+        }])
+    );
 
     return users.map((user) => {
         const profile = profileMap.get(String(user._id));
         const stats = examStatsMap.get(String(user._id));
+        const profileScore = computeStudentProfileScore(
+            profile as unknown as Record<string, unknown>,
+            user as unknown as Record<string, unknown>
+        );
+        const pendingDue = Number(dueLedgerMap.get(String(user._id)) || 0);
+        const payment = paymentMap.get(String(user._id)) || {
+            totalPaid: 0,
+            paymentCount: 0,
+            lastPaymentAt: null,
+            lastMethod: '',
+        };
+        const paymentStatus = pendingDue > 0 ? 'pending' : (payment.paymentCount > 0 ? 'paid' : 'clear');
         const rawGroupIds = Array.isArray(profile?.groupIds) ? profile?.groupIds : [];
         const normalizedGroupIds = rawGroupIds.map((id) => String(id));
         const resolvedGroups = normalizedGroupIds
@@ -1576,7 +1641,13 @@ async function listStudentRows() {
             admittedAt: profile?.admittedAt || user.createdAt,
             groupIds: normalizedGroupIds,
             groups: resolvedGroups,
+            profileScore: profileScore.score,
+            profileScoreBreakdown: profileScore.breakdown,
+            missingProfileFields: profileScore.missingFields,
             subscription: getSubscriptionResponse(user.subscription as unknown as Record<string, unknown>),
+            paymentStatus,
+            pendingDue,
+            paymentSummary: payment,
             examStats: {
                 totalAttempts: Number(stats?.totalAttempts || 0),
                 avgPercentage: Number(stats?.avgPercentage || 0),
@@ -1597,19 +1668,27 @@ export async function adminGetStudents(req: AuthRequest, res: Response): Promise
             limit = '20',
             search = '',
             batch = '',
+            sscBatch = '',
+            department = '',
             group = '',
             planCode = '',
             status = '',
             daysLeft: daysLeftFilter = '',
+            profileScoreBand = '',
+            paymentStatus = '',
         } = req.query as Record<string, string>;
 
         const allRows = await listStudentRows();
         const searchTerm = String(search || '').trim().toLowerCase();
         const batchTerm = String(batch || '').trim().toLowerCase();
+        const sscBatchTerm = String(sscBatch || '').trim().toLowerCase();
+        const departmentTerm = String(department || '').trim().toLowerCase();
         const groupTerm = String(group || '').trim().toLowerCase();
         const planTerm = String(planCode || '').trim().toLowerCase();
         const statusTerm = String(status || '').trim().toLowerCase();
         const daysTerm = String(daysLeftFilter || '').trim().toLowerCase();
+        const scoreBandTerm = String(profileScoreBand || '').trim().toLowerCase();
+        const paymentTerm = String(paymentStatus || '').trim().toLowerCase();
 
         const filteredRows = allRows.filter((row) => {
             if (searchTerm) {
@@ -1626,6 +1705,8 @@ export async function adminGetStudents(req: AuthRequest, res: Response): Promise
             }
 
             if (batchTerm && row.batch.toLowerCase() !== batchTerm) return false;
+            if (sscBatchTerm && row.ssc_batch.toLowerCase() !== sscBatchTerm) return false;
+            if (departmentTerm && row.department.toLowerCase() !== departmentTerm) return false;
             if (groupTerm) {
                 const hasGroup = row.groups.some((groupItem) =>
                     String(groupItem._id).toLowerCase() === groupTerm || String(groupItem.slug).toLowerCase() === groupTerm
@@ -1634,11 +1715,18 @@ export async function adminGetStudents(req: AuthRequest, res: Response): Promise
             }
             if (planTerm && row.subscription.planCode.toLowerCase() !== planTerm) return false;
             if (statusTerm && String(row.status).toLowerCase() !== statusTerm) return false;
+            if (paymentTerm && String(row.paymentStatus || '').toLowerCase() !== paymentTerm) return false;
 
             if (daysTerm === 'expired') {
                 if (row.subscription.daysLeft > 0 || !row.subscription.expiryDate) return false;
             } else if (daysTerm === '<=7' || daysTerm === 'lte7') {
                 if (row.subscription.daysLeft > 7) return false;
+            }
+
+            if (scoreBandTerm === 'lt70' || scoreBandTerm === '<70') {
+                if (Number(row.profileScore || 0) >= 70) return false;
+            } else if (scoreBandTerm === 'gte70' || scoreBandTerm === '>=70') {
+                if (Number(row.profileScore || 0) < 70) return false;
             }
             return true;
         });
@@ -1655,6 +1743,8 @@ export async function adminGetStudents(req: AuthRequest, res: Response): Promise
             inactive: filteredRows.filter((row) => row.status !== 'active').length,
             expired: filteredRows.filter((row) => row.subscription.expiryDate && row.subscription.daysLeft === 0).length,
             expiringSoon: filteredRows.filter((row) => row.subscription.daysLeft > 0 && row.subscription.daysLeft <= 7).length,
+            profileBelow70: filteredRows.filter((row) => Number(row.profileScore || 0) < 70).length,
+            paymentPending: filteredRows.filter((row) => String(row.paymentStatus || '') === 'pending').length,
         };
 
         res.json({ items, total, page: pageNumber, pages, summary, lastUpdatedAt: new Date().toISOString() });
@@ -2149,6 +2239,21 @@ export async function adminGetSubscriptionPlans(_req: AuthRequest, res: Response
     }
 }
 
+export async function getPublicSubscriptionPlans(_req: Request, res: Response): Promise<void> {
+    try {
+        const items = await SubscriptionPlan.find({ isActive: true })
+            .sort({ sortOrder: 1, priority: 1, code: 1 })
+            .lean();
+        res.json({
+            items,
+            lastUpdatedAt: new Date().toISOString(),
+        });
+    } catch (error) {
+        console.error('getPublicSubscriptionPlans error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
 export async function adminCreateSubscriptionPlan(req: AuthRequest, res: Response): Promise<void> {
     try {
         const body = req.body as Record<string, unknown>;
@@ -2163,14 +2268,25 @@ export async function adminCreateSubscriptionPlan(req: AuthRequest, res: Respons
             return;
         }
 
+        const durationValue = Math.max(1, Number(body.durationValue || body.durationDays || 30));
+        const durationUnit = String(body.durationUnit || 'days') === 'months' ? 'months' : 'days';
+        const durationDays = body.durationDays !== undefined
+            ? Math.max(1, Number(body.durationDays || 30))
+            : (durationUnit === 'months' ? durationValue * 30 : durationValue);
+
         const item = await SubscriptionPlan.create({
             code,
             name: String(body.name || code).trim(),
-            durationDays: Math.max(1, Number(body.durationDays || 30)),
+            durationDays,
+            durationValue,
+            durationUnit,
+            price: Math.max(0, Number(body.price || 0)),
             description: String(body.description || ''),
             features: Array.isArray(body.features) ? body.features.map((feature) => String(feature)) : [],
+            includedModules: Array.isArray(body.includedModules) ? body.includedModules.map((item) => String(item)) : [],
             isActive: body.isActive !== undefined ? toBoolean(body.isActive) : true,
             priority: Number(body.priority || 100),
+            sortOrder: Number(body.sortOrder || body.priority || 100),
         });
         await createAuditLog(req, 'subscription_plan_created', String(item._id), 'subscription_plan', { code: item.code });
         res.status(201).json({ item, message: 'Subscription plan created' });
@@ -2198,12 +2314,27 @@ export async function adminUpdateSubscriptionPlan(req: AuthRequest, res: Respons
             update.code = nextCode;
         }
         if (body.name !== undefined) update.name = String(body.name || '').trim();
-        if (body.durationDays !== undefined) update.durationDays = Math.max(1, Number(body.durationDays || 30));
+        if (body.durationValue !== undefined) update.durationValue = Math.max(1, Number(body.durationValue || 30));
+        if (body.durationUnit !== undefined) update.durationUnit = String(body.durationUnit) === 'months' ? 'months' : 'days';
+        if (body.durationDays !== undefined) {
+            update.durationDays = Math.max(1, Number(body.durationDays || 30));
+        } else if (update.durationValue !== undefined || update.durationUnit !== undefined) {
+            const nextDurationValue = Number(update.durationValue || body.durationValue || 30);
+            const nextDurationUnit = String(update.durationUnit || body.durationUnit || 'days') === 'months' ? 'months' : 'days';
+            update.durationDays = nextDurationUnit === 'months'
+                ? Math.max(1, nextDurationValue) * 30
+                : Math.max(1, nextDurationValue);
+        }
+        if (body.price !== undefined) update.price = Math.max(0, Number(body.price || 0));
         if (body.description !== undefined) update.description = String(body.description || '');
         if (body.features !== undefined && Array.isArray(body.features)) {
             update.features = body.features.map((feature) => String(feature));
         }
+        if (body.includedModules !== undefined && Array.isArray(body.includedModules)) {
+            update.includedModules = body.includedModules.map((item) => String(item));
+        }
         if (body.priority !== undefined) update.priority = Number(body.priority || 100);
+        if (body.sortOrder !== undefined) update.sortOrder = Number(body.sortOrder || 100);
         if (body.isActive !== undefined) update.isActive = toBoolean(body.isActive);
 
         const item = await SubscriptionPlan.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });

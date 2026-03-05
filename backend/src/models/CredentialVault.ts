@@ -13,7 +13,7 @@ export interface ICredentialVault extends Document {
 
 const CredentialVaultSchema = new Schema<ICredentialVault>(
     {
-        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
+        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
         encryptedPassword: { type: String, required: true },
         iv: { type: String, required: true },
         authTag: { type: String, required: true },
@@ -22,7 +22,5 @@ const CredentialVaultSchema = new Schema<ICredentialVault>(
     },
     { timestamps: true, collection: 'credential_vaults' }
 );
-
-CredentialVaultSchema.index({ userId: 1 }, { unique: true });
 
 export default mongoose.model<ICredentialVault>('CredentialVault', CredentialVaultSchema);

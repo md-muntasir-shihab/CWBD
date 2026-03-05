@@ -54,6 +54,7 @@ const UniversityCard = memo(function UniversityCard({
     const initials = u.defaultLogo?.initials || u.shortForm || u.name.slice(0, 2);
     const logoColor = u.defaultLogo?.color;
     const safeAdmissionWebsite = normalizeExternalUrl(u.admissionWebsite);
+    const safeDetailsPath = u.slug ? `/university/${u.slug}` : '';
 
     // Check availability of values
     const getVal = (v: any) => (v && v !== 'N/A' && v !== 'n/a') ? v : null;
@@ -180,13 +181,23 @@ const UniversityCard = memo(function UniversityCard({
             {/* ── Block 4: Actions & Admission ── */}
             <div className="mt-auto border-t border-card-border dark:border-indigo-500/10 bg-slate-50 dark:bg-slate-900/50 p-4">
                 <div className="flex gap-2">
-                    <Link
-                        to={`/university/${u.slug}`}
-                        className="flex-1 py-2 text-center text-sm font-semibold bg-white dark:bg-[#111d33] border border-slate-200 dark:border-indigo-500/20 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-indigo-500/10 transition-colors"
-                        role="button"
-                    >
-                        View Details
-                    </Link>
+                    {safeDetailsPath ? (
+                        <Link
+                            to={safeDetailsPath}
+                            className="flex-1 py-2 text-center text-sm font-semibold bg-white dark:bg-[#111d33] border border-slate-200 dark:border-indigo-500/20 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-indigo-500/10 transition-colors"
+                            role="button"
+                        >
+                            View Details
+                        </Link>
+                    ) : (
+                        <span
+                            className="flex-1 py-2 text-center text-sm font-semibold bg-white/60 dark:bg-[#111d33]/60 border border-slate-200/80 dark:border-indigo-500/20 text-slate-500 dark:text-slate-400 rounded-xl cursor-not-allowed"
+                            role="button"
+                            aria-disabled="true"
+                        >
+                            Details Unavailable
+                        </span>
+                    )}
                     {safeAdmissionWebsite && (
                         <a
                             href={safeAdmissionWebsite}

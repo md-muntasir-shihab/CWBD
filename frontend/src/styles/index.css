@@ -43,6 +43,7 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
@@ -50,9 +51,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100dvh;
-    overflow-x: hidden;
+    overflow-x: clip;
     background-image: var(--gradient-soft);
     background-attachment: fixed;
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -266,4 +273,52 @@
 /* ── Override for interactive transitions (keep fast) ── */
 button, a, input, select, textarea {
   transition-duration: 150ms;
+}
+
+/* Quill editor theme overrides for news admin dark mode */
+.news-quill-editor .ql-toolbar.ql-snow,
+.news-quill-editor .ql-container.ql-snow {
+  border-color: #cbd5e1;
+}
+
+.news-quill-editor .ql-container {
+  min-height: 220px;
+}
+
+.dark .news-quill-editor .ql-toolbar.ql-snow,
+.dark .news-quill-editor .ql-container.ql-snow {
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.dark .news-quill-editor .ql-toolbar .ql-stroke {
+  stroke: #cbd5e1;
+}
+
+.dark .news-quill-editor .ql-toolbar .ql-fill {
+  fill: #cbd5e1;
+}
+
+.dark .news-quill-editor .ql-toolbar .ql-picker,
+.dark .news-quill-editor .ql-toolbar .ql-picker-label {
+  color: #cbd5e1;
+}
+
+.dark .news-quill-editor .ql-editor {
+  color: #e2e8f0;
+}
+
+.dark .news-quill-editor .ql-editor.ql-blank::before {
+  color: #94a3b8;
+}
+
+.dark .news-quill-editor .ql-snow .ql-picker-options,
+.dark .news-quill-editor .ql-tooltip {
+  background: #0f172a;
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+}
+
+.rich-editor-content:empty::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
 }

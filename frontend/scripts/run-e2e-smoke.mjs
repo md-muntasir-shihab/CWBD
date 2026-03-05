@@ -5,16 +5,16 @@ const isWindows = process.platform === 'win32';
 const NPM_BIN = isWindows ? 'npm.cmd' : 'npm';
 const NPX_BIN = isWindows ? 'npx.cmd' : 'npx';
 
-const REQUESTED_BACKEND_PORT = Number(process.env.E2E_BACKEND_PORT || 5004);
-const REQUESTED_BACKEND_ORIGIN = (process.env.E2E_BACKEND_ORIGIN || `http://localhost:${REQUESTED_BACKEND_PORT}`).replace(/\/$/, '');
+const REQUESTED_BACKEND_PORT = Number(process.env.E2E_BACKEND_PORT || 5003);
+const REQUESTED_BACKEND_ORIGIN = (process.env.E2E_BACKEND_ORIGIN || `http://127.0.0.1:${REQUESTED_BACKEND_PORT}`).replace(/\/$/, '');
 const REQUESTED_BACKEND_HEALTH_URL = process.env.E2E_BACKEND_HEALTH_URL || `${REQUESTED_BACKEND_ORIGIN}/api/health`;
 
-const REQUESTED_FRONTEND_PORT = Number(process.env.E2E_FRONTEND_PORT || 5176);
-const REQUESTED_BASE_URL = (process.env.E2E_BASE_URL || `http://localhost:${REQUESTED_FRONTEND_PORT}`).replace(/\/$/, '');
+const REQUESTED_FRONTEND_PORT = Number(process.env.E2E_FRONTEND_PORT || 5175);
+const REQUESTED_BASE_URL = (process.env.E2E_BASE_URL || `http://127.0.0.1:${REQUESTED_FRONTEND_PORT}`).replace(/\/$/, '');
 
 const START_BACKEND = process.env.E2E_START_BACKEND !== 'false';
 const START_FRONTEND = process.env.E2E_START_FRONTEND !== 'false';
-const REUSE_EXISTING = process.env.E2E_REUSE_EXISTING !== 'false';
+const REUSE_EXISTING = process.env.E2E_REUSE_EXISTING === 'true';
 
 async function isPortFree(port) {
     return new Promise((resolve) => {
@@ -23,7 +23,7 @@ async function isPortFree(port) {
         server.once('listening', () => {
             server.close(() => resolve(true));
         });
-        server.listen(port, '127.0.0.1');
+        server.listen(port);
     });
 }
 
@@ -105,7 +105,19 @@ function startFrontendDevServer(frontendPort, backendOrigin) {
 }
 
 async function stopChild(child) {
-    if (!child || child.killed) return;
+    if (!child || child.killed || !child.pid) return;
+    if (isWindows) {
+        await new Promise((resolve) => {
+            const killer = spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], {
+                stdio: 'ignore',
+                shell: true,
+            });
+            killer.once('close', () => resolve(undefined));
+            killer.once('error', () => resolve(undefined));
+        });
+        return;
+    }
+
     child.kill('SIGTERM');
     await Promise.race([
         new Promise((resolve) => child.once('close', resolve)),
@@ -134,7 +146,7 @@ async function main() {
             backendHealthUrl = REQUESTED_BACKEND_HEALTH_URL;
         } else {
             backendPort = await findAvailablePort(REQUESTED_BACKEND_PORT);
-            backendOrigin = `http://localhost:${backendPort}`;
+            backendOrigin = `http://127.0.0.1:${backendPort}`;
             backendHealthUrl = `${backendOrigin}/api/health`;
             backendProcess = startBackendDevServer(backendPort, baseUrl);
             const backendHealthy = await waitForUrl(backendHealthUrl, 120_000);
@@ -161,7 +173,7 @@ async function main() {
             baseUrl = REQUESTED_BASE_URL;
         } else {
             frontendPort = await findAvailablePort(REQUESTED_FRONTEND_PORT);
-            baseUrl = `http://localhost:${frontendPort}`;
+            baseUrl = `http://127.0.0.1:${frontendPort}`;
             frontendProcess = startFrontendDevServer(frontendPort, backendOrigin);
             const frontendHealthy = await waitForUrl(baseUrl, 120_000);
             if (!frontendHealthy) {

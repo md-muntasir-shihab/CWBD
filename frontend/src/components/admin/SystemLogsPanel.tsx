@@ -19,11 +19,22 @@ export default function SystemLogsPanel() {
     const [loading, setLoading] = useState(false);
     const [apiStatus, setApiStatus] = useState<'online' | 'offline' | 'checking'>('checking');
     const [dbStatus, setDbStatus] = useState<'online' | 'offline' | 'checking'>('checking');
+    const [filterAction, setFilterAction] = useState('');
+    const [filterActor, setFilterActor] = useState('');
+    const [filterFrom, setFilterFrom] = useState('');
+    const [filterTo, setFilterTo] = useState('');
 
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const res = await adminGetAuditLogs({ page: 1, limit: 50 });
+            const res = await adminGetAuditLogs({
+                page: 1,
+                limit: 50,
+                action: filterAction || undefined,
+                actor: filterActor || undefined,
+                dateFrom: filterFrom || undefined,
+                dateTo: filterTo || undefined,
+            });
             setLogs(res.data.logs || []);
         } catch (err) {
             console.error('Failed to fetch audit logs', err);
@@ -47,7 +58,16 @@ export default function SystemLogsPanel() {
             }
         };
         checkHealth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            fetchLogs();
+        }, 300);
+        return () => window.clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterAction, filterActor, filterFrom, filterTo]);
 
     const getLevelFromAction = (action: string) => {
         const lower = action.toLowerCase();
@@ -114,6 +134,32 @@ export default function SystemLogsPanel() {
                 <div className="px-5 py-3 border-b border-indigo-500/10 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-white">Security & Audit Log</h3>
                     <span className="text-[10px] text-slate-500">{logs.length} entries</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3 border-b border-indigo-500/10 px-5 py-3 md:grid-cols-4">
+                    <input
+                        value={filterAction}
+                        onChange={(event) => setFilterAction(event.target.value)}
+                        placeholder="Filter action"
+                        className="rounded-lg border border-indigo-500/20 bg-slate-950/70 px-3 py-2 text-xs text-white"
+                    />
+                    <input
+                        value={filterActor}
+                        onChange={(event) => setFilterActor(event.target.value)}
+                        placeholder="Actor ID"
+                        className="rounded-lg border border-indigo-500/20 bg-slate-950/70 px-3 py-2 text-xs text-white"
+                    />
+                    <input
+                        type="date"
+                        value={filterFrom}
+                        onChange={(event) => setFilterFrom(event.target.value)}
+                        className="rounded-lg border border-indigo-500/20 bg-slate-950/70 px-3 py-2 text-xs text-white"
+                    />
+                    <input
+                        type="date"
+                        value={filterTo}
+                        onChange={(event) => setFilterTo(event.target.value)}
+                        className="rounded-lg border border-indigo-500/20 bg-slate-950/70 px-3 py-2 text-xs text-white"
+                    />
                 </div>
                 <div className="divide-y divide-indigo-500/5 max-h-[400px] overflow-y-auto">
                     {loading ? (

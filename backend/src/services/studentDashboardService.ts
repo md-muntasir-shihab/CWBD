@@ -10,6 +10,7 @@ import StudentDashboardConfig from '../models/StudentDashboardConfig';
 import StudentBadge from '../models/StudentBadge';
 import StudentApplication from '../models/StudentApplication';
 import { getExamCardMetrics } from './examCardMetricsService';
+import { getSecurityConfig } from './securityConfigService';
 
 type LeanStudentProfile = Record<string, unknown> & {
     _id: mongoose.Types.ObjectId;
@@ -115,11 +116,12 @@ export async function getOverallRankForStudent(studentId: string): Promise<numbe
 }
 
 export async function getStudentDashboardHeader(studentId: string) {
-    const [user, profile, config, overallRank] = await Promise.all([
+    const [user, profile, config, overallRank, security] = await Promise.all([
         User.findById(studentId).select('_id username email full_name profile_photo subscription').lean(),
         StudentProfile.findOne({ user_id: studentId }).lean() as unknown as Promise<LeanStudentProfile | null>,
         ensureDashboardConfig(),
         getOverallRankForStudent(studentId),
+        getSecurityConfig(true),
     ]);
 
     if (!user || !profile) {
@@ -161,6 +163,10 @@ export async function getStudentDashboardHeader(studentId: string) {
         if (gIdx !== -1) groupRank = gIdx + 1;
     }
 
+    const profileThreshold = security.examProtection.requireProfileScoreForExam
+        ? Number(security.examProtection.profileScoreThreshold || 70)
+        : Number(config?.profileCompletionThreshold || 70);
+
     return {
         userId: String(user._id),
         userUniqueId: profile.user_unique_id || '',
@@ -168,8 +174,8 @@ export async function getStudentDashboardHeader(studentId: string) {
         email: user.email,
         profilePicture: profile.profile_photo_url || (user as Record<string, unknown>).profile_photo || '',
         profileCompletionPercentage: completion,
-        profileCompletionThreshold: Number(config?.profileCompletionThreshold || 60),
-        isProfileEligible: completion >= Number(config?.profileCompletionThreshold || 60),
+        profileCompletionThreshold: profileThreshold,
+        isProfileEligible: completion >= profileThreshold,
         overallRank,
         groupRank,
         welcomeMessage,
@@ -203,19 +209,22 @@ export async function getStudentDashboardHeader(studentId: string) {
 }
 
 export async function getUpcomingExamCards(studentId: string): Promise<DashboardExamCard[]> {
-    const [profile, config, user, exams, results, activeSessions] = await Promise.all([
+    const [profile, config, user, exams, results, activeSessions, security] = await Promise.all([
         StudentProfile.findOne({ user_id: studentId }).lean() as unknown as Promise<LeanStudentProfile | null>,
         ensureDashboardConfig(),
         User.findById(studentId).select('subscription').lean(),
         Exam.find({ isPublished: true }).sort({ startDate: 1 }).lean(),
         ExamResult.find({ student: studentId }).select('exam attemptNo').lean(),
         ExamSession.find({ student: studentId, isActive: true }).select('exam sessionLocked').lean(),
+        getSecurityConfig(true),
     ]);
 
     if (!profile) return [];
 
     const completion = Number(profile.profile_completion_percentage || 0);
-    const threshold = Number(config?.profileCompletionThreshold || 60);
+    const threshold = security.examProtection.requireProfileScoreForExam
+        ? Number(security.examProtection.profileScoreThreshold || 70)
+        : Number(config?.profileCompletionThreshold || 70);
     const now = new Date();
     const studentGroupIds = Array.isArray(profile.groupIds) ? profile.groupIds.map((id) => String(id)) : [];
     const studentPlanCode = String(

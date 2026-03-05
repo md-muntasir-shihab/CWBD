@@ -55,7 +55,7 @@ async function loginStudent(context) {
     await page.goto(`${BASE_URL}/student/login`);
     await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(STUDENT_EMAIL);
     await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(STUDENT_PASSWORD);
-    await page.getByRole('button', { name: /Sign in/i }).click();
+    await page.getByRole('button', { name: /(Sign in|Access Dashboard)/i }).first().click();
     await page.waitForURL(/\/student\/dashboard/, { timeout: 30000 });
     await page.close();
 }

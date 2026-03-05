@@ -288,6 +288,14 @@ export default function HomePage() {
                                         src={homeConfig.promotionalBanner.image}
                                         alt="Promotional Banner"
                                         className="w-full h-auto object-cover max-h-48"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            const img = e.currentTarget;
+                                            if (img.dataset.fallbackApplied === 'true') return;
+                                            img.dataset.fallbackApplied = 'true';
+                                            img.src = '/logo.png';
+                                            img.classList.add('object-contain', 'p-6', 'bg-slate-900/30');
+                                        }}
                                     />
                                 );
                                 if (!promoUrl) {
@@ -430,8 +438,8 @@ function HeroBanner({ onSearch, config, websiteName }: { onSearch: (q: string) =
             <div className={`absolute inset-0 pointer-events-none ${config?.image ? 'bg-black/60' : 'opacity-10'}`}>
                 {!config?.image && (
                     <>
-                        <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-white/20 blur-3xl" />
-                        <div className="absolute bottom-10 right-20 w-96 h-96 rounded-full bg-accent/30 blur-3xl" />
+                        <div className="absolute top-6 left-4 sm:top-10 sm:left-10 w-56 h-56 sm:w-72 sm:h-72 rounded-full bg-white/20 blur-3xl" />
+                        <div className="absolute bottom-6 right-0 sm:right-10 lg:right-20 w-52 h-52 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full bg-accent/30 blur-3xl" />
                     </>
                 )}
             </div>
@@ -496,6 +504,7 @@ function HeroBanner({ onSearch, config, websiteName }: { onSearch: (q: string) =
 function BannerCarousel({ banners }: { banners: Banner[] }) {
     const [current, setCurrent] = useState(0);
     const [autoPlay, setAutoPlay] = useState(true);
+    const [imageFailed, setImageFailed] = useState(false);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
@@ -510,6 +519,9 @@ function BannerCarousel({ banners }: { banners: Banner[] }) {
     const goPrev = () => setCurrent((c) => (c - 1 + banners.length) % banners.length);
 
     const b = banners[current];
+    useEffect(() => {
+        setImageFailed(false);
+    }, [current, b?.imageUrl]);
     if (!b) return null;
 
     const safeBannerLink = normalizeExternalUrl(b.linkUrl);
@@ -520,11 +532,17 @@ function BannerCarousel({ banners }: { banners: Banner[] }) {
                 className="relative rounded-2xl overflow-hidden border border-card-border dark:border-dark-border bg-slate-100 dark:bg-slate-900 shadow-lg"
                 style={{ minHeight: 180 }}
             >
-                {safeBannerLink ? (
+                {imageFailed || !b.imageUrl ? (
+                    <div className="w-full h-44 sm:h-56 md:h-64 lg:h-72 bg-gradient-to-tr from-slate-900 via-indigo-950 to-cyan-950/60 flex items-center justify-center">
+                        <img src="/logo.png" alt="CampusWay" className="h-16 w-16 object-contain opacity-80" />
+                    </div>
+                ) : safeBannerLink ? (
                     <a href={safeBannerLink} target="_blank" rel="noopener noreferrer">
                         <img
                             src={b.imageUrl}
                             alt={b.altText || b.title || 'Banner'}
+                            loading="lazy"
+                            onError={() => setImageFailed(true)}
                             className="w-full h-44 sm:h-56 md:h-64 lg:h-72 object-cover transition-transform duration-500"
                         />
                     </a>
@@ -532,6 +550,8 @@ function BannerCarousel({ banners }: { banners: Banner[] }) {
                     <img
                         src={b.imageUrl}
                         alt={b.altText || b.title || 'Banner'}
+                        loading="lazy"
+                        onError={() => setImageFailed(true)}
                         className="w-full h-44 sm:h-56 md:h-64 lg:h-72 object-cover transition-transform duration-500"
                     />
                 )}
@@ -966,8 +986,8 @@ function ServicesBanner({ services: customServices }: { services?: any[] }) {
     const services = customServices && customServices.length > 0
         ? customServices.map((s, i) => ({
             icon: i === 0 ? GraduationCap : i === 1 ? BookOpen : i === 2 ? Users : Award,
-            title: s.title,
-            desc: s.description || s.desc || '',
+            title: String(s.title || s.title_en || 'Service').replace(/\s+/g, ' ').trim() || 'Service',
+            desc: String(s.description || s.description_en || s.desc || '').replace(/\s+/g, ' ').trim().slice(0, 160),
             color: defaultServices[i % 4].color,
             link: normalizeInternalOrExternalUrl(s.linkUrl) || '/services'
         }))
@@ -980,7 +1000,7 @@ function ServicesBanner({ services: customServices }: { services?: any[] }) {
                     <h2 className="section-title">Our Services</h2>
                     <p className="section-subtitle mx-auto mt-2">Everything you need for university admission</p>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {services.map((s) => {
                         const safeLink = normalizeInternalOrExternalUrl(s.link) || '/services';
                         const content = (
@@ -989,7 +1009,7 @@ function ServicesBanner({ services: customServices }: { services?: any[] }) {
                                     <s.icon className="w-6 h-6 text-white" />
                                 </div>
                                 <h3 className="font-bold text-sm text-text dark:text-dark-text">{s.title}</h3>
-                                <p className="text-xs text-text-muted dark:text-dark-text/50 mt-1">{s.desc}</p>
+                                <p className="text-xs text-text-muted dark:text-dark-text/50 mt-1 line-clamp-2 break-words">{s.desc}</p>
                             </>
                         );
                         if (isExternalUrl(safeLink)) {
@@ -1052,8 +1072,11 @@ function NewsStrip({ news: customNews }: { news?: any[] }) {
                 {news.map((item: any, i: number) => {
                     // Normalize fields between home config preview and native news API
                     const isNative = !!item.slug;
-                    const title = String(item.title || '');
-                    const desc = String(item.shortDescription || item.description || item.content || '');
+                    const title = String(item.title || '').replace(/\s+/g, ' ').trim() || 'News Update';
+                    const desc = String(item.shortDescription || item.description || item.content || '')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .slice(0, 240);
                     const category = String(item.category || 'News');
                     const img = item.featuredImage || item.image || null;
                     const date = item.publishDate || item.createdAt;
@@ -1063,7 +1086,19 @@ function NewsStrip({ news: customNews }: { news?: any[] }) {
                             <Link to={`/news/${item.slug}`} key={item._id || i} className="group flex flex-col h-full bg-surface dark:bg-dark-surface rounded-2xl overflow-hidden shadow-sm border border-card-border dark:border-dark-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                                 <div className="h-44 bg-surface-hover dark:bg-dark-surface-hover overflow-hidden relative">
                                     {img ? (
-                                        <img src={img} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        <img
+                                            src={img}
+                                            alt={title}
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                const image = e.currentTarget;
+                                                if (image.dataset.fallbackApplied === 'true') return;
+                                                image.dataset.fallbackApplied = 'true';
+                                                image.src = '/logo.png';
+                                                image.classList.add('object-contain', 'p-6', 'bg-slate-900/30');
+                                            }}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-primary/20">
                                             <Newspaper className="w-12 h-12" />
@@ -1075,8 +1110,8 @@ function NewsStrip({ news: customNews }: { news?: any[] }) {
                                     </div>
                                 </div>
                                 <div className="p-5 flex flex-col flex-1">
-                                    <h3 className="font-bold font-heading text-lg dark:text-dark-text line-clamp-2 group-hover:text-primary transition-colors leading-snug mb-2">{title}</h3>
-                                    <p className="text-sm text-text-muted dark:text-dark-text/70 line-clamp-2 leading-relaxed flex-1">{desc}</p>
+                                    <h3 className="font-bold font-heading text-lg dark:text-dark-text line-clamp-2 break-words group-hover:text-primary transition-colors leading-snug mb-2">{title}</h3>
+                                    <p className="text-sm text-text-muted dark:text-dark-text/70 line-clamp-2 break-words leading-relaxed flex-1">{desc}</p>
                                     <div className="mt-4 pt-4 border-t border-card-border dark:border-dark-border flex items-center justify-between text-xs font-semibold text-text-muted uppercase tracking-wider">
                                         <span>{date ? new Date(date).toLocaleDateString() : 'Recent'}</span>
                                         <span className="text-primary group-hover:text-accent flex items-center gap-1">Read <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" /></span>
@@ -1088,8 +1123,8 @@ function NewsStrip({ news: customNews }: { news?: any[] }) {
                         return (
                             <div key={i} className="card p-5 h-full flex flex-col">
                                 <div className="badge-primary mb-3 self-start">{category}</div>
-                                <h3 className="font-bold text-lg text-text dark:text-dark-text leading-snug mb-2">{title}</h3>
-                                <p className="text-sm text-text-muted dark:text-dark-text/70 line-clamp-3 leading-relaxed flex-1">{desc}</p>
+                                <h3 className="font-bold text-lg text-text dark:text-dark-text break-words leading-snug mb-2">{title}</h3>
+                                <p className="text-sm text-text-muted dark:text-dark-text/70 line-clamp-3 break-words leading-relaxed flex-1">{desc}</p>
                             </div>
                         )
                     }

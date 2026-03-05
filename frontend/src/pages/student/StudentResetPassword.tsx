@@ -41,7 +41,6 @@ export default function StudentResetPassword() {
             setTimeout(() => {
                 navigate('/student/login');
             }, 3000);
-
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Failed to reset password');
         } finally {
@@ -51,14 +50,17 @@ export default function StudentResetPassword() {
 
     if (!token && !success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 text-center">
-                <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl shadow-indigo-500/5 border border-slate-100">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <KeyRound className="w-8 h-8 text-red-600" />
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 text-center dark:bg-[#061226]">
+                <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-8 shadow-xl shadow-indigo-500/5 dark:border-slate-800 dark:bg-[#0b1a30]">
+                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-rose-500/20">
+                        <KeyRound className="h-8 w-8 text-red-600 dark:text-rose-300" />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2">Invalid Reset Link</h2>
-                    <p className="text-slate-500 mb-8">This password reset link appears to be invalid or missing the required token.</p>
-                    <Link to="/student/forgot-password" className="block w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors">
+                    <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">Invalid Reset Link</h2>
+                    <p className="mb-8 text-slate-500 dark:text-slate-300">This password reset link appears to be invalid or missing the required token.</p>
+                    <Link
+                        to="/student/forgot-password"
+                        className="block w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white transition-colors hover:bg-indigo-700"
+                    >
                         Request New Link
                     </Link>
                 </div>
@@ -67,33 +69,33 @@ export default function StudentResetPassword() {
     }
 
     return (
-        <div className="min-h-screen flex text-slate-900 bg-white">
-            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:flex-none lg:w-[480px] xl:w-[560px] mx-auto lg:mx-0 lg:px-12 xl:px-24 border-r border-slate-100">
-                <div className="w-full max-w-sm mx-auto">
+        <div className="min-h-screen flex bg-white text-slate-900 dark:bg-[#061226] dark:text-slate-100">
+            <div className="mx-auto flex flex-1 flex-col justify-center border-r border-slate-100 bg-white/90 px-4 sm:px-6 lg:mx-0 lg:w-[480px] lg:flex-none lg:px-12 xl:w-[560px] xl:px-24 dark:border-slate-800/70 dark:bg-[#061226]/80">
+                <div className="mx-auto w-full max-w-sm">
                     <div className="mb-10 text-center lg:text-left">
-                        <Link to="/" className="inline-flex items-center gap-2 mb-8 group">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
-                                <GraduationCap className="w-6 h-6" />
+                        <Link to="/" className="group mb-8 inline-flex items-center gap-2">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 transition-all group-hover:shadow-indigo-500/40">
+                                <GraduationCap className="h-6 w-6" />
                             </div>
-                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-cyan-600">
+                            <span className="bg-gradient-to-r from-indigo-600 to-cyan-600 bg-clip-text text-2xl font-bold text-transparent">
                                 CampusWay
                             </span>
                         </Link>
 
                         {!success ? (
                             <>
-                                <h2 className="text-3xl font-bold tracking-tight text-slate-900">Set New Password</h2>
-                                <p className="mt-2 text-sm text-slate-500">
+                                <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Set New Password</h2>
+                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
                                     Please enter your new password below. Make sure it's at least 8 characters long.
                                 </p>
                             </>
                         ) : (
                             <>
-                                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-6">
-                                    <KeyRound className="w-8 h-8 text-emerald-600" />
+                                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 lg:mx-0 dark:bg-emerald-500/20">
+                                    <KeyRound className="h-8 w-8 text-emerald-600 dark:text-emerald-300" />
                                 </div>
-                                <h2 className="text-3xl font-bold tracking-tight text-slate-900">Password Updated!</h2>
-                                <p className="mt-2 text-sm text-slate-500">
+                                <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Password Updated!</h2>
+                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
                                     Your password has been successfully reset. Redirecting you to the login page...
                                 </p>
                             </>
@@ -104,25 +106,25 @@ export default function StudentResetPassword() {
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">New Password</label>
+                                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">New Password</label>
                                     <input
                                         type="password"
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
-                                        placeholder="••••••••"
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                        placeholder="********"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirm New Password</label>
+                                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">Confirm New Password</label>
                                     <input
                                         type="password"
                                         required
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
-                                        placeholder="••••••••"
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                        placeholder="********"
                                     />
                                 </div>
                             </div>
@@ -130,18 +132,20 @@ export default function StudentResetPassword() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-6"
+                                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-[#061226]"
                             >
-                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                                    <>Reset Password <ArrowRight className="w-4 h-4" /></>
+                                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
+                                    <>
+                                        Reset Password <ArrowRight className="h-4 w-4" />
+                                    </>
                                 )}
                             </button>
                         </form>
                     ) : (
-                        <div className="space-y-6 mt-8">
+                        <div className="mt-8 space-y-6">
                             <Link
                                 to="/student/login"
-                                className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#061226]"
                             >
                                 Go to Login
                             </Link>
@@ -150,16 +154,20 @@ export default function StudentResetPassword() {
                 </div>
             </div>
 
-            <div className="hidden lg:flex flex-1 items-center justify-center bg-slate-50 relative overflow-hidden">
-                <div className="absolute inset-0 bg-indigo-600 z-0">
-                    <img className="absolute inset-0 h-full w-full object-cover opacity-20 mix-blend-multiply" src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2670&auto=format&fit=crop" alt="Campus View" />
+            <div className="relative hidden flex-1 items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900/40 lg:flex">
+                <div className="absolute inset-0 z-0 bg-indigo-600">
+                    <img
+                        className="absolute inset-0 h-full w-full object-cover opacity-20 mix-blend-multiply"
+                        src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2670&auto=format&fit=crop"
+                        alt="Campus View"
+                    />
                 </div>
-                <div className="relative z-10 p-12 lg:p-24 text-white max-w-3xl">
-                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center mb-8">
-                        <KeyRound className="w-8 h-8 text-white" />
+                <div className="relative z-10 max-w-3xl p-12 text-white lg:p-24">
+                    <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur">
+                        <KeyRound className="h-8 w-8 text-white" />
                     </div>
-                    <h2 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">Welcome back!</h2>
-                    <p className="text-lg lg:text-xl text-indigo-100 font-medium max-w-2xl leading-relaxed">
+                    <h2 className="mb-6 text-4xl font-bold leading-tight lg:text-5xl">Welcome back!</h2>
+                    <p className="max-w-2xl text-lg font-medium leading-relaxed text-indigo-100 lg:text-xl">
                         Almost there! Set a strong password to continue your journey and manage your university applications.
                     </p>
                 </div>

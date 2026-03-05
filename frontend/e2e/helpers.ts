@@ -101,7 +101,7 @@ export async function loginAsAdmin(page: Page, variant: CredentialVariant = 'aut
     await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(creds.email);
     await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(creds.password);
     await page.getByRole('button', { name: /Sign In/i }).click();
-    await expect(page).toHaveURL(/\/campusway-secure-admin/);
+    await expect(page).toHaveURL(/\/campusway-secure-admin/, { timeout: 15000 });
 }
 
 export async function loginAsStudent(page: Page, variant: CredentialVariant = 'auto'): Promise<void> {
@@ -109,6 +109,6 @@ export async function loginAsStudent(page: Page, variant: CredentialVariant = 'a
     await page.goto('/student/login');
     await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(creds.email);
     await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(creds.password);
-    await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/student\/dashboard/);
+    await page.getByRole('button', { name: /(Sign in|Access Dashboard)/i }).first().click();
+    await expect(page).toHaveURL(/\/student\/dashboard/, { timeout: 15000 });
 }

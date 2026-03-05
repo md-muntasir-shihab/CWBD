@@ -51,6 +51,4 @@ const AdminProfileSchema = new Schema<IAdminProfile>({
     }],
 }, { timestamps: true });
 
-AdminProfileSchema.index({ user_id: 1 });
-
 export default mongoose.model<IAdminProfile>('AdminProfile', AdminProfileSchema);

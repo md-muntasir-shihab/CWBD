@@ -117,7 +117,7 @@ export default function BannerPanel() {
                 return;
             }
 
-            const token = localStorage.getItem('campusway-token') || '';
+            const token = sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token') || '';
             const body = new FormData();
             body.append('file', file);
             const response = await fetch(signed.uploadUrl, {

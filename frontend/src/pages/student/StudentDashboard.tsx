@@ -358,11 +358,12 @@ export default function StudentDashboard() {
                 void queryClient.invalidateQueries({ queryKey: ['student-dashboard'] });
             });
             eventSource.onerror = () => {
+                if (cancelled) return;
+                if (document.visibilityState === 'hidden') return;
                 setStreamConnected(false);
                 if (eventSource) {
                     eventSource.close();
                 }
-                if (cancelled) return;
                 setReconnectDelayMs(backoffMs);
                 reconnectTimer = setTimeout(connect, backoffMs);
                 backoffMs = Math.min(backoffMs * 2, 30000);

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, User as UserIcon, Activity, Settings, History as HistoryIcon, Crown } from 'lucide-react';
+import { Menu, X, User as UserIcon, Activity, Settings, History as HistoryIcon, Crown } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useWebsiteSettings } from '../../hooks/useWebsiteSettings';
+import ThemeSwitchPro from '../ui/ThemeSwitchPro';
 
 const navLinks = [
     { name: 'Home', path: '/' },
@@ -20,11 +21,11 @@ export default function Navbar() {
     const { user, logout } = useAuth();
     const location = useLocation();
     const { data: settings } = useWebsiteSettings();
-    const resolvedNavLinks = navLinks.map((link) => (
-        link.name === 'Exams' && user?.role === 'student'
-            ? { ...link, path: '/student/dashboard' }
-            : link
-    ));
+    const resolvedNavLinks = navLinks.map((link) => {
+        if (link.path !== '/exams') return link;
+        if (user?.role === 'student') return { ...link, path: '/exams/landing' };
+        return link;
+    });
 
     useEffect(() => {
         setMobileOpen(false);
@@ -84,13 +85,7 @@ export default function Navbar() {
                 {/* Right section */}
                 <div className="flex items-center gap-1 sm:gap-2">
                     {/* Dark mode toggle */}
-                    <button
-                        onClick={toggleDarkMode}
-                        className="p-2.5 rounded-xl text-text-muted dark:text-dark-text/70 hover:bg-primary/5 dark:hover:bg-white/5 transition-all duration-200"
-                        aria-label="Toggle dark mode"
-                    >
-                        {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                    </button>
+                    <ThemeSwitchPro checked={darkMode} onToggle={toggleDarkMode} />
 
                     {/* Login / Profile Dropdown */}
                     {user ? (

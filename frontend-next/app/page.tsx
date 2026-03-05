@@ -12,6 +12,7 @@ export default function HomePage() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
           <Link className="btn" href="/admin-dashboard">Open Admin Dashboard</Link>
           <Link className="btn" href="/student">Open Student Portal</Link>
+          <Link className="btn" href="/news">Open News V2</Link>
         </div>
       </section>
     </main>

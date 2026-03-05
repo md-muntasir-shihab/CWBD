@@ -10,27 +10,102 @@ import ExamSession from '../models/ExamSession';
 import LoginActivity from '../models/LoginActivity';
 import AuditLog from '../models/AuditLog';
 import { getStudentDashboardAggregate } from '../services/studentDashboardService';
+import StudentDashboardConfig from '../models/StudentDashboardConfig';
+import StudentResult from '../models/ExamResult';
+import { computeStudentProfileScore } from '../services/studentProfileScoreService';
 
 /* ─────────────────────────────────────────
    Helpers
 ──────────────────────────────────────────*/
 
-/** Fields required for profile to be considered complete */
-const STUDENT_REQUIRED_FIELDS = [
-    'full_name', 'phone', 'guardian_phone',
-    'ssc_batch', 'hsc_batch', 'department',
-    'college_name', 'dob',
-] as const;
-
 function computeProfileCompletion(profile: Record<string, unknown>): number {
-    const optionalFields = ['profile_photo_url', 'college_address', 'present_address', 'district'];
-    const all = [...STUDENT_REQUIRED_FIELDS, ...optionalFields];
-    const filled = all.filter(f => profile[f] != null && String(profile[f]).trim() !== '').length;
-    return Math.round((filled / all.length) * 100);
+    return computeStudentProfileScore(profile).score;
 }
 
 function isProfileComplete(profile: Record<string, unknown>): boolean {
-    return STUDENT_REQUIRED_FIELDS.every(f => profile[f] != null && String(profile[f]).trim() !== '');
+    return computeStudentProfileScore(profile).eligible;
+}
+
+const DEFAULT_CELEBRATION_RULES = {
+    enabled: true,
+    windowDays: 7,
+    minPercentage: 80,
+    maxRank: 10,
+    ruleMode: 'score_or_rank',
+    showForSec: 10,
+    dismissible: true,
+    maxShowsPerDay: 2,
+    messageTemplates: ['Excellent performance! Keep it up.'],
+} as const;
+
+async function resolveCelebration(userId: string) {
+    const config = await StudentDashboardConfig.findOne().select('celebrationRules').lean();
+    const rulesRaw = (config as Record<string, unknown> | null)?.celebrationRules as Record<string, unknown> | undefined;
+    const rules = { ...DEFAULT_CELEBRATION_RULES, ...(rulesRaw || {}) };
+
+    const windowDays = Math.max(1, Number(rules.windowDays || DEFAULT_CELEBRATION_RULES.windowDays));
+    const minPercentage = Math.max(0, Number(rules.minPercentage || DEFAULT_CELEBRATION_RULES.minPercentage));
+    const maxRank = Math.max(1, Number(rules.maxRank || DEFAULT_CELEBRATION_RULES.maxRank));
+    const ruleMode = String(rules.ruleMode || DEFAULT_CELEBRATION_RULES.ruleMode);
+    const showForSec = Math.max(3, Number(rules.showForSec || DEFAULT_CELEBRATION_RULES.showForSec));
+    const dismissible = rules.dismissible === undefined ? DEFAULT_CELEBRATION_RULES.dismissible : Boolean(rules.dismissible);
+    const messageTemplates = Array.isArray(rules.messageTemplates)
+        ? rules.messageTemplates.map((item) => String(item || '').trim()).filter(Boolean)
+        : [];
+
+    const fallback = {
+        eligible: false,
+        reasonCodes: ['disabled'],
+        topPercentage: 0,
+        bestRank: null as number | null,
+        message: '',
+        showForSec,
+        dismissible,
+        windowDays,
+        maxShowsPerDay: Math.max(1, Number(rules.maxShowsPerDay || DEFAULT_CELEBRATION_RULES.maxShowsPerDay)),
+    };
+
+    if (!Boolean(rules.enabled)) return fallback;
+
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - windowDays);
+
+    const results = await StudentResult.find({
+        student: userId,
+        submittedAt: { $gte: fromDate },
+    })
+        .select('percentage rank submittedAt')
+        .sort({ submittedAt: -1 })
+        .limit(50)
+        .lean();
+
+    if (!results.length) {
+        return { ...fallback, reasonCodes: ['no_recent_results'] };
+    }
+
+    const topPercentage = results.reduce((best, item) => Math.max(best, Number(item.percentage || 0)), 0);
+    const rankCandidates = results
+        .map((item) => Number(item.rank || 0))
+        .filter((rank) => Number.isFinite(rank) && rank > 0);
+    const bestRank = rankCandidates.length ? Math.min(...rankCandidates) : null;
+    const scoreQualified = topPercentage >= minPercentage;
+    const rankQualified = bestRank !== null && bestRank <= maxRank;
+    const eligible = ruleMode === 'score_and_rank'
+        ? (scoreQualified && rankQualified)
+        : (scoreQualified || rankQualified);
+    const reasonCodes = [] as string[];
+    if (scoreQualified) reasonCodes.push('score_threshold');
+    if (rankQualified) reasonCodes.push('rank_threshold');
+    if (!reasonCodes.length) reasonCodes.push('below_threshold');
+
+    return {
+        ...fallback,
+        eligible,
+        reasonCodes,
+        topPercentage,
+        bestRank,
+        message: messageTemplates[0] || `Great progress! Best score ${Math.round(topPercentage)}%.`,
+    };
 }
 
 /* ─────────────────────────────────────────
@@ -58,6 +133,8 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<void>
                 : AuditLog.find({ actor_id: user._id }).sort({ timestamp: -1 }).limit(20).lean(),
         ]);
 
+        const celebration = user.role === 'student' ? await resolveCelebration(String(user._id)) : null;
+
         res.json({
             user: {
                 ...user,
@@ -66,6 +143,7 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<void>
             },
             loginHistory,
             actionHistory,
+            celebration,
         });
     } catch (err) {
         console.error('getProfile error:', err);

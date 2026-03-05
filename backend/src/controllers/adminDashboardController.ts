@@ -20,6 +20,45 @@ function toObjectIdOrUndefined(value?: string): mongoose.Types.ObjectId | undefi
     return new mongoose.Types.ObjectId(value);
 }
 
+const DEFAULT_CELEBRATION_RULES = {
+    enabled: true,
+    windowDays: 7,
+    minPercentage: 80,
+    maxRank: 10,
+    ruleMode: 'score_or_rank' as const,
+    messageTemplates: [
+        'Excellent performance! Keep it up.',
+        'Top result achieved. Great work!',
+        'You are in the top performers this week.',
+    ],
+    showForSec: 10,
+    dismissible: true,
+    maxShowsPerDay: 2,
+};
+
+function normalizeCelebrationRules(raw: unknown) {
+    const input = (raw && typeof raw === 'object') ? (raw as Record<string, unknown>) : {};
+    const mode = String(input.ruleMode || DEFAULT_CELEBRATION_RULES.ruleMode).trim().toLowerCase();
+    const ruleMode: 'score_or_rank' | 'score_and_rank' | 'custom' = (
+        mode === 'score_and_rank' || mode === 'custom'
+    ) ? mode : 'score_or_rank';
+    const templates = Array.isArray(input.messageTemplates)
+        ? input.messageTemplates.map((item) => String(item || '').trim()).filter(Boolean)
+        : [];
+
+    return {
+        enabled: input.enabled === undefined ? DEFAULT_CELEBRATION_RULES.enabled : Boolean(input.enabled),
+        windowDays: Math.max(1, Math.min(90, Number(input.windowDays ?? DEFAULT_CELEBRATION_RULES.windowDays) || DEFAULT_CELEBRATION_RULES.windowDays)),
+        minPercentage: Math.max(0, Math.min(100, Number(input.minPercentage ?? DEFAULT_CELEBRATION_RULES.minPercentage) || DEFAULT_CELEBRATION_RULES.minPercentage)),
+        maxRank: Math.max(1, Math.min(1000, Number(input.maxRank ?? DEFAULT_CELEBRATION_RULES.maxRank) || DEFAULT_CELEBRATION_RULES.maxRank)),
+        ruleMode,
+        messageTemplates: templates.length ? templates : DEFAULT_CELEBRATION_RULES.messageTemplates,
+        showForSec: Math.max(3, Math.min(60, Number(input.showForSec ?? DEFAULT_CELEBRATION_RULES.showForSec) || DEFAULT_CELEBRATION_RULES.showForSec)),
+        dismissible: input.dismissible === undefined ? DEFAULT_CELEBRATION_RULES.dismissible : Boolean(input.dismissible),
+        maxShowsPerDay: Math.max(1, Math.min(10, Number(input.maxShowsPerDay ?? DEFAULT_CELEBRATION_RULES.maxShowsPerDay) || DEFAULT_CELEBRATION_RULES.maxShowsPerDay)),
+    };
+}
+
 export async function adminGetNotifications(_req: Request, res: Response): Promise<void> {
     try {
         const items = await Notification.find().sort({ publishAt: -1, createdAt: -1 }).lean();
@@ -101,7 +140,10 @@ export async function adminGetStudentDashboardConfig(_req: Request, res: Respons
     try {
         let config = await StudentDashboardConfig.findOne().lean();
         if (!config) {
-            await StudentDashboardConfig.create({});
+            await StudentDashboardConfig.create({ celebrationRules: DEFAULT_CELEBRATION_RULES });
+            config = await StudentDashboardConfig.findOne().lean();
+        } else if (!(config as Record<string, unknown>).celebrationRules) {
+            await StudentDashboardConfig.updateOne({ _id: config._id }, { $set: { celebrationRules: DEFAULT_CELEBRATION_RULES } });
             config = await StudentDashboardConfig.findOne().lean();
         }
         res.json({ config });
@@ -115,7 +157,9 @@ export async function adminUpdateStudentDashboardConfig(req: AuthRequest, res: R
     try {
         let config = await StudentDashboardConfig.findOne();
         if (!config) config = new StudentDashboardConfig();
-        Object.assign(config, req.body);
+        const body = req.body as Record<string, unknown>;
+        Object.assign(config, body);
+        config.celebrationRules = normalizeCelebrationRules(body.celebrationRules);
         config.profileCompletionThreshold = 60;
         config.updatedBy = toObjectIdOrUndefined(req.user?._id);
         await config.save();

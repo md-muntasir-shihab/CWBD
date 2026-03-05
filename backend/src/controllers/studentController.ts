@@ -6,6 +6,9 @@ import { AuthRequest } from '../middlewares/auth';
 import mongoose from 'mongoose';
 import { getStudentDashboardHeader } from '../services/studentDashboardService';
 import { broadcastStudentDashboardEvent } from '../realtime/studentDashboardStream';
+import StudentDashboardConfig from '../models/StudentDashboardConfig';
+import ExamResult from '../models/ExamResult';
+import { computeStudentProfileScore } from '../services/studentProfileScoreService';
 
 // Ensure the profile exists, if not create a default one
 const ensureProfile = async (userId: string) => {
@@ -13,11 +16,15 @@ const ensureProfile = async (userId: string) => {
     if (!profile) {
         // We'll need a full_name from the user object if it was there, but it's removed now.
         // During registration we create the profile, so this is just a safety.
-        profile = await StudentProfile.create({
+        const created = await StudentProfile.create({
             user_id: userId,
             full_name: 'Student',
-            profile_completion_percentage: 10,
+            profile_completion_percentage: 0,
         });
+        const scoreResult = computeStudentProfileScore(created.toObject() as unknown as Record<string, unknown>);
+        created.profile_completion_percentage = scoreResult.score;
+        await created.save();
+        profile = created;
     }
     return profile;
 };
@@ -32,6 +39,112 @@ const normalizeDepartment = (value: unknown): 'science' | 'arts' | 'commerce' | 
     return undefined;
 };
 
+const DEFAULT_CELEBRATION_RULES = {
+    enabled: true,
+    windowDays: 7,
+    minPercentage: 80,
+    maxRank: 10,
+    ruleMode: 'score_or_rank',
+    messageTemplates: [
+        'Excellent performance! Keep it up.',
+        'Top result achieved. Great work!',
+        'You are in the top performers this week.',
+    ],
+    showForSec: 10,
+    dismissible: true,
+    maxShowsPerDay: 2,
+} as const;
+
+async function resolveCelebration(userId: string) {
+    const config = await StudentDashboardConfig.findOne().select('celebrationRules').lean();
+    const rulesRaw = (config as Record<string, unknown> | null)?.celebrationRules as Record<string, unknown> | undefined;
+    const rules = {
+        ...DEFAULT_CELEBRATION_RULES,
+        ...(rulesRaw || {}),
+    };
+
+    const windowDays = Math.max(1, Number(rules.windowDays || DEFAULT_CELEBRATION_RULES.windowDays));
+    const minPercentage = Math.max(0, Number(rules.minPercentage || DEFAULT_CELEBRATION_RULES.minPercentage));
+    const maxRank = Math.max(1, Number(rules.maxRank || DEFAULT_CELEBRATION_RULES.maxRank));
+    const ruleMode = String(rules.ruleMode || DEFAULT_CELEBRATION_RULES.ruleMode);
+    const showForSec = Math.max(3, Number(rules.showForSec || DEFAULT_CELEBRATION_RULES.showForSec));
+    const dismissible = rules.dismissible === undefined ? DEFAULT_CELEBRATION_RULES.dismissible : Boolean(rules.dismissible);
+    const messageTemplates = Array.isArray(rules.messageTemplates)
+        ? rules.messageTemplates.map((item) => String(item || '').trim()).filter(Boolean)
+        : [];
+
+    const base = {
+        eligible: false,
+        reasonCodes: [] as string[],
+        topPercentage: 0,
+        bestRank: null as number | null,
+        message: '',
+        showForSec,
+        dismissible,
+        windowDays,
+        maxShowsPerDay: Math.max(1, Number(rules.maxShowsPerDay || DEFAULT_CELEBRATION_RULES.maxShowsPerDay)),
+    };
+
+    if (!Boolean(rules.enabled)) {
+        return {
+            ...base,
+            reasonCodes: ['disabled'],
+        };
+    }
+
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - windowDays);
+
+    const recentResults = await ExamResult.find({
+        student: userId,
+        submittedAt: { $gte: fromDate },
+    })
+        .select('percentage rank submittedAt')
+        .sort({ submittedAt: -1 })
+        .limit(50)
+        .lean();
+
+    if (!recentResults.length) {
+        return {
+            ...base,
+            reasonCodes: ['no_recent_results'],
+        };
+    }
+
+    const topPercentage = recentResults.reduce((best, item) => Math.max(best, Number(item.percentage || 0)), 0);
+    const rankCandidates = recentResults
+        .map((item) => Number(item.rank || 0))
+        .filter((rank) => Number.isFinite(rank) && rank > 0);
+    const bestRank = rankCandidates.length ? Math.min(...rankCandidates) : null;
+
+    const scoreQualified = topPercentage >= minPercentage;
+    const rankQualified = bestRank !== null && bestRank <= maxRank;
+    const eligible = ruleMode === 'score_and_rank'
+        ? (scoreQualified && rankQualified)
+        : (scoreQualified || rankQualified);
+
+    const reasonCodes = [] as string[];
+    if (scoreQualified) reasonCodes.push('score_threshold');
+    if (rankQualified) reasonCodes.push('rank_threshold');
+    if (!reasonCodes.length) reasonCodes.push('below_threshold');
+
+    const message = messageTemplates[0]
+        || (scoreQualified
+            ? `You scored ${Math.round(topPercentage)}% in recent exams.`
+            : bestRank !== null
+                ? `You reached rank ${bestRank} in recent exams.`
+                : 'Great progress in your exam journey.');
+
+    return {
+        ...base,
+        eligible,
+        reasonCodes,
+        topPercentage,
+        bestRank,
+        message,
+    };
+}
+
 // @desc    Get current student profile
 // @route   GET /api/student/profile
 // @access  Private (Student)
@@ -40,12 +153,22 @@ export const getStudentProfile = async (req: AuthRequest, res: ExpressResponse) 
         if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
         if (req.user.role !== 'student') return res.status(403).json({ message: 'Student access only' });
         const profile = await ensureProfile(req.user._id);
+        const scoreResult = computeStudentProfileScore(
+            profile.toObject() as unknown as Record<string, unknown>,
+            req.user as unknown as Record<string, unknown>
+        );
         const dashboardHeader = await getStudentDashboardHeader(req.user._id);
+        const celebration = await resolveCelebration(req.user._id);
         res.json({
             ...profile.toObject(),
             date_of_birth: profile.dob,
             phone_number: profile.phone_number || profile.phone || '',
             profile_completion: profile.profile_completion_percentage,
+            profileScore: scoreResult.score,
+            profileScoreThreshold: scoreResult.threshold,
+            profileEligibleForExam: scoreResult.eligible,
+            profileScoreBreakdown: scoreResult.breakdown,
+            missingProfileFields: scoreResult.missingFields,
             address: profile.present_address || '',
             preferred_stream: profile.department || '',
             guardian_phone_verification_status: (profile as any).guardianPhoneVerificationStatus || 'unverified',
@@ -54,6 +177,7 @@ export const getStudentProfile = async (req: AuthRequest, res: ExpressResponse) 
             overall_rank: dashboardHeader.overallRank,
             profile_completion_threshold: dashboardHeader.profileCompletionThreshold,
             profile_eligible_for_exam: dashboardHeader.isProfileEligible,
+            celebration,
         });
     } catch (err: any) {
         res.status(500).json({ message: 'Failed to get profile', error: err.message });
@@ -152,12 +276,11 @@ export const updateStudentProfile = async (req: AuthRequest, res: ExpressRespons
             if (directUpdates.phone && !directUpdates.phone_number) (profile as any).phone_number = directUpdates.phone;
 
             // Compute completion
-            const REQUIRED = ['full_name', 'phone', 'guardian_name', 'guardian_phone', 'ssc_batch', 'hsc_batch', 'department', 'college_name', 'dob'];
-            const OPTIONAL = ['profile_photo_url', 'college_address', 'present_address', 'district'];
-            const ALL = [...REQUIRED, ...OPTIONAL];
-            const updatedObj = profile.toObject() as Record<string, any>;
-            const filled = ALL.filter(f => updatedObj[f] != null && String(updatedObj[f]).trim() !== '').length;
-            profile.profile_completion_percentage = Math.round((filled / ALL.length) * 100);
+            const scoreResult = computeStudentProfileScore(
+                profile.toObject() as unknown as Record<string, unknown>,
+                req.user as unknown as Record<string, unknown>
+            );
+            profile.profile_completion_percentage = scoreResult.score;
 
             await profile.save();
         }
@@ -182,6 +305,7 @@ export const updateStudentProfile = async (req: AuthRequest, res: ExpressRespons
                 date_of_birth: profile.dob,
                 phone_number: profile.phone_number || profile.phone || '',
                 profile_completion: profile.profile_completion_percentage,
+                profileScore: profile.profile_completion_percentage,
                 guardian_phone_verification_status: (profile as any).guardianPhoneVerificationStatus || 'unverified',
                 guardian_phone_verified_at: (profile as any).guardianPhoneVerifiedAt || null,
             },

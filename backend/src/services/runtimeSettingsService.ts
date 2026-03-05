@@ -1,5 +1,6 @@
 import SiteSettings from '../models/Settings';
 import { SecurityConfig, getSecurityConfig, invalidateSecurityConfigCache } from './securityConfigService';
+import { updateSecuritySettingsSnapshot } from './securityCenterService';
 
 export interface RuntimeFeatureFlags {
     studentDashboardV2: boolean;
@@ -191,6 +192,35 @@ export async function updateRuntimeSettings(input: RuntimeSettingsUpdateInput): 
         { $set: updateDoc },
         { upsert: true, new: true, setDefaultsOnInsert: true }
     );
+
+    if (input.security) {
+        const admin2fa =
+            input.security.enable2faAdmin !== undefined
+                ? Boolean(input.security.enable2faAdmin)
+                : (input.security.force2faSuperAdmin !== undefined ? Boolean(input.security.force2faSuperAdmin) : undefined);
+
+        await updateSecuritySettingsSnapshot(
+            {
+                ...(admin2fa !== undefined ? { adminAccess: { require2FAForAdmins: admin2fa } } : {}),
+                ...(input.security.otpExpiryMinutes !== undefined || input.security.maxOtpAttempts !== undefined
+                    ? {
+                        loginProtection: {
+                            ...(input.security.otpExpiryMinutes !== undefined
+                                ? { lockoutMinutes: Number(input.security.otpExpiryMinutes) }
+                                : {}),
+                            ...(input.security.maxOtpAttempts !== undefined
+                                ? { maxAttempts: Number(input.security.maxOtpAttempts) }
+                                : {}),
+                        },
+                    }
+                    : {}),
+                ...(input.security.strictExamTabLock !== undefined
+                    ? { examProtection: { logTabSwitch: Boolean(input.security.strictExamTabLock) } }
+                    : {}),
+            },
+            input.updatedBy,
+        );
+    }
 
     invalidateSecurityConfigCache();
     const refreshed = await getRuntimeSettingsSnapshot(true);

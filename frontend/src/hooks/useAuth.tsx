@@ -74,9 +74,35 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const ACCESS_TOKEN_KEY = 'campusway-token';
+
+function readStoredToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    const fromSession = window.sessionStorage.getItem(ACCESS_TOKEN_KEY);
+    if (fromSession) return fromSession;
+    const fromLocal = window.localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (fromLocal) {
+        window.sessionStorage.setItem(ACCESS_TOKEN_KEY, fromLocal);
+        window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+    }
+    return fromLocal;
+}
+
+function writeStoredToken(token: string): void {
+    if (typeof window === 'undefined') return;
+    window.sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
+    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+function clearStoredToken(): void {
+    if (typeof window === 'undefined') return;
+    window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(() => localStorage.getItem('campusway-token'));
+    const [token, setToken] = useState<string | null>(() => readStoredToken());
     const [isLoading, setIsLoading] = useState(true);
     const [pending2FA, setPending2FA] = useState<Pending2FA | null>(null);
     const [forceLogoutAlert, setForceLogoutAlert] = useState(false);
@@ -85,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setToken(null);
         setPending2FA(null);
-        localStorage.removeItem('campusway-token');
+        clearStoredToken();
         delete api.defaults.headers.common.Authorization;
     }, []);
 
@@ -149,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const runSessionProbe = async () => {
             try {
-                await api.get('/auth/session-check');
+                await api.get('/auth/me');
             } catch (err: any) {
                 if (err.response?.status === 401) {
                     triggerForcedLogout(err.response?.data?.code || 'SESSION_INVALIDATED');
@@ -199,6 +225,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             source.onerror = () => {
+                if (stopped) return;
+                if (document.visibilityState === 'hidden') return;
                 closeSource();
                 startPolling();
                 scheduleReconnect();
@@ -219,7 +247,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(newToken);
         setUser(newUser);
         setPending2FA(null);
-        localStorage.setItem('campusway-token', newToken);
+        writeStoredToken(newToken);
         api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
     }, []);
 

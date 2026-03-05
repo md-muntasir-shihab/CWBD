@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { GraduationCap, ArrowRight, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { getOauthProviders, startOauthProvider } from '../../services/api';
 
 export default function StudentLogin() {
     const [identifier, setIdentifier] = useState('');
@@ -10,6 +12,10 @@ export default function StudentLogin() {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const oauthQuery = useQuery({
+        queryKey: ['oauth-providers'],
+        queryFn: async () => (await getOauthProviders()).data,
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,6 +36,21 @@ export default function StudentLogin() {
             setLoading(false);
         }
     };
+
+    const handleOauth = async (provider: 'google' | 'apple' | 'twitter') => {
+        try {
+            const { data } = await startOauthProvider(provider);
+            if ((data as any)?.redirectUrl) {
+                window.location.href = (data as any).redirectUrl;
+                return;
+            }
+            toast((data as any)?.message || `${provider} sign-in is not available right now`);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || `${provider} sign-in failed`);
+        }
+    };
+
+    const providers = oauthQuery.data?.providers || [];
 
     return (
         <div className="min-h-screen flex selection:bg-indigo-500 selection:text-white bg-white dark:bg-[#061226]">
@@ -109,16 +130,42 @@ export default function StudentLogin() {
                         <button
                             type="submit"
                             disabled={loading}
+                            aria-label="Sign in"
                             className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-[0_20px_40px_-15px_rgba(79,70,229,0.5)] hover:shadow-indigo-500/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3 overflow-hidden group/btn disabled:opacity-70"
                         >
                             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                                 <>
-                                    <span>Access Dashboard</span>
+                                    <span>Sign in & Access Dashboard</span>
                                     <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1.5 transition-transform duration-300" />
                                 </>
                             )}
                         </button>
                     </form>
+
+                    <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+                        <p className="text-center text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-300">Social Sign In</p>
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                            {(['google', 'apple', 'twitter'] as const).map((provider) => {
+                                const providerInfo = providers.find((item) => item.id === provider);
+                                const enabled = Boolean(oauthQuery.data?.oauthEnabled && providerInfo?.enabled && providerInfo?.configured);
+                                return (
+                                    <button
+                                        key={provider}
+                                        type="button"
+                                        disabled={!enabled}
+                                        onClick={() => void handleOauth(provider)}
+                                        className={`rounded-xl px-2 py-2 text-xs font-bold uppercase tracking-wide transition ${enabled
+                                            ? 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900'
+                                            : 'cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-500'
+                                            }`}
+                                        title={enabled ? `Continue with ${provider}` : `${provider} sign-in not configured`}
+                                    >
+                                        {provider}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
 
                     <p className="mt-10 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
                         Account creation is admin-controlled.{' '}
@@ -132,8 +179,8 @@ export default function StudentLogin() {
             {/* Right side: Dynamic Visual */}
             <div className="hidden lg:flex flex-1 relative bg-[#061226] overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <img className="absolute inset-0 h-full w-full object-cover opacity-40 brightness-50" src="https://images.unsplash.com/photo-1541339907198-e08756ebafe3?q=80&w=2670&auto=format&fit=crop" alt="University Library" />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-900/90 via-[#061226]/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-900/90 via-[#061226]/85 to-[#0b1834]/90" />
+                    <div className="absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_25%_20%,rgba(59,130,246,0.35)_0,transparent_36%),radial-gradient(circle_at_75%_70%,rgba(6,182,212,0.28)_0,transparent_38%)]" />
                 </div>
 
                 {/* Abstract UI Elements Overlay */}
@@ -163,8 +210,14 @@ export default function StudentLogin() {
                 {/* Floating "Live" Indicator */}
                 <div className="absolute top-10 right-10 flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-2xl animate-bounce duration-[3000ms]">
                     <div className="flex -space-x-2">
-                        {[1, 2, 3].map(i => (
-                            <img key={i} className="w-6 h-6 rounded-full border-2 border-[#061226]" src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="user" />
+                        {['A', 'R', 'S'].map((label) => (
+                            <div
+                                key={label}
+                                className="w-6 h-6 rounded-full border-2 border-[#061226] bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-[9px] font-black text-white"
+                                aria-label={`active user ${label}`}
+                            >
+                                {label}
+                            </div>
                         ))}
                     </div>
                     <span className="text-[10px] font-black text-white uppercase tracking-widest">+1.2k Live Now</span>

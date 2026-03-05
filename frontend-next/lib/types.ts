@@ -164,3 +164,33 @@ export type CurrentUserPayload = {
     };
   };
 };
+
+export type NewsAppearanceConfig = {
+  layoutMode?: 'rss_reader' | 'grid' | 'list';
+  showSourceIcons?: boolean;
+  showTrendingWidget?: boolean;
+  showCategoryWidget?: boolean;
+  showShareButtons?: boolean;
+  animationLevel?: 'none' | 'subtle' | 'rich';
+  cardDensity?: 'compact' | 'comfortable';
+  thumbnailFallbackUrl?: string;
+};
+
+export type NewsItem = {
+  _id: string;
+  title: string;
+  slug: string;
+  shortDescription: string;
+  content?: string;
+  category: string;
+  publishDate: string;
+  sourceName?: string;
+  sourceType?: string;
+  sourceIconUrl?: string;
+  originalLink?: string;
+  featuredImage?: string;
+  coverImage?: string;
+  thumbnailImage?: string;
+  shareUrl?: string;
+  views?: number;
+};

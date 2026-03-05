@@ -1,4 +1,21 @@
-import { ApiListResponse, BackupRow, CurrentUserPayload, DueRow, ExpenseRow, FinanceSummary, NoticeRow, PaymentRow, PlanRow, RuntimeSettingsPayload, StaffPayoutRow, StudentDashboardProfile, StudentRow, TicketRow } from './types';
+import {
+  ApiListResponse,
+  BackupRow,
+  CurrentUserPayload,
+  DueRow,
+  ExpenseRow,
+  FinanceSummary,
+  NewsAppearanceConfig,
+  NewsItem,
+  NoticeRow,
+  PaymentRow,
+  PlanRow,
+  RuntimeSettingsPayload,
+  StaffPayoutRow,
+  StudentDashboardProfile,
+  StudentRow,
+  TicketRow,
+} from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5000';
 const ADMIN_PATH = process.env.NEXT_PUBLIC_ADMIN_PATH || 'campusway-secure-admin';
@@ -229,4 +246,31 @@ export async function getStudentNotices(token: string): Promise<ApiListResponse<
 
 export async function getStudentSupportTickets(token: string): Promise<ApiListResponse<TicketRow>> {
   return request<ApiListResponse<TicketRow>>(`/api/student/support-tickets`, token);
+}
+
+export async function getNewsV2List(params: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  search?: string;
+} = {}): Promise<{ items: NewsItem[]; total: number; page: number; pages: number }> {
+  const query = new URLSearchParams();
+  if (params.page) query.set('page', String(params.page));
+  if (params.limit) query.set('limit', String(params.limit));
+  if (params.category && params.category !== 'All') query.set('category', params.category);
+  if (params.search) query.set('search', params.search);
+  const qs = query.toString();
+  return request<{ items: NewsItem[]; total: number; page: number; pages: number }>(`/api/news-v2/list${qs ? `?${qs}` : ''}`);
+}
+
+export async function getNewsV2BySlug(slug: string): Promise<{ item: NewsItem }> {
+  return request<{ item: NewsItem }>(`/api/news-v2/${slug}`);
+}
+
+export async function getNewsV2Appearance(): Promise<{ appearance: NewsAppearanceConfig }> {
+  return request<{ appearance: NewsAppearanceConfig }>(`/api/news-v2/config/appearance`);
+}
+
+export async function getNewsV2Widgets(): Promise<{ trending: NewsItem[]; categories: Array<{ _id: string; count: number }> }> {
+  return request<{ trending: NewsItem[]; categories: Array<{ _id: string; count: number }> }>(`/api/news-v2/widgets`);
 }

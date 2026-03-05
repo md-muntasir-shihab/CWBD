@@ -17,6 +17,17 @@ import {
     getStudentDashboardStream,
 } from '../controllers/studentDashboardController';
 import { studentCreateSupportTicket, studentGetNotices, studentGetSupportTickets } from '../controllers/adminSupportController';
+import {
+    getStudentMe,
+    getStudentMeExamById,
+    getStudentMeExams,
+    getStudentMeNotifications,
+    getStudentMePayments,
+    getStudentMeResources,
+    getStudentMeResultByExam,
+    getStudentMeResults,
+    markStudentNotificationsRead,
+} from '../controllers/studentHubController';
 
 const router = Router();
 
@@ -39,6 +50,19 @@ router.get('/dashboard/stream', getStudentDashboardStream);
 router.get('/notices', studentGetNotices);
 router.post('/support-tickets', studentCreateSupportTicket);
 router.get('/support-tickets', studentGetSupportTickets);
+router.get('/me', getStudentMe);
+router.get('/me/exams', getStudentMeExams);
+router.get('/me/exams/:examId', getStudentMeExamById);
+router.get('/me/results', getStudentMeResults);
+router.get('/me/results/:examId', getStudentMeResultByExam);
+router.get('/me/payments', getStudentMePayments);
+router.get('/me/notifications', getStudentMeNotifications);
+router.post('/me/notifications/mark-read', markStudentNotificationsRead);
+router.get('/me/resources', getStudentMeResources);
+router.get('/payments', getStudentMePayments);
+router.get('/notifications/feed', getStudentMeNotifications);
+router.post('/notifications/mark-read', markStudentNotificationsRead);
+router.get('/resources', getStudentMeResources);
 
 // Application Routes
 router.get('/applications', getStudentApplications);

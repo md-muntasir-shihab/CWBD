@@ -3,6 +3,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { authenticate, authorize, authorizePermission } from '../middlewares/auth';
+import { enforceAdminPanelPolicy } from '../middlewares/securityGuards';
 import {
     adminGetExams,
     adminGetExamById,
@@ -109,6 +110,41 @@ import {
     adminDeleteNewsCategory, adminToggleNewsCategory,
 } from '../controllers/cmsController';
 import {
+    adminNewsV2Dashboard,
+    adminNewsV2FetchNow,
+    adminNewsV2GetItems,
+    adminNewsV2GetItemById,
+    adminNewsV2CreateItem,
+    adminNewsV2UpdateItem,
+    adminNewsV2SubmitReview,
+    adminNewsV2Approve,
+    adminNewsV2Reject,
+    adminNewsV2PublishNow,
+    adminNewsV2Schedule,
+    adminNewsV2BulkApprove,
+    adminNewsV2BulkReject,
+    adminNewsV2GetSources,
+    adminNewsV2CreateSource,
+    adminNewsV2UpdateSource,
+    adminNewsV2DeleteSource,
+    adminNewsV2TestSource,
+    adminNewsV2ReorderSources,
+    adminNewsV2GetAppearanceSettings,
+    adminNewsV2UpdateAppearanceSettings,
+    adminNewsV2GetAiSettings,
+    adminNewsV2UpdateAiSettings,
+    adminNewsV2GetShareSettings,
+    adminNewsV2UpdateShareSettings,
+    adminNewsV2GetMedia,
+    adminNewsV2UploadMedia,
+    adminNewsV2MediaFromUrl,
+    adminNewsV2DeleteMedia,
+    adminNewsV2ExportNews,
+    adminNewsV2ExportSources,
+    adminNewsV2ExportLogs,
+    adminNewsV2GetAuditLogs,
+} from '../controllers/newsV2Controller';
+import {
     adminGetServices, adminCreateService, adminUpdateService, adminDeleteService,
     adminReorderServices, adminToggleServiceStatus, adminToggleServiceFeatured
 } from '../controllers/serviceController';
@@ -159,6 +195,13 @@ import {
     resetTwoFactorUser,
     getTwoFactorFailures,
 } from '../controllers/authController';
+import {
+    forceLogoutAllUsers,
+    getAdminSecuritySettings,
+    lockAdminPanel,
+    resetAdminSecuritySettings,
+    updateAdminSecuritySettings,
+} from '../controllers/securityCenterController';
 import {
     getRuntimeSettings,
     updateRuntimeSettingsController,
@@ -228,6 +271,7 @@ const canManageBackups = authorizePermission('canManageBackups');
 
 /* All admin routes require auth + appropriate roles */
 router.use(authenticate);
+router.use(enforceAdminPanelPolicy);
 
 /* ── Health ── */
 router.get('/health', (_req: Request, res: Response) => {
@@ -257,6 +301,18 @@ router.get('/openapi/question-bank.json', authorize('superadmin', 'admin', 'mode
     }
     res.sendFile(filePath);
 });
+router.get('/openapi/news-system-v2.json', authorize('superadmin', 'admin', 'moderator', 'editor'), (_req: Request, res: Response) => {
+    const candidatePaths = [
+        path.resolve(process.cwd(), '../docs/openapi/news-system-v2.json'),
+        path.resolve(process.cwd(), 'docs/openapi/news-system-v2.json'),
+    ];
+    const filePath = candidatePaths.find((candidate) => fs.existsSync(candidate));
+    if (!filePath) {
+        res.status(404).json({ message: 'OpenAPI artifact not found.' });
+        return;
+    }
+    res.sendFile(filePath);
+});
 
 /* ─────────────────────────────────────────────────────────────
    ROLE-BASED MIDDLEWARE
@@ -276,6 +332,11 @@ router.put('/settings/runtime', authorize('superadmin', 'admin'), updateRuntimeS
 /* ── Security ── */
 router.get('/security/settings', authorize('superadmin', 'admin'), getSecuritySettings);
 router.put('/security/settings', authorize('superadmin', 'admin'), updateSecuritySettings);
+router.get('/security-settings', authorize('superadmin'), getAdminSecuritySettings);
+router.put('/security-settings', authorize('superadmin'), updateAdminSecuritySettings);
+router.post('/security-settings/reset-defaults', authorize('superadmin'), resetAdminSecuritySettings);
+router.post('/security-settings/force-logout-all', authorize('superadmin'), forceLogoutAllUsers);
+router.post('/security-settings/admin-panel-lock', authorize('superadmin'), lockAdminPanel);
 router.get('/security/sessions', authorize('superadmin', 'admin', 'moderator'), canManageStudents, getActiveSessions);
 router.post('/security/force-logout', authorize('superadmin', 'admin'), canManageStudents, forceLogoutUser);
 router.get('/security/2fa/users', authorize('superadmin', 'admin'), canManageStudents, getTwoFactorUsers);
@@ -392,6 +453,45 @@ router.post('/news-category', authorize('superadmin', 'admin'), adminCreateNewsC
 router.put('/news-category/:id', authorize('superadmin', 'admin'), adminUpdateNewsCategory);
 router.delete('/news-category/:id', authorize('superadmin', 'admin'), adminDeleteNewsCategory);
 router.patch('/news-category/:id/toggle', authorize('superadmin', 'admin'), adminToggleNewsCategory);
+
+/* ── News V2 ── */
+router.get('/news-v2/dashboard', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2Dashboard);
+router.post('/news-v2/fetch-now', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2FetchNow);
+router.get('/news-v2/items', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetItems);
+router.get('/news-v2/items/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetItemById);
+router.post('/news-v2/items', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2CreateItem);
+router.put('/news-v2/items/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2UpdateItem);
+router.post('/news-v2/items/:id/submit-review', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2SubmitReview);
+router.post('/news-v2/items/:id/approve', authorize('superadmin', 'admin', 'moderator'), adminNewsV2Approve);
+router.post('/news-v2/items/:id/reject', authorize('superadmin', 'admin', 'moderator'), adminNewsV2Reject);
+router.post('/news-v2/items/:id/publish-now', authorize('superadmin', 'admin', 'moderator'), adminNewsV2PublishNow);
+router.post('/news-v2/items/:id/schedule', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2Schedule);
+router.post('/news-v2/items/bulk-approve', authorize('superadmin', 'admin', 'moderator'), adminNewsV2BulkApprove);
+router.post('/news-v2/items/bulk-reject', authorize('superadmin', 'admin', 'moderator'), adminNewsV2BulkReject);
+
+router.get('/news-v2/sources', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetSources);
+router.post('/news-v2/sources', authorize('superadmin', 'admin', 'moderator'), adminNewsV2CreateSource);
+router.put('/news-v2/sources/:id', authorize('superadmin', 'admin', 'moderator'), adminNewsV2UpdateSource);
+router.delete('/news-v2/sources/:id', authorize('superadmin', 'admin'), adminNewsV2DeleteSource);
+router.post('/news-v2/sources/:id/test', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2TestSource);
+router.post('/news-v2/sources/reorder', authorize('superadmin', 'admin', 'moderator'), adminNewsV2ReorderSources);
+
+router.get('/news-v2/settings/appearance', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetAppearanceSettings);
+router.put('/news-v2/settings/appearance', authorize('superadmin', 'admin', 'moderator'), adminNewsV2UpdateAppearanceSettings);
+router.get('/news-v2/settings/ai', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetAiSettings);
+router.put('/news-v2/settings/ai', authorize('superadmin', 'admin', 'moderator'), adminNewsV2UpdateAiSettings);
+router.get('/news-v2/settings/share', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetShareSettings);
+router.put('/news-v2/settings/share', authorize('superadmin', 'admin', 'moderator'), adminNewsV2UpdateShareSettings);
+
+router.get('/news-v2/media', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetMedia);
+router.post('/news-v2/media/upload', authorize('superadmin', 'admin', 'moderator', 'editor'), uploadMiddleware.single('file'), adminNewsV2UploadMedia);
+router.post('/news-v2/media/from-url', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2MediaFromUrl);
+router.delete('/news-v2/media/:id', authorize('superadmin', 'admin', 'moderator'), adminNewsV2DeleteMedia);
+
+router.get('/news-v2/exports/news', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2ExportNews);
+router.get('/news-v2/exports/sources', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2ExportSources);
+router.get('/news-v2/exports/logs', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2ExportLogs);
+router.get('/news-v2/audit-logs', authorize('superadmin', 'admin', 'moderator', 'editor'), adminNewsV2GetAuditLogs);
 
 /* ── Service Categories ── */
 router.get('/service-categories', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetCategories);
@@ -554,7 +654,7 @@ router.post('/support-tickets/:id/reply', authorize('superadmin', 'admin', 'mode
 /* ── Backups ── */
 router.post('/backups/run', authorize('superadmin', 'admin'), canManageBackups, adminRunBackup);
 router.get('/backups', authorize('superadmin', 'admin', 'moderator'), canManageBackups, adminListBackups);
-router.post('/backups/:id/restore', authorize('superadmin'), canManageBackups, adminRestoreBackup);
+router.post('/backups/:id/restore', authorize('superadmin', 'admin'), canManageBackups, adminRestoreBackup);
 router.get('/backups/:id/download', authorize('superadmin', 'admin'), canManageBackups, adminDownloadBackup);
 /* ── Badges ── */
 router.get('/badges', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetBadges);
@@ -567,6 +667,8 @@ router.delete('/students/:studentId/badges/:badgeId', authorize('superadmin', 'a
 /* ── Student Dashboard Configurations ── */
 router.get('/dashboard-config', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetStudentDashboardConfig);
 router.put('/dashboard-config', authorize('superadmin', 'admin'), adminUpdateStudentDashboardConfig);
+router.get('/student-dashboard-config', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetStudentDashboardConfig);
+router.put('/student-dashboard-config', authorize('superadmin', 'admin'), adminUpdateStudentDashboardConfig);
 
 /* ── Notifications ── */
 router.get('/notifications', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetNotifications);

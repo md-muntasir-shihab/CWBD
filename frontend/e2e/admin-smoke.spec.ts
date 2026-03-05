@@ -17,16 +17,17 @@ test.describe('Admin Smoke', () => {
     test('admin can login and navigate key tabs', async ({ page }) => {
         const tracker = attachHealthTracker(page);
         await loginAsAdmin(page);
-
-        await expect(page.getByText('Admin Panel').first()).toBeVisible();
-        await expect(page.getByRole('button', { name: /^Dashboard$/i })).toBeVisible();
-
         const isMobileViewport = (page.viewportSize()?.width || 0) < 768;
         if (isMobileViewport) {
+            await expect(page.getByRole('button', { name: /Toggle menu/i })).toBeVisible();
+            await expect(page.getByRole('heading', { name: /Dashboard/i })).toBeVisible();
             await expectPageHealthy(page, tracker);
             tracker.detach();
             return;
         }
+
+        await expect(page.getByText('Admin Panel').first()).toBeVisible();
+        await expect(page.getByRole('button', { name: /^Dashboard$/i })).toBeVisible();
 
         await clickAdminSection(page, 'Exams');
         await expect(page.getByRole('heading', { name: /Exams/i })).toBeVisible();

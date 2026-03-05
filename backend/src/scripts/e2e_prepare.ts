@@ -6,6 +6,7 @@ import { connectDB } from '../config/db';
 import User, { IUserPermissions } from '../models/User';
 import StudentProfile from '../models/StudentProfile';
 import SiteSettings from '../models/Settings';
+import SecuritySettings from '../models/SecuritySettings';
 import ActiveSession from '../models/ActiveSession';
 import ExamResult from '../models/ExamResult';
 import ExamSession from '../models/ExamSession';
@@ -141,6 +142,19 @@ async function upsertSeedUser(seed: SeedUser): Promise<string> {
 async function backupAndPatchSecurity(): Promise<void> {
     const settings = await SiteSettings.findOne();
     const securitySnapshot = settings?.security || null;
+    const securitySettingsDoc = await SecuritySettings.findOne({ key: 'global' }).lean();
+    const securitySettingsSnapshot = securitySettingsDoc
+        ? {
+            passwordPolicy: securitySettingsDoc.passwordPolicy,
+            loginProtection: securitySettingsDoc.loginProtection,
+            session: securitySettingsDoc.session,
+            adminAccess: securitySettingsDoc.adminAccess,
+            siteAccess: securitySettingsDoc.siteAccess,
+            examProtection: securitySettingsDoc.examProtection,
+            logging: securitySettingsDoc.logging,
+            rateLimit: securitySettingsDoc.rateLimit,
+        }
+        : null;
 
     await fs.writeFile(
         BACKUP_PATH,
@@ -148,6 +162,7 @@ async function backupAndPatchSecurity(): Promise<void> {
             {
                 capturedAt: new Date().toISOString(),
                 security: securitySnapshot,
+                securitySettings: securitySettingsSnapshot,
             },
             null,
             2
@@ -167,6 +182,18 @@ async function backupAndPatchSecurity(): Promise<void> {
                 'security.forceLogoutOnNewLogin': true,
                 'security.strictTokenHashValidation': false,
             },
+        },
+        { upsert: true }
+    );
+
+    await SecuritySettings.findOneAndUpdate(
+        { key: 'global' },
+        {
+            $set: {
+                'adminAccess.require2FAForAdmins': false,
+                'adminAccess.adminPanelEnabled': true,
+            },
+            $setOnInsert: { key: 'global' },
         },
         { upsert: true }
     );

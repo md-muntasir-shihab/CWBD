@@ -43,7 +43,7 @@ export const ADMIN_NAV = [
     { id: 'admin-profile', label: 'Admin Profile', icon: User },
     { id: 'exports', label: 'Data Export', icon: Download },
     { id: 'settings', label: 'Site Settings', icon: Settings },
-    { id: 'security', label: 'Security & Sessions', icon: Shield },
+    { id: 'security', label: 'Security Center', icon: Shield },
     { id: 'logs', label: 'System Logs', icon: ScrollText },
 ];
 
@@ -70,7 +70,15 @@ export default function AdminSidebar({
         setExpandedMenus((prev: Record<string, boolean>) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const navClick = (id: string) => { onTabChange(id); setSidebarOpen(false); };
+    const navClick = (id: string) => {
+        if (id === 'news') {
+            window.location.href = '/admin/news';
+            setSidebarOpen(false);
+            return;
+        }
+        onTabChange(id);
+        setSidebarOpen(false);
+    };
 
     const filteredNav = ADMIN_NAV.map(item => {
         if (item.type === 'header') return item;
@@ -111,8 +119,9 @@ export default function AdminSidebar({
                 bg-gradient-to-b from-slate-950 to-slate-900/80
                 border-r border-indigo-500/10
                 transition-all duration-300 ease-in-out
-                ${collapsed ? 'w-[72px]' : 'w-64'}
+                ${collapsed ? 'w-64 lg:w-[72px]' : 'w-64'}
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                ${sidebarOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none lg:visible lg:pointer-events-auto'}
                 lg:translate-x-0 lg:static
             `}>
                 {/* ── Logo Header ── */}

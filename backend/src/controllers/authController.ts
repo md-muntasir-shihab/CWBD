@@ -10,7 +10,6 @@ import AdminProfile from '../models/AdminProfile';
 import LoginActivity from '../models/LoginActivity';
 import ActiveSession from '../models/ActiveSession';
 import OtpVerification from '../models/OtpVerification';
-import SiteSettings from '../models/Settings';
 import AuditLog from '../models/AuditLog';
 import { addAuthSessionStreamClient } from '../realtime/authSessionStream';
 import { AuthRequest } from '../middlewares/auth';
@@ -22,6 +21,7 @@ import { getBrowserFingerprint, terminateSessions, terminateSessionsForUser } fr
 import { generateOtpCode, hashOtpCode, maskEmail, normalizeTwoFactorMethod, sendOtpChallenge } from '../services/twoFactorService';
 import { getRuntimeSettingsSnapshot } from '../services/runtimeSettingsService';
 import { upsertCredentialMirror } from '../services/credentialVaultService';
+import { isPasswordCompliant, updateSecuritySettingsSnapshot } from '../services/securityCenterService';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.REFRESH_SECRET || 'refresh_secret';
@@ -38,7 +38,8 @@ interface AccessTokenPayload {
     sessionId?: string;
 }
 
-function generateAccessToken(user: IUser, fullName: string, sessionId?: string): string {
+function generateAccessToken(user: IUser, fullName: string, sessionId?: string, ttlMinutes = 15): string {
+    const expiresInSeconds = Math.max(5, ttlMinutes) * 60;
     const payload: AccessTokenPayload = {
         _id: String(user._id),
         username: user.username,
@@ -48,11 +49,12 @@ function generateAccessToken(user: IUser, fullName: string, sessionId?: string):
         permissions: user.permissions,
         sessionId,
     };
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: expiresInSeconds });
 }
 
-function generateRefreshToken(user: IUser, sessionId?: string): string {
-    return jwt.sign({ _id: String(user._id), sessionId }, REFRESH_SECRET, { expiresIn: '7d' });
+function generateRefreshToken(user: IUser, sessionId?: string, ttlDays = 7): string {
+    const expiresInSeconds = Math.max(1, ttlDays) * 24 * 60 * 60;
+    return jwt.sign({ _id: String(user._id), sessionId }, REFRESH_SECRET, { expiresIn: expiresInSeconds });
 }
 
 function hashToken(token: string): string {
@@ -61,6 +63,44 @@ function hashToken(token: string): string {
 
 function getRedirectPath(role: string): string {
     return role === 'student' ? '/student/dashboard' : `/${ADMIN_PATH}`;
+}
+
+type OauthProviderKey = 'google' | 'apple' | 'twitter';
+
+function getOauthStatus() {
+    const oauthEnabled = String(process.env.OAUTH_ENABLED || '').trim().toLowerCase() === 'true';
+    const providers: Array<{
+        id: OauthProviderKey;
+        label: string;
+        enabled: boolean;
+        configured: boolean;
+    }> = [
+        {
+            id: 'google',
+            label: 'Google',
+            enabled: oauthEnabled && String(process.env.OAUTH_GOOGLE_ENABLED || '').trim().toLowerCase() === 'true',
+            configured: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+        },
+        {
+            id: 'apple',
+            label: 'Apple',
+            enabled: oauthEnabled && String(process.env.OAUTH_APPLE_ENABLED || '').trim().toLowerCase() === 'true',
+            configured: Boolean(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
+        },
+        {
+            id: 'twitter',
+            label: 'Twitter',
+            enabled: oauthEnabled && String(process.env.OAUTH_TWITTER_ENABLED || '').trim().toLowerCase() === 'true',
+            configured: Boolean(process.env.TWITTER_CLIENT_ID && process.env.TWITTER_CLIENT_SECRET),
+        },
+    ];
+    return { oauthEnabled, providers };
+}
+
+function getOauthProvider(providerRaw: string): OauthProviderKey | null {
+    const provider = String(providerRaw || '').trim().toLowerCase();
+    if (provider === 'google' || provider === 'apple' || provider === 'twitter') return provider;
+    return null;
 }
 
 async function getUserDisplayName(user: IUser): Promise<string> {
@@ -129,7 +169,6 @@ const OTP_VERIFY_WINDOW_MS = 10 * 60 * 1000;
 const OTP_VERIFY_MAX_REQUESTS = 25;
 const OTP_RESEND_WINDOW_MS = 10 * 60 * 1000;
 const OTP_RESEND_MAX_REQUESTS = 8;
-const OTP_LOCK_MINUTES = 15;
 
 const otpRateBuckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -155,12 +194,12 @@ function clearRateLimit(bucketKey: string): void {
     otpRateBuckets.delete(bucketKey);
 }
 
-function setRefreshCookie(res: Response, refreshToken: string): void {
+function setRefreshCookie(res: Response, refreshToken: string, ttlDays = 7): void {
     res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Math.max(1, ttlDays) * 24 * 60 * 60 * 1000,
     });
 }
 
@@ -169,15 +208,12 @@ function isAdminRole(role: string): boolean {
 }
 
 function needsTwoFactor(user: IUser, security: SecurityConfig): boolean {
-    return false; // TEMPORARILY DISABLED BY AGENT FOR TESTING
-    /*
     return (
         user.twoFactorEnabled === true ||
         (isAdminRole(user.role) && security.enable2faAdmin) ||
         (user.role === 'student' && security.enable2faStudent) ||
         (user.role === 'superadmin' && security.force2faSuperAdmin)
     );
-    */
 }
 
 function isLegacyTokenBlocked(security: SecurityConfig): boolean {
@@ -281,12 +317,29 @@ async function createSessionForUser(params: {
             initiatedBy: String(user._id),
             meta: { trigger },
         });
+    } else {
+        const maxActive = Math.max(1, Number(security.examProtection.maxActiveSessionsPerUser || 1));
+        const activeSessions = await ActiveSession.find({ user_id: user._id, status: 'active' })
+            .sort({ last_activity: -1 })
+            .select('session_id')
+            .lean();
+        if (activeSessions.length >= maxActive) {
+            const stale = activeSessions.slice(maxActive - 1).map((item) => String(item.session_id));
+            if (stale.length) {
+                await terminateSessions({
+                    filter: { session_id: { $in: stale } },
+                    reason: 'max_active_session_limit',
+                    initiatedBy: String(user._id),
+                    meta: { trigger: 'security_max_active_sessions' },
+                });
+            }
+        }
     }
 
     const sessionId = uuidv4();
     const fullName = await getUserDisplayName(user);
-    const accessToken = generateAccessToken(user, fullName, sessionId);
-    const refreshToken = generateRefreshToken(user, sessionId);
+    const accessToken = generateAccessToken(user, fullName, sessionId, security.session.accessTokenTTLMinutes);
+    const refreshToken = generateRefreshToken(user, sessionId, security.session.refreshTokenTTLDays);
 
     await ActiveSession.create({
         user_id: user._id,
@@ -372,6 +425,7 @@ export async function login(req: Request, res: Response): Promise<void> {
             res.status(401).json({ message: 'Invalid credentials' });
             return;
         }
+        const security = await getSecurityConfig(true);
 
         const status = normalizeStatus(user.status);
         if (status === 'suspended' || status === 'blocked') {
@@ -403,8 +457,8 @@ export async function login(req: Request, res: Response): Promise<void> {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             user.loginAttempts += 1;
-            if (user.loginAttempts >= 5) {
-                user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+            if (user.loginAttempts >= security.loginProtection.maxAttempts) {
+                user.lockUntil = new Date(Date.now() + security.loginProtection.lockoutMinutes * 60 * 1000);
             }
             await user.save();
             await logLoginAttempt({
@@ -492,9 +546,7 @@ export async function login(req: Request, res: Response): Promise<void> {
             await AdminProfile.findOneAndUpdate({ user_id: user._id }, updateDoc, { upsert: true, new: true });
         }
 
-        const security = await getSecurityConfig(true);
-        // 2FA BYPASS: DISABLED BY AGENT
-        if (false && needsTwoFactor(user!, security)) {
+        if (needsTwoFactor(user!, security)) {
             const challenge = await issueOtpChallenge(user!, security);
             res.json({ requires2fa: true, ...challenge });
             return;
@@ -507,7 +559,7 @@ export async function login(req: Request, res: Response): Promise<void> {
             trigger: 'login_credentials',
         });
 
-        setRefreshCookie(res, session.refreshToken);
+        setRefreshCookie(res, session.refreshToken, security.session.refreshTokenTTLDays);
         const userPayload = await buildUserPayload(user);
 
         res.json({
@@ -551,7 +603,8 @@ export async function refresh(req: Request, res: Response): Promise<void> {
         }
 
         const fullName = await getUserDisplayName(user);
-        const token = generateAccessToken(user, fullName, decoded.sessionId);
+        const token = generateAccessToken(user, fullName, decoded.sessionId, security.session.accessTokenTTLMinutes);
+        const newRefreshToken = generateRefreshToken(user, decoded.sessionId, security.session.refreshTokenTTLDays);
         if (decoded.sessionId) {
             await ActiveSession.updateOne(
                 { session_id: decoded.sessionId, status: 'active' },
@@ -563,6 +616,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
                 }
             );
         }
+        setRefreshCookie(res, newRefreshToken, security.session.refreshTokenTTLDays);
         res.json({ token });
     } catch {
         res.status(403).json({ message: 'Invalid or expired refresh token' });
@@ -650,28 +704,35 @@ export async function verify2fa(req: Request, res: Response): Promise<void> {
         }
 
         if (otpDoc.attempt_count >= security.maxOtpAttempts) {
-            const lockUntil = new Date(Date.now() + OTP_LOCK_MINUTES * 60 * 1000);
+            const lockMinutes = Math.max(1, security.loginProtection.lockoutMinutes);
+            const lockUntil = new Date(Date.now() + lockMinutes * 60 * 1000);
             user.lockUntil = lockUntil;
             await user.save();
             await logOtpFailure({ user, req, reason: 'otp_max_attempts' });
-            respondOtpError(res, 423, 'OTP_MAX_ATTEMPTS', `Too many failed attempts. Account locked for ${OTP_LOCK_MINUTES} minutes.`, {
+            respondOtpError(res, 423, 'OTP_MAX_ATTEMPTS', `Too many failed attempts. Account locked for ${lockMinutes} minutes.`, {
                 attemptsRemaining: 0,
                 lockUntil: lockUntil.toISOString(),
             });
             return;
         }
 
-        const rawOtp = String(otp || '');
-        const normalizedOtp = rawOtp.replace(/\D/g, ''); // Extract only digits
-
-        console.log(`[2FA Debug] Received OTP: "${rawOtp}", Normalized: "${normalizedOtp}"`);
-
+        const normalizedOtp = String(otp || '').replace(/\D/g, '');
         const otpHash = hashOtpCode(normalizedOtp);
         const isDefaultTestOtp = security.allowTestOtp && normalizedOtp === security.testOtpCode;
 
-        // 2FA BYPASS: ALWAYS SUCCEED
-        if (false && otpDoc! && otpHash !== (otpDoc! && otpDoc!.otp_code) && !isDefaultTestOtp) {
-            // Block removed by agent to allow any OTP to pass
+        if (otpHash !== otpDoc.otp_code && !isDefaultTestOtp) {
+            otpDoc.attempt_count += 1;
+            await otpDoc.save();
+
+            const attemptsRemaining = Math.max(0, security.maxOtpAttempts - otpDoc.attempt_count);
+            await logOtpFailure({
+                user,
+                req,
+                reason: 'otp_invalid',
+                details: { attemptsRemaining },
+            });
+            respondOtpError(res, 401, 'OTP_INVALID', 'Invalid OTP', { attemptsRemaining });
+            return;
         }
 
         otpDoc.verified = true;
@@ -697,7 +758,7 @@ export async function verify2fa(req: Request, res: Response): Promise<void> {
             trigger: 'login_2fa',
         });
 
-        setRefreshCookie(res, session.refreshToken);
+        setRefreshCookie(res, session.refreshToken, security.session.refreshTokenTTLDays);
         const userPayload = await buildUserPayload(user);
         res.json({ token: session.accessToken, user: userPayload });
     } catch (error) {
@@ -898,7 +959,22 @@ export async function forceLogoutUser(req: AuthRequest, res: Response): Promise<
 export async function getSecuritySettings(_req: Request, res: Response): Promise<void> {
     try {
         const config = await getSecurityConfig(true);
-        res.json({ security: config });
+        res.json({
+            security: {
+                singleBrowserLogin: config.singleBrowserLogin,
+                forceLogoutOnNewLogin: config.forceLogoutOnNewLogin,
+                enable2faAdmin: config.enable2faAdmin,
+                enable2faStudent: config.enable2faStudent,
+                force2faSuperAdmin: config.force2faSuperAdmin,
+                default2faMethod: config.default2faMethod,
+                otpExpiryMinutes: config.otpExpiryMinutes,
+                maxOtpAttempts: config.maxOtpAttempts,
+                ipChangeAlert: config.ipChangeAlert,
+                allowLegacyTokens: config.allowLegacyTokens,
+                strictExamTabLock: config.strictExamTabLock,
+                strictTokenHashValidation: config.strictTokenHashValidation,
+            },
+        });
     } catch (error) {
         console.error('getSecuritySettings error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -961,17 +1037,33 @@ export async function updateSecuritySettings(req: AuthRequest, res: Response): P
         }
 
         const securityUpdate: Record<string, unknown> = {};
-        for (const field of allowedFields) {
-            if (updates[field] !== undefined) {
-                securityUpdate[`security.${field}`] = updates[field];
-            }
+        if (updates.enable2faAdmin !== undefined || updates.force2faSuperAdmin !== undefined) {
+            securityUpdate.adminAccess = {
+                require2FAForAdmins: Boolean(updates.enable2faAdmin ?? updates.force2faSuperAdmin),
+            };
         }
-
+        if (updates.otpExpiryMinutes !== undefined || updates.maxOtpAttempts !== undefined) {
+            securityUpdate.loginProtection = {
+                lockoutMinutes: Number(updates.otpExpiryMinutes || 5),
+                maxAttempts: Number(updates.maxOtpAttempts || 5),
+            };
+        }
         if (updates.strictExamTabLock !== undefined) {
-            securityUpdate['featureFlags.strictExamTabLock'] = Boolean(updates.strictExamTabLock);
+            securityUpdate.examProtection = {
+                logTabSwitch: Boolean(updates.strictExamTabLock),
+            };
         }
 
-        await SiteSettings.findOneAndUpdate({}, { $set: securityUpdate }, { upsert: true });
+        if (Object.keys(securityUpdate).length > 0) {
+            await updateSecuritySettingsSnapshot(
+                securityUpdate as {
+                    adminAccess?: { require2FAForAdmins: boolean };
+                    loginProtection?: { lockoutMinutes: number; maxAttempts: number };
+                    examProtection?: { logTabSwitch: boolean };
+                },
+                req.user?._id
+            );
+        }
         invalidateSecurityConfigCache();
 
         await AuditLog.create({
@@ -984,7 +1076,23 @@ export async function updateSecuritySettings(req: AuthRequest, res: Response): P
         });
 
         const newConfig = await getSecurityConfig(true);
-        res.json({ message: 'Security settings updated', security: newConfig });
+        res.json({
+            message: 'Security settings updated',
+            security: {
+                singleBrowserLogin: newConfig.singleBrowserLogin,
+                forceLogoutOnNewLogin: newConfig.forceLogoutOnNewLogin,
+                enable2faAdmin: newConfig.enable2faAdmin,
+                enable2faStudent: newConfig.enable2faStudent,
+                force2faSuperAdmin: newConfig.force2faSuperAdmin,
+                default2faMethod: newConfig.default2faMethod,
+                otpExpiryMinutes: newConfig.otpExpiryMinutes,
+                maxOtpAttempts: newConfig.maxOtpAttempts,
+                ipChangeAlert: newConfig.ipChangeAlert,
+                allowLegacyTokens: newConfig.allowLegacyTokens,
+                strictExamTabLock: newConfig.strictExamTabLock,
+                strictTokenHashValidation: newConfig.strictTokenHashValidation,
+            },
+        });
     } catch (error) {
         console.error('updateSecuritySettings error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -1242,9 +1350,16 @@ export async function register(req: Request, res: Response): Promise<void> {
         const username = String(req.body.username || '').trim().toLowerCase();
         const password = String(req.body.password || '');
         const phone = String(req.body.phone || '').trim();
+        const security = await getSecurityConfig(true);
 
-        if (!fullName || !email || !username || password.length < 8) {
-            res.status(400).json({ message: 'Full name, username, email and password (min 8 chars) are required' });
+        if (!fullName || !email || !username) {
+            res.status(400).json({ message: 'Full name, username, email and password are required' });
+            return;
+        }
+
+        const passwordPolicyResult = isPasswordCompliant(password, security.passwordPolicy);
+        if (!passwordPolicyResult.ok) {
+            res.status(400).json({ message: passwordPolicyResult.message || 'Password does not meet policy requirements.' });
             return;
         }
 
@@ -1300,6 +1415,84 @@ export async function register(req: Request, res: Response): Promise<void> {
         });
     } catch (error) {
         console.error('register error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function getOauthProviders(_req: Request, res: Response): Promise<void> {
+    try {
+        const status = getOauthStatus();
+        res.json(status);
+    } catch (error) {
+        console.error('getOauthProviders error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function startOauth(req: Request, res: Response): Promise<void> {
+    try {
+        const provider = getOauthProvider(String(req.params.provider || ''));
+        if (!provider) {
+            res.status(400).json({ message: 'Unsupported OAuth provider' });
+            return;
+        }
+
+        const status = getOauthStatus();
+        const providerStatus = status.providers.find((item) => item.id === provider);
+        if (!status.oauthEnabled || !providerStatus?.enabled) {
+            res.status(200).json({
+                ok: false,
+                code: 'OAUTH_DISABLED',
+                message: `${provider} sign-in is disabled`,
+            });
+            return;
+        }
+        if (!providerStatus.configured) {
+            res.status(200).json({
+                ok: false,
+                code: 'OAUTH_NOT_CONFIGURED',
+                message: `${provider} OAuth credentials are not configured`,
+            });
+            return;
+        }
+
+        res.status(501).json({
+            ok: false,
+            code: 'OAUTH_PROVIDER_PENDING',
+            message: `${provider} OAuth handshake endpoint is ready but provider wiring is pending`,
+        });
+    } catch (error) {
+        console.error('startOauth error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function oauthCallback(req: Request, res: Response): Promise<void> {
+    try {
+        const provider = getOauthProvider(String(req.params.provider || ''));
+        if (!provider) {
+            res.status(400).json({ message: 'Unsupported OAuth provider' });
+            return;
+        }
+
+        const status = getOauthStatus();
+        const providerStatus = status.providers.find((item) => item.id === provider);
+        if (!status.oauthEnabled || !providerStatus?.enabled || !providerStatus?.configured) {
+            res.status(200).json({
+                ok: false,
+                code: 'OAUTH_UNAVAILABLE',
+                message: `${provider} sign-in is currently unavailable`,
+            });
+            return;
+        }
+
+        res.status(501).json({
+            ok: false,
+            code: 'OAUTH_PROVIDER_PENDING',
+            message: `${provider} callback handler is not finalized yet`,
+        });
+    } catch (error) {
+        console.error('oauthCallback error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }
@@ -1383,9 +1576,16 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
     try {
         const token = String(req.body.token || '').trim();
         const newPassword = String(req.body.newPassword || '');
+        const security = await getSecurityConfig(true);
 
-        if (!token || newPassword.length < 8) {
-            res.status(400).json({ message: 'Valid token and new password (min 8 chars) are required' });
+        if (!token) {
+            res.status(400).json({ message: 'Valid token and new password are required' });
+            return;
+        }
+
+        const passwordPolicyResult = isPasswordCompliant(newPassword, security.passwordPolicy);
+        if (!passwordPolicyResult.ok) {
+            res.status(400).json({ message: passwordPolicyResult.message || 'Password does not meet policy requirements.' });
             return;
         }
 
@@ -1408,6 +1608,10 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
         user.password_updated_at = new Date();
         await user.save();
         await upsertCredentialMirror(user._id, newPassword, user._id);
+        await terminateSessionsForUser(String(user._id), 'password_reset', {
+            initiatedBy: String(user._id),
+            meta: { trigger: 'reset_password' },
+        });
 
         await PasswordReset.deleteOne({ _id: tokenDoc._id });
         await AuditLog.create({
@@ -1492,8 +1696,15 @@ export async function changePassword(req: AuthRequest, res: Response): Promise<v
 
         const currentPassword = String(req.body.currentPassword || '');
         const newPassword = String(req.body.newPassword || '');
-        if (!currentPassword || newPassword.length < 8) {
-            res.status(400).json({ message: 'Current password and new password (min 8 chars) are required' });
+        if (!currentPassword) {
+            res.status(400).json({ message: 'Current password and new password are required' });
+            return;
+        }
+
+        const security = await getSecurityConfig(true);
+        const passwordPolicyResult = isPasswordCompliant(newPassword, security.passwordPolicy);
+        if (!passwordPolicyResult.ok) {
+            res.status(400).json({ message: passwordPolicyResult.message || 'Password does not meet policy requirements.' });
             return;
         }
 
@@ -1514,6 +1725,10 @@ export async function changePassword(req: AuthRequest, res: Response): Promise<v
         user.password_updated_at = new Date();
         await user.save();
         await upsertCredentialMirror(user._id, newPassword, user._id);
+        await terminateSessionsForUser(String(user._id), 'password_changed', {
+            initiatedBy: String(user._id),
+            meta: { trigger: 'change_password' },
+        });
 
         await AuditLog.create({
             actor_id: user._id,

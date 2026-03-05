@@ -1,4 +1,7 @@
-import SiteSettings from '../models/Settings';
+import {
+    getSecuritySettingsSnapshot,
+    invalidateSecuritySettingsCache,
+} from './securityCenterService';
 
 export type TwoFactorMethod = 'email' | 'sms' | 'authenticator';
 
@@ -17,68 +20,89 @@ export interface SecurityConfig {
     strictTokenHashValidation: boolean;
     allowTestOtp: boolean;
     testOtpCode: string;
+    passwordPolicy: {
+        minLength: number;
+        requireNumber: boolean;
+        requireUppercase: boolean;
+        requireSpecial: boolean;
+    };
+    loginProtection: {
+        maxAttempts: number;
+        lockoutMinutes: number;
+        recaptchaEnabled: boolean;
+    };
+    session: {
+        accessTokenTTLMinutes: number;
+        refreshTokenTTLDays: number;
+        idleTimeoutMinutes: number;
+    };
+    adminAccess: {
+        require2FAForAdmins: boolean;
+        allowedAdminIPs: string[];
+        adminPanelEnabled: boolean;
+    };
+    siteAccess: {
+        maintenanceMode: boolean;
+        blockNewRegistrations: boolean;
+    };
+    examProtection: {
+        maxActiveSessionsPerUser: number;
+        logTabSwitch: boolean;
+        requireProfileScoreForExam: boolean;
+        profileScoreThreshold: number;
+    };
+    logging: {
+        logLevel: 'debug' | 'info' | 'warn' | 'error';
+        logLoginFailures: boolean;
+        logAdminActions: boolean;
+    };
+    rateLimit: {
+        loginWindowMs: number;
+        loginMax: number;
+        examSubmitWindowMs: number;
+        examSubmitMax: number;
+        adminWindowMs: number;
+        adminMax: number;
+        uploadWindowMs: number;
+        uploadMax: number;
+    };
 }
-
-const DEFAULT_SECURITY_CONFIG: SecurityConfig = {
-    singleBrowserLogin: true,
-    forceLogoutOnNewLogin: true,
-    enable2faAdmin: false,
-    enable2faStudent: false,
-    force2faSuperAdmin: false,
-    default2faMethod: 'email',
-    otpExpiryMinutes: 5,
-    maxOtpAttempts: 5,
-    ipChangeAlert: true,
-    allowLegacyTokens: true,
-    strictExamTabLock: false,
-    strictTokenHashValidation: false,
-    allowTestOtp: true,
-    testOtpCode: '123456',
-};
 
 let cache: { data: SecurityConfig; ts: number } | null = null;
 
-function asBoolean(value: unknown, fallback: boolean): boolean {
-    if (typeof value === 'boolean') return value;
-    return fallback;
-}
-
-function asPositiveInt(value: unknown, fallback: number): number {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-    return Math.round(parsed);
-}
-
 export async function getSecurityConfig(forceRefresh = false): Promise<SecurityConfig> {
-    if (!forceRefresh && cache && Date.now() - cache.ts < 60_000) {
+    if (!forceRefresh && cache && Date.now() - cache.ts < 30_000) {
         return cache.data;
     }
 
-    const settings = await SiteSettings.findOne().lean();
-    const sec = ((settings as { security?: Record<string, unknown> } | null)?.security || {}) as Record<string, unknown>;
-
-    const methodRaw = String(sec.default2faMethod || DEFAULT_SECURITY_CONFIG.default2faMethod).trim().toLowerCase();
-    const default2faMethod: TwoFactorMethod = (
-        methodRaw === 'sms' || methodRaw === 'authenticator' || methodRaw === 'email'
-            ? methodRaw
-            : DEFAULT_SECURITY_CONFIG.default2faMethod
-    );
+    const settings = await getSecuritySettingsSnapshot(forceRefresh);
 
     const data: SecurityConfig = {
-        singleBrowserLogin: asBoolean(sec.singleBrowserLogin, DEFAULT_SECURITY_CONFIG.singleBrowserLogin),
-        forceLogoutOnNewLogin: asBoolean(sec.forceLogoutOnNewLogin, DEFAULT_SECURITY_CONFIG.forceLogoutOnNewLogin),
-        enable2faAdmin: asBoolean(sec.enable2faAdmin, DEFAULT_SECURITY_CONFIG.enable2faAdmin),
-        enable2faStudent: asBoolean(sec.enable2faStudent, DEFAULT_SECURITY_CONFIG.enable2faStudent),
-        force2faSuperAdmin: asBoolean(sec.force2faSuperAdmin, DEFAULT_SECURITY_CONFIG.force2faSuperAdmin),
-        default2faMethod,
-        otpExpiryMinutes: asPositiveInt(sec.otpExpiryMinutes, DEFAULT_SECURITY_CONFIG.otpExpiryMinutes),
-        maxOtpAttempts: asPositiveInt(sec.maxOtpAttempts, DEFAULT_SECURITY_CONFIG.maxOtpAttempts),
-        ipChangeAlert: asBoolean(sec.ipChangeAlert, DEFAULT_SECURITY_CONFIG.ipChangeAlert),
-        allowLegacyTokens: asBoolean(sec.allowLegacyTokens, DEFAULT_SECURITY_CONFIG.allowLegacyTokens),
-        strictExamTabLock: asBoolean(sec.strictExamTabLock, DEFAULT_SECURITY_CONFIG.strictExamTabLock),
-        strictTokenHashValidation: asBoolean(sec.strictTokenHashValidation, DEFAULT_SECURITY_CONFIG.strictTokenHashValidation),
-        allowTestOtp: asBoolean(sec.allowTestOtp, DEFAULT_SECURITY_CONFIG.allowTestOtp),
-        testOtpCode: String(sec.testOtpCode || DEFAULT_SECURITY_CONFIG.testOtpCode),
+        singleBrowserLogin: true,
+        forceLogoutOnNewLogin: true,
+        enable2faAdmin: settings.adminAccess.require2FAForAdmins,
+        enable2faStudent: false,
+        force2faSuperAdmin: settings.adminAccess.require2FAForAdmins,
+        default2faMethod: 'email',
+        otpExpiryMinutes: Math.max(1, Math.min(30, settings.loginProtection.lockoutMinutes)),
+        maxOtpAttempts: settings.loginProtection.maxAttempts,
+        ipChangeAlert: true,
+        allowLegacyTokens: false,
+        strictExamTabLock: settings.examProtection.logTabSwitch,
+        strictTokenHashValidation: true,
+        allowTestOtp: String(
+            process.env.ALLOW_TEST_OTP ||
+            (process.env.NODE_ENV === 'production' ? 'false' : 'true')
+        ).trim().toLowerCase() === 'true',
+        testOtpCode: String(process.env.TEST_OTP_CODE || '123456'),
+        passwordPolicy: settings.passwordPolicy,
+        loginProtection: settings.loginProtection,
+        session: settings.session,
+        adminAccess: settings.adminAccess,
+        siteAccess: settings.siteAccess,
+        examProtection: settings.examProtection,
+        logging: settings.logging,
+        rateLimit: settings.rateLimit,
     };
 
     cache = { data, ts: Date.now() };
@@ -87,4 +111,5 @@ export async function getSecurityConfig(forceRefresh = false): Promise<SecurityC
 
 export function invalidateSecurityConfigCache(): void {
     cache = null;
+    invalidateSecuritySettingsCache();
 }

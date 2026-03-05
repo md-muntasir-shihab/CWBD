@@ -61,7 +61,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>({
     metaDescription: { type: String, default: 'Compare admission details, seat counts, exam dates for every university in Bangladesh.' },
     logoUrl: { type: String, default: '' },
     faviconUrl: { type: String, default: '' },
-    footerText: { type: String, default: 'Â© CampusWay. All rights reserved.' },
+    footerText: { type: String, default: '© CampusWay. All rights reserved.' },
     contactEmail: { type: String, default: '' },
     contactPhone: { type: String, default: '' },
     contactAddress: { type: String, default: '' },
@@ -111,3 +111,4 @@ const SiteSettingsSchema = new Schema<ISiteSettings>({
 }, { timestamps: true });
 
 export default mongoose.model<ISiteSettings>('SiteSettings', SiteSettingsSchema);
+

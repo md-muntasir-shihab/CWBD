@@ -11,8 +11,31 @@ export interface IWebsiteSettings extends Document {
     contactPhone: string;
     socialLinks: {
         facebook: string;
-        youtube: string;
         whatsapp: string;
+        telegram: string;
+        twitter: string;
+        youtube: string;
+        instagram: string;
+    };
+    theme: {
+        modeDefault: 'light' | 'dark' | 'system';
+        allowSystemMode: boolean;
+        switchVariant: 'default' | 'pro';
+        animationLevel: 'none' | 'subtle' | 'rich';
+        brandGradients: string[];
+    };
+    socialUi: {
+        clusterEnabled: boolean;
+        buttonVariant: 'default' | 'squircle';
+        showLabels: boolean;
+        platformOrder: Array<'facebook' | 'whatsapp' | 'telegram' | 'twitter' | 'youtube' | 'instagram'>;
+    };
+    pricingUi: {
+        currencyCode: string;
+        currencySymbol: string;
+        currencyLocale: string;
+        displayMode: 'symbol' | 'code';
+        thousandSeparator: boolean;
     };
 }
 
@@ -27,9 +50,42 @@ const WebsiteSettingsSchema = new Schema<IWebsiteSettings>({
     contactPhone: { type: String, default: '+8801234567890' },
     socialLinks: {
         facebook: { type: String, default: '' },
+        whatsapp: { type: String, default: '' },
+        telegram: { type: String, default: '' },
+        twitter: { type: String, default: '' },
         youtube: { type: String, default: '' },
-        whatsapp: { type: String, default: '' }
-    }
+        instagram: { type: String, default: '' },
+    },
+    theme: {
+        modeDefault: { type: String, enum: ['light', 'dark', 'system'], default: 'system' },
+        allowSystemMode: { type: Boolean, default: true },
+        switchVariant: { type: String, enum: ['default', 'pro'], default: 'pro' },
+        animationLevel: { type: String, enum: ['none', 'subtle', 'rich'], default: 'subtle' },
+        brandGradients: {
+            type: [String],
+            default: [
+                'linear-gradient(135deg,#0D5FDB 0%,#0EA5E9 55%,#22D3EE 100%)',
+                'linear-gradient(135deg,#0891B2 0%,#2563EB 100%)',
+            ],
+        },
+    },
+    socialUi: {
+        clusterEnabled: { type: Boolean, default: true },
+        buttonVariant: { type: String, enum: ['default', 'squircle'], default: 'squircle' },
+        showLabels: { type: Boolean, default: false },
+        platformOrder: {
+            type: [String],
+            default: ['facebook', 'whatsapp', 'telegram', 'twitter', 'youtube', 'instagram'],
+        },
+    },
+    pricingUi: {
+        currencyCode: { type: String, default: 'BDT' },
+        currencySymbol: { type: String, default: '\\u09F3' },
+        currencyLocale: { type: String, default: 'bn-BD' },
+        displayMode: { type: String, enum: ['symbol', 'code'], default: 'symbol' },
+        thousandSeparator: { type: Boolean, default: true },
+    },
 }, { timestamps: true });
 
 export default mongoose.model<IWebsiteSettings>('WebsiteSettings', WebsiteSettingsSchema);
+

@@ -11,6 +11,7 @@ import StudentProfile from '../models/StudentProfile';
 import StudentDashboardConfig from '../models/StudentDashboardConfig';
 import ExamEvent from '../models/ExamEvent';
 import ExamCertificate from '../models/ExamCertificate';
+import StudentDueLedger from '../models/StudentDueLedger';
 import {
     addExamAttemptStreamClient,
     broadcastExamAttemptEvent,
@@ -18,6 +19,7 @@ import {
 } from '../realtime/examAttemptStream';
 import { broadcastAdminLiveEvent } from '../realtime/adminLiveStream';
 import { getExamCardMetrics } from '../services/examCardMetricsService';
+import { getSecurityConfig } from '../services/securityConfigService';
 
 /** Verify user subscription — returns true if user has ANY subscription plan (active or demo) */
 type SubscriptionGateResult = {
@@ -146,10 +148,12 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
 
         const now = new Date();
         const exams = await Exam.find({ isPublished: true }).sort({ startDate: 1 }).lean();
-        const [profile, user] = await Promise.all([
+        const [profile, user, dueLedger] = await Promise.all([
             StudentProfile.findOne({ user_id: studentId }).select('groupIds').lean(),
             User.findById(studentId).select('subscription').lean(),
+            StudentDueLedger.findOne({ studentId }).select('netDue').lean(),
         ]);
+        const pendingDueAmount = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
         const studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
         const studentPlanCode = String(
             (user?.subscription as Record<string, unknown> | undefined)?.planCode ||
@@ -187,12 +191,14 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
                     (requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds)) ||
                     (requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode))
                 );
+                const paymentPendingForExam = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
                 let status: string;
                 if (result) {
                     status = 'completed';
                 } else if (
                     (e.accessMode === 'specific' && !e.allowedUsers.some((uid: mongoose.Types.ObjectId) => uid.toString() === studentId)) ||
-                    accessControlDenied
+                    accessControlDenied ||
+                    paymentPendingForExam
                 ) {
                     status = 'locked';
                 } else if (now < new Date(e.startDate)) {
@@ -207,6 +213,7 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
                     status,
                     attemptsUsed: attempts,
                     attemptsLeft: Math.max(0, e.attemptLimit - attempts),
+                    paymentPending: paymentPendingForExam,
                     myResult: result ? {
                         obtainedMarks: Number(result.obtainedMarks || 0),
                         percentage: Number(result.percentage || 0),
@@ -313,7 +320,7 @@ export async function getExamLanding(req: AuthRequest, res: Response): Promise<v
         const exams = await Exam.find(examFilter).sort({ startDate: 1 }).lean();
         const examIds = exams.map((exam) => String(exam._id || '')).filter(Boolean);
 
-        const [profile, user, results, activeSessions, metricsMap] = await Promise.all([
+        const [profile, user, results, activeSessions, metricsMap, dueLedger] = await Promise.all([
             StudentProfile.findOne({ user_id: studentId }).select('groupIds').lean(),
             User.findById(studentId).select('subscription').lean(),
             ExamResult.find({ student: studentId, exam: { $in: examIds } })
@@ -323,7 +330,9 @@ export async function getExamLanding(req: AuthRequest, res: Response): Promise<v
                 .select('exam')
                 .lean(),
             getExamCardMetrics(exams as unknown as Record<string, unknown>[]),
+            StudentDueLedger.findOne({ studentId }).select('netDue').lean(),
         ]);
+        const pendingDueAmount = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
 
         const studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
         const studentPlanCode = String(
@@ -355,8 +364,9 @@ export async function getExamLanding(req: AuthRequest, res: Response): Promise<v
                 const userAllowed = requiredUserIds.length === 0 || requiredUserIds.includes(studentId);
                 const groupAllowed = requiredGroupIds.length === 0 || hasAnyIntersection(requiredGroupIds, studentGroupIds);
                 const planAllowed = requiredPlanCodes.length === 0 || requiredPlanCodes.includes(studentPlanCode);
+                const paymentPending = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
                 const assignedAllowed = canAccessExamSync(examRecord, studentId);
-                const accessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed;
+                const accessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed || paymentPending;
 
                 const attemptsUsed = Number(attemptCountByExam.get(examId) || 0);
                 const attemptLimit = Number(exam.attemptLimit || 1);
@@ -419,6 +429,7 @@ export async function getExamLanding(req: AuthRequest, res: Response): Promise<v
                     resultPublished: isExamResultPublished(examRecord, now),
                     resultPublishMode: getResultPublishMode(examRecord),
                     featured: Boolean((exam as Record<string, unknown>).isFeatured),
+                    paymentPending,
                 };
             })
             .filter((card) => {
@@ -481,6 +492,9 @@ type EligibilitySummary = {
     requiredProfileCompletion: number;
     currentProfileCompletion: number;
     subscriptionActive: boolean;
+    paymentRequired: boolean;
+    paymentCleared: boolean;
+    pendingDueAmount: number;
     attemptsUsed: number;
     attemptsLeft: number;
     windowOpen: boolean;
@@ -488,12 +502,13 @@ type EligibilitySummary = {
 };
 
 async function getEligibilitySummary(exam: Record<string, unknown>, studentId: string): Promise<EligibilitySummary> {
-    const [subscriptionState, profile, threshold, attemptsUsed, user] = await Promise.all([
+    const [subscriptionState, profile, threshold, attemptsUsed, user, dueLedger] = await Promise.all([
         verifySubscription(studentId),
         StudentProfile.findOne({ user_id: studentId }).select('profile_completion_percentage groupIds').lean(),
         getProfileCompletionThreshold(),
         ExamResult.countDocuments({ exam: String(exam._id || ''), student: studentId }),
         User.findById(studentId).select('subscription').lean(),
+        StudentDueLedger.findOne({ studentId }).select('netDue').lean(),
     ]);
 
     const reasons: string[] = [];
@@ -555,6 +570,13 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
         reasons.push('access_plan_restricted');
     }
 
+    const paymentRequired = requiredPlanCodes.length > 0;
+    const pendingDueAmount = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
+    const paymentCleared = !paymentRequired || pendingDueAmount <= 0;
+    if (!paymentCleared) {
+        reasons.push('payment_pending');
+    }
+
     const eligible = reasons.length === 0;
     return {
         eligible,
@@ -563,6 +585,9 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
         requiredProfileCompletion: threshold,
         currentProfileCompletion,
         subscriptionActive: subscriptionState.allowed,
+        paymentRequired,
+        paymentCleared,
+        pendingDueAmount,
         attemptsUsed,
         attemptsLeft,
         windowOpen,
@@ -571,8 +596,12 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
 }
 
 async function getProfileCompletionThreshold(): Promise<number> {
+    const security = await getSecurityConfig(true);
+    if (security.examProtection.requireProfileScoreForExam) {
+        return Number(security.examProtection.profileScoreThreshold || 70);
+    }
     const config = await StudentDashboardConfig.findOne().select('profileCompletionThreshold').lean();
-    return Number(config?.profileCompletionThreshold || 60);
+    return Number(config?.profileCompletionThreshold || 70);
 }
 
 function getDeviceFingerprint(userAgent: string, ipAddress: string): string {
@@ -1024,6 +1053,16 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
         if (eligibility.attemptsLeft <= 0) {
             res.status(400).json({
                 message: `Maximum attempt limit (${exam.attemptLimit}) reached.`,
+                eligibility,
+            });
+            return;
+        }
+
+        if (!eligibility.paymentCleared) {
+            res.status(402).json({
+                message: 'Payment pending. Please complete your payment to start this exam.',
+                paymentPending: true,
+                pendingDueAmount: eligibility.pendingDueAmount,
                 eligibility,
             });
             return;
@@ -1892,7 +1931,7 @@ export async function logExamAttemptEvent(req: AuthRequest, res: Response): Prom
 
         const [exam, session] = await Promise.all([
             Exam.findById(examId).select('security_policies'),
-            ExamSession.findOne({ _id: attemptId, exam: examId, student: studentId, isActive: true }),
+            ExamSession.findOne({ _id: attemptId, exam: examId, student: studentId }),
         ]);
 
         if (!exam) {
@@ -1900,7 +1939,16 @@ export async function logExamAttemptEvent(req: AuthRequest, res: Response): Prom
             return;
         }
         if (!session) {
-            res.status(404).json({ message: 'Active attempt not found.' });
+            res.status(404).json({ message: 'Attempt not found.' });
+            return;
+        }
+        if (!session.isActive || String(session.status || '').toLowerCase() === 'submitted') {
+            res.json({
+                logged: false,
+                ignored: true,
+                reason: 'attempt_not_active',
+                attemptRevision: Number((session as any).attemptRevision || 0),
+            });
             return;
         }
         if (session.sessionLocked) {

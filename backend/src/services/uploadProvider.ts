@@ -1,7 +1,8 @@
 import crypto from 'crypto';
+import { getFirebaseStorageBucket, isFirebaseAdminEnabled } from '../config/firebaseAdmin';
 
 export type SignedUploadResponse = {
-    provider: 's3' | 'local';
+    provider: 's3' | 'local' | 'firebase';
     method: 'PUT' | 'POST';
     uploadUrl: string;
     publicUrl: string;
@@ -23,10 +24,49 @@ function getLocalSignedUpload(filename: string): SignedUploadResponse {
     };
 }
 
+async function getFirebaseSignedUpload(filename: string, mimeType: string): Promise<SignedUploadResponse | null> {
+    if (!isFirebaseAdminEnabled()) return null;
+
+    try {
+        const bucket = getFirebaseStorageBucket();
+        if (!bucket) return null;
+
+        const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const objectKey = `banners/${Date.now()}-${crypto.randomBytes(8).toString('hex')}-${safeName}`;
+        const file = bucket.file(objectKey);
+        const expiresAt = Date.now() + (15 * 60 * 1000);
+
+        const [uploadUrl] = await file.getSignedUrl({
+            action: 'write',
+            expires: expiresAt,
+            version: 'v4',
+            contentType: mimeType || 'application/octet-stream',
+        });
+
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${objectKey}`;
+        return {
+            provider: 'firebase',
+            method: 'PUT',
+            uploadUrl,
+            publicUrl,
+            headers: {
+                'Content-Type': mimeType || 'application/octet-stream',
+                'x-goog-content-length-range': '1,10485760',
+            },
+            expiresIn: 900,
+        };
+    } catch {
+        return null;
+    }
+}
+
 export async function getSignedUploadForBanner(
     filename: string,
     mimeType: string,
 ): Promise<SignedUploadResponse> {
+    const firebaseUpload = await getFirebaseSignedUpload(filename, mimeType);
+    if (firebaseUpload) return firebaseUpload;
+
     const bucket = String(process.env.AWS_S3_BUCKET || '').trim();
     const region = String(process.env.AWS_REGION || '').trim();
     const accessKey = String(process.env.AWS_ACCESS_KEY_ID || '').trim();

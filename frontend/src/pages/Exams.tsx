@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Lock, Clock, CheckCircle, AlertTriangle, Calendar, BookOpen, TrendingUp, ChevronRight, ExternalLink, Star, Zap, Loader2, RefreshCw } from 'lucide-react';
 import { getStudentExams } from '../services/api';
@@ -196,7 +196,7 @@ function SubscriptionRequired() {
 
 /* ─── Main Exams Page ─── */
 export default function ExamsPage() {
-    const { user } = useAuth();
+    const { user, isLoading: authLoading } = useAuth();
     const [exams, setExams] = useState<ExamCard[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -225,7 +225,18 @@ export default function ExamsPage() {
             });
     }, [user]);
 
-    // Gate 1: Must be logged in
+    // Gate 1: Auth session bootstrap
+    if (authLoading) return (
+        <div className="min-h-screen flex items-center justify-center px-4 py-16">
+            <div className="card p-8 sm:p-12 max-w-md w-full text-center">
+                <Loader2 className="w-8 h-8 mx-auto mb-4 text-primary animate-spin" />
+                <h1 className="section-title text-xl sm:text-2xl mb-3">Checking session</h1>
+                <p className="text-text-muted dark:text-dark-text/60 text-sm">Please wait while we verify your account.</p>
+            </div>
+        </div>
+    );
+
+    // Gate 2: Must be logged in
     if (!user) return (
         <div className="min-h-screen flex items-center justify-center px-4 py-16">
             <div className="card p-8 sm:p-12 max-w-md w-full text-center">
@@ -243,12 +254,7 @@ export default function ExamsPage() {
         </div>
     );
 
-    // Student exam experience is now centralized in dashboard V2
-    if (user.role === 'student') {
-        return <Navigate to="/student/dashboard" replace />;
-    }
-
-    // Gate 2: Subscription
+    // Gate 3: Subscription
     if (!loading && subscriptionRequired) return <SubscriptionRequired />;
 
     const byStatus = (...statuses: ExamStatus[]) => exams.filter(e => statuses.includes(e.status));
@@ -264,7 +270,7 @@ export default function ExamsPage() {
         {
             label: 'Avg. Score', value: completedExams.filter(e => e.myResult).length > 0
                 ? `${Math.round(completedExams.reduce((a, e) => a + (e.myResult?.percentage || 0), 0) / completedExams.filter(e => e.myResult).length)}%`
-                : '—', icon: TrendingUp, color: 'text-accent bg-accent/10 dark:bg-accent/20'
+                : '--', icon: TrendingUp, color: 'text-accent bg-accent/10 dark:bg-accent/20'
         },
     ];
 
@@ -318,7 +324,7 @@ export default function ExamsPage() {
                 {loading && (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                         <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                        <p className="text-sm text-text-muted dark:text-dark-text/60">Loading your exams…</p>
+                        <p className="text-sm text-text-muted dark:text-dark-text/60">Loading your exams...</p>
                     </div>
                 )}
 
@@ -340,15 +346,15 @@ export default function ExamsPage() {
                             requiredPercentage={100}
                             message="Complete your profile to unlock all available exams and sit for your university entrance tests."
                         >
-                            <Section title="🟢 Active Exams" exams={activeExams} />
+                            <Section title="Active Exams" exams={activeExams} />
                         </ProfileCompletionLock>
-                        <Section title="⏳ Upcoming Exams" exams={upcomingExams} />
-                        <Section title="✅ Completed Exams" exams={completedExams} />
+                        <Section title="Upcoming Exams" exams={upcomingExams} />
+                        <Section title="Completed Exams" exams={completedExams} />
 
                         {lockedExams.length > 0 && (
                             <div>
                                 <h2 className="text-lg font-heading font-bold dark:text-dark-text flex items-center gap-2 mb-4">
-                                    🔒 Locked Exams <span className="text-sm font-normal text-text-muted">({lockedExams.length})</span>
+                                    Locked Exams <span className="text-sm font-normal text-text-muted">({lockedExams.length})</span>
                                 </h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                                     {lockedExams.map(e => <ExamCardComponent key={e._id} exam={e} />)}

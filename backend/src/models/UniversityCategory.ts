@@ -30,9 +30,7 @@ const UniversityCategorySchema = new Schema<IUniversityCategory>({
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });
 
-UniversityCategorySchema.index({ slug: 1 }, { unique: true });
 UniversityCategorySchema.index({ isActive: 1, homeHighlight: 1, homeOrder: 1 });
 UniversityCategorySchema.index({ name: 1 }, { unique: true });
 
 export default mongoose.model<IUniversityCategory>('UniversityCategory', UniversityCategorySchema);
-

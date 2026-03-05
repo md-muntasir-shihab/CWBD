@@ -2,9 +2,22 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { RefreshCw, Save } from 'lucide-react';
 import { StudentDashboardConfig, adminGetStudentDashboardConfig, adminUpdateStudentDashboardConfig } from '../../services/api';
+import CyberToggle from '../ui/CyberToggle';
+
+const defaultCelebrationRules: NonNullable<StudentDashboardConfig['celebrationRules']> = {
+    enabled: true,
+    windowDays: 7,
+    minPercentage: 80,
+    maxRank: 10,
+    ruleMode: 'score_or_rank',
+    messageTemplates: ['Excellent performance! Keep it up.'],
+    showForSec: 10,
+    dismissible: true,
+    maxShowsPerDay: 2,
+};
 
 const defaultConfig: StudentDashboardConfig = {
-    welcomeMessageTemplate: 'স্বাগতম, {{name}}!',
+    welcomeMessageTemplate: 'Welcome, {{name}}!',
     profileCompletionThreshold: 60,
     enableRealtime: true,
     enableDeviceLock: true,
@@ -12,6 +25,7 @@ const defaultConfig: StudentDashboardConfig = {
     enableBadges: true,
     enableProgressCharts: true,
     featuredOrderingMode: 'manual',
+    celebrationRules: defaultCelebrationRules,
 };
 
 export default function DashboardConfigPanel() {
@@ -27,7 +41,14 @@ export default function DashboardConfigPanel() {
         setLoading(true);
         try {
             const res = await adminGetStudentDashboardConfig();
-            setConfig({ ...defaultConfig, ...(res.data.config || {}) });
+            setConfig({
+                ...defaultConfig,
+                ...(res.data.config || {}),
+                celebrationRules: {
+                    ...defaultCelebrationRules,
+                    ...((res.data.config || {}).celebrationRules || {}),
+                },
+            });
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to load dashboard config');
         } finally {
@@ -37,6 +58,16 @@ export default function DashboardConfigPanel() {
 
     const update = (key: keyof StudentDashboardConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const updateCelebration = (key: keyof NonNullable<StudentDashboardConfig['celebrationRules']>, value: unknown) => {
+        setConfig((prev) => ({
+            ...prev,
+            celebrationRules: {
+                ...(prev.celebrationRules || defaultCelebrationRules),
+                [key]: value,
+            },
+        }));
     };
 
     const save = async () => {
@@ -50,6 +81,7 @@ export default function DashboardConfigPanel() {
                 enableBadges: config.enableBadges,
                 enableProgressCharts: config.enableProgressCharts,
                 featuredOrderingMode: config.featuredOrderingMode,
+                celebrationRules: config.celebrationRules,
             });
             toast.success('Dashboard config updated');
             await loadConfig();
@@ -61,11 +93,13 @@ export default function DashboardConfigPanel() {
     };
 
     if (loading) {
-        return <div className="flex justify-center py-12"><RefreshCw className="w-5 h-5 animate-spin text-indigo-400" /></div>;
+        return <div className="flex justify-center py-12"><RefreshCw className="h-5 w-5 animate-spin text-indigo-400" /></div>;
     }
 
+    const rules = config.celebrationRules || defaultCelebrationRules;
+
     return (
-        <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/65 p-5 space-y-4">
+        <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/65 p-5 space-y-5">
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-white font-bold">Dashboard Config</h3>
@@ -77,7 +111,7 @@ export default function DashboardConfigPanel() {
                     disabled={saving}
                     className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white text-sm font-medium disabled:opacity-50 inline-flex items-center gap-2"
                 >
-                    {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     Save
                 </button>
             </div>
@@ -87,7 +121,7 @@ export default function DashboardConfigPanel() {
                 <input
                     value={config.welcomeMessageTemplate}
                     onChange={(e) => update('welcomeMessageTemplate', e.target.value)}
-                    placeholder="স্বাগতম, {{name}}!"
+                    placeholder="Welcome, {{name}}!"
                     className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
                 />
             </div>
@@ -102,10 +136,9 @@ export default function DashboardConfigPanel() {
                     <option value="manual">Manual</option>
                     <option value="adaptive">Adaptive</option>
                 </select>
-                <p className="text-[11px] text-slate-500 mt-1">Adaptive mode prioritizes featured items using recent activity, with deterministic fallback.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {[
                     ['enableRealtime', 'Enable Realtime (SSE)'],
                     ['enableDeviceLock', 'Enable Device Lock'],
@@ -113,15 +146,106 @@ export default function DashboardConfigPanel() {
                     ['enableBadges', 'Enable Badges'],
                     ['enableProgressCharts', 'Enable Progress Charts'],
                 ].map(([key, label]) => (
-                    <label key={key} className="flex items-center gap-2 rounded-xl border border-indigo-500/10 bg-slate-950/65 px-3 py-2.5 text-sm text-slate-200">
-                        <input
-                            type="checkbox"
+                    <div key={key} className="rounded-xl border border-indigo-500/10 bg-slate-950/65 px-3 py-2.5">
+                        <CyberToggle
                             checked={Boolean(config[key as keyof StudentDashboardConfig])}
-                            onChange={(e) => update(key as keyof StudentDashboardConfig, e.target.checked)}
+                            onChange={(value) => update(key as keyof StudentDashboardConfig, value)}
+                            label={label}
                         />
-                        {label}
-                    </label>
+                    </div>
                 ))}
+            </div>
+
+            <div className="rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-4 space-y-4">
+                <h4 className="text-sm font-semibold text-fuchsia-200">Celebration Popup Rules</h4>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="sm:col-span-2 rounded-lg border border-white/10 bg-slate-950/50 px-3 py-2">
+                        <CyberToggle
+                            checked={Boolean(rules.enabled)}
+                            onChange={(value) => updateCelebration('enabled', value)}
+                            label="Enable Celebration Popup"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-300">Minimum Score (%)</label>
+                        <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={rules.minPercentage}
+                            onChange={(e) => updateCelebration('minPercentage', Number(e.target.value || 0))}
+                            className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-300">Maximum Rank</label>
+                        <input
+                            type="number"
+                            min={1}
+                            value={rules.maxRank}
+                            onChange={(e) => updateCelebration('maxRank', Number(e.target.value || 1))}
+                            className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-300">Window (days)</label>
+                        <input
+                            type="number"
+                            min={1}
+                            value={rules.windowDays}
+                            onChange={(e) => updateCelebration('windowDays', Number(e.target.value || 1))}
+                            className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-300">Show Duration (sec)</label>
+                        <input
+                            type="number"
+                            min={3}
+                            value={rules.showForSec}
+                            onChange={(e) => updateCelebration('showForSec', Number(e.target.value || 10))}
+                            className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-300">Rule Mode</label>
+                        <select
+                            value={rules.ruleMode}
+                            onChange={(e) => updateCelebration('ruleMode', e.target.value)}
+                            className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
+                        >
+                            <option value="score_or_rank">Score OR Rank</option>
+                            <option value="score_and_rank">Score AND Rank</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-300">Max Shows / Day</label>
+                        <input
+                            type="number"
+                            min={1}
+                            value={rules.maxShowsPerDay}
+                            onChange={(e) => updateCelebration('maxShowsPerDay', Number(e.target.value || 1))}
+                            className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
+                        />
+                    </div>
+                    <div className="sm:col-span-2 rounded-lg border border-white/10 bg-slate-950/50 px-3 py-2">
+                        <CyberToggle
+                            checked={Boolean(rules.dismissible)}
+                            onChange={(value) => updateCelebration('dismissible', value)}
+                            label="Allow Manual Dismiss"
+                        />
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className="text-xs text-slate-300">Primary Message</label>
+                        <input
+                            value={rules.messageTemplates?.[0] || ''}
+                            onChange={(e) => updateCelebration('messageTemplates', [e.target.value])}
+                            className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
+                            placeholder="Excellent performance!"
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );

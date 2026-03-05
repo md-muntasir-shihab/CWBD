@@ -3,8 +3,8 @@ The admin panel is isolated for security and uses a completely separate layout.
 **URL:** `/campusway-secure-admin`
 
 ## Default Admin Credentials
-**Email:** `admin@campusway.com`
-**Password:** `admin123456`
+Default credentials can be rotated by setup scripts.
+Use the latest values from `backend/INITIAL_ACCESS_INFO.txt`.
 
 ## Accessing the API
 The admin API is secured behind a secret path.

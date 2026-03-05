@@ -3,6 +3,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import { connectDB } from '../config/db';
 import SiteSettings from '../models/Settings';
+import SecuritySettings from '../models/SecuritySettings';
 import User from '../models/User';
 import ActiveSession from '../models/ActiveSession';
 
@@ -23,7 +24,10 @@ function shouldDeactivateUsers(): boolean {
 async function restoreSecurity(): Promise<{ restored: boolean; reason?: string }> {
     try {
         const raw = await fs.readFile(BACKUP_PATH, 'utf-8');
-        const parsed = JSON.parse(raw) as { security?: Record<string, unknown> | null };
+        const parsed = JSON.parse(raw) as {
+            security?: Record<string, unknown> | null;
+            securitySettings?: Record<string, unknown> | null;
+        };
 
         if (!parsed.security) {
             return { restored: false, reason: 'No security snapshot found in backup file.' };
@@ -34,6 +38,14 @@ async function restoreSecurity(): Promise<{ restored: boolean; reason?: string }
             { $set: { security: parsed.security } },
             { upsert: true }
         );
+
+        if (parsed.securitySettings) {
+            await SecuritySettings.findOneAndUpdate(
+                { key: 'global' },
+                { $set: parsed.securitySettings },
+                { upsert: true }
+            );
+        }
 
         await fs.unlink(BACKUP_PATH).catch(() => { /* ignore */ });
         return { restored: true };

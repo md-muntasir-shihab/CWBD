@@ -3,12 +3,22 @@ import { AuthRequest } from '../middlewares/auth';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
+import { getFirebaseStorageBucket } from '../config/firebaseAdmin';
 
 // Ensure the upload directory exists
 const uploadDir = path.join(__dirname, '../../public/uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+const ALLOWED_MIME_TYPES = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'application/pdf',
+]);
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -26,7 +36,14 @@ const storage = multer.diskStorage({
 // Create the upload middleware (limit 10MB)
 export const uploadMiddleware = multer({ 
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+        if (!ALLOWED_MIME_TYPES.has(String(file.mimetype || '').toLowerCase())) {
+            cb(new Error('Unsupported file type'));
+            return;
+        }
+        cb(null, true);
+    },
 });
 
 /* ─────── UPLOAD MEDIA ─────── */
@@ -38,6 +55,38 @@ export async function uploadMedia(req: AuthRequest, res: Response): Promise<void
     try {
         if (!req.file) {
             res.status(400).json({ message: 'No file uploaded.' });
+            return;
+        }
+
+        if (!ALLOWED_MIME_TYPES.has(String(req.file.mimetype || '').toLowerCase())) {
+            res.status(400).json({ message: 'Unsupported file type.' });
+            return;
+        }
+
+        const firebaseBucket = getFirebaseStorageBucket();
+        if (firebaseBucket) {
+            const ext = path.extname(req.file.originalname || '').toLowerCase() || path.extname(req.file.filename || '');
+            const safeExt = ext && ext.length <= 10 ? ext : '';
+            const objectKey = `media/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${safeExt}`;
+            const fileRef = firebaseBucket.file(objectKey);
+            await fileRef.save(fs.readFileSync(req.file.path), {
+                metadata: {
+                    contentType: req.file.mimetype,
+                },
+                resumable: false,
+                public: true,
+            });
+
+            const publicUrl = `https://storage.googleapis.com/${firebaseBucket.name}/${objectKey}`;
+            fs.unlink(req.file.path, () => { /* ignore */ });
+            res.status(201).json({
+                message: 'File uploaded successfully.',
+                url: publicUrl,
+                filename: objectKey,
+                mimetype: req.file.mimetype,
+                size: req.file.size,
+                provider: 'firebase',
+            });
             return;
         }
 

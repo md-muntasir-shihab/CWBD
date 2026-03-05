@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { getPublicSettings } from '../services/api';
+import { ApiWebsiteSettings, getPublicSettings } from '../services/api';
 
 export function useWebsiteSettings() {
-    return useQuery({
+    return useQuery<ApiWebsiteSettings | null>({
         queryKey: ['website-settings'],
         queryFn: async () => {
             const { data } = await getPublicSettings();

@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
     Plus, Edit, Trash2, Eye, RefreshCw, Save,
@@ -34,7 +34,6 @@ import BannerPanel from '../components/admin/BannerPanel';
 import ReportsPanel from '../components/admin/ReportsPanel';
 import HomeControlPanel from '../components/admin/HomeControlPanel';
 import SystemLogsPanel from '../components/admin/SystemLogsPanel';
-import NewsPanel from '../components/admin/NewsPanel';
 import ServicesPanel from '../components/admin/ServicesPanel';
 import ResourcesPanel from '../components/admin/ResourcesPanel';
 import ContactPanel from '../components/admin/ContactPanel';
@@ -1014,7 +1013,7 @@ function MfaConfirmModal({ onConfirm, onClose }: { onConfirm: () => void; onClos
         if (!password) { setError('Password required'); return; }
         setLoading(true);
         try {
-            const token = localStorage.getItem('campusway-token');
+            const token = sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token');
             const res = await fetch(`/api/campusway-secure-admin/auth/mfa/confirm`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -1057,7 +1056,11 @@ function MfaConfirmModal({ onConfirm, onClose }: { onConfirm: () => void; onClos
 export default function AdminDashboard() {
     const { user, isAuthenticated, isLoading, logout } = useAuth();
     const navigate = useNavigate();
-    const [tab, setTab] = useState('dashboard');
+    const location = useLocation();
+    const [tab, setTab] = useState(() => {
+        const initial = new URLSearchParams(window.location.search).get('tab');
+        return initial || 'dashboard';
+    });
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -1086,15 +1089,24 @@ export default function AdminDashboard() {
 
     const isAdmin = user && ['superadmin', 'admin', 'moderator'].includes(user.role);
 
+    useEffect(() => {
+        const current = new URLSearchParams(location.search);
+        if (current.get('tab') === tab) return;
+        current.set('tab', tab);
+        navigate({ pathname: location.pathname, search: `?${current.toString()}` }, { replace: true });
+    }, [tab, navigate, location.pathname, location.search]);
+
     const refreshExamCards = useCallback(async () => {
         const examRes = await adminGetExams({ view: 'cards', includeMetrics: 'true', limit: 200 }).catch(() => ({ data: { exams: [] } }));
         setExams(examRes.data.exams || examRes.data || []);
     }, []);
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated) navigate('/login');
-        if (!isLoading && isAuthenticated && !isAdmin) navigate('/');
-    }, [isLoading, isAuthenticated, isAdmin, navigate]);
+        if (!isLoading && !isAuthenticated) navigate('/admin/login');
+        if (!isLoading && isAuthenticated && !isAdmin) {
+            navigate(user?.role === 'student' ? '/student/dashboard' : '/admin/login');
+        }
+    }, [isLoading, isAuthenticated, isAdmin, navigate, user?.role]);
 
     const fetchAll = useCallback(async () => {
         if (!isAdmin) return;
@@ -1395,7 +1407,7 @@ export default function AdminDashboard() {
         toast.success('Share URL copied');
     };
     const triggerExport = async (examId: string) => {
-        const token = localStorage.getItem('campusway-token');
+        const token = sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token');
         const toastId = toast.loading('Generating Excel...');
         try {
             setPendingExport(null);
@@ -1438,7 +1450,7 @@ export default function AdminDashboard() {
         setImportingUni(true);
         const toastId = toast.loading('Importing universities...');
         try {
-            const token = localStorage.getItem('campusway-token') || '';
+            const token = sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token') || '';
             const formData = new FormData();
             formData.append('file', file);
             const response = await fetch('/api/campusway-secure-admin/universities/import-excel', {
@@ -1474,7 +1486,7 @@ export default function AdminDashboard() {
         );
     }
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = () => { logout(); navigate('/admin/login'); };
 
     /* â”€â”€ Render inline panels (University, Exam, User, Settings, FileUpload) â”€â”€ */
 
@@ -1732,7 +1744,20 @@ export default function AdminDashboard() {
             case 'student-dashboard-control': return <StudentDashboardControlPanel />;
             case 'exams': return renderExams();
             case 'live-monitor': return <LiveExamMonitorPanel />;
-            case 'news': return <NewsPanel />;
+            case 'news':
+                return (
+                    <div className="rounded-2xl border border-indigo-500/20 bg-slate-900/60 p-8 text-center">
+                        <h3 className="text-2xl font-bold text-white">News System V2</h3>
+                        <p className="mt-2 text-sm text-slate-400">
+                            News management has moved to the dedicated admin route tree.
+                        </p>
+                        <div className="mt-6">
+                            <button className="btn-primary" onClick={() => navigate('/admin/news')}>
+                                Open /admin/news
+                            </button>
+                        </div>
+                    </div>
+                );
             case 'question-bank': return <QuestionBankPanel />;
             case 'services': return <ServicesPanel />;
             case 'resources': return <ResourcesPanel />;

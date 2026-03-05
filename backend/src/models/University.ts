@@ -133,7 +133,6 @@ const UniversitySchema = new Schema<IUniversity>({
     slug: { type: String, required: true, unique: true },
 }, { timestamps: true });
 
-UniversitySchema.index({ slug: 1 });
 UniversitySchema.index({ category: 1 });
 UniversitySchema.index({ categoryId: 1, isActive: 1, isArchived: 1 });
 UniversitySchema.index({ category: 1, isActive: 1, isArchived: 1 });

@@ -59,7 +59,11 @@ export default function AdminTopbar({
             <div className="flex items-center justify-between px-4 sm:px-6 py-3">
                 {/* Left: Menu + Title */}
                 <div className="flex items-center gap-3">
-                    <button onClick={onMenuClick} className="lg:hidden p-2 hover:bg-white/5 rounded-xl transition-colors">
+                    <button
+                        onClick={onMenuClick}
+                        aria-label="Toggle menu"
+                        className="lg:hidden p-2 hover:bg-white/5 rounded-xl transition-colors"
+                    >
                         <Menu className="w-5 h-5 text-slate-400" />
                     </button>
                     <div>

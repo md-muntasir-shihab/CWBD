@@ -9,6 +9,17 @@ export interface IStudentDashboardConfig extends Document {
     enableBadges: boolean;
     enableProgressCharts: boolean;
     featuredOrderingMode: 'manual' | 'adaptive';
+    celebrationRules: {
+        enabled: boolean;
+        windowDays: number;
+        minPercentage: number;
+        maxRank: number;
+        ruleMode: 'score_or_rank' | 'score_and_rank' | 'custom';
+        messageTemplates: string[];
+        showForSec: number;
+        dismissible: boolean;
+        maxShowsPerDay: number;
+    };
     updatedBy?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
@@ -17,7 +28,7 @@ export interface IStudentDashboardConfig extends Document {
 const StudentDashboardConfigSchema = new Schema<IStudentDashboardConfig>({
     welcomeMessageTemplate: {
         type: String,
-        default: 'স্বাগতম, {{name}}! আজকের প্রস্তুতি চালিয়ে যাও।'
+        default: 'Welcome, {{name}}! Keep your momentum today.',
     },
     profileCompletionThreshold: { type: Number, default: 60, min: 0, max: 100 },
     enableRealtime: { type: Boolean, default: true },
@@ -26,6 +37,24 @@ const StudentDashboardConfigSchema = new Schema<IStudentDashboardConfig>({
     enableBadges: { type: Boolean, default: true },
     enableProgressCharts: { type: Boolean, default: true },
     featuredOrderingMode: { type: String, enum: ['manual', 'adaptive'], default: 'manual' },
+    celebrationRules: {
+        enabled: { type: Boolean, default: true },
+        windowDays: { type: Number, default: 7, min: 1, max: 90 },
+        minPercentage: { type: Number, default: 80, min: 0, max: 100 },
+        maxRank: { type: Number, default: 10, min: 1, max: 1000 },
+        ruleMode: { type: String, enum: ['score_or_rank', 'score_and_rank', 'custom'], default: 'score_or_rank' },
+        messageTemplates: {
+            type: [String],
+            default: [
+                'Excellent performance! Keep it up.',
+                'Top result achieved. Great work!',
+                'You are in the top performers this week.',
+            ],
+        },
+        showForSec: { type: Number, default: 10, min: 3, max: 60 },
+        dismissible: { type: Boolean, default: true },
+        maxShowsPerDay: { type: Number, default: 2, min: 1, max: 10 },
+    },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 

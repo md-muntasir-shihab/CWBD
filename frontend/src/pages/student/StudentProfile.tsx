@@ -2,6 +2,7 @@
 import { User, Upload, Save, Loader2, AlertCircle, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { changePassword, getStudentProfile, updateStudentProfile, uploadStudentDocument } from '../../services/api';
+import AchievementPopupCard from '../../components/ui/AchievementPopupCard';
 
 const normalizeDepartmentValue = (value: string): 'science' | 'arts' | 'commerce' | '' => {
     const normalized = (value || '').trim().toLowerCase();
@@ -23,6 +24,7 @@ export default function StudentProfile() {
         newPassword: '',
         confirmPassword: '',
     });
+    const [showCelebration, setShowCelebration] = useState(false);
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -51,6 +53,17 @@ export default function StudentProfile() {
         try {
             const res = await getStudentProfile();
             setProfile(res.data);
+            const celebration = res.data?.celebration;
+            if (celebration?.eligible) {
+                const todayKey = new Date().toISOString().slice(0, 10);
+                const storageKey = `campusway-celebration-${todayKey}`;
+                const shownCount = Number(localStorage.getItem(storageKey) || 0);
+                const maxShows = Number(celebration.maxShowsPerDay || 1);
+                if (shownCount < maxShows) {
+                    setShowCelebration(true);
+                    localStorage.setItem(storageKey, String(shownCount + 1));
+                }
+            }
             if (res.data) {
                 setFormData({
                     full_name: res.data.full_name || '',
@@ -192,6 +205,15 @@ export default function StudentProfile() {
 
     return (
         <div className="w-full max-w-5xl space-y-6 sm:space-y-8">
+            <AchievementPopupCard
+                open={showCelebration}
+                onClose={() => setShowCelebration(false)}
+                score={Number(profile?.celebration?.topPercentage || 0)}
+                rank={profile?.celebration?.bestRank || null}
+                message={String(profile?.celebration?.message || 'Excellent performance!')}
+                showForSec={Number(profile?.celebration?.showForSec || 10)}
+                dismissible={Boolean(profile?.celebration?.dismissible ?? true)}
+            />
             <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Profile &amp; Documents</h1>
                 <p className="text-slate-500 mt-1">Manage your personal information and verified documents</p>

@@ -245,7 +245,12 @@ export default function ExamTakingPage() {
             }
 
             toast.success(data.message || 'Exam submitted successfully.');
-            navigate(`/exam/result/${examId}`, { replace: true });
+            const resultPath = `/exam/result/${examId}`;
+            setShowSubmitModal(false);
+            setIsSubmitting(false);
+            // Use hard navigation to guarantee route transition after a locked-in submit.
+            window.location.assign(resultPath);
+            return;
         } catch (error) {
             const axiosError = error as AxiosError<{ message?: string; latestRevision?: number }>;
             const status = axiosError.response?.status;
@@ -263,6 +268,7 @@ export default function ExamTakingPage() {
                 toast.error(axiosError.response?.data?.message || 'Submit failed. Please try again.');
             }
 
+            setShowSubmitModal(false);
             setIsSubmitting(false);
         }
     }, [examId, session?.sessionId, session?.sessionLocked, isSubmitting, flushQueue, answers, attemptRevision, navigate, syncAttemptState]);

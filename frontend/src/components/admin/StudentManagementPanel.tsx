@@ -31,7 +31,7 @@ import {
     X, RefreshCw, User, Mail, Hash, Phone, Crown, BookOpen, GraduationCap, Fingerprint, IdCard, Eye
 } from 'lucide-react';
 
-/* ── UI Components ── */
+/* UI Components */
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
     return (
@@ -49,7 +49,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
     );
 }
 
-/* ── Form Components ── */
+/* Form Components */
 
 function StudentForm({ initial, onSave, plans, onClose }: {
     initial?: AdminStudentItem;
@@ -282,6 +282,11 @@ function PlanForm({ initial, onSave, onClose }: {
         name: initial?.name || '',
         code: initial?.code || '',
         durationDays: initial?.durationDays || 30,
+        durationValue: initial?.durationValue || initial?.durationDays || 30,
+        durationUnit: initial?.durationUnit || 'days',
+        price: Number(initial?.price || 0),
+        includedModules: Array.isArray(initial?.includedModules) ? initial?.includedModules.join(', ') : '',
+        sortOrder: Number(initial?.sortOrder || initial?.priority || 100),
         description: initial?.description || '',
     });
     const [loading, setLoading] = useState(false);
@@ -290,7 +295,13 @@ function PlanForm({ initial, onSave, onClose }: {
         e.preventDefault();
         setLoading(true);
         try {
-            await onSave(form);
+            await onSave({
+                ...form,
+                includedModules: form.includedModules
+                    .split(',')
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+            });
             onClose();
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error');
@@ -311,9 +322,30 @@ function PlanForm({ initial, onSave, onClose }: {
                     <input required value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-4 text-sm text-white focus:border-indigo-500/50 outline-none" placeholder="PRO1Y" disabled={!!initial} />
                 </div>
             </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400">Duration Value</label>
+                    <input required type="number" min={1} value={form.durationValue} onChange={e => setForm({ ...form, durationValue: Number(e.target.value), durationDays: form.durationUnit === 'months' ? Number(e.target.value || 1) * 30 : Number(e.target.value) })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-4 text-sm text-white focus:border-indigo-500/50 outline-none" />
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400">Duration Unit</label>
+                    <select value={form.durationUnit} onChange={e => setForm({ ...form, durationUnit: e.target.value as 'days' | 'months', durationDays: e.target.value === 'months' ? form.durationValue * 30 : form.durationValue })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-4 text-sm text-white focus:border-indigo-500/50 outline-none">
+                        <option value="days">Days</option>
+                        <option value="months">Months</option>
+                    </select>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400">Price (BDT)</label>
+                    <input type="number" min={0} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-4 text-sm text-white focus:border-indigo-500/50 outline-none" />
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400">Sort Order</label>
+                    <input type="number" min={1} value={form.sortOrder} onChange={e => setForm({ ...form, sortOrder: Number(e.target.value) })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-4 text-sm text-white focus:border-indigo-500/50 outline-none" />
+                </div>
+            </div>
             <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-400">Duration (Days)</label>
-                <input required type="number" value={form.durationDays} onChange={e => setForm({ ...form, durationDays: Number(e.target.value) })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-4 text-sm text-white focus:border-indigo-500/50 outline-none" />
+                <label className="text-xs font-medium text-slate-400">Included Modules (comma separated)</label>
+                <input value={form.includedModules} onChange={e => setForm({ ...form, includedModules: e.target.value })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-4 text-sm text-white focus:border-indigo-500/50 outline-none" placeholder="Question Bank, Premium Course, Test Series" />
             </div>
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-400">Description</label>
@@ -363,7 +395,7 @@ function RenewForm({ student, plans, onSave, onClose }: {
                 <label className="text-xs font-medium text-slate-400">Select Package</label>
                 <select value={form.planCode} onChange={e => setForm({ ...form, planCode: e.target.value })} className="w-full bg-slate-950/65 border border-indigo-500/20 rounded-xl py-2 px-3 text-sm text-white outline-none">
                     <option value="">Select Package</option>
-                    {plans.map(p => <option key={p._id} value={p.code}>{p.name} ({p.durationDays}d)</option>)}
+                    {plans.map(p => <option key={p._id} value={p.code}>{p.name} ({p.durationValue || p.durationDays} {p.durationUnit || 'days'})</option>)}
                 </select>
             </div>
             <div className="space-y-1.5">
@@ -542,7 +574,18 @@ export default function StudentManagementPanel() {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
+    const [summary, setSummary] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(false);
+    const [studentFilters, setStudentFilters] = useState({
+        batch: '',
+        sscBatch: '',
+        department: '',
+        group: '',
+        planCode: '',
+        status: '',
+        profileScoreBand: '',
+        paymentStatus: '',
+    });
 
     // Modal States
     const [studentModal, setStudentModal] = useState<{ mode: 'add' | 'edit'; data?: AdminStudentItem } | null>(null);
@@ -555,15 +598,28 @@ export default function StudentManagementPanel() {
     const fetchStudents = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await adminGetStudents({ page, limit: 20, search: search || undefined });
+            const res = await adminGetStudents({
+                page,
+                limit: 20,
+                search: search || undefined,
+                batch: studentFilters.batch || undefined,
+                sscBatch: studentFilters.sscBatch || undefined,
+                department: studentFilters.department || undefined,
+                group: studentFilters.group || undefined,
+                planCode: studentFilters.planCode || undefined,
+                status: studentFilters.status || undefined,
+                profileScoreBand: (studentFilters.profileScoreBand || undefined) as 'lt70' | 'gte70' | undefined,
+                paymentStatus: (studentFilters.paymentStatus || undefined) as 'pending' | 'paid' | 'clear' | undefined,
+            });
             setStudents(res.data.items || []);
             setPages(Math.max(1, Number(res.data.pages || 1)));
+            setSummary(res.data.summary || {});
         } catch (e: any) {
             toast.error(e.response?.data?.message || 'Failed to load students');
         } finally {
             setLoading(false);
         }
-    }, [page, search]);
+    }, [page, search, studentFilters]);
 
     const fetchGroups = useCallback(async () => {
         try {
@@ -585,6 +641,7 @@ export default function StudentManagementPanel() {
 
     useEffect(() => { void fetchStudents(); }, [fetchStudents]);
     useEffect(() => { void fetchGroups(); void fetchPlans(); }, [fetchGroups, fetchPlans]);
+    useEffect(() => { setPage(1); }, [search, studentFilters]);
 
     const handleRenew = async (data: any) => {
         if (!renewModal) return;
@@ -640,6 +697,10 @@ export default function StudentManagementPanel() {
         }
     };
 
+    const batchOptions = Array.from(new Set(students.map((item) => String(item.batch || '').trim()).filter(Boolean))).sort();
+    const sscBatchOptions = Array.from(new Set(students.map((item) => String(item.ssc_batch || '').trim()).filter(Boolean))).sort();
+    const departmentOptions = Array.from(new Set(students.map((item) => String(item.department || '').trim()).filter(Boolean))).sort();
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header */}
@@ -686,6 +747,106 @@ export default function StudentManagementPanel() {
                 </div>
             </div>
 
+            {tab === 'students' && (
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+                        <div className="rounded-xl border border-indigo-500/10 bg-slate-900/65 p-3">
+                            <p className="text-[11px] text-slate-500 uppercase tracking-wider">Total</p>
+                            <p className="text-xl font-bold text-white">{Number(summary.total || 0)}</p>
+                        </div>
+                        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+                            <p className="text-[11px] text-emerald-200 uppercase tracking-wider">Active</p>
+                            <p className="text-xl font-bold text-emerald-100">{Number(summary.active || 0)}</p>
+                        </div>
+                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3">
+                            <p className="text-[11px] text-amber-200 uppercase tracking-wider">Profile &lt; 70</p>
+                            <p className="text-xl font-bold text-amber-100">{Number(summary.profileBelow70 || 0)}</p>
+                        </div>
+                        <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3">
+                            <p className="text-[11px] text-rose-200 uppercase tracking-wider">Payment Pending</p>
+                            <p className="text-xl font-bold text-rose-100">{Number(summary.paymentPending || 0)}</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-500/20 bg-slate-800/70 p-3">
+                            <p className="text-[11px] text-slate-300 uppercase tracking-wider">Suspended</p>
+                            <p className="text-xl font-bold text-white">{Number(summary.suspended || 0)}</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                        <select
+                            value={studentFilters.batch}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, batch: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">HSC Batch: All</option>
+                            {batchOptions.map((option) => <option key={`hsc-${option}`} value={option}>{option}</option>)}
+                        </select>
+                        <select
+                            value={studentFilters.sscBatch}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, sscBatch: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">SSC Batch: All</option>
+                            {sscBatchOptions.map((option) => <option key={`ssc-${option}`} value={option}>{option}</option>)}
+                        </select>
+                        <select
+                            value={studentFilters.department}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, department: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">Department: All</option>
+                            {departmentOptions.map((option) => <option key={`dept-${option}`} value={option}>{option}</option>)}
+                        </select>
+                        <select
+                            value={studentFilters.status}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, status: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">Status: All</option>
+                            <option value="active">Active</option>
+                            <option value="pending">Pending</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="blocked">Blocked</option>
+                        </select>
+                        <select
+                            value={studentFilters.profileScoreBand}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, profileScoreBand: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">Profile Score: All</option>
+                            <option value="lt70">Below 70</option>
+                            <option value="gte70">70 and above</option>
+                        </select>
+                        <select
+                            value={studentFilters.paymentStatus}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, paymentStatus: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">Payment: All</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="clear">No Due</option>
+                        </select>
+                        <select
+                            value={studentFilters.group}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, group: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">Group: All</option>
+                            {groups.map((group) => <option key={group._id} value={group.slug}>{group.name}</option>)}
+                        </select>
+                        <select
+                            value={studentFilters.planCode}
+                            onChange={(e) => setStudentFilters((prev) => ({ ...prev, planCode: e.target.value }))}
+                            className="bg-slate-900/65 border border-indigo-500/10 rounded-xl py-2.5 px-3 text-sm text-white outline-none"
+                        >
+                            <option value="">Plan: All</option>
+                            {plans.map((plan) => <option key={plan._id} value={plan.code}>{plan.name}</option>)}
+                        </select>
+                    </div>
+                </div>
+            )}
+
             {/* Content Area */}
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -696,7 +857,11 @@ export default function StudentManagementPanel() {
                 <>
                     {tab === 'students' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {students.map(s => (
+                            {students.length === 0 ? (
+                                <div className="sm:col-span-2 lg:col-span-3 rounded-2xl border border-indigo-500/10 bg-slate-900/65 p-8 text-center text-slate-400 text-sm">
+                                    No students matched this filter.
+                                </div>
+                            ) : students.map(s => (
                                 <div key={s._id} className="group bg-slate-900/65 border border-indigo-500/10 rounded-2xl p-5 hover:border-indigo-500/30 transition-all duration-300 relative overflow-hidden text-left">
                                     <div className="absolute top-0 right-0 p-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button onClick={() => setStudentModal({ mode: 'edit', data: s })} className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"><Edit className="w-4 h-4" /></button>
@@ -717,6 +882,12 @@ export default function StudentManagementPanel() {
                                             <p className="text-xs text-slate-500 truncate">{s.email}</p>
                                             <div className="flex flex-wrap items-center gap-2 mt-2">
                                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${s.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>{s.status}</span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${Number(s.profileScore || 0) >= 70 ? 'bg-emerald-500/10 text-emerald-300' : 'bg-amber-500/10 text-amber-300'}`}>
+                                                    Profile {Number(s.profileScore || 0)}%
+                                                </span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${s.paymentStatus === 'pending' ? 'bg-rose-500/10 text-rose-300' : 'bg-indigo-500/10 text-indigo-300'}`}>
+                                                    Payment {s.paymentStatus || 'clear'}
+                                                </span>
                                                 <span className="text-[10px] text-slate-400 font-medium">Batch: {s.batch || 'N/A'}</span>
                                                 {s.department && <span className="text-[10px] bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded-full font-medium">{s.department}</span>}
                                             </div>
@@ -730,6 +901,16 @@ export default function StudentManagementPanel() {
                                         <div>
                                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Expiry</p>
                                             <p className={`text-xs ${s.subscription?.daysLeft <= 0 ? 'text-rose-400' : 'text-slate-200'}`}>{fmtDate(s.subscription?.expiryDate)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Pending Due</p>
+                                            <p className={`text-xs ${Number(s.pendingDue || 0) > 0 ? 'text-rose-300' : 'text-slate-200'}`}>
+                                                BDT {Number(s.pendingDue || 0).toLocaleString('en-US')}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Exams</p>
+                                            <p className="text-xs text-slate-200">{Number(s.examStats?.totalAttempts || 0)} attempts</p>
                                         </div>
                                     </div>
                                     <div className="mt-4 flex gap-2 overflow-x-auto scrollbar-hide pb-2">
@@ -782,7 +963,11 @@ export default function StudentManagementPanel() {
                                     <div className="mt-4 space-y-2">
                                         <div className="flex justify-between text-xs">
                                             <span className="text-slate-500">Duration</span>
-                                            <span className="text-slate-200 font-bold">{p.durationDays} Days</span>
+                                            <span className="text-slate-200 font-bold">{p.durationValue || p.durationDays} {p.durationUnit || 'days'}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-slate-500">Price</span>
+                                            <span className="text-slate-200 font-bold">BDT {Number(p.price || 0).toLocaleString('en-US')}</span>
                                         </div>
                                         <div className="flex justify-between text-xs">
                                             <span className="text-slate-500">Status</span>
@@ -884,7 +1069,7 @@ export default function StudentManagementPanel() {
                                 <div key={r.resultId} className="rounded-xl border border-indigo-500/10 bg-slate-950/65 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div>
                                         <p className="text-white font-bold">{r.examTitle}</p>
-                                        <p className="text-xs text-slate-400 mt-1">{r.subject} • Attempt {r.attemptNo} • {new Date(r.submittedAt).toLocaleDateString()}</p>
+                                        <p className="text-xs text-slate-400 mt-1">{r.subject} - Attempt {r.attemptNo} - {new Date(r.submittedAt).toLocaleDateString()}</p>
                                     </div>
                                     <div className="flex items-center gap-4 text-right">
                                         <div>
@@ -902,3 +1087,5 @@ export default function StudentManagementPanel() {
         </div>
     );
 }
+
+

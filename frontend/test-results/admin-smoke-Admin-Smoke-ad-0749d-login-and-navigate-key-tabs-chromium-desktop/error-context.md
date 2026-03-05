@@ -1,0 +1,250 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]:
+        - paragraph [ref=e11]: CampusWay
+        - paragraph [ref=e12]: Admin Panel
+    - button "Collapse" [ref=e13] [cursor=pointer]:
+      - img [ref=e14]
+    - navigation [ref=e16]:
+      - button "Dashboard" [ref=e18] [cursor=pointer]:
+        - img [ref=e19]
+        - generic [ref=e24]: Dashboard
+      - button "Universities" [ref=e26] [cursor=pointer]:
+        - img [ref=e27]
+        - generic [ref=e30]: Universities
+      - button "Featured List" [ref=e32] [cursor=pointer]:
+        - img [ref=e33]
+        - generic [ref=e35]: Featured List
+      - generic [ref=e36]:
+        - button "Student Dashboard Control" [ref=e37] [cursor=pointer]:
+          - img [ref=e38]
+          - generic [ref=e40]: Student Dashboard Control
+          - img [ref=e41]
+        - generic [ref=e43]:
+          - button "Exams" [ref=e44] [cursor=pointer]:
+            - img [ref=e45]
+            - generic [ref=e47]: Exams
+          - button "Live Monitor" [ref=e48] [cursor=pointer]:
+            - img [ref=e49]
+            - generic [ref=e52]: Live Monitor
+          - button "Question Bank" [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e56]: Question Bank
+          - button "Live Alerts" [ref=e57] [cursor=pointer]:
+            - img [ref=e58]
+            - generic [ref=e60]: Live Alerts
+          - button "Student Management" [ref=e61] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e74]: Student Management
+      - paragraph [ref=e76]: Content Management
+      - button "News" [ref=e78] [cursor=pointer]:
+        - img [ref=e79]
+        - generic [ref=e82]: News
+      - button "Services" [ref=e84] [cursor=pointer]:
+        - img [ref=e85]
+        - generic [ref=e88]: Services
+      - button "Resources" [ref=e90] [cursor=pointer]:
+        - img [ref=e91]
+        - generic [ref=e93]: Resources
+      - button "Banners" [ref=e95] [cursor=pointer]:
+        - img [ref=e96]
+        - generic [ref=e100]: Banners
+      - button "Home Control" [ref=e102] [cursor=pointer]:
+        - img [ref=e103]
+        - generic [ref=e106]: Home Control
+      - paragraph [ref=e108]: System
+      - button "Contact Messages" [ref=e110] [cursor=pointer]:
+        - img [ref=e111]
+        - generic [ref=e114]: Contact Messages
+      - button "Bulk Import" [ref=e116] [cursor=pointer]:
+        - img [ref=e117]
+        - generic [ref=e120]: Bulk Import
+      - button "Accounts & Finance" [ref=e122] [cursor=pointer]:
+        - img [ref=e123]
+        - generic [ref=e126]: Accounts & Finance
+      - button "Support Tickets" [ref=e128] [cursor=pointer]:
+        - img [ref=e129]
+        - generic [ref=e136]: Support Tickets
+      - button "Backups" [ref=e138] [cursor=pointer]:
+        - img [ref=e139]
+        - generic [ref=e143]: Backups
+      - button "Reports" [ref=e145] [cursor=pointer]:
+        - img [ref=e146]
+        - generic [ref=e148]: Reports
+      - button "Users & Roles" [ref=e150] [cursor=pointer]:
+        - img [ref=e151]
+        - generic [ref=e163]: Users & Roles
+      - button "Admin Profile" [ref=e165] [cursor=pointer]:
+        - img [ref=e166]
+        - generic [ref=e169]: Admin Profile
+      - button "Data Export" [ref=e171] [cursor=pointer]:
+        - img [ref=e172]
+        - generic [ref=e175]: Data Export
+      - button "Site Settings" [ref=e177] [cursor=pointer]:
+        - img [ref=e178]
+        - generic [ref=e181]: Site Settings
+      - button "Security Center" [active] [ref=e183] [cursor=pointer]:
+        - img [ref=e184]
+        - generic [ref=e186]: Security Center
+      - button "System Logs" [ref=e188] [cursor=pointer]:
+        - img [ref=e189]
+        - generic [ref=e192]: System Logs
+    - generic [ref=e193]:
+      - generic [ref=e194]:
+        - generic [ref=e195]: E
+        - generic [ref=e196]:
+          - paragraph [ref=e197]: E2E Admin Desktop
+          - paragraph [ref=e198]: e2e_admin_desktop@campusway.local
+      - button "Sign Out" [ref=e199] [cursor=pointer]:
+        - img [ref=e200]
+        - generic [ref=e203]: Sign Out
+  - main [ref=e204]:
+    - generic [ref=e206]:
+      - generic [ref=e208]:
+        - heading "Dashboard" [level=1] [ref=e209]
+        - paragraph [ref=e210]: Manage your content
+      - generic [ref=e211]:
+        - generic [ref=e212]:
+          - img [ref=e213]
+          - textbox "Search..." [ref=e216]
+        - button "Refresh" [ref=e217] [cursor=pointer]:
+          - img [ref=e218]
+        - button "2" [ref=e224] [cursor=pointer]:
+          - img [ref=e225]
+          - generic [ref=e228]: "2"
+        - generic [ref=e229]:
+          - img [ref=e230]
+          - generic [ref=e233]: Mon, Mar 2
+        - button "E" [ref=e235] [cursor=pointer]:
+          - generic [ref=e236]: E
+          - img [ref=e237]
+    - generic [ref=e240]:
+      - generic [ref=e242]:
+        - generic [ref=e243]:
+          - heading "Security Center" [level=2] [ref=e244]:
+            - img [ref=e245]
+            - text: Security Center
+          - paragraph [ref=e247]: Configure password policy, session security, admin access, exam guardrails, and rate limits.
+        - generic [ref=e248]:
+          - button "Save changes" [ref=e249] [cursor=pointer]:
+            - img [ref=e250]
+            - text: Save changes
+          - button "Reset defaults" [ref=e254] [cursor=pointer]:
+            - img [ref=e255]
+            - text: Reset defaults
+      - generic [ref=e258]:
+        - generic [ref=e259]:
+          - heading "Password Policy" [level=3] [ref=e260]
+          - generic [ref=e261]:
+            - text: Minimum length
+            - spinbutton "Minimum length" [ref=e262]: "10"
+          - generic [ref=e263]:
+            - generic [ref=e264]: Require number
+            - checkbox "Require number" [checked] [ref=e265]
+          - generic [ref=e266]:
+            - generic [ref=e267]: Require uppercase
+            - checkbox "Require uppercase" [checked] [ref=e268]
+          - generic [ref=e269]:
+            - generic [ref=e270]: Require special char
+            - checkbox "Require special char" [checked] [ref=e271]
+        - generic [ref=e272]:
+          - heading "Login & Session Security" [level=3] [ref=e273]
+          - generic [ref=e274]:
+            - text: Max login attempts
+            - spinbutton "Max login attempts" [ref=e275]: "5"
+          - generic [ref=e276]:
+            - text: Lockout minutes
+            - spinbutton "Lockout minutes" [ref=e277]: "15"
+          - generic [ref=e278]:
+            - text: Access token TTL (minutes)
+            - spinbutton "Access token TTL (minutes)" [ref=e279]: "20"
+          - generic [ref=e280]:
+            - text: Refresh token TTL (days)
+            - spinbutton "Refresh token TTL (days)" [ref=e281]: "7"
+          - generic [ref=e282]:
+            - text: Idle timeout (minutes)
+            - spinbutton "Idle timeout (minutes)" [ref=e283]: "60"
+        - generic [ref=e284]:
+          - heading "Admin Access" [level=3] [ref=e285]
+          - generic [ref=e286]:
+            - generic [ref=e287]: Require 2FA for admins
+            - checkbox "Require 2FA for admins" [ref=e288]
+          - generic [ref=e289]:
+            - generic [ref=e290]: Admin panel enabled
+            - checkbox "Admin panel enabled" [checked] [ref=e291]
+          - generic [ref=e292]:
+            - text: Allowed Admin IPs (comma separated)
+            - textbox "Allowed Admin IPs (comma separated)" [ref=e293]
+        - generic [ref=e294]:
+          - heading "Site & Exam Protection" [level=3] [ref=e295]
+          - generic [ref=e296]:
+            - generic [ref=e297]: Maintenance mode
+            - checkbox "Maintenance mode" [ref=e298]
+          - generic [ref=e299]:
+            - generic [ref=e300]: Block new registrations
+            - checkbox "Block new registrations" [ref=e301]
+          - generic [ref=e302]:
+            - text: Profile score threshold for exams
+            - spinbutton "Profile score threshold for exams" [ref=e303]: "70"
+          - generic [ref=e304]:
+            - text: Max active sessions per user
+            - spinbutton "Max active sessions per user" [ref=e305]: "1"
+          - generic [ref=e306]:
+            - generic [ref=e307]: Require profile score for exam access
+            - checkbox "Require profile score for exam access" [checked] [ref=e308]
+          - generic [ref=e309]:
+            - generic [ref=e310]: Log tab switch violations
+            - checkbox "Log tab switch violations" [checked] [ref=e311]
+        - generic [ref=e312]:
+          - heading "Rate Limiting" [level=3] [ref=e313]
+          - generic [ref=e314]:
+            - text: Login window (ms)
+            - spinbutton "Login window (ms)" [ref=e315]: "900000"
+          - generic [ref=e316]:
+            - text: Login max requests
+            - spinbutton "Login max requests" [ref=e317]: "10"
+          - generic [ref=e318]:
+            - text: Exam submit window (ms)
+            - spinbutton "Exam submit window (ms)" [ref=e319]: "900000"
+          - generic [ref=e320]:
+            - text: Exam submit max
+            - spinbutton "Exam submit max" [ref=e321]: "60"
+          - generic [ref=e322]:
+            - text: Admin window (ms)
+            - spinbutton "Admin window (ms)" [ref=e323]: "900000"
+          - generic [ref=e324]:
+            - text: Admin max
+            - spinbutton "Admin max" [ref=e325]: "300"
+        - generic [ref=e326]:
+          - heading "Logging & Audit" [level=3] [ref=e327]
+          - generic [ref=e328]:
+            - text: Log level
+            - combobox "Log level" [ref=e329]:
+              - option "Debug"
+              - option "Info" [selected]
+              - option "Warn"
+              - option "Error"
+          - generic [ref=e330]:
+            - generic [ref=e331]: Log login failures
+            - checkbox "Log login failures" [checked] [ref=e332]
+          - generic [ref=e333]:
+            - generic [ref=e334]: Log admin actions
+            - checkbox "Log admin actions" [checked] [ref=e335]
+          - paragraph [ref=e336]: "Updated at: N/A"
+      - generic [ref=e337]:
+        - heading "Critical Security Actions" [level=3] [ref=e338]:
+          - img [ref=e339]
+          - text: Critical Security Actions
+        - generic [ref=e341]:
+          - button "Force logout all users" [ref=e342] [cursor=pointer]:
+            - img [ref=e343]
+            - text: Force logout all users
+          - button "Lock admin panel" [ref=e348] [cursor=pointer]:
+            - img [ref=e349]
+            - text: Lock admin panel
+```

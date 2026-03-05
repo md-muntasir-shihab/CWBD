@@ -1,595 +1,466 @@
 import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Loader2, Lock, RotateCcw, Save, Shield, Unlock, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { AlertTriangle, KeyRound, Loader2, LogOut, RefreshCw, Save, Shield, ToggleLeft, Users } from 'lucide-react';
 import {
-    adminForceLogout,
-    adminGetRuntimeSettings,
-    adminGetSecuritySessions,
-    adminGetSecuritySettings,
-    adminGetTwoFactorFailures,
-    adminGetTwoFactorUsers,
-    adminResetTwoFactorUser,
-    adminUpdateRuntimeSettings,
-    adminUpdateSecuritySettings,
-    adminUpdateTwoFactorUser,
-    type AdminFeatureFlags,
-    type AdminSecuritySessionItem,
-    type AdminSecuritySettings,
-    type AdminTwoFactorFailureItem,
-    type AdminTwoFactorUserItem,
+    SecurityCenterSettings,
+    adminForceLogoutAllUsers,
+    adminGetSecurityCenterSettings,
+    adminResetSecurityCenterSettings,
+    adminSetAdminPanelLockState,
+    adminUpdateSecurityCenterSettings,
 } from '../../services/api';
 
-const DEFAULT_SECURITY: AdminSecuritySettings = {
-    singleBrowserLogin: true,
-    forceLogoutOnNewLogin: true,
-    enable2faAdmin: false,
-    enable2faStudent: false,
-    force2faSuperAdmin: false,
-    default2faMethod: 'email',
-    otpExpiryMinutes: 5,
-    maxOtpAttempts: 5,
-    ipChangeAlert: true,
-    allowLegacyTokens: true,
-    strictExamTabLock: false,
-    strictTokenHashValidation: false,
+const DEFAULT_SETTINGS: SecurityCenterSettings = {
+    passwordPolicy: {
+        minLength: 10,
+        requireNumber: true,
+        requireUppercase: true,
+        requireSpecial: true,
+    },
+    loginProtection: {
+        maxAttempts: 5,
+        lockoutMinutes: 15,
+        recaptchaEnabled: false,
+    },
+    session: {
+        accessTokenTTLMinutes: 20,
+        refreshTokenTTLDays: 7,
+        idleTimeoutMinutes: 60,
+    },
+    adminAccess: {
+        require2FAForAdmins: false,
+        allowedAdminIPs: [],
+        adminPanelEnabled: true,
+    },
+    siteAccess: {
+        maintenanceMode: false,
+        blockNewRegistrations: false,
+    },
+    examProtection: {
+        maxActiveSessionsPerUser: 1,
+        logTabSwitch: true,
+        requireProfileScoreForExam: true,
+        profileScoreThreshold: 70,
+    },
+    logging: {
+        logLevel: 'info',
+        logLoginFailures: true,
+        logAdminActions: true,
+    },
+    rateLimit: {
+        loginWindowMs: 15 * 60 * 1000,
+        loginMax: 10,
+        examSubmitWindowMs: 15 * 60 * 1000,
+        examSubmitMax: 60,
+        adminWindowMs: 15 * 60 * 1000,
+        adminMax: 300,
+        uploadWindowMs: 15 * 60 * 1000,
+        uploadMax: 80,
+    },
+    updatedBy: null,
+    updatedAt: null,
 };
 
-const DEFAULT_FEATURE_FLAGS: AdminFeatureFlags = {
-    studentDashboardV2: true,
-    studentManagementV2: true,
-    subscriptionEngineV2: false,
-    examShareLinks: false,
-    proctoringSignals: false,
-    aiQuestionSuggestions: false,
-    pushNotifications: false,
-    strictExamTabLock: false,
-    webNextEnabled: false,
-};
-
-function formatDate(value?: string): string {
-    if (!value) return '-';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '-';
-    return date.toLocaleString();
-}
-
-function sessionUserLabel(session: AdminSecuritySessionItem): string {
-    if (typeof session.user_id === 'string') return session.user_id;
-    if (!session.user_id) return 'Unknown';
-    return session.user_id.full_name || session.user_id.username || session.user_id.email || 'Unknown';
+function numberInput(value: number, onChange: (next: number) => void, min = 0, max = 999999) {
+    return (
+        <input
+            type="number"
+            value={value}
+            min={min}
+            max={max}
+            onChange={(event) => onChange(Number(event.target.value) || 0)}
+            className="mt-1 w-full rounded-lg border border-indigo-500/20 bg-slate-950/70 px-3 py-2 text-sm text-white"
+        />
+    );
 }
 
 export default function SecuritySettingsPanel() {
-    const [settings, setSettings] = useState<AdminSecuritySettings>(DEFAULT_SECURITY);
-    const [loadingSettings, setLoadingSettings] = useState(true);
-    const [savingSettings, setSavingSettings] = useState(false);
-    const [featureFlags, setFeatureFlags] = useState<AdminFeatureFlags>(DEFAULT_FEATURE_FLAGS);
-    const [loadingRuntime, setLoadingRuntime] = useState(true);
-    const [savingRuntime, setSavingRuntime] = useState(false);
-    const [runtimeMeta, setRuntimeMeta] = useState<{ updatedAt?: string | null; updatedBy?: string | null; runtimeVersion?: number }>({});
+    const [settings, setSettings] = useState<SecurityCenterSettings>(DEFAULT_SETTINGS);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [actionBusy, setActionBusy] = useState<'reset' | 'force-logout-all' | 'toggle-lock' | null>(null);
 
-    const [sessions, setSessions] = useState<AdminSecuritySessionItem[]>([]);
-    const [loadingSessions, setLoadingSessions] = useState(true);
-    const [sessionStatus, setSessionStatus] = useState<'active' | 'terminated'>('active');
-    const [sessionTerminating, setSessionTerminating] = useState<string | null>(null);
-
-    const [twoFactorUsers, setTwoFactorUsers] = useState<AdminTwoFactorUserItem[]>([]);
-    const [loadingTwoFactorUsers, setLoadingTwoFactorUsers] = useState(true);
-    const [twoFactorRole, setTwoFactorRole] = useState<string>('admin,moderator,student');
-    const [userActionLoading, setUserActionLoading] = useState<string | null>(null);
-
-    const [failures, setFailures] = useState<AdminTwoFactorFailureItem[]>([]);
-    const [loadingFailures, setLoadingFailures] = useState(true);
-
-    const activeSessionCount = useMemo(
-        () => sessions.filter((session) => session.status === 'active').length,
-        [sessions]
-    );
-    const sessionPolicyActive = settings.singleBrowserLogin && settings.forceLogoutOnNewLogin;
+    const adminPanelLocked = useMemo(() => !settings.adminAccess.adminPanelEnabled, [settings.adminAccess.adminPanelEnabled]);
 
     const loadSettings = async () => {
-        setLoadingSettings(true);
+        setLoading(true);
         try {
-            const res = await adminGetSecuritySettings();
-            setSettings({ ...DEFAULT_SECURITY, ...(res.data.security || {}) });
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to load security settings');
+            const response = await adminGetSecurityCenterSettings();
+            setSettings({ ...DEFAULT_SETTINGS, ...(response.data.settings || {}) });
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Failed to load security settings');
         } finally {
-            setLoadingSettings(false);
+            setLoading(false);
         }
-    };
-
-    const loadSessions = async () => {
-        setLoadingSessions(true);
-        try {
-            const res = await adminGetSecuritySessions({ status: sessionStatus, page: 1, limit: 25 });
-            setSessions(res.data.items || []);
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to load sessions');
-        } finally {
-            setLoadingSessions(false);
-        }
-    };
-
-    const loadTwoFactorUsers = async () => {
-        setLoadingTwoFactorUsers(true);
-        try {
-            const res = await adminGetTwoFactorUsers({ role: twoFactorRole, page: 1, limit: 20 });
-            setTwoFactorUsers(res.data.items || []);
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to load 2FA users');
-        } finally {
-            setLoadingTwoFactorUsers(false);
-        }
-    };
-
-    const loadTwoFactorFailures = async () => {
-        setLoadingFailures(true);
-        try {
-            const res = await adminGetTwoFactorFailures({ page: 1, limit: 20 });
-            setFailures(res.data.items || []);
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to load 2FA failure logs');
-        } finally {
-            setLoadingFailures(false);
-        }
-    };
-
-    const loadRuntimeSettings = async () => {
-        setLoadingRuntime(true);
-        try {
-            const res = await adminGetRuntimeSettings();
-            setFeatureFlags({ ...DEFAULT_FEATURE_FLAGS, ...(res.data.featureFlags || {}) });
-            if (res.data.security) {
-                setSettings((prev) => ({ ...prev, ...res.data.security }));
-            }
-            setRuntimeMeta({
-                updatedAt: res.data.updatedAt || null,
-                updatedBy: res.data.updatedBy || null,
-                runtimeVersion: res.data.runtimeVersion,
-            });
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to load runtime flags');
-        } finally {
-            setLoadingRuntime(false);
-        }
-    };
-
-    const refreshAll = async () => {
-        await Promise.all([
-            loadSettings(),
-            loadSessions(),
-            loadTwoFactorUsers(),
-            loadTwoFactorFailures(),
-            loadRuntimeSettings(),
-        ]);
     };
 
     useEffect(() => {
-        refreshAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        void loadSettings();
     }, []);
 
-    useEffect(() => {
-        loadSessions();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [sessionStatus]);
-
-    useEffect(() => {
-        loadTwoFactorUsers();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [twoFactorRole]);
-
-    const updateField = <K extends keyof AdminSecuritySettings>(key: K, value: AdminSecuritySettings[K]) => {
-        setSettings((prev) => ({ ...prev, [key]: value }));
-    };
-
-    const updateFlag = <K extends keyof AdminFeatureFlags>(key: K, value: AdminFeatureFlags[K]) => {
-        setFeatureFlags((prev) => ({ ...prev, [key]: value }));
-    };
-
-    const saveSettings = async () => {
-        setSavingSettings(true);
+    const saveChanges = async () => {
+        setSaving(true);
         try {
-            const res = await adminUpdateSecuritySettings(settings);
-            setSettings({ ...DEFAULT_SECURITY, ...(res.data.security || {}) });
-            setFeatureFlags((prev) => ({ ...prev, strictExamTabLock: Boolean(res.data.security?.strictExamTabLock) }));
-            toast.success('Security settings updated');
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to save security settings');
+            const payload = {
+                passwordPolicy: settings.passwordPolicy,
+                loginProtection: settings.loginProtection,
+                session: settings.session,
+                adminAccess: {
+                    ...settings.adminAccess,
+                    allowedAdminIPs: (settings.adminAccess.allowedAdminIPs || []).filter(Boolean),
+                },
+                siteAccess: settings.siteAccess,
+                examProtection: settings.examProtection,
+                logging: settings.logging,
+                rateLimit: settings.rateLimit,
+            };
+            const response = await adminUpdateSecurityCenterSettings(payload);
+            setSettings({ ...DEFAULT_SETTINGS, ...(response.data.settings || {}) });
+            toast.success('Security Center updated');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Failed to save security settings');
         } finally {
-            setSavingSettings(false);
+            setSaving(false);
         }
     };
 
-    const saveRuntimeFlags = async () => {
-        setSavingRuntime(true);
-        const previousFlags = { ...featureFlags };
+    const resetDefaults = async () => {
+        setActionBusy('reset');
         try {
-            const res = await adminUpdateRuntimeSettings({ featureFlags });
-            setFeatureFlags({ ...DEFAULT_FEATURE_FLAGS, ...(res.data.featureFlags || {}) });
-            if (res.data.security) {
-                setSettings((prev) => ({ ...prev, ...res.data.security }));
-            }
-            setRuntimeMeta({
-                updatedAt: res.data.updatedAt || null,
-                updatedBy: res.data.updatedBy || null,
-                runtimeVersion: res.data.runtimeVersion,
-            });
-            toast.success('Runtime flags updated');
-        } catch (err: any) {
-            setFeatureFlags(previousFlags);
-            toast.error(err.response?.data?.message || 'Failed to save runtime flags');
+            const response = await adminResetSecurityCenterSettings();
+            setSettings({ ...DEFAULT_SETTINGS, ...(response.data.settings || {}) });
+            toast.success('Security settings reset to default');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Reset failed');
         } finally {
-            setSavingRuntime(false);
+            setActionBusy(null);
         }
     };
 
-    const terminateSession = async (sessionId: string) => {
-        setSessionTerminating(sessionId);
+    const forceLogoutAll = async () => {
+        setActionBusy('force-logout-all');
         try {
-            await adminForceLogout({ sessionId, reason: 'admin_force_logout' });
-            toast.success('Session terminated');
-            await loadSessions();
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to terminate session');
+            const response = await adminForceLogoutAllUsers('security_center_force_logout_all');
+            toast.success(`Force logout completed (${response.data.terminatedCount} sessions)`);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Force logout failed');
         } finally {
-            setSessionTerminating(null);
+            setActionBusy(null);
         }
     };
 
-    const toggleTwoFactorForUser = async (user: AdminTwoFactorUserItem) => {
-        setUserActionLoading(user._id);
+    const toggleAdminLock = async () => {
+        setActionBusy('toggle-lock');
         try {
-            await adminUpdateTwoFactorUser(user._id, {
-                twoFactorEnabled: !user.twoFactorEnabled,
-                two_factor_method: user.two_factor_method || settings.default2faMethod,
-            });
-            toast.success('User 2FA updated');
-            await loadTwoFactorUsers();
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to update user 2FA');
+            const response = await adminSetAdminPanelLockState(adminPanelLocked);
+            setSettings((prev) => ({
+                ...prev,
+                ...(response.data.settings || {}),
+            }));
+            toast.success(adminPanelLocked ? 'Admin panel unlocked' : 'Admin panel locked');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Admin lock action failed');
         } finally {
-            setUserActionLoading(null);
+            setActionBusy(null);
         }
     };
 
-    const resetTwoFactorForUser = async (userId: string) => {
-        setUserActionLoading(userId);
-        try {
-            await adminResetTwoFactorUser(userId);
-            toast.success('User 2FA reset');
-            await loadTwoFactorUsers();
-            await loadTwoFactorFailures();
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Failed to reset user 2FA');
-        } finally {
-            setUserActionLoading(null);
-        }
-    };
-
-    if (loadingSettings && loadingSessions && loadingTwoFactorUsers && loadingFailures && loadingRuntime) {
+    if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <div className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-4 sm:p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <section className="rounded-2xl border border-indigo-500/10 bg-slate-900/60 p-4 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-indigo-400" />
-                            Security and Session Control
+                        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+                            <Shield className="h-5 w-5 text-indigo-400" />
+                            Security Center
                         </h2>
-                        <p className="text-sm text-slate-400 mt-1">
-                            Single-session policy, role-based 2FA, and realtime session controls.
+                        <p className="mt-1 text-sm text-slate-400">
+                            Configure password policy, session security, admin access, exam guardrails, and rate limits.
                         </p>
-                        <div className="mt-2">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${sessionPolicyActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-500/20 text-slate-300'}`}>
-                                {sessionPolicyActive ? 'Session policy active' : 'Session policy relaxed'}
-                            </span>
-                        </div>
                     </div>
                     <div className="flex gap-2">
                         <button
-                            onClick={refreshAll}
-                            className="px-4 py-2 rounded-xl border border-indigo-500/20 text-slate-200 hover:bg-indigo-500/10 text-sm flex items-center gap-2"
+                            onClick={() => void saveChanges()}
+                            disabled={saving}
+                            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700 disabled:opacity-60"
                         >
-                            <RefreshCw className="w-4 h-4" />
-                            Refresh
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                            Save changes
                         </button>
                         <button
-                            onClick={saveSettings}
-                            disabled={savingSettings}
-                            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm flex items-center gap-2"
+                            onClick={() => void resetDefaults()}
+                            disabled={actionBusy === 'reset'}
+                            className="inline-flex items-center gap-2 rounded-xl border border-indigo-500/20 px-4 py-2 text-sm text-slate-200 hover:bg-indigo-500/10 disabled:opacity-60"
                         >
-                            {savingSettings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            Save Security
+                            {actionBusy === 'reset' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                            Reset defaults
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-4 sm:p-6 space-y-4">
-                    <h3 className="text-white font-semibold flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-indigo-400" />
-                        Session Policy
-                    </h3>
+            <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/60 p-4 sm:p-6 space-y-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Password Policy</h3>
+                    <label className="text-sm text-slate-300">Minimum length
+                        {numberInput(settings.passwordPolicy.minLength, (next) => setSettings((prev) => ({
+                            ...prev,
+                            passwordPolicy: { ...prev.passwordPolicy, minLength: Math.max(8, next) },
+                        })), 8, 64)}
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Require number</span>
+                        <input type="checkbox" checked={settings.passwordPolicy.requireNumber} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            passwordPolicy: { ...prev.passwordPolicy, requireNumber: event.target.checked },
+                        }))} />
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Require uppercase</span>
+                        <input type="checkbox" checked={settings.passwordPolicy.requireUppercase} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            passwordPolicy: { ...prev.passwordPolicy, requireUppercase: event.target.checked },
+                        }))} />
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Require special char</span>
+                        <input type="checkbox" checked={settings.passwordPolicy.requireSpecial} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            passwordPolicy: { ...prev.passwordPolicy, requireSpecial: event.target.checked },
+                        }))} />
+                    </label>
+                </div>
 
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Single browser login</span>
-                        <input type="checkbox" checked={settings.singleBrowserLogin} onChange={(e) => updateField('singleBrowserLogin', e.target.checked)} />
+                <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/60 p-4 sm:p-6 space-y-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Login & Session Security</h3>
+                    <label className="text-sm text-slate-300">Max login attempts
+                        {numberInput(settings.loginProtection.maxAttempts, (next) => setSettings((prev) => ({
+                            ...prev,
+                            loginProtection: { ...prev.loginProtection, maxAttempts: Math.max(1, next) },
+                        })), 1, 20)}
                     </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Force logout on new login</span>
-                        <input type="checkbox" checked={settings.forceLogoutOnNewLogin} onChange={(e) => updateField('forceLogoutOnNewLogin', e.target.checked)} />
+                    <label className="text-sm text-slate-300">Lockout minutes
+                        {numberInput(settings.loginProtection.lockoutMinutes, (next) => setSettings((prev) => ({
+                            ...prev,
+                            loginProtection: { ...prev.loginProtection, lockoutMinutes: Math.max(1, next) },
+                        })), 1, 240)}
                     </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>IP change alert</span>
-                        <input type="checkbox" checked={settings.ipChangeAlert} onChange={(e) => updateField('ipChangeAlert', e.target.checked)} />
+                    <label className="text-sm text-slate-300">Access token TTL (minutes)
+                        {numberInput(settings.session.accessTokenTTLMinutes, (next) => setSettings((prev) => ({
+                            ...prev,
+                            session: { ...prev.session, accessTokenTTLMinutes: Math.max(5, next) },
+                        })), 5, 180)}
                     </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Allow legacy tokens (temporary)</span>
-                        <input type="checkbox" checked={settings.allowLegacyTokens} onChange={(e) => updateField('allowLegacyTokens', e.target.checked)} />
+                    <label className="text-sm text-slate-300">Refresh token TTL (days)
+                        {numberInput(settings.session.refreshTokenTTLDays, (next) => setSettings((prev) => ({
+                            ...prev,
+                            session: { ...prev.session, refreshTokenTTLDays: Math.max(1, next) },
+                        })), 1, 120)}
                     </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Strict exam multi-tab lock</span>
-                        <input type="checkbox" checked={settings.strictExamTabLock} onChange={(e) => updateField('strictExamTabLock', e.target.checked)} />
+                    <label className="text-sm text-slate-300">Idle timeout (minutes)
+                        {numberInput(settings.session.idleTimeoutMinutes, (next) => setSettings((prev) => ({
+                            ...prev,
+                            session: { ...prev.session, idleTimeoutMinutes: Math.max(5, next) },
+                        })), 5, 1440)}
                     </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Strict token-hash validation</span>
-                        <input type="checkbox" checked={settings.strictTokenHashValidation} onChange={(e) => updateField('strictTokenHashValidation', e.target.checked)} />
-                    </label>
-                </section>
+                </div>
 
-                <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-4 sm:p-6 space-y-4">
-                    <h3 className="text-white font-semibold flex items-center gap-2">
-                        <KeyRound className="w-4 h-4 text-emerald-400" />
-                        Two-Factor Policy
-                    </h3>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Enable 2FA for admin roles</span>
-                        <input type="checkbox" checked={settings.enable2faAdmin} onChange={(e) => updateField('enable2faAdmin', e.target.checked)} />
+                <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/60 p-4 sm:p-6 space-y-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Admin Access</h3>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Require 2FA for admins</span>
+                        <input type="checkbox" checked={settings.adminAccess.require2FAForAdmins} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            adminAccess: { ...prev.adminAccess, require2FAForAdmins: event.target.checked },
+                        }))} />
                     </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Enable 2FA for students</span>
-                        <input type="checkbox" checked={settings.enable2faStudent} onChange={(e) => updateField('enable2faStudent', e.target.checked)} />
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Admin panel enabled</span>
+                        <input type="checkbox" checked={settings.adminAccess.adminPanelEnabled} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            adminAccess: { ...prev.adminAccess, adminPanelEnabled: event.target.checked },
+                        }))} />
                     </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                        <span>Force 2FA for superadmin</span>
-                        <input type="checkbox" checked={settings.force2faSuperAdmin} onChange={(e) => updateField('force2faSuperAdmin', e.target.checked)} />
+                    <label className="text-sm text-slate-300">
+                        Allowed Admin IPs (comma separated)
+                        <textarea
+                            value={(settings.adminAccess.allowedAdminIPs || []).join(', ')}
+                            onChange={(event) => setSettings((prev) => ({
+                                ...prev,
+                                adminAccess: {
+                                    ...prev.adminAccess,
+                                    allowedAdminIPs: event.target.value
+                                        .split(',')
+                                        .map((item) => item.trim())
+                                        .filter(Boolean),
+                                },
+                            }))}
+                            rows={3}
+                            className="mt-1 w-full rounded-lg border border-indigo-500/20 bg-slate-950/70 px-3 py-2 text-sm text-white"
+                        />
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <label className="text-sm text-slate-300">
-                            Default method
-                            <select
-                                value={settings.default2faMethod}
-                                onChange={(e) => updateField('default2faMethod', e.target.value as AdminSecuritySettings['default2faMethod'])}
-                                className="mt-1 w-full bg-slate-950/70 border border-indigo-500/20 rounded-lg px-3 py-2 text-white"
-                            >
-                                <option value="email">Email</option>
-                                <option value="sms">SMS (future)</option>
-                                <option value="authenticator">Authenticator (future)</option>
-                            </select>
-                        </label>
-                        <label className="text-sm text-slate-300">
-                            OTP expiry (min)
-                            <input
-                                type="number"
-                                min={1}
-                                max={60}
-                                value={settings.otpExpiryMinutes}
-                                onChange={(e) => updateField('otpExpiryMinutes', Math.max(1, Number(e.target.value) || 1))}
-                                className="mt-1 w-full bg-slate-950/70 border border-indigo-500/20 rounded-lg px-3 py-2 text-white"
-                            />
-                        </label>
-                        <label className="text-sm text-slate-300">
-                            Max OTP attempts
-                            <input
-                                type="number"
-                                min={1}
-                                max={10}
-                                value={settings.maxOtpAttempts}
-                                onChange={(e) => updateField('maxOtpAttempts', Math.max(1, Number(e.target.value) || 1))}
-                                className="mt-1 w-full bg-slate-950/70 border border-indigo-500/20 rounded-lg px-3 py-2 text-white"
-                            />
-                        </label>
-                    </div>
-                </section>
-            </div>
+                </div>
 
-            <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-4 sm:p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <h3 className="text-white font-semibold flex items-center gap-2">
-                        <ToggleLeft className="w-4 h-4 text-cyan-300" />
-                        Runtime Flags
-                    </h3>
+                <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/60 p-4 sm:p-6 space-y-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Site & Exam Protection</h3>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Maintenance mode</span>
+                        <input type="checkbox" checked={settings.siteAccess.maintenanceMode} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            siteAccess: { ...prev.siteAccess, maintenanceMode: event.target.checked },
+                        }))} />
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Block new registrations</span>
+                        <input type="checkbox" checked={settings.siteAccess.blockNewRegistrations} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            siteAccess: { ...prev.siteAccess, blockNewRegistrations: event.target.checked },
+                        }))} />
+                    </label>
+                    <label className="text-sm text-slate-300">Profile score threshold for exams
+                        {numberInput(settings.examProtection.profileScoreThreshold, (next) => setSettings((prev) => ({
+                            ...prev,
+                            examProtection: { ...prev.examProtection, profileScoreThreshold: Math.max(0, Math.min(100, next)) },
+                        })), 0, 100)}
+                    </label>
+                    <label className="text-sm text-slate-300">Max active sessions per user
+                        {numberInput(settings.examProtection.maxActiveSessionsPerUser, (next) => setSettings((prev) => ({
+                            ...prev,
+                            examProtection: { ...prev.examProtection, maxActiveSessionsPerUser: Math.max(1, next) },
+                        })), 1, 5)}
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Require profile score for exam access</span>
+                        <input type="checkbox" checked={settings.examProtection.requireProfileScoreForExam} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            examProtection: { ...prev.examProtection, requireProfileScoreForExam: event.target.checked },
+                        }))} />
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Log tab switch violations</span>
+                        <input type="checkbox" checked={settings.examProtection.logTabSwitch} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            examProtection: { ...prev.examProtection, logTabSwitch: event.target.checked },
+                        }))} />
+                    </label>
+                </div>
+
+                <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/60 p-4 sm:p-6 space-y-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Rate Limiting</h3>
+                    <label className="text-sm text-slate-300">Login window (ms)
+                        {numberInput(settings.rateLimit.loginWindowMs, (next) => setSettings((prev) => ({
+                            ...prev,
+                            rateLimit: { ...prev.rateLimit, loginWindowMs: Math.max(10000, next) },
+                        })), 10000, 86400000)}
+                    </label>
+                    <label className="text-sm text-slate-300">Login max requests
+                        {numberInput(settings.rateLimit.loginMax, (next) => setSettings((prev) => ({
+                            ...prev,
+                            rateLimit: { ...prev.rateLimit, loginMax: Math.max(1, next) },
+                        })), 1, 500)}
+                    </label>
+                    <label className="text-sm text-slate-300">Exam submit window (ms)
+                        {numberInput(settings.rateLimit.examSubmitWindowMs, (next) => setSettings((prev) => ({
+                            ...prev,
+                            rateLimit: { ...prev.rateLimit, examSubmitWindowMs: Math.max(10000, next) },
+                        })), 10000, 86400000)}
+                    </label>
+                    <label className="text-sm text-slate-300">Exam submit max
+                        {numberInput(settings.rateLimit.examSubmitMax, (next) => setSettings((prev) => ({
+                            ...prev,
+                            rateLimit: { ...prev.rateLimit, examSubmitMax: Math.max(1, next) },
+                        })), 1, 2000)}
+                    </label>
+                    <label className="text-sm text-slate-300">Admin window (ms)
+                        {numberInput(settings.rateLimit.adminWindowMs, (next) => setSettings((prev) => ({
+                            ...prev,
+                            rateLimit: { ...prev.rateLimit, adminWindowMs: Math.max(10000, next) },
+                        })), 10000, 86400000)}
+                    </label>
+                    <label className="text-sm text-slate-300">Admin max
+                        {numberInput(settings.rateLimit.adminMax, (next) => setSettings((prev) => ({
+                            ...prev,
+                            rateLimit: { ...prev.rateLimit, adminMax: Math.max(1, next) },
+                        })), 1, 5000)}
+                    </label>
+                </div>
+
+                <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/60 p-4 sm:p-6 space-y-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Logging & Audit</h3>
+                    <label className="text-sm text-slate-300">
+                        Log level
+                        <select
+                            value={settings.logging.logLevel}
+                            onChange={(event) => setSettings((prev) => ({
+                                ...prev,
+                                logging: { ...prev.logging, logLevel: event.target.value as SecurityCenterSettings['logging']['logLevel'] },
+                            }))}
+                            className="mt-1 w-full rounded-lg border border-indigo-500/20 bg-slate-950/70 px-3 py-2 text-sm text-white"
+                        >
+                            <option value="debug">Debug</option>
+                            <option value="info">Info</option>
+                            <option value="warn">Warn</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Log login failures</span>
+                        <input type="checkbox" checked={settings.logging.logLoginFailures} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            logging: { ...prev.logging, logLoginFailures: event.target.checked },
+                        }))} />
+                    </label>
+                    <label className="flex items-center justify-between text-sm text-slate-200">
+                        <span>Log admin actions</span>
+                        <input type="checkbox" checked={settings.logging.logAdminActions} onChange={(event) => setSettings((prev) => ({
+                            ...prev,
+                            logging: { ...prev.logging, logAdminActions: event.target.checked },
+                        }))} />
+                    </label>
+                    <p className="rounded-lg border border-indigo-500/15 bg-slate-950/70 px-3 py-2 text-xs text-slate-400">
+                        Updated at: {settings.updatedAt ? new Date(settings.updatedAt).toLocaleString() : 'N/A'}
+                    </p>
+                </div>
+            </section>
+
+            <section className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 sm:p-6">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-300">
+                    <AlertTriangle className="h-4 w-4" />
+                    Critical Security Actions
+                </h3>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     <button
-                        onClick={saveRuntimeFlags}
-                        disabled={savingRuntime || loadingRuntime}
-                        className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 text-white text-sm flex items-center gap-2"
+                        onClick={() => void forceLogoutAll()}
+                        disabled={actionBusy === 'force-logout-all'}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm text-white hover:bg-rose-700 disabled:opacity-60"
                     >
-                        {savingRuntime ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        Save Runtime
+                        {actionBusy === 'force-logout-all' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
+                        Force logout all users
+                    </button>
+                    <button
+                        onClick={() => void toggleAdminLock()}
+                        disabled={actionBusy === 'toggle-lock'}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/30 px-4 py-2 text-sm text-amber-200 hover:bg-amber-400/10 disabled:opacity-60"
+                    >
+                        {actionBusy === 'toggle-lock' ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : adminPanelLocked ? (
+                            <Unlock className="h-4 w-4" />
+                        ) : (
+                            <Lock className="h-4 w-4" />
+                        )}
+                        {adminPanelLocked ? 'Unlock admin panel' : 'Lock admin panel'}
                     </button>
                 </div>
-                <div className="text-xs text-slate-400">
-                    Last updated: {runtimeMeta.updatedAt ? formatDate(runtimeMeta.updatedAt) : '-'}
-                    {runtimeMeta.runtimeVersion ? ` | Version ${runtimeMeta.runtimeVersion}` : ''}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Student Dashboard V2</span>
-                        <input type="checkbox" checked={featureFlags.studentDashboardV2} onChange={(e) => updateFlag('studentDashboardV2', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Student Management V2</span>
-                        <input type="checkbox" checked={featureFlags.studentManagementV2} onChange={(e) => updateFlag('studentManagementV2', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Subscription Engine V2</span>
-                        <input type="checkbox" checked={featureFlags.subscriptionEngineV2} onChange={(e) => updateFlag('subscriptionEngineV2', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Exam Share Links</span>
-                        <input type="checkbox" checked={featureFlags.examShareLinks} onChange={(e) => updateFlag('examShareLinks', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Proctoring Signals</span>
-                        <input type="checkbox" checked={featureFlags.proctoringSignals} onChange={(e) => updateFlag('proctoringSignals', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>AI Question Suggestions</span>
-                        <input type="checkbox" checked={featureFlags.aiQuestionSuggestions} onChange={(e) => updateFlag('aiQuestionSuggestions', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Push Notifications</span>
-                        <input type="checkbox" checked={featureFlags.pushNotifications} onChange={(e) => updateFlag('pushNotifications', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Strict Exam Tab Lock</span>
-                        <input type="checkbox" checked={featureFlags.strictExamTabLock} onChange={(e) => updateFlag('strictExamTabLock', e.target.checked)} />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 text-sm text-slate-200 bg-slate-950/70 rounded-lg px-3 py-2 border border-indigo-500/10">
-                        <span>Web Next (Stored)</span>
-                        <input type="checkbox" checked={featureFlags.webNextEnabled} onChange={(e) => updateFlag('webNextEnabled', e.target.checked)} />
-                    </label>
-                </div>
             </section>
-
-            <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-4 sm:p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                    <h3 className="text-white font-semibold flex items-center gap-2">
-                        <Users className="w-4 h-4 text-indigo-300" />
-                        Active Sessions ({activeSessionCount})
-                    </h3>
-                    <select
-                        value={sessionStatus}
-                        onChange={(e) => setSessionStatus(e.target.value as 'active' | 'terminated')}
-                        className="bg-slate-950/70 border border-indigo-500/20 rounded-lg px-3 py-2 text-white text-sm"
-                    >
-                        <option value="active">Active</option>
-                        <option value="terminated">Terminated</option>
-                    </select>
-                </div>
-
-                {loadingSessions ? (
-                    <div className="text-slate-400 text-sm">Loading sessions...</div>
-                ) : sessions.length === 0 ? (
-                    <div className="text-slate-500 text-sm">No sessions found.</div>
-                ) : (
-                    <div className="space-y-3">
-                        {sessions.map((session) => (
-                            <div key={session._id} className="bg-slate-950/70 border border-indigo-500/10 rounded-xl p-3">
-                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                                    <div className="text-sm text-slate-200">
-                                        <p className="font-medium text-white">{sessionUserLabel(session)}</p>
-                                        <p className="text-slate-400">{session.ip_address || '-'} | {session.device_type || '-'}</p>
-                                        <p className="text-slate-400">Login: {formatDate(session.login_time)} | Last: {formatDate(session.last_activity)}</p>
-                                        <p className="text-xs text-slate-500">Session: {session.session_id}</p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-xs px-2 py-1 rounded-full ${session.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-500/20 text-slate-300'}`}>
-                                            {session.status}
-                                        </span>
-                                        {session.status === 'active' && (
-                                            <button
-                                                onClick={() => terminateSession(session.session_id)}
-                                                disabled={sessionTerminating === session.session_id}
-                                                className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-xs flex items-center gap-1"
-                                            >
-                                                {sessionTerminating === session.session_id ? <Loader2 className="w-3 h-3 animate-spin" /> : <LogOut className="w-3 h-3" />}
-                                                Force Logout
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </section>
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-4 sm:p-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                        <h3 className="text-white font-semibold flex items-center gap-2">
-                            <KeyRound className="w-4 h-4 text-emerald-300" />
-                            User 2FA Controls
-                        </h3>
-                        <select
-                            value={twoFactorRole}
-                            onChange={(e) => setTwoFactorRole(e.target.value)}
-                            className="bg-slate-950/70 border border-indigo-500/20 rounded-lg px-3 py-2 text-white text-sm"
-                        >
-                            <option value="admin,moderator,student">Admin + Moderator + Student</option>
-                            <option value="admin,moderator">Admin + Moderator</option>
-                            <option value="student">Student Only</option>
-                        </select>
-                    </div>
-
-                    {loadingTwoFactorUsers ? (
-                        <div className="text-slate-400 text-sm">Loading 2FA users...</div>
-                    ) : twoFactorUsers.length === 0 ? (
-                        <div className="text-slate-500 text-sm">No users found.</div>
-                    ) : (
-                        <div className="space-y-3">
-                            {twoFactorUsers.map((user) => (
-                                <div key={user._id} className="bg-slate-950/70 border border-indigo-500/10 rounded-xl p-3 flex flex-col gap-2">
-                                    <div>
-                                        <p className="text-white text-sm font-medium">{user.fullName}</p>
-                                        <p className="text-slate-400 text-xs">{user.email} | {user.role}</p>
-                                        <p className="text-slate-500 text-xs">Last login: {formatDate(user.lastLogin || undefined)}</p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => toggleTwoFactorForUser(user)}
-                                            disabled={userActionLoading === user._id}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium ${user.twoFactorEnabled ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'} disabled:opacity-60`}
-                                        >
-                                            {user.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
-                                        </button>
-                                        <button
-                                            onClick={() => resetTwoFactorForUser(user._id)}
-                                            disabled={userActionLoading === user._id}
-                                            className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 text-xs font-medium disabled:opacity-60"
-                                        >
-                                            Reset 2FA
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
-
-                <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-4 sm:p-6">
-                    <h3 className="text-white font-semibold flex items-center gap-2 mb-4">
-                        <AlertTriangle className="w-4 h-4 text-rose-300" />
-                        Recent OTP Failures
-                    </h3>
-                    {loadingFailures ? (
-                        <div className="text-slate-400 text-sm">Loading OTP failures...</div>
-                    ) : failures.length === 0 ? (
-                        <div className="text-slate-500 text-sm">No failure logs found.</div>
-                    ) : (
-                        <div className="space-y-2">
-                            {failures.map((failure) => (
-                                <div key={failure._id} className="bg-slate-950/70 border border-indigo-500/10 rounded-xl p-3">
-                                    <p className="text-sm text-white">{failure.fullName || failure.username}</p>
-                                    <p className="text-xs text-slate-400">{failure.reason} | {failure.ip_address || 'N/A'}</p>
-                                    <p className="text-xs text-slate-500">{formatDate(failure.createdAt)}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
-            </div>
         </div>
     );
 }

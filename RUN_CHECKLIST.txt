@@ -1,0 +1,73 @@
+CampusWay Run Checklist (Non-Coder)
+===================================
+Date: March 2, 2026
+
+Quick Start (one command)
+-------------------------
+1) Double-click: `run_project.bat`
+2) Wait for two terminal windows to open (backend + frontend)
+3) Open: `http://localhost:5175`
+
+Manual Start (if needed)
+------------------------
+1) Backend terminal:
+   - `cd backend`
+   - `npm install`
+   - `npm run dev`
+2) Frontend terminal:
+   - `cd frontend`
+   - `npm install`
+   - `npm run dev -- --port 5175`
+
+Required Environment Files
+--------------------------
+1) Backend: copy `backend/.env.example` -> `backend/.env`
+2) Frontend: copy `frontend/.env.example` -> `frontend/.env`
+3) Ensure key values:
+   - Backend DB URI (`MONGODB_URI` or `MONGO_URI`)
+   - Backend JWT keys (`JWT_SECRET`, `JWT_REFRESH_SECRET`)
+   - Frontend API base (`VITE_API_BASE_URL=http://localhost:5003/api`)
+
+Health Checks
+-------------
+1) Backend health:
+   - `http://localhost:5003/api/health`
+   - Expected: `{"status":"OK", ... , "db":"connected"}`
+2) Frontend:
+   - `http://localhost:5175`
+
+Main URLs
+---------
+Public:
+- `/`
+- `/news`
+- `/services`
+- `/resources`
+- `/contact`
+- `/exams`
+
+Student:
+- `/student/login`
+- `/student/dashboard`
+- `/student/profile`
+
+Admin:
+- `/campusway-secure-admin`
+- `/admin/news`
+
+Build Validation
+----------------
+1) Backend: `cd backend && npm run build`
+2) Frontend: `cd frontend && npm run build`
+
+Common Fixes
+------------
+1) If backend fails to connect:
+   - Ensure MongoDB service is running.
+   - Verify `MONGODB_URI`/`MONGO_URI` in `backend/.env`.
+2) If login fails:
+   - Check latest credentials in `backend/INITIAL_ACCESS_INFO.txt`.
+3) If frontend loads but data missing:
+   - Verify `VITE_API_BASE_URL` points to backend API.
+4) If port conflict occurs:
+   - Free ports `5003` and `5175`, then rerun `run_project.bat`.

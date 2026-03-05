@@ -84,6 +84,30 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
                         return;
                     }
 
+                    if (security?.session?.idleTimeoutMinutes) {
+                        const lastActivity = new Date(String(session.last_activity || session.updatedAt || new Date()));
+                        const idleMs = Date.now() - lastActivity.getTime();
+                        const maxIdleMs = Math.max(5, Number(security.session.idleTimeoutMinutes)) * 60 * 1000;
+                        if (idleMs > maxIdleMs) {
+                            ActiveSession.updateOne(
+                                { session_id: sessionId, status: 'active' },
+                                {
+                                    $set: {
+                                        status: 'terminated',
+                                        terminated_reason: 'session_idle_timeout',
+                                        terminated_at: new Date(),
+                                        termination_meta: { trigger: 'idle_timeout' },
+                                    },
+                                }
+                            ).catch(() => { /* no-op */ });
+                            res.status(401).json({
+                                message: 'Session expired due to inactivity. Please login again.',
+                                code: 'SESSION_IDLE_TIMEOUT',
+                            });
+                            return;
+                        }
+                    }
+
                     if (security?.strictTokenHashValidation) {
                         const tokenHash = hashToken(token);
                         if (!session.jwt_token_hash || session.jwt_token_hash !== tokenHash) {
@@ -142,6 +166,8 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
     }
 }
 
+export const requireAuth = authenticate;
+
 export function authorize(...roles: string[]) {
     return (req: AuthRequest, res: Response, next: NextFunction): void => {
         if (!req.user) {
@@ -154,6 +180,14 @@ export function authorize(...roles: string[]) {
         }
         next();
     };
+}
+
+export function requireRole(role: string) {
+    return authorize(role);
+}
+
+export function requireAnyRole(...roles: string[]) {
+    return authorize(...roles);
 }
 
 export function authorizePermission(permission: keyof IUserPermissions) {

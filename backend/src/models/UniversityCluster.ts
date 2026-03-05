@@ -50,7 +50,6 @@ const UniversityClusterSchema = new Schema<IUniversityCluster>({
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });
 
-UniversityClusterSchema.index({ slug: 1 }, { unique: true });
 UniversityClusterSchema.index({ isActive: 1, homeVisible: 1, homeOrder: 1 });
 UniversityClusterSchema.index({ categoryRuleIds: 1 });
 

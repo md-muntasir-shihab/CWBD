@@ -7,10 +7,11 @@ const FALLBACK_POLL_MS = 30000;
 export default function useHomeLiveUpdates(): void {
     const queryClient = useQueryClient();
     const fallbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         let source: EventSource | null = null;
-        let closedManually = false;
+        let disposed = false;
 
         const invalidate = () => {
             queryClient.invalidateQueries({ queryKey: ['home-system'] }).catch(() => undefined);
@@ -30,7 +31,18 @@ export default function useHomeLiveUpdates(): void {
             fallbackTimerRef.current = null;
         };
 
+        const clearReconnect = () => {
+            if (!reconnectTimerRef.current) return;
+            clearTimeout(reconnectTimerRef.current);
+            reconnectTimerRef.current = null;
+        };
+
         const connect = () => {
+            if (disposed) return;
+            if (source) {
+                source.close();
+                source = null;
+            }
             source = new EventSource(getHomeStreamUrl(), { withCredentials: true });
 
             source.addEventListener('home-updated', invalidate);
@@ -41,22 +53,30 @@ export default function useHomeLiveUpdates(): void {
             source.addEventListener('ping', () => {
                 stopFallbackPoll();
             });
+            source.onopen = () => {
+                stopFallbackPoll();
+                clearReconnect();
+            };
 
             source.onerror = () => {
+                if (disposed) return;
                 startFallbackPoll();
+                if (!reconnectTimerRef.current) {
+                    reconnectTimerRef.current = setTimeout(() => {
+                        reconnectTimerRef.current = null;
+                        connect();
+                    }, 2000);
+                }
             };
         };
 
         connect();
 
         return () => {
-            closedManually = true;
-            if (source && !closedManually) {
-                source.close();
-            }
+            disposed = true;
             if (source) source.close();
             stopFallbackPoll();
+            clearReconnect();
         };
     }, [queryClient]);
 }
-

@@ -12,6 +12,41 @@ import HomeConfig from '../models/HomeConfig';
 import Banner from '../models/Banner';
 import { addHomeStreamClient, broadcastHomeStreamEvent } from '../realtime/homeStream';
 
+const DEFAULT_SOCIAL_LINKS = {
+    facebook: '',
+    whatsapp: '',
+    telegram: '',
+    twitter: '',
+    youtube: '',
+    instagram: '',
+};
+
+const DEFAULT_THEME_SETTINGS = {
+    modeDefault: 'system',
+    allowSystemMode: true,
+    switchVariant: 'pro',
+    animationLevel: 'subtle',
+    brandGradients: [
+        'linear-gradient(135deg,#0D5FDB 0%,#0EA5E9 55%,#22D3EE 100%)',
+        'linear-gradient(135deg,#0891B2 0%,#2563EB 100%)',
+    ],
+};
+
+const DEFAULT_SOCIAL_UI = {
+    clusterEnabled: true,
+    buttonVariant: 'squircle',
+    showLabels: false,
+    platformOrder: ['facebook', 'whatsapp', 'telegram', 'twitter', 'youtube', 'instagram'],
+};
+
+const DEFAULT_PRICING_UI = {
+    currencyCode: 'BDT',
+    currencySymbol: '\\u09F3',
+    currencyLocale: 'bn-BD',
+    displayMode: 'symbol',
+    thousandSeparator: true,
+};
+
 // Helper to ensure configs exist
 const ensureConfigs = async () => {
     let settings = await WebsiteSettings.findOne();
@@ -145,21 +180,45 @@ export const updateSettings = async (req: Request, res: Response) => {
         if (files?.logo?.[0]) payload.logo = `/uploads/${files.logo[0].filename}`;
         if (files?.favicon?.[0]) payload.favicon = `/uploads/${files.favicon[0].filename}`;
 
-        // Handle socialLinks parsing
-        if (typeof payload.socialLinks === 'string') {
+        const current = await WebsiteSettings.findOne();
+
+        // Handle JSON-like payload fields coming through multipart/form-data.
+        const parseIfStringifiedObject = (rawValue: unknown) => {
+            if (typeof rawValue !== 'string') return rawValue;
+            if (!rawValue.trim() || rawValue === '[object Object]') return undefined;
             try {
-                if (payload.socialLinks === '[object Object]') {
-                    const current = await WebsiteSettings.findOne();
-                    payload.socialLinks = current?.socialLinks || { facebook: '', youtube: '', whatsapp: '' };
-                } else {
-                    payload.socialLinks = JSON.parse(payload.socialLinks);
-                }
-            } catch (e) {
-                console.warn('Failed to parse socialLinks:', e);
-                // Keep existing or set defaults
-                const current = await WebsiteSettings.findOne();
-                payload.socialLinks = current?.socialLinks || { facebook: '', youtube: '', whatsapp: '' };
+                return JSON.parse(rawValue);
+            } catch {
+                return undefined;
             }
+        };
+
+        const parsedSocial = parseIfStringifiedObject(payload.socialLinks);
+        if (parsedSocial && typeof parsedSocial === 'object') {
+            payload.socialLinks = { ...DEFAULT_SOCIAL_LINKS, ...(current?.socialLinks || {}), ...(parsedSocial as Record<string, unknown>) };
+        } else if (payload.socialLinks !== undefined) {
+            payload.socialLinks = { ...DEFAULT_SOCIAL_LINKS, ...(current?.socialLinks || {}) };
+        }
+
+        const parsedTheme = parseIfStringifiedObject(payload.theme);
+        if (parsedTheme && typeof parsedTheme === 'object') {
+            payload.theme = { ...DEFAULT_THEME_SETTINGS, ...(current?.theme || {}), ...(parsedTheme as Record<string, unknown>) };
+        } else if (payload.theme !== undefined) {
+            payload.theme = { ...DEFAULT_THEME_SETTINGS, ...(current?.theme || {}) };
+        }
+
+        const parsedSocialUi = parseIfStringifiedObject(payload.socialUi);
+        if (parsedSocialUi && typeof parsedSocialUi === 'object') {
+            payload.socialUi = { ...DEFAULT_SOCIAL_UI, ...(current?.socialUi || {}), ...(parsedSocialUi as Record<string, unknown>) };
+        } else if (payload.socialUi !== undefined) {
+            payload.socialUi = { ...DEFAULT_SOCIAL_UI, ...(current?.socialUi || {}) };
+        }
+
+        const parsedPricingUi = parseIfStringifiedObject(payload.pricingUi);
+        if (parsedPricingUi && typeof parsedPricingUi === 'object') {
+            payload.pricingUi = { ...DEFAULT_PRICING_UI, ...(current?.pricingUi || {}), ...(parsedPricingUi as Record<string, unknown>) };
+        } else if (payload.pricingUi !== undefined) {
+            payload.pricingUi = { ...DEFAULT_PRICING_UI, ...(current?.pricingUi || {}) };
         }
 
         // Use findOneAndUpdate to ensure we update the single settings document
@@ -291,3 +350,4 @@ export const updateStats = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
