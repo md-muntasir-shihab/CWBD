@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Parser as CsvParser } from "json2csv";
+import ExcelJS from "exceljs";
 import { requireAuth, requireRole } from "../../middleware/auth";
 import { ExamModel } from "../../models/exam.model";
 import { ExamQuestionModel } from "../../models/examQuestion.model";
@@ -60,6 +61,63 @@ adminExamRoutes.post("/student-groups/import", async (req, res) => res.json({ ok
 
 adminExamRoutes.get("/question-bank", async (_req, res) => res.json([]));
 
-adminExamRoutes.get("/exams/:id/questions/template.xlsx", async (_req, res) => res.status(501).json({ message: "template pending" }));
-adminExamRoutes.get("/students/template.xlsx", async (_req, res) => res.status(501).json({ message: "template pending" }));
-adminExamRoutes.get("/student-groups/template.xlsx", async (_req, res) => res.status(501).json({ message: "template pending" }));
+adminExamRoutes.get("/exams/:id/questions/template.xlsx", async (_req, res) => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Questions");
+  ws.columns = [
+    { header: "question_en", key: "question_en", width: 40 },
+    { header: "question_bn", key: "question_bn", width: 40 },
+    { header: "optionA_en", key: "optionA_en", width: 20 },
+    { header: "optionA_bn", key: "optionA_bn", width: 20 },
+    { header: "optionB_en", key: "optionB_en", width: 20 },
+    { header: "optionB_bn", key: "optionB_bn", width: 20 },
+    { header: "optionC_en", key: "optionC_en", width: 20 },
+    { header: "optionC_bn", key: "optionC_bn", width: 20 },
+    { header: "optionD_en", key: "optionD_en", width: 20 },
+    { header: "optionD_bn", key: "optionD_bn", width: 20 },
+    { header: "correctKey", key: "correctKey", width: 10 },
+    { header: "marks", key: "marks", width: 8 },
+    { header: "negativeMarks", key: "negativeMarks", width: 12 },
+    { header: "explanation_en", key: "explanation_en", width: 30 },
+    { header: "explanation_bn", key: "explanation_bn", width: 30 },
+    { header: "questionImageUrl", key: "questionImageUrl", width: 25 },
+    { header: "explanationImageUrl", key: "explanationImageUrl", width: 25 },
+  ];
+  ws.addRow({ question_en: "What is 2+2?", optionA_en: "3", optionB_en: "4", optionC_en: "5", optionD_en: "6", correctKey: "B", marks: 1 });
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", 'attachment; filename="questions_template.xlsx"');
+  await wb.xlsx.write(res);
+  res.end();
+});
+adminExamRoutes.get("/students/template.xlsx", async (_req, res) => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Students");
+  ws.columns = [
+    { header: "userId", key: "userId", width: 15 },
+    { header: "username", key: "username", width: 15 },
+    { header: "fullName", key: "fullName", width: 25 },
+    { header: "phone", key: "phone", width: 15 },
+    { header: "email", key: "email", width: 25 },
+    { header: "department", key: "department", width: 15 },
+    { header: "sscBatch", key: "sscBatch", width: 10 },
+    { header: "hscBatch", key: "hscBatch", width: 10 },
+    { header: "collegeName", key: "collegeName", width: 25 },
+  ];
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", 'attachment; filename="students_template.xlsx"');
+  await wb.xlsx.write(res);
+  res.end();
+});
+adminExamRoutes.get("/student-groups/template.xlsx", async (_req, res) => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Groups");
+  ws.columns = [
+    { header: "groupName", key: "groupName", width: 25 },
+    { header: "userId", key: "userId", width: 15 },
+    { header: "username", key: "username", width: 15 },
+  ];
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", 'attachment; filename="student_groups_template.xlsx"');
+  await wb.xlsx.write(res);
+  res.end();
+});

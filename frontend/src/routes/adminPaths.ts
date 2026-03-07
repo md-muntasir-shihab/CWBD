@@ -12,6 +12,13 @@ export const ADMIN_PATHS = {
     questionBank: adminUi('question-bank'),
     students: adminUi('students'),
     studentGroups: adminUi('student-groups'),
+    // New v2 student management system
+    studentsV2: adminUi('students-v2'),
+    studentGroupsV2: adminUi('student-groups-v2'),
+    notificationCenter: adminUi('notification-center'),
+    studentSettings: adminUi('settings/student-settings'),
+    subscriptionsV2: adminUi('subscriptions-v2'),
+    // ---
     subscriptionPlans: adminUi('subscription-plans'),
     payments: adminUi('payments'),
     resources: adminUi('resources'),

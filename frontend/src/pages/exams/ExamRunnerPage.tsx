@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import {
     AlertTriangle,
@@ -151,6 +151,18 @@ export const ExamRunnerPage = () => {
     );
 
     const markedCount = useMemo(() => Object.values(markedMap).filter(Boolean).length, [markedMap]);
+
+    const timerUrgency = useMemo(() => {
+        if (remainingSeconds === null) return "normal";
+        if (remainingSeconds <= 60) return "critical";
+        if (remainingSeconds <= 300) return "warning";
+        return "normal";
+    }, [remainingSeconds]);
+
+    const progressPercent = useMemo(() => {
+        if (questions.length === 0) return 0;
+        return Math.round((answeredCount / questions.length) * 100);
+    }, [answeredCount, questions.length]);
 
     const saveStatusLabel = useMemo(() => {
         if (isOffline) return "Offline (will sync)";
@@ -639,16 +651,28 @@ export const ExamRunnerPage = () => {
 
     return (
         <div className="section-container py-4 sm:py-6">
-            <div className="sticky top-16 z-40 rounded-2xl border border-card-border bg-surface/95 p-3 backdrop-blur dark:bg-dark-surface/95">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    {rules?.showTimer ? (
-                        <div className="inline-flex min-h-[38px] items-center gap-2 rounded-xl border border-card-border px-3 font-mono text-sm font-semibold text-text dark:text-dark-text">
-                            <Timer className="h-4 w-4 text-primary" />
-                            {formatDuration(remainingSeconds ?? 0)}
-                        </div>
-                    ) : null}
+            <div className="sticky top-16 z-40 overflow-hidden rounded-2xl border border-card-border bg-surface/95 backdrop-blur dark:bg-dark-surface/95">
+                <div className="p-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        {rules?.showTimer ? (
+                            <div className={`inline-flex min-h-[38px] items-center gap-2 rounded-xl border px-3 font-mono text-sm font-semibold transition-colors duration-300 ${
+                                timerUrgency === "critical"
+                                    ? "animate-pulse border-danger/50 bg-danger/10 text-danger"
+                                    : timerUrgency === "warning"
+                                        ? "border-warning/40 bg-warning/10 text-warning"
+                                        : "border-card-border text-text dark:text-dark-text"
+                            }`}>
+                                <Timer className="h-4 w-4" />
+                                {formatDuration(remainingSeconds ?? 0)}
+                            </div>
+                        ) : null}
 
-                    <div className="text-xs font-medium text-text-muted dark:text-dark-text/70">{saveStatusLabel}</div>
+                        <div className="hidden items-center gap-2 text-xs font-medium text-text-muted dark:text-dark-text/70 sm:flex">
+                            <span>{answeredCount}/{questions.length} answered</span>
+                            <span className="text-text-muted/40 dark:text-dark-text/30">|</span>
+                            <span>{saveStatusLabel}</span>
+                        </div>
+                        <div className="text-xs font-medium text-text-muted dark:text-dark-text/70 sm:hidden">{saveStatusLabel}</div>
 
                     <div className="ml-auto flex items-center gap-2">
                         <button type="button" onClick={() => setShowRulesSheet(true)} className="btn-secondary">
@@ -686,6 +710,16 @@ export const ExamRunnerPage = () => {
                         {submitError}
                     </div>
                 ) : null}
+                </div>
+                {/* Progress bar */}
+                <div className="h-1 w-full bg-card-border/30 dark:bg-slate-800/50">
+                    <motion.div
+                        className="h-full bg-gradient-to-r from-primary to-accent"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progressPercent}%` }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                </div>
             </div>
 
             <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_300px]">
@@ -739,7 +773,7 @@ export const ExamRunnerPage = () => {
                                     />
                                 ) : null}
 
-                                <div className="mt-4 grid gap-2">
+                                <div className="mt-4 grid gap-2.5">
                                     {question.options.map((option) => {
                                         const isSelected = selected === option.key;
                                         return (
@@ -747,22 +781,30 @@ export const ExamRunnerPage = () => {
                                                 key={option.key}
                                                 type="button"
                                                 onClick={() => handleSelectOption(question.id, option.key)}
-                                                className={`min-h-[48px] rounded-xl border px-3 py-2 text-left transition-colors ${isSelected
-                                                    ? "border-primary bg-primary/10 text-text dark:text-dark-text"
-                                                    : "border-card-border bg-surface2/40 text-text dark:bg-dark-surface/40 dark:text-dark-text"}`}
+                                                className={`group/opt relative min-h-[52px] rounded-xl border-2 px-3.5 py-2.5 text-left transition-all duration-200 ${isSelected
+                                                    ? "border-primary bg-primary/8 shadow-sm ring-1 ring-primary/20"
+                                                    : "border-card-border bg-surface2/30 hover:border-primary/30 hover:bg-primary/4 dark:bg-dark-surface/30"}`}
                                             >
-                                                <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-md bg-surface2 text-xs font-semibold dark:bg-dark-surface">
-                                                    {option.key}
-                                                </span>
-                                                <span className="text-sm">{option.text_bn || option.text_en || "Option"}</span>
-                                                {option.imageUrl ? (
-                                                    <img
-                                                        src={option.imageUrl}
-                                                        alt={`${option.key} option`}
-                                                        className="mt-2 max-h-40 w-full rounded-lg border border-card-border object-contain"
-                                                        loading="lazy"
-                                                    />
-                                                ) : null}
+                                                <div className="flex items-start gap-3">
+                                                    <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
+                                                        isSelected
+                                                            ? "border-primary bg-primary text-white"
+                                                            : "border-card-border text-text-muted group-hover/opt:border-primary/40 dark:text-dark-text/60"
+                                                    }`}>
+                                                        {option.key}
+                                                    </span>
+                                                    <div className="flex-1">
+                                                        <span className="text-sm text-text dark:text-dark-text">{option.text_bn || option.text_en || "Option"}</span>
+                                                        {option.imageUrl ? (
+                                                            <img
+                                                                src={option.imageUrl}
+                                                                alt={`${option.key} option`}
+                                                                className="mt-2 max-h-40 w-full rounded-lg border border-card-border object-contain"
+                                                                loading="lazy"
+                                                            />
+                                                        ) : null}
+                                                    </div>
+                                                </div>
                                             </button>
                                         );
                                     })}
@@ -878,32 +920,54 @@ export const ExamRunnerPage = () => {
                 </div>
             ) : null}
 
-            {showSubmitConfirm ? (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4">
-                    <div className="w-full max-w-md rounded-2xl border border-card-border bg-surface p-5 dark:bg-dark-surface">
-                        <h2 className="text-lg font-semibold text-text dark:text-dark-text">Submit Exam?</h2>
-                        <div className="mt-3 space-y-2 text-sm text-text-muted dark:text-dark-text/70">
-                            <p>Answered: {answeredCount}</p>
-                            <p>Unanswered: {Math.max(questions.length - answeredCount, 0)}</p>
-                            <p>Marked for review: {markedCount}</p>
-                        </div>
-                        <div className="mt-4 flex items-center justify-end gap-2">
-                            <button type="button" onClick={() => setShowSubmitConfirm(false)} className="btn-secondary">Cancel</button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setShowSubmitConfirm(false);
-                                    void submitSession("manual");
-                                }}
-                                disabled={submitMutation.isPending}
-                                className="btn-primary"
-                            >
-                                {submitMutation.isPending ? "Submitting..." : "Confirm Submit"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <AnimatePresence>
+                {showSubmitConfirm ? (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4"
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+                            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+                            className="w-full max-w-md rounded-2xl border border-card-border bg-surface p-5 dark:bg-dark-surface"
+                        >
+                            <h2 className="text-lg font-semibold text-text dark:text-dark-text">Submit Exam?</h2>
+                            <div className="mt-3 space-y-2 text-sm text-text-muted dark:text-dark-text/70">
+                                <div className="flex items-center justify-between rounded-lg bg-success/8 px-3 py-2">
+                                    <span>Answered</span>
+                                    <span className="font-semibold text-success">{answeredCount}</span>
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg bg-slate-500/8 px-3 py-2">
+                                    <span>Unanswered</span>
+                                    <span className="font-semibold">{Math.max(questions.length - answeredCount, 0)}</span>
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg bg-warning/8 px-3 py-2">
+                                    <span>Marked for review</span>
+                                    <span className="font-semibold text-warning">{markedCount}</span>
+                                </div>
+                            </div>
+                            <div className="mt-4 flex items-center justify-end gap-2">
+                                <button type="button" onClick={() => setShowSubmitConfirm(false)} className="btn-secondary">Cancel</button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowSubmitConfirm(false);
+                                        void submitSession("manual");
+                                    }}
+                                    disabled={submitMutation.isPending}
+                                    className="btn-primary"
+                                >
+                                    {submitMutation.isPending ? "Submitting..." : "Confirm Submit"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                ) : null}
+            </AnimatePresence>
 
             {showTimeoutModal ? (
                 <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4">

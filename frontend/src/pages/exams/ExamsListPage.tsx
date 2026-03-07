@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { isAxiosError } from "axios";
-import { AlertTriangle, CalendarDays, Clock3, Lock, RefreshCw, Search } from "lucide-react";
+import { AlertTriangle, BookOpen, CalendarDays, Clock3, Lock, RefreshCw, Search, Sparkles, Users } from "lucide-react";
 import { useExamList } from "../../hooks/useExamQueries";
 import type { BlockReason, ExamListItem } from "../../types/exam";
 import { startExam } from "../../services/api";
@@ -51,12 +51,21 @@ function durationLabel(minutes: number): string {
 
 function ExamCardSkeleton() {
     return (
-        <div className="card-flat p-4 sm:p-5 animate-pulse">
-            <div className="h-36 rounded-xl bg-slate-200/70 dark:bg-slate-800/80" />
-            <div className="mt-4 h-5 w-4/5 rounded bg-slate-200/70 dark:bg-slate-800/80" />
-            <div className="mt-2 h-4 w-3/5 rounded bg-slate-200/70 dark:bg-slate-800/80" />
-            <div className="mt-4 h-16 rounded bg-slate-200/70 dark:bg-slate-800/80" />
-            <div className="mt-4 h-10 w-28 rounded-xl bg-slate-200/70 dark:bg-slate-800/80" />
+        <div className="card-flat overflow-hidden animate-pulse">
+            <div className="h-40 bg-gradient-to-br from-slate-200/80 to-slate-300/60 dark:from-slate-800/80 dark:to-slate-700/60" />
+            <div className="space-y-3 p-4 sm:p-5">
+                <div className="h-5 w-4/5 rounded-lg bg-slate-200/70 dark:bg-slate-800/70" />
+                <div className="h-3.5 w-3/5 rounded-lg bg-slate-200/60 dark:bg-slate-800/60" />
+                <div className="flex gap-2">
+                    <div className="h-4 w-24 rounded-lg bg-slate-200/60 dark:bg-slate-800/60" />
+                    <div className="h-4 w-20 rounded-lg bg-slate-200/60 dark:bg-slate-800/60" />
+                </div>
+                <div className="flex gap-2 pt-1">
+                    <div className="h-7 w-16 rounded-full bg-slate-200/60 dark:bg-slate-800/60" />
+                    <div className="h-7 w-20 rounded-full bg-slate-200/60 dark:bg-slate-800/60" />
+                </div>
+                <div className="h-11 w-24 rounded-xl bg-slate-200/70 dark:bg-slate-800/70" />
+            </div>
         </div>
     );
 }
@@ -78,8 +87,10 @@ function reasonLinks(reasons: BlockReason[]) {
 
 function ExamCard({
     item,
+    index,
 }: {
     item: ExamListItem;
+    index: number;
 }) {
     const [startingExternal, setStartingExternal] = useState(false);
     const blockedReasons = Array.isArray(item.blockedReasons) ? item.blockedReasons : [];
@@ -112,20 +123,37 @@ function ExamCard({
     return (
         <motion.article
             layout
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="card-flat relative overflow-hidden"
+            initial={{ opacity: 0, y: 16, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.06 }}
+            className="card-flat group relative overflow-hidden transition-shadow duration-300 hover:shadow-card-hover"
         >
             {item.bannerImageUrl ? (
-                <img
-                    src={item.bannerImageUrl}
-                    alt={item.title}
-                    className="h-36 w-full object-cover"
-                    loading="lazy"
-                />
+                <div className="relative h-40 overflow-hidden">
+                    <img
+                        src={item.bannerImageUrl}
+                        alt={item.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                    <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg ${
+                        isLive ? "bg-success/90" : item.status === "upcoming" ? "bg-primary/90" : "bg-slate-500/90"
+                    }`}>
+                        {item.status}
+                    </span>
+                </div>
             ) : (
-                <div className="h-36 w-full bg-gradient-to-br from-primary/15 via-accent/10 to-primary/10" />
+                <div className="relative h-40 w-full bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.08]">
+                        <BookOpen className="h-20 w-20" />
+                    </div>
+                    <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg ${
+                        isLive ? "bg-success/90" : item.status === "upcoming" ? "bg-primary/90" : "bg-slate-500/90"
+                    }`}>
+                        {item.status}
+                    </span>
+                </div>
             )}
 
             <div className="space-y-3 p-4 sm:p-5">
@@ -253,8 +281,32 @@ export const ExamsListPage = () => {
         });
     }, [items, paid, search]);
 
+    const liveCount = useMemo(() => items.filter((item) => item.status === "live").length, [items]);
+    const totalCount = filteredItems.length;
+
     return (
         <div className="section-container py-4 sm:py-6 lg:py-8">
+            {/* Page Header */}
+            <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="mb-5"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold text-text dark:text-dark-text sm:text-2xl">Exams</h1>
+                        <p className="text-xs text-text-muted dark:text-dark-text/60">
+                            {liveCount > 0 ? `${liveCount} live now` : "Browse available exams"}
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Filters */}
             <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -356,17 +408,33 @@ export const ExamsListPage = () => {
             ) : null}
 
             {!isLoading && !isError && filteredItems.length === 0 ? (
-                <div className="card-flat p-6 text-center text-sm text-text-muted dark:text-dark-text/70">
-                    No exams matched your current filters.
-                </div>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="card-flat flex flex-col items-center gap-3 p-8 text-center"
+                >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                        <Search className="h-6 w-6 text-primary" />
+                    </div>
+                    <p className="text-sm font-medium text-text dark:text-dark-text">No exams found</p>
+                    <p className="text-xs text-text-muted dark:text-dark-text/60">Try adjusting your filters or search terms.</p>
+                </motion.div>
             ) : null}
 
             {!isLoading && !isError && filteredItems.length > 0 ? (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {filteredItems.map((item) => (
-                        <ExamCard key={item.id} item={item} />
-                    ))}
-                </div>
+                <>
+                    <div className="mb-3 flex items-center gap-2 text-xs text-text-muted dark:text-dark-text/60">
+                        <Users className="h-3.5 w-3.5" />
+                        <span>{totalCount} exam{totalCount !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AnimatePresence mode="popLayout">
+                            {filteredItems.map((item, index) => (
+                                <ExamCard key={item.id} item={item} index={index} />
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                </>
             ) : null}
 
             {isFetching && !isLoading ? (

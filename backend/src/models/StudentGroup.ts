@@ -7,6 +7,8 @@ export interface IStudentGroup extends Document {
     description?: string;
     isActive: boolean;
     studentCount: number;
+    memberCountCached: number;
+    createdByAdminId?: mongoose.Types.ObjectId;
     type: 'manual' | 'dynamic';
     manualStudents?: mongoose.Types.ObjectId[];
     rules?: {
@@ -30,6 +32,8 @@ const StudentGroupSchema = new Schema<IStudentGroup>(
         description: { type: String, default: '' },
         isActive: { type: Boolean, default: true },
         studentCount: { type: Number, default: 0 },
+        memberCountCached: { type: Number, default: 0 },
+        createdByAdminId: { type: Schema.Types.ObjectId, ref: 'User' },
         type: { type: String, enum: ['manual', 'dynamic'], default: 'manual' },
         manualStudents: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         rules: {
@@ -40,8 +44,8 @@ const StudentGroupSchema = new Schema<IStudentGroup>(
             planCodes: [String],
             profileScoreRange: {
                 min: { type: Number },
-                max: { type: Number }
-            }
+                max: { type: Number },
+            },
         },
         meta: { type: Schema.Types.Mixed, default: {} },
     },

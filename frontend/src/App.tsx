@@ -51,6 +51,11 @@ import {
     AdminPaymentsPage,
     AdminResourcesPage,
     AdminSupportCenterPage,
+    AdminStudentsMgmtPage,
+    AdminStudentDetailPage,
+    AdminStudentGroupsV2Page,
+    AdminNotificationCenterPage,
+    AdminStudentSettingsPage,
 } from './pages/AdminCorePages';
 import NotFoundPage from './pages/NotFound';
 import ForceLogoutModal from './components/auth/ForceLogoutModal';
@@ -302,6 +307,12 @@ export default function App() {
                                 <Route path={adminUi('settings/security')} element={<Navigate to={adminUi('settings/security-center')} replace />} />
                                 <Route path={adminUi('settings/logs')} element={<Navigate to={adminUi('settings/system-logs')} replace />} />
                                 <Route path={adminUi('settings/profile')} element={<Navigate to={adminUi('settings/admin-profile')} replace />} />
+                                {/* New Student Management System v2 */}
+                                <Route path={adminUi('students-v2')} element={<AdminStudentsMgmtPage />} />
+                                <Route path={adminUi('students-v2/:id')} element={<AdminStudentDetailPage />} />
+                                <Route path={adminUi('student-groups-v2')} element={<AdminStudentGroupsV2Page />} />
+                                <Route path={adminUi('notification-center')} element={<AdminNotificationCenterPage />} />
+                                <Route path={adminUi('settings/student-settings')} element={<AdminStudentSettingsPage />} />
                                 {Object.entries(LEGACY_ADMIN_PATH_REDIRECTS).map(([legacyPath, targetPath]) => (
                                     <Route key={legacyPath} path={legacyPath} element={<Navigate to={targetPath} replace />} />
                                 ))}

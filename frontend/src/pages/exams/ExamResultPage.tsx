@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock3, Download, Trophy } from "lucide-react";
+import { Award, CheckCircle2, Clock3, Download, SkipForward, Trophy, XCircle } from "lucide-react";
 import { examPdfUrls } from "../../api/examApi";
 import { useExamResult, useExamSolutions, usePdfAvailability } from "../../hooks/useExamQueries";
 
@@ -28,6 +28,45 @@ function formatDateTime(value: string): string {
         hour: "2-digit",
         minute: "2-digit",
     });
+}
+
+function ScoreRing({ percentage }: { percentage: number }) {
+    const radius = 54;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (Math.min(percentage, 100) / 100) * circumference;
+    const color = percentage >= 80 ? "var(--success)" : percentage >= 50 ? "var(--primary)" : "var(--danger)";
+
+    return (
+        <div className="relative inline-flex h-36 w-36 items-center justify-center sm:h-44 sm:w-44">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--color-card-border)" strokeWidth="8" opacity="0.3" />
+                <motion.circle
+                    cx="60"
+                    cy="60"
+                    r={radius}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset: offset }}
+                    transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+                />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <motion.span
+                    className="text-3xl font-bold text-text dark:text-dark-text sm:text-4xl"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                >
+                    {percentage}%
+                </motion.span>
+                <span className="text-xs text-text-muted dark:text-dark-text/60">Score</span>
+            </div>
+        </div>
+    );
 }
 
 export const ExamResultPage = () => {
@@ -121,55 +160,106 @@ export const ExamResultPage = () => {
 
     return (
         <div className="section-container py-6 sm:py-8">
-            <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card-flat p-5 sm:p-6">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
-                    <Trophy className="h-3.5 w-3.5" />
-                    Result Published
-                </div>
-                <h1 className="text-2xl font-bold text-text dark:text-dark-text">
-                    Score: {result.obtainedMarks}/{result.totalMarks}
-                </h1>
-                <p className="mt-1 text-sm text-text-muted dark:text-dark-text/70">Percentage: {result.percentage}%</p>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="rounded-xl border border-card-border p-3 text-sm">Correct: {result.correctCount}</div>
-                    <div className="rounded-xl border border-card-border p-3 text-sm">Wrong: {result.wrongCount}</div>
-                    <div className="rounded-xl border border-card-border p-3 text-sm">Skipped: {result.skippedCount}</div>
-                    <div className="rounded-xl border border-card-border p-3 text-sm">
-                        Time Taken: {formatDuration(result.timeTakenSeconds)}
-                    </div>
-                </div>
-                {typeof result.rank === "number" ? (
-                    <p className="mt-3 text-sm font-semibold text-primary">Rank: #{result.rank}</p>
-                ) : null}
+            <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card-flat overflow-hidden">
+                {/* Celebration header */}
+                <div className="relative bg-gradient-to-r from-primary/10 via-accent/8 to-success/10 px-5 py-6 text-center sm:px-8 sm:py-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="mb-4 inline-flex items-center gap-2 rounded-full bg-success/15 px-4 py-1.5 text-sm font-semibold text-success"
+                    >
+                        <Trophy className="h-4 w-4" />
+                        Result Published
+                    </motion.div>
 
-                <div className="mt-5 flex flex-wrap gap-2">
-                    <Link to={`/exam/${examId}/solutions?sessionId=${sessionId}`} className="btn-primary">
-                        View Solutions
-                    </Link>
-                    {questionsPdfQuery.data ? (
-                        <a href={examPdfUrls.questions(examId)} className="btn-secondary">
-                            <Download className="mr-1.5 h-4 w-4" />
-                            Questions PDF
-                        </a>
-                    ) : null}
-                    {solutionsPdfQuery.data ? (
-                        <a href={examPdfUrls.solutions(examId)} className="btn-secondary">
-                            <Download className="mr-1.5 h-4 w-4" />
-                            Solutions PDF
-                        </a>
-                    ) : null}
-                    {answersPdfQuery.data ? (
-                        <a href={examPdfUrls.answers(examId, sessionId)} className="btn-secondary">
-                            <Download className="mr-1.5 h-4 w-4" />
-                            My Answers PDF
-                        </a>
+                    <ScoreRing percentage={result.percentage} />
+
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1 }}
+                        className="mt-2 text-lg font-bold text-text dark:text-dark-text"
+                    >
+                        {result.obtainedMarks} / {result.totalMarks}
+                    </motion.p>
+
+                    {typeof result.rank === "number" ? (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 1.2 }}
+                            className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-sm font-semibold text-primary"
+                        >
+                            <Award className="h-4 w-4" />
+                            Rank #{result.rank}
+                        </motion.div>
                     ) : null}
                 </div>
-                {!solutionsReady ? (
-                    <p className="mt-3 text-xs text-text-muted dark:text-dark-text/60">
-                        Solutions may remain locked until backend release policy allows it.
-                    </p>
-                ) : null}
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-4 sm:p-6">
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="rounded-xl border border-success/20 bg-success/5 p-3">
+                        <div className="flex items-center gap-2 text-success">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="text-xs font-medium uppercase">Correct</span>
+                        </div>
+                        <p className="mt-1 text-xl font-bold text-text dark:text-dark-text">{result.correctCount}</p>
+                    </motion.div>
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="rounded-xl border border-danger/20 bg-danger/5 p-3">
+                        <div className="flex items-center gap-2 text-danger">
+                            <XCircle className="h-4 w-4" />
+                            <span className="text-xs font-medium uppercase">Wrong</span>
+                        </div>
+                        <p className="mt-1 text-xl font-bold text-text dark:text-dark-text">{result.wrongCount}</p>
+                    </motion.div>
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="rounded-xl border border-warning/20 bg-warning/5 p-3">
+                        <div className="flex items-center gap-2 text-warning">
+                            <SkipForward className="h-4 w-4" />
+                            <span className="text-xs font-medium uppercase">Skipped</span>
+                        </div>
+                        <p className="mt-1 text-xl font-bold text-text dark:text-dark-text">{result.skippedCount}</p>
+                    </motion.div>
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                        <div className="flex items-center gap-2 text-primary">
+                            <Clock3 className="h-4 w-4" />
+                            <span className="text-xs font-medium uppercase">Time</span>
+                        </div>
+                        <p className="mt-1 text-lg font-bold text-text dark:text-dark-text">{formatDuration(result.timeTakenSeconds)}</p>
+                    </motion.div>
+                </div>
+
+                {/* Actions */}
+                <div className="border-t border-card-border px-5 py-4 sm:px-6">
+                    <div className="flex flex-wrap gap-2">
+                        <Link to={`/exam/${examId}/solutions?sessionId=${sessionId}`} className="btn-primary">
+                            View Solutions
+                        </Link>
+                        {questionsPdfQuery.data ? (
+                            <a href={examPdfUrls.questions(examId)} className="btn-secondary">
+                                <Download className="mr-1.5 h-4 w-4" />
+                                Questions PDF
+                            </a>
+                        ) : null}
+                        {solutionsPdfQuery.data ? (
+                            <a href={examPdfUrls.solutions(examId)} className="btn-secondary">
+                                <Download className="mr-1.5 h-4 w-4" />
+                                Solutions PDF
+                            </a>
+                        ) : null}
+                        {answersPdfQuery.data ? (
+                            <a href={examPdfUrls.answers(examId, sessionId)} className="btn-secondary">
+                                <Download className="mr-1.5 h-4 w-4" />
+                                My Answers PDF
+                            </a>
+                        ) : null}
+                    </div>
+                    {!solutionsReady ? (
+                        <p className="mt-3 text-xs text-text-muted dark:text-dark-text/60">
+                            Solutions may remain locked until backend release policy allows it.
+                        </p>
+                    ) : null}
+                </div>
             </motion.section>
         </div>
     );

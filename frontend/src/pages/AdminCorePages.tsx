@@ -10,6 +10,11 @@ import ResourcesPanel from '../components/admin/ResourcesPanel';
 import SupportTicketsPanel from '../components/admin/SupportTicketsPanel';
 import { routeFromDashboardActionTab } from '../routes/adminPaths';
 import LegacyAdminDashboard from './AdminDashboard';
+import StudentsListPage from './admin/students/StudentsListPage';
+import StudentDetailPage from './admin/students/StudentDetailPage';
+import StudentGroupsPageV2 from './admin/students/StudentGroupsPage';
+import NotificationCenterPage from './admin/notifications/NotificationCenterPage';
+import StudentSettingsPage from './admin/students/StudentSettingsPage';
 
 export function AdminDashboardPage() {
     const navigate = useNavigate();
@@ -95,4 +100,26 @@ export function AdminSupportCenterPage() {
             <SupportTicketsPanel />
         </AdminGuardShell>
     );
+}
+
+// ─── New Student Management System (v2) ───────────────────────────────────
+
+export function AdminStudentsMgmtPage() {
+    return <StudentsListPage />;
+}
+
+export function AdminStudentDetailPage() {
+    return <StudentDetailPage />;
+}
+
+export function AdminStudentGroupsV2Page() {
+    return <StudentGroupsPageV2 />;
+}
+
+export function AdminNotificationCenterPage() {
+    return <NotificationCenterPage />;
+}
+
+export function AdminStudentSettingsPage() {
+    return <StudentSettingsPage />;
 }

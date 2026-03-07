@@ -16,9 +16,12 @@ import studentRoutes from './routes/studentRoutes';
 import webhookRoutes from './routes/webhookRoutes';
 import { runDefaultSetup } from './setup/defaultSetup';
 import { startExamCronJobs } from './cron/examJobs';
+import { startModernExamCronJobs } from './cron/modernExamJobs';
 import { startStudentDashboardCronJobs } from './cron/dashboardJobs';
 import { startNewsV2CronJobs } from './cron/newsJobs';
 import { startRetentionCronJobs } from './cron/retentionJobs';
+import { startSubscriptionExpiryCron } from './cron/subscriptionExpiryCron';
+import adminStudentMgmtRoutes from './routes/adminStudentMgmtRoutes';
 import { enforceSiteAccess } from './middlewares/securityGuards';
 import { sanitizeRequestPayload } from './middlewares/requestSanitizer';
 import { adminRateLimiter } from './middlewares/securityRateLimit';
@@ -199,6 +202,7 @@ app.use(`/api/${ADMIN_SECRET_PATH}`, adminRateLimiter);
 app.use(`/api/${ADMIN_SECRET_PATH}`, adminRoutes);
 app.use('/api/admin', adminRateLimiter);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminStudentMgmtRoutes);
 
 // Student API
 app.use('/api/student', studentRoutes);
@@ -269,9 +273,11 @@ async function start() {
 
     // Start background cron jobs (e.g. auto-submitting expired exams)
     startExamCronJobs();
+    startModernExamCronJobs();
     startStudentDashboardCronJobs();
     startNewsV2CronJobs();
     startRetentionCronJobs();
+    startSubscriptionExpiryCron();
 
     app.listen(PORT, () => {
         console.log(`🚀 CampusWay Backend running on port ${PORT}`);

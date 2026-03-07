@@ -37,12 +37,14 @@ export interface IUser extends Document {
     phone_number?: string;
     profile_photo?: string;
     mustChangePassword: boolean;
+    passwordResetRequired: boolean;
     loginAttempts: number;
     lockUntil?: Date;
     twoFactorEnabled: boolean;
     twoFactorSecret?: string;
     two_factor_method?: 'email' | 'sms' | 'authenticator' | null;
     lastLogin?: Date;
+    lastLoginAtUTC?: Date;
     ip_address?: string;
     device_info?: string;
     password_updated_at?: Date;
@@ -112,12 +114,14 @@ const UserSchema = new Schema<IUser>(
         phone_number: { type: String, unique: true, sparse: true, index: true },
         profile_photo: { type: String, trim: true },
         mustChangePassword: { type: Boolean, default: false },
+        passwordResetRequired: { type: Boolean, default: false },
         loginAttempts: { type: Number, default: 0 },
         lockUntil: { type: Date },
         twoFactorEnabled: { type: Boolean, default: false },
         twoFactorSecret: { type: String, select: false },
         two_factor_method: { type: String, enum: ['email', 'sms', 'authenticator', null], default: null },
         lastLogin: { type: Date },
+        lastLoginAtUTC: { type: Date },
         ip_address: { type: String, trim: true },
         device_info: { type: String, trim: true },
         password_updated_at: { type: Date },

@@ -7,7 +7,8 @@ import {
     BarChart3, Home, Settings, ScrollText, LogOut, Shield, X,
     ChevronLeft, ChevronRight, Newspaper, FolderOpen,
     Mail, UserCog, Download, Star, User, AlertCircle, MonitorPlay,
-    Wallet, LifeBuoy, Database, CreditCard, SlidersHorizontal
+    Wallet, LifeBuoy, Database, CreditCard, SlidersHorizontal,
+    Users, Bell, CreditCard as SubCard, ClipboardList
 } from 'lucide-react';
 
 export const ADMIN_NAV = [
@@ -25,6 +26,10 @@ export const ADMIN_NAV = [
             { id: 'question-bank', label: 'Question Bank', icon: BookOpen, route: '/__cw_admin__/question-bank' },
             { id: 'alerts', label: 'Live Alerts', icon: AlertCircle, route: '/__cw_admin__/alerts' },
             { id: 'student-management', label: 'Student Management', icon: UserCog, route: '/__cw_admin__/students' },
+            { id: 'students-v2', label: 'Students CRM', icon: Users, route: '/__cw_admin__/students-v2' },
+            { id: 'student-groups-v2', label: 'Student Groups', icon: ClipboardList, route: '/__cw_admin__/student-groups-v2' },
+            { id: 'subscriptions-v2', label: 'Subscriptions', icon: SubCard, route: '/__cw_admin__/subscriptions-v2' },
+            { id: 'notification-center', label: 'Notification Center', icon: Bell, route: '/__cw_admin__/notification-center' },
             { id: 'subscription-plans', label: 'Subscription Plans', icon: CreditCard, route: '/__cw_admin__/subscription-plans' },
         ]
     },
@@ -65,6 +70,7 @@ export const ADMIN_NAV = [
     { id: 'settings', label: 'Site Settings', icon: Settings, route: '/__cw_admin__/settings/site-settings' },
     { id: 'settings-center', label: 'Settings Center', icon: Settings, route: '/__cw_admin__/settings' },
     { id: 'security', label: 'Security Center', icon: Shield, route: '/__cw_admin__/settings/security-center' },
+    { id: 'student-settings', label: 'Student Settings', icon: SlidersHorizontal, route: '/__cw_admin__/settings/student-settings' },
     { id: 'logs', label: 'System Logs', icon: ScrollText, route: '/__cw_admin__/settings/system-logs' },
 ];
 

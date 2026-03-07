@@ -7,6 +7,8 @@ import { ResultModel } from "../../models/result.model";
 import { buildAccessPayload } from "../../services/examAccessService";
 import { getSessionQuestions, saveSessionAnswers, startSession, submitSession } from "../../services/examSessionService";
 import { requireAuth } from "../../middleware/auth";
+import { examSessionStartLimit, examAutoSaveLimit, examSubmitLimit } from "../../middleware/examRateLimit";
+import { generateQuestionsPdf, generateSolutionsPdf, generateAnswersPdf } from "../../controllers/examPdfController";
 
 export const studentExamRoutes = Router();
 
@@ -78,7 +80,7 @@ studentExamRoutes.get("/exams/:examId", async (req, res) => {
   });
 });
 
-studentExamRoutes.post("/exams/:examId/sessions/start", requireAuth, async (req, res) => {
+studentExamRoutes.post("/exams/:examId/sessions/start", requireAuth, examSessionStartLimit, async (req, res) => {
   const result = await startSession(String(req.params.examId), req.user!.id, { ip: req.ip, ua: req.headers["user-agent"] as string });
   if ((result as any).blocked) return res.status(403).json((result as any).blocked);
   res.json(result);
@@ -88,11 +90,11 @@ studentExamRoutes.get("/exams/:examId/sessions/:sessionId/questions", requireAut
   res.json(await getSessionQuestions(String(req.params.examId), String(req.params.sessionId), req.user!.id));
 });
 
-studentExamRoutes.post("/exams/:examId/sessions/:sessionId/answers", requireAuth, async (req, res) => {
+studentExamRoutes.post("/exams/:examId/sessions/:sessionId/answers", requireAuth, examAutoSaveLimit, async (req, res) => {
   res.json(await saveSessionAnswers(String(req.params.examId), String(req.params.sessionId), req.user!.id, req.body));
 });
 
-studentExamRoutes.post("/exams/:examId/sessions/:sessionId/submit", requireAuth, async (req, res) => {
+studentExamRoutes.post("/exams/:examId/sessions/:sessionId/submit", requireAuth, examSubmitLimit, async (req, res) => {
   res.json(await submitSession(String(req.params.examId), String(req.params.sessionId), req.user!.id));
 });
 
@@ -135,9 +137,9 @@ studentExamRoutes.get("/exams/:examId/sessions/:sessionId/solutions", requireAut
   });
 });
 
-studentExamRoutes.get("/exams/:examId/pdf/questions", async (_req, res) => res.status(404).json({ message: "Not implemented yet" }));
-studentExamRoutes.get("/exams/:examId/pdf/solutions", async (_req, res) => res.status(404).json({ message: "Not implemented yet" }));
-studentExamRoutes.get("/exams/:examId/sessions/:sessionId/pdf/answers", requireAuth, async (_req, res) => res.status(404).json({ message: "Not implemented yet" }));
+studentExamRoutes.get("/exams/:examId/pdf/questions", generateQuestionsPdf);
+studentExamRoutes.get("/exams/:examId/pdf/solutions", generateSolutionsPdf);
+studentExamRoutes.get("/exams/:examId/sessions/:sessionId/pdf/answers", requireAuth, generateAnswersPdf);
 
 studentExamRoutes.post("/exams/:examId/sessions/:sessionId/mark-expired-submit", async (req, res) => {
   const session = await ExamSessionModel.findById(req.params.sessionId);

@@ -11,6 +11,8 @@ export interface IUserSubscription extends Document {
     activatedByAdminId?: mongoose.Types.ObjectId | null;
     paymentId?: mongoose.Types.ObjectId | null;
     notes?: string;
+    autoRenewEnabled: boolean;
+    lastReminderSentAtUTC?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -30,6 +32,8 @@ const UserSubscriptionSchema = new Schema<IUserSubscription>(
         activatedByAdminId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
         paymentId: { type: Schema.Types.ObjectId, ref: 'ManualPayment', default: null },
         notes: { type: String, trim: true, default: '' },
+        autoRenewEnabled: { type: Boolean, default: false },
+        lastReminderSentAtUTC: { type: Date },
     },
     { timestamps: true, collection: 'user_subscriptions' }
 );

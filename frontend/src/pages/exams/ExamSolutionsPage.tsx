@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock3, Download } from "lucide-react";
+import { CheckCircle2, Clock3, Download, Flag, SkipForward, XCircle } from "lucide-react";
 import { examPdfUrls } from "../../api/examApi";
 import { useExamSolutions, usePdfAvailability } from "../../hooks/useExamQueries";
 import type { OptionKey, RunnerCache } from "../../types/exam";
@@ -63,6 +63,18 @@ export const ExamSolutionsPage = () => {
         if (!Number.isFinite(serverNowMs)) return;
         setServerOffsetMs(serverNowMs - Date.now());
     }, [query.data]);
+
+    const filterCounts = useMemo(() => {
+        if (query.data?.status !== "available") return { All: 0, Wrong: 0, Correct: 0, Skipped: 0, Marked: 0 };
+        const items = query.data.items;
+        return {
+            All: items.length,
+            Wrong: items.filter((i) => i.selectedKey !== null && i.selectedKey !== i.correctKey).length,
+            Correct: items.filter((i) => i.selectedKey === i.correctKey).length,
+            Skipped: items.filter((i) => i.selectedKey === null).length,
+            Marked: items.filter((i) => markedQuestionIds.has(i.questionId)).length,
+        };
+    }, [markedQuestionIds, query.data]);
 
     const filtered = useMemo(() => {
         if (query.data?.status !== "available") return [];
@@ -135,15 +147,53 @@ export const ExamSolutionsPage = () => {
 
     return (
         <div className="section-container py-6 sm:py-8">
+            {/* Progress summary bar */}
+            {query.data?.status === "available" && filterCounts.All > 0 ? (
+                <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 overflow-hidden rounded-2xl border border-card-border"
+                >
+                    <div className="flex h-2.5">
+                        <div
+                            className="bg-success transition-all duration-500"
+                            style={{ width: `${(filterCounts.Correct / filterCounts.All) * 100}%` }}
+                        />
+                        <div
+                            className="bg-danger transition-all duration-500"
+                            style={{ width: `${(filterCounts.Wrong / filterCounts.All) * 100}%` }}
+                        />
+                        <div
+                            className="bg-warning/60 transition-all duration-500"
+                            style={{ width: `${(filterCounts.Skipped / filterCounts.All) * 100}%` }}
+                        />
+                    </div>
+                    <div className="flex flex-wrap gap-4 bg-surface px-4 py-2.5 text-xs font-medium dark:bg-dark-surface">
+                        <span className="flex items-center gap-1.5 text-success"><CheckCircle2 className="h-3.5 w-3.5" />{filterCounts.Correct} Correct</span>
+                        <span className="flex items-center gap-1.5 text-danger"><XCircle className="h-3.5 w-3.5" />{filterCounts.Wrong} Wrong</span>
+                        <span className="flex items-center gap-1.5 text-warning"><SkipForward className="h-3.5 w-3.5" />{filterCounts.Skipped} Skipped</span>
+                        {filterCounts.Marked > 0 ? <span className="flex items-center gap-1.5 text-text-muted dark:text-dark-text/60"><Flag className="h-3.5 w-3.5" />{filterCounts.Marked} Marked</span> : null}
+                    </div>
+                </motion.div>
+            ) : null}
+
+            {/* Filter tabs */}
             <div className="mb-4 flex flex-wrap items-center gap-2">
                 {filterTabs.map((tab) => (
                     <button
                         key={tab}
                         type="button"
                         onClick={() => setFilter(tab)}
-                        className={filter === tab ? "tab-pill-active" : "tab-pill-inactive"}
+                        className={`${filter === tab ? "tab-pill-active" : "tab-pill-inactive"} relative`}
                     >
                         {tab}
+                        {filterCounts[tab] > 0 ? (
+                            <span className={`ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+                                filter === tab ? "bg-white/25 text-white" : "bg-card-border/50 text-text-muted dark:text-dark-text/60"
+                            }`}>
+                                {filterCounts[tab]}
+                            </span>
+                        ) : null}
                     </button>
                 ))}
                 {solutionsPdfQuery.data ? (
@@ -159,26 +209,41 @@ export const ExamSolutionsPage = () => {
                     const isCorrect = item.selectedKey === item.correctKey;
                     const isSkipped = item.selectedKey === null;
                     const selected = (item.selectedKey ?? "Skipped") as OptionKey | "Skipped";
+                    const borderColor = isCorrect
+                        ? "border-l-success"
+                        : isSkipped
+                            ? "border-l-warning"
+                            : "border-l-danger";
+
                     return (
                         <motion.article
                             key={item.questionId}
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="card-flat p-4 sm:p-5"
+                            transition={{ delay: index * 0.03 }}
+                            className={`card-flat border-l-4 ${borderColor} p-4 sm:p-5`}
                         >
-                            <p className="text-sm font-semibold text-text dark:text-dark-text">
-                                Q{index + 1}. {item.questionText}
-                            </p>
+                            <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold text-text dark:text-dark-text">
+                                    Q{index + 1}. {item.questionText}
+                                </p>
+                                {isCorrect ? (
+                                    <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+                                ) : isSkipped ? (
+                                    <SkipForward className="h-5 w-5 shrink-0 text-warning" />
+                                ) : (
+                                    <XCircle className="h-5 w-5 shrink-0 text-danger" />
+                                )}
+                            </div>
+
                             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                                <span className="badge-primary">Selected: {selected}</span>
+                                <span className={isSkipped ? "badge-warning" : isCorrect ? "badge-success" : "badge-danger"}>
+                                    Selected: {selected}
+                                </span>
                                 <span className="badge-success">Correct: {item.correctKey}</span>
-                                {!isSkipped && !isCorrect ? <span className="badge-danger">Wrong</span> : null}
-                                {isSkipped ? <span className="badge-warning">Skipped</span> : null}
                                 {markedQuestionIds.has(item.questionId) ? <span className="badge-warning">Marked</span> : null}
                             </div>
-                            {item.explanationText ? (
-                                <p className="mt-3 text-sm text-text-muted dark:text-dark-text/75">{item.explanationText}</p>
-                            ) : null}
+
                             {item.questionImageUrl ? (
                                 <img
                                     src={item.questionImageUrl}
@@ -187,6 +252,14 @@ export const ExamSolutionsPage = () => {
                                     loading="lazy"
                                 />
                             ) : null}
+
+                            {item.explanationText ? (
+                                <div className="mt-3 rounded-xl border border-card-border bg-surface2/30 p-3 dark:bg-dark-surface/30">
+                                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted dark:text-dark-text/55">Explanation</p>
+                                    <p className="text-sm leading-relaxed text-text-muted dark:text-dark-text/75">{item.explanationText}</p>
+                                </div>
+                            ) : null}
+
                             {item.explanationImageUrl ? (
                                 <img
                                     src={item.explanationImageUrl}
