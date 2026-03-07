@@ -155,7 +155,7 @@ export default function UniversitiesPage() {
                             <input
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
-                                placeholder="Search by name or short form..."
+                                placeholder="Search by name, short form or address..."
                                 className="input-field h-11 pl-10"
                             />
                         </div>

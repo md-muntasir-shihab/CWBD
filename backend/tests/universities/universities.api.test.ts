@@ -169,4 +169,50 @@ describe('/api/universities', () => {
         const res = await request(app).get('/api/universities/does-not-exist-anywhere-404');
         expect(res.status).toBe(404);
     });
+
+    it('GET /api/university-categories returns clusterGroups derived from data', async () => {
+        await seedUni({ name: 'ClusterA Uni', slug: 'cluster-a-uni', category: 'Medical College', clusterGroup: 'Group Alpha' });
+        await seedUni({ name: 'ClusterB Uni', slug: 'cluster-b-uni', category: 'Medical College', clusterGroup: 'Group Beta' });
+        await seedUni({ name: 'NoCluster Uni', slug: 'no-cluster-uni', category: 'Medical College' });
+
+        const app = buildApp();
+        const res = await request(app).get('/api/university-categories');
+        expect(res.status).toBe(200);
+        const medCat = (res.body.categories || []).find((c: { categoryName: string }) => c.categoryName === 'Medical College');
+        expect(medCat).toBeDefined();
+        expect(medCat.count).toBe(3);
+        expect(medCat.clusterGroups).toContain('Group Alpha');
+        expect(medCat.clusterGroups).toContain('Group Beta');
+    });
+
+    it('search by name/shortForm/address filters results', async () => {
+        await seedUni({ name: 'National University', slug: 'national-uni-search', shortForm: 'NU', address: 'Gazipur', category: 'Individual Admission' });
+        await seedUni({ name: 'Dhaka University', slug: 'dhaka-uni-search', shortForm: 'DU', address: 'Dhaka', category: 'Individual Admission' });
+
+        const app = buildApp();
+        const res = await request(app).get('/api/universities?category=Individual%20Admission&q=Gazipur');
+        expect(res.status).toBe(200);
+        const universities: Array<{ name: string }> = res.body.universities || res.body.items || [];
+        expect(universities.some((u) => u.name === 'National University')).toBe(true);
+        expect(universities.every((u) => u.name !== 'Dhaka University')).toBe(true);
+    });
+
+    it('inactive universities are not returned in public endpoint', async () => {
+        await seedUni({ name: 'Inactive Uni', slug: 'inactive-uni', category: 'Individual Admission', isActive: false });
+        await seedUni({ name: 'Active Uni', slug: 'active-uni', category: 'Individual Admission', isActive: true });
+
+        const app = buildApp();
+        const res = await request(app).get('/api/universities?category=Individual%20Admission');
+        expect(res.status).toBe(200);
+        const universities: Array<{ name: string }> = res.body.universities || res.body.items || [];
+        expect(universities.some((u) => u.name === 'Active Uni')).toBe(true);
+        expect(universities.every((u) => u.name !== 'Inactive Uni')).toBe(true);
+    });
+
+    it('GET /api/universities/:slug returns 404 for inactive university', async () => {
+        await seedUni({ name: 'InactiveDirect Uni', slug: 'inactive-direct-uni', category: 'Individual Admission', isActive: false });
+        const app = buildApp();
+        const res = await request(app).get('/api/universities/inactive-direct-uni');
+        expect(res.status).toBe(404);
+    });
 });

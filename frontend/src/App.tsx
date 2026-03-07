@@ -268,6 +268,7 @@ export default function App() {
                                 <Route path={ADMIN_ACCESS_DENIED} element={<AdminAccessDeniedPage />} />
                                 <Route path={ADMIN_DASHBOARD} element={<AdminDashboardPage />} />
                                 <Route path={ADMIN_PATHS.universities} element={<AdminUniversitiesPage />} />
+                                <Route path={adminUi('universities/new')} element={<AdminUniversitiesPage />} />
                                 <Route path={adminUi('universities/import')} element={<AdminUniversitiesPage />} />
                                 <Route path={adminUi('universities/export')} element={<AdminUniversitiesPage />} />
                                 <Route path={adminUi('universities/:id/edit')} element={<AdminUniversitiesPage />} />

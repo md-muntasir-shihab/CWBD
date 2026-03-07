@@ -288,14 +288,10 @@ const UniversityCard = memo(function UniversityCard({
                             <MapPin className="h-3.5 w-3.5" />
                             {address}
                         </span>
-                        {contactNumber && (
-                            <span className="flex items-center gap-1 text-[12px] text-slate-500 dark:text-slate-400">
-                                <Phone className="h-3 w-3" /> {contactNumber}
-                            </span>
-                        )}
-                        {establishedYear && (
-                            <span className="text-[12px] text-slate-500 dark:text-slate-400">Est. {establishedYear}</span>
-                        )}
+                        <span className="flex items-center gap-1 text-[12px] text-slate-500 dark:text-slate-400">
+                            <Phone className="h-3 w-3" /> {contactNumber || 'N/A'}
+                        </span>
+                        <span className="text-[12px] text-slate-500 dark:text-slate-400">Est. {establishedYear || 'N/A'}</span>
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -311,11 +307,9 @@ const UniversityCard = memo(function UniversityCard({
                         Application: {appMeta.windowLabel}
                         {appDurationDays !== null ? ` (${appDurationDays} days)` : ''}
                     </p>
-                    {mergedConfig.showEmail && email && (
-                        <p className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                            <Mail className="h-3 w-3" /> {email}
-                        </p>
-                    )}
+                    <p className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                        <Mail className="h-3 w-3" /> {email || 'N/A'}
+                    </p>
                 </div>
             </div>
 
@@ -357,14 +351,25 @@ const UniversityCard = memo(function UniversityCard({
                 </div>
 
                 <div className="space-y-2">
-                    {unitExamRows.map((row) => (
-                        <div key={row.key} className="flex items-center justify-between gap-2">
-                            <span className="text-sm text-slate-600 dark:text-slate-400">{row.label}</span>
-                            <span className="rounded-lg bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                {formatDateShort(row.dateRaw)}
-                            </span>
-                        </div>
-                    ))}
+                    {unitExamRows.map((row) => {
+                        const daysLeft = daysDiffFromNow(row.dateRaw);
+                        const dateStr = formatDateShort(row.dateRaw);
+                        return (
+                            <div key={row.key} className="flex items-center justify-between gap-2">
+                                <span className="text-sm text-slate-600 dark:text-slate-400">{row.label}</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="rounded-lg bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                        {dateStr}
+                                    </span>
+                                    {daysLeft !== null && daysLeft >= 0 && (
+                                        <span className={`rounded-lg px-2 py-1 text-[10px] font-bold ${daysLeft <= 3 ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300' : daysLeft <= 10 ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300'}`}>
+                                            {daysLeft === 0 ? 'Today' : `${daysLeft}d`}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
