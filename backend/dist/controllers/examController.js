@@ -1,0 +1,2688 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getStudentExams = getStudentExams;
+exports.getPublicExamList = getPublicExamList;
+exports.getExamLanding = getExamLanding;
+exports.getStudentExamDetails = getStudentExamDetails;
+exports.getStudentExamById = getStudentExamById;
+exports.startExam = startExam;
+exports.autosaveExam = autosaveExam;
+exports.submitExam = submitExam;
+exports.submitExamAsSystem = submitExamAsSystem;
+exports.getExamAttemptState = getExamAttemptState;
+exports.saveExamAttemptAnswer = saveExamAttemptAnswer;
+exports.submitExamAttempt = submitExamAttempt;
+exports.logExamAttemptEvent = logExamAttemptEvent;
+exports.getExamResult = getExamResult;
+exports.getStudentExamQuestions = getStudentExamQuestions;
+exports.streamExamAttempt = streamExamAttempt;
+exports.getExamCertificate = getExamCertificate;
+exports.verifyExamCertificate = verifyExamCertificate;
+const mongoose_1 = __importDefault(require("mongoose"));
+const crypto_1 = __importDefault(require("crypto"));
+const Exam_1 = __importDefault(require("../models/Exam"));
+const Question_1 = __importDefault(require("../models/Question"));
+const ExamResult_1 = __importDefault(require("../models/ExamResult"));
+const ExamSession_1 = __importDefault(require("../models/ExamSession"));
+const User_1 = __importDefault(require("../models/User"));
+const StudentProfile_1 = __importDefault(require("../models/StudentProfile"));
+const StudentDashboardConfig_1 = __importDefault(require("../models/StudentDashboardConfig"));
+const ExamEvent_1 = __importDefault(require("../models/ExamEvent"));
+const ExamCertificate_1 = __importDefault(require("../models/ExamCertificate"));
+const StudentDueLedger_1 = __importDefault(require("../models/StudentDueLedger"));
+const ManualPayment_1 = __importDefault(require("../models/ManualPayment"));
+const Settings_1 = __importDefault(require("../models/Settings"));
+const ExternalExamJoinLog_1 = __importDefault(require("../models/ExternalExamJoinLog"));
+const examAttemptStream_1 = require("../realtime/examAttemptStream");
+const adminLiveStream_1 = require("../realtime/adminLiveStream");
+const examCardMetricsService_1 = require("../services/examCardMetricsService");
+const securityConfigService_1 = require("../services/securityConfigService");
+const examFinalizationService_1 = require("../services/examFinalizationService");
+const LEGACY_PLAN_CODE = 'legacy_free';
+const LEGACY_PLAN_NAME = 'Legacy Free Access';
+const LEGACY_SUBSCRIPTION_DAYS = 3650; // 10 years
+function getLegacyExpiryFromNow() {
+    return new Date(Date.now() + (LEGACY_SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000));
+}
+/**
+ * Hybrid gate:
+ * 1) strict rule: isActive === true && expiryDate >= now
+ * 2) transitional fallback: old students with missing subscription metadata get legacy_free backfill
+ */
+async function verifySubscription(userId) {
+    const user = await User_1.default.findById(userId);
+    if (!user)
+        return { allowed: false, reason: 'missing' };
+    if (['superadmin', 'admin', 'moderator'].includes(user.role)) {
+        return { allowed: true };
+    }
+    if (user.role !== 'student') {
+        return { allowed: true };
+    }
+    const sub = user.subscription || {};
+    const hasAnyPlanIdentity = Boolean(sub.plan || sub.planCode || sub.planName);
+    // Check if subscription is missing or incomplete
+    if (!hasAnyPlanIdentity || !sub.expiryDate || typeof sub.isActive !== 'boolean') {
+        return { allowed: false, reason: 'missing' };
+    }
+    const current = user.subscription || {};
+    const isActive = current.isActive === true;
+    const expiryDate = current.expiryDate ? new Date(current.expiryDate) : null;
+    if (!isActive) {
+        return { allowed: false, reason: 'inactive', expiryDate };
+    }
+    if (!expiryDate || Number.isNaN(expiryDate.getTime()) || expiryDate.getTime() < Date.now()) {
+        return { allowed: false, reason: 'expired', expiryDate };
+    }
+    return { allowed: true, expiryDate };
+}
+/** Verify the student can access this specific exam */
+async function canAccessExam(exam, userId) {
+    if (!exam.isPublished)
+        return false;
+    if (exam.accessMode === 'specific') {
+        return exam.allowedUsers.some((id) => id.toString() === userId);
+    }
+    return true; // 'all' mode — any subscribed user
+}
+async function broadcastExamMetricsUpdate(examId, source) {
+    try {
+        const exam = await Exam_1.default.findById(examId)
+            .select('_id accessControl allowedUsers allowed_user_ids')
+            .lean();
+        if (!exam)
+            return;
+        const metricsMap = await (0, examCardMetricsService_1.getExamCardMetrics)([exam]);
+        const metrics = metricsMap.get(String(exam._id)) || {
+            examId: String(exam._id),
+            totalParticipants: 0,
+            attemptedUsers: 0,
+            remainingUsers: 0,
+            activeUsers: 0,
+        };
+        (0, adminLiveStream_1.broadcastAdminLiveEvent)('exam-metrics-updated', {
+            source,
+            ...metrics,
+        });
+    }
+    catch {
+        // non-blocking
+    }
+}
+/* ─────── GET /api/exams ─────── */
+async function getStudentExams(req, res) {
+    try {
+        const studentId = req.user._id;
+        const subscriptionState = await verifySubscription(studentId);
+        const hasActiveSubscription = subscriptionState.allowed;
+        const now = new Date();
+        const exams = await Exam_1.default.find({ isPublished: true }).sort({ startDate: 1 }).lean();
+        const [profile, user, dueLedger] = await Promise.all([
+            StudentProfile_1.default.findOne({ user_id: studentId }).select('groupIds').lean(),
+            User_1.default.findById(studentId).select('subscription').lean(),
+            StudentDueLedger_1.default.findOne({ studentId }).select('netDue').lean(),
+        ]);
+        const pendingDueAmount = Number(dueLedger?.netDue || 0);
+        const studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
+        const studentPlanCode = String(user?.subscription?.planCode ||
+            user?.subscription?.plan ||
+            '').toLowerCase();
+        // Fetch student's completed results (multi-attempt aware)
+        const results = await ExamResult_1.default.find({ student: studentId }).sort({ submittedAt: -1 }).lean();
+        const resultMap = new Map();
+        const attemptCountMap = new Map();
+        for (const r of results) {
+            const examKey = r.exam.toString();
+            if (!resultMap.has(examKey))
+                resultMap.set(examKey, r);
+            attemptCountMap.set(examKey, (attemptCountMap.get(examKey) || 0) + 1);
+        }
+        // Fetch active session if any
+        const activeSessions = await ExamSession_1.default.find({
+            student: studentId,
+            isActive: true,
+            status: 'in_progress',
+            expiresAt: { $gt: new Date() },
+        }).lean();
+        const activeSessionMap = new Set(activeSessions.map(s => s.exam.toString()));
+        const enriched = exams
+            .map(e => {
+            const examKey = e._id.toString();
+            const result = resultMap.get(examKey);
+            const attempts = attemptCountMap.get(examKey) || 0;
+            const accessControl = (e.accessControl && typeof e.accessControl === 'object')
+                ? e.accessControl
+                : {};
+            const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
+            const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+            const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
+            const subscriptionRequired = Boolean(e.subscriptionRequired) || requiredPlanCodes.length > 0;
+            const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
+            const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
+            const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
+            const subscriptionDenied = subscriptionRequired && !hasActiveSubscription;
+            const specificModeDenied = (e.accessMode === 'specific' &&
+                !e.allowedUsers.some((uid) => uid.toString() === studentId));
+            // Keep strict identity/group restrictions hidden from list responses.
+            if (specificModeDenied || userDenied || groupDenied) {
+                return null;
+            }
+            const accessDeniedReason = planDenied
+                ? 'access_plan_restricted'
+                : subscriptionDenied
+                    ? 'subscription_required'
+                    : '';
+            const paymentPendingForExam = subscriptionRequired && hasActiveSubscription && pendingDueAmount > 0;
+            let status;
+            if (result) {
+                status = 'completed';
+            }
+            else if (paymentPendingForExam || Boolean(accessDeniedReason)) {
+                status = 'locked';
+            }
+            else if (now < new Date(e.startDate)) {
+                status = 'upcoming';
+            }
+            else if (now > new Date(e.endDate)) {
+                status = 'completed_window';
+            }
+            else {
+                status = activeSessionMap.has(e._id.toString()) ? 'in_progress' : 'active';
+            }
+            return {
+                ...e,
+                status,
+                attemptsUsed: attempts,
+                attemptsLeft: Math.max(0, e.attemptLimit - attempts),
+                paymentPending: paymentPendingForExam,
+                subscriptionRequired,
+                subscriptionActive: hasActiveSubscription,
+                accessDeniedReason: accessDeniedReason || undefined,
+                canTakeExam: !paymentPendingForExam && !accessDeniedReason,
+                myResult: result ? {
+                    obtainedMarks: Number(result.obtainedMarks || 0),
+                    percentage: Number(result.percentage || 0),
+                    rank: Number(result.rank || 0) || undefined,
+                } : null,
+                resultPublishMode: getResultPublishMode(e),
+                resultPublished: isExamResultPublished(e, now),
+            };
+        })
+            .filter((exam) => exam !== null);
+        res.json({ exams: enriched, subscriptionActive: hasActiveSubscription });
+    }
+    catch (err) {
+        console.error('getStudentExams error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+function getExamTimeStatus(exam, now = new Date()) {
+    const startDate = new Date(String(exam.startDate || ''));
+    const endDate = new Date(String(exam.endDate || ''));
+    if (!Number.isNaN(startDate.getTime()) && now < startDate)
+        return 'upcoming';
+    if (!Number.isNaN(endDate.getTime()) && now > endDate)
+        return 'ended';
+    return 'live';
+}
+function normalizePublicListStatusFilter(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized === 'live' || normalized === 'upcoming' || normalized === 'ended')
+        return normalized;
+    return '';
+}
+function isAllExamCategoryToken(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    return normalized === 'all' || normalized === 'all exams';
+}
+function findWhatsappUrl(socialLinks) {
+    if (!Array.isArray(socialLinks))
+        return '';
+    for (const row of socialLinks) {
+        const entry = row;
+        if (entry.enabled === false)
+            continue;
+        const platform = String(entry.platform || '').trim().toLowerCase();
+        if (platform === 'whatsapp') {
+            return String(entry.url || '').trim();
+        }
+    }
+    return '';
+}
+async function getPublicExamList(req, res) {
+    try {
+        const now = new Date();
+        const page = Math.max(1, Number(req.query.page || 1));
+        const limit = Math.max(1, Math.min(100, Number(req.query.limit || 24)));
+        const skip = (page - 1) * limit;
+        const statusFilter = normalizePublicListStatusFilter(req.query.status);
+        const paidFilter = String(req.query.paid || '').trim().toLowerCase();
+        const categoryFilter = String(req.query.category || '').trim();
+        const queryText = String(req.query.q || '').trim();
+        const examQuery = { isPublished: true };
+        if (categoryFilter && !isAllExamCategoryToken(categoryFilter)) {
+            examQuery.group_category = categoryFilter;
+        }
+        if (queryText) {
+            examQuery.$or = [
+                { title: { $regex: queryText, $options: 'i' } },
+                { title_bn: { $regex: queryText, $options: 'i' } },
+                { subject: { $regex: queryText, $options: 'i' } },
+                { subjectBn: { $regex: queryText, $options: 'i' } },
+                { group_category: { $regex: queryText, $options: 'i' } },
+            ];
+        }
+        const [exams, siteSettings] = await Promise.all([
+            Exam_1.default.find(examQuery)
+                .sort({ startDate: 1, createdAt: -1 })
+                .select('title title_bn subject subjectBn bannerImageUrl startDate endDate duration deliveryMode externalExamUrl group_category accessMode allowedUsers accessControl attemptLimit subscriptionRequired isPublished')
+                .lean(),
+            Settings_1.default.findOne().select('contactPhone socialLinks').lean(),
+        ]);
+        const examIds = exams.map((exam) => String(exam._id || '')).filter(Boolean);
+        const contactPhone = String(siteSettings?.contactPhone || '').trim();
+        const whatsapp = findWhatsappUrl(siteSettings?.socialLinks);
+        let studentId = '';
+        let isStudent = false;
+        let studentGroupIds = [];
+        let hasActiveSubscription = false;
+        let studentPlanCode = '';
+        let pendingDueAmount = 0;
+        let attemptsMap = new Map();
+        let activeSessionMap = new Set();
+        if (req.user && req.user.role === 'student' && mongoose_1.default.Types.ObjectId.isValid(String(req.user._id || ''))) {
+            studentId = String(req.user._id);
+            isStudent = true;
+            const [profile, user, dueLedger, resultRows, activeSessions] = await Promise.all([
+                StudentProfile_1.default.findOne({ user_id: studentId }).select('groupIds').lean(),
+                User_1.default.findById(studentId).select('subscription').lean(),
+                StudentDueLedger_1.default.findOne({ studentId }).select('netDue').lean(),
+                ExamResult_1.default.find({ student: studentId, exam: { $in: examIds } }).select('exam').lean(),
+                ExamSession_1.default.find({
+                    student: studentId,
+                    exam: { $in: examIds },
+                    isActive: true,
+                    status: 'in_progress',
+                    expiresAt: { $gt: now },
+                }).select('exam').lean(),
+            ]);
+            studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
+            pendingDueAmount = Number(dueLedger?.netDue || 0);
+            studentPlanCode = String(user?.subscription?.planCode ||
+                user?.subscription?.plan ||
+                '').toLowerCase();
+            const subscriptionExpiryRaw = user?.subscription?.expiryDate;
+            const subscriptionExpiry = subscriptionExpiryRaw ? new Date(String(subscriptionExpiryRaw)).getTime() : 0;
+            hasActiveSubscription = Boolean(user?.subscription?.isActive &&
+                Number.isFinite(subscriptionExpiry) &&
+                subscriptionExpiry > Date.now());
+            attemptsMap = resultRows.reduce((map, row) => {
+                const examId = String(row.exam || '');
+                map.set(examId, (map.get(examId) || 0) + 1);
+                return map;
+            }, new Map());
+            activeSessionMap = new Set(activeSessions.map((row) => String(row.exam || '')).filter(Boolean));
+        }
+        const cards = exams
+            .map((exam, index) => {
+            const examRecord = exam;
+            const examId = String(exam._id || '');
+            const timeStatus = getExamTimeStatus(examRecord, now);
+            const accessControl = (exam.accessControl && typeof exam.accessControl === 'object')
+                ? exam.accessControl
+                : {};
+            const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
+            const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+            const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
+            const subscriptionRequired = Boolean(exam.subscriptionRequired) || requiredPlanCodes.length > 0;
+            const paymentRequired = subscriptionRequired;
+            const attemptsUsed = Number(attemptsMap.get(examId) || 0);
+            const attemptLimit = Math.max(1, Number(exam.attemptLimit || 1));
+            const attemptsLeft = Math.max(0, attemptLimit - attemptsUsed);
+            const specificModeDenied = (String(exam.accessMode || 'all') === 'specific' &&
+                Array.isArray(exam.allowedUsers) &&
+                !exam.allowedUsers.some((id) => String(id) === studentId));
+            let lockReason = 'none';
+            if (!isStudent) {
+                lockReason = 'login_required';
+            }
+            else {
+                const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
+                const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
+                const groupRestricted = userDenied || groupDenied || specificModeDenied;
+                const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
+                const subscriptionDenied = subscriptionRequired && !hasActiveSubscription && !planDenied;
+                const paymentPending = paymentRequired && hasActiveSubscription && pendingDueAmount > 0;
+                if (groupRestricted)
+                    lockReason = 'group_restricted';
+                else if (planDenied)
+                    lockReason = 'plan_restricted';
+                else if (subscriptionDenied || paymentPending)
+                    lockReason = 'subscription_required';
+            }
+            const canOpenDetails = lockReason === 'none';
+            const canStart = canOpenDetails && timeStatus === 'live' && attemptsLeft > 0;
+            const messageTemplate = `I want to access exam "${String(exam.title || 'Exam')}".`;
+            const inProgress = activeSessionMap.has(examId);
+            const deliveryMode = String(exam.deliveryMode || 'internal') === 'external_link'
+                ? 'external_link'
+                : 'internal';
+            const myAttemptStatus = !isStudent
+                ? undefined
+                : attemptsUsed > 0
+                    ? 'submitted'
+                    : inProgress
+                        ? 'in_progress'
+                        : 'not_started';
+            return {
+                id: examId,
+                serialNo: index + 1,
+                title: String(exam.title || ''),
+                title_bn: String(exam.title_bn || ''),
+                subject: String(exam.subject || ''),
+                examCategory: String(exam.group_category || 'General'),
+                bannerImageUrl: String(exam.bannerImageUrl || ''),
+                startDate: new Date(String(exam.startDate || now.toISOString())).toISOString(),
+                endDate: new Date(String(exam.endDate || now.toISOString())).toISOString(),
+                durationMinutes: Number(exam.duration || 0),
+                status: timeStatus,
+                deliveryMode,
+                isLocked: lockReason !== 'none',
+                lockReason,
+                canOpenDetails,
+                canStart,
+                joinUrl: canOpenDetails ? `/exam/${examId}` : null,
+                contactAdmin: {
+                    phone: contactPhone,
+                    whatsapp,
+                    messageTemplate,
+                },
+                subscriptionRequired,
+                paymentRequired,
+                attemptLimit,
+                allowReAttempt: attemptLimit > 1,
+                myAttemptStatus,
+            };
+        })
+            .filter((card) => {
+            if (statusFilter && card.status !== statusFilter)
+                return false;
+            if (paidFilter === 'paid' && !card.paymentRequired)
+                return false;
+            if (paidFilter === 'free' && card.paymentRequired)
+                return false;
+            return true;
+        });
+        const items = cards.slice(skip, skip + limit).map((item, idx) => ({
+            ...item,
+            serialNo: skip + idx + 1,
+        }));
+        res.json({
+            items,
+            page,
+            limit,
+            total: cards.length,
+            pages: Math.max(1, Math.ceil(cards.length / limit)),
+            serverNow: now.toISOString(),
+        });
+    }
+    catch (err) {
+        console.error('getPublicExamList error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+function getExamLandingStatusBadge(status, timeBucket) {
+    if (status === 'locked')
+        return 'Locked';
+    if (status === 'in_progress')
+        return 'In Progress';
+    if (timeBucket === 'live')
+        return 'Live';
+    if (timeBucket === 'upcoming')
+        return 'Upcoming';
+    return 'Completed';
+}
+function normalizeExamLandingStatus(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (['upcoming', 'live', 'past', 'in_progress', 'locked', 'all'].includes(normalized)) {
+        return normalized;
+    }
+    return '';
+}
+function getTimeBucket(exam, now = new Date()) {
+    const startDate = new Date(String(exam.startDate || ''));
+    const endDate = new Date(String(exam.endDate || ''));
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()))
+        return 'past';
+    if (now < startDate)
+        return 'upcoming';
+    if (now > endDate)
+        return 'past';
+    return 'live';
+}
+async function getExamLanding(req, res) {
+    try {
+        const studentId = req.user._id;
+        const groupFilter = String(req.query.group || '').trim();
+        const tagFilter = String(req.query.tag || '').trim().toLowerCase();
+        const search = String(req.query.search || '').trim();
+        const statusFilter = normalizeExamLandingStatus(req.query.status);
+        const page = Math.max(1, Number(req.query.page || 1));
+        const limit = Math.max(1, Math.min(100, Number(req.query.limit || 20)));
+        const skip = (page - 1) * limit;
+        const examFilter = { isPublished: true };
+        if (groupFilter) {
+            examFilter.group_category = { $regex: `^${groupFilter}$`, $options: 'i' };
+        }
+        if (search) {
+            examFilter.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { subject: { $regex: search, $options: 'i' } },
+                { subjectBn: { $regex: search, $options: 'i' } },
+            ];
+        }
+        const now = new Date();
+        const exams = await Exam_1.default.find(examFilter).sort({ startDate: 1 }).lean();
+        const examIds = exams.map((exam) => String(exam._id || '')).filter(Boolean);
+        const [profile, user, results, activeSessions, metricsMap, dueLedger] = await Promise.all([
+            StudentProfile_1.default.findOne({ user_id: studentId }).select('groupIds').lean(),
+            User_1.default.findById(studentId).select('subscription').lean(),
+            ExamResult_1.default.find({ student: studentId, exam: { $in: examIds } })
+                .sort({ submittedAt: -1 })
+                .lean(),
+            ExamSession_1.default.find({ student: studentId, isActive: true, exam: { $in: examIds } })
+                .select('exam')
+                .lean(),
+            (0, examCardMetricsService_1.getExamCardMetrics)(exams),
+            StudentDueLedger_1.default.findOne({ studentId }).select('netDue').lean(),
+        ]);
+        const pendingDueAmount = Number(dueLedger?.netDue || 0);
+        const studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
+        const studentPlanCode = String(user?.subscription?.planCode ||
+            user?.subscription?.plan ||
+            '').toLowerCase();
+        const attemptCountByExam = new Map();
+        for (const result of results) {
+            const examKey = String(result.exam || '');
+            attemptCountByExam.set(examKey, (attemptCountByExam.get(examKey) || 0) + 1);
+        }
+        const activeSessionExamIds = new Set(activeSessions.map((session) => String(session.exam || '')).filter(Boolean));
+        const cards = exams
+            .map((exam) => {
+            const examRecord = exam;
+            const examId = String(exam._id || '');
+            const accessControl = (exam.accessControl && typeof exam.accessControl === 'object')
+                ? exam.accessControl
+                : {};
+            const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
+            const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+            const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
+            const userAllowed = requiredUserIds.length === 0 || requiredUserIds.includes(studentId);
+            const groupAllowed = requiredGroupIds.length === 0 || hasAnyIntersection(requiredGroupIds, studentGroupIds);
+            const planAllowed = requiredPlanCodes.length === 0 || requiredPlanCodes.includes(studentPlanCode);
+            const isPaymentPending = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
+            const assignedAllowed = canAccessExamSync(examRecord, studentId);
+            const strictAccessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed;
+            if (strictAccessDenied) {
+                return null;
+            }
+            const accessDenied = isPaymentPending;
+            const attemptsUsed = Number(attemptCountByExam.get(examId) || 0);
+            const attemptLimit = Number(exam.attemptLimit || 1);
+            const attemptsLeft = Math.max(0, attemptLimit - attemptsUsed);
+            const timeBucket = getTimeBucket(examRecord, now);
+            const inProgress = activeSessionExamIds.has(examId);
+            const locked = accessDenied || attemptsLeft <= 0;
+            let status;
+            if (locked)
+                status = 'locked';
+            else if (inProgress)
+                status = 'in_progress';
+            else if (timeBucket === 'live')
+                status = 'live';
+            else if (timeBucket === 'upcoming')
+                status = 'upcoming';
+            else
+                status = 'past';
+            const metrics = metricsMap.get(examId) || {
+                examId,
+                totalParticipants: 0,
+                attemptedUsers: 0,
+                remainingUsers: 0,
+                activeUsers: 0,
+            };
+            const groupName = String(exam.group_category || 'Custom');
+            const tags = [
+                ...toStringArray(exam.subjects),
+                ...toStringArray(exam.chapters),
+            ]
+                .map((tag) => tag.toLowerCase())
+                .filter(Boolean);
+            return {
+                _id: examId,
+                title: String(exam.title || ''),
+                description: String(exam.description || ''),
+                subject: String(exam.subject || ''),
+                subjectBn: String(exam.subjectBn || ''),
+                universityNameBn: String(exam.universityNameBn || ''),
+                duration: Number(exam.duration || 0),
+                totalQuestions: Number(exam.totalQuestions || 0),
+                totalMarks: Number(exam.totalMarks || 0),
+                startDate: new Date(String(exam.startDate || now.toISOString())),
+                endDate: new Date(String(exam.endDate || now.toISOString())),
+                bannerImageUrl: String(exam.bannerImageUrl || ''),
+                logoUrl: String(exam.logoUrl || ''),
+                group_category: groupName,
+                groupName,
+                tags,
+                share_link: String(exam.share_link || ''),
+                shareUrl: exam.share_link ? `/exam/take/${String(exam.share_link)}` : '',
+                statusBadge: getExamLandingStatusBadge(status, timeBucket),
+                totalParticipants: Number(metrics.totalParticipants || 0),
+                attemptedUsers: Number(metrics.attemptedUsers || 0),
+                remainingUsers: Number(metrics.remainingUsers || 0),
+                activeUsers: Number(metrics.activeUsers || 0),
+                status,
+                timeBucket,
+                attemptsUsed,
+                attemptsLeft,
+                attemptLimit,
+                resultPublished: isExamResultPublished(examRecord, now),
+                resultPublishMode: getResultPublishMode(examRecord),
+                featured: Boolean(exam.isFeatured),
+                paymentPending: isPaymentPending,
+            };
+        })
+            .filter((card) => card !== null);
+        const filteredCards = cards.filter((card) => {
+            if (tagFilter && !card.tags.some((tag) => tag.includes(tagFilter)))
+                return false;
+            if (!statusFilter || statusFilter === 'all')
+                return true;
+            if (statusFilter === 'upcoming' || statusFilter === 'live' || statusFilter === 'past') {
+                return card.timeBucket === statusFilter;
+            }
+            return card.status === statusFilter;
+        });
+        const cardsToUse = filteredCards;
+        const groupedByTime = {
+            upcoming: cardsToUse.filter((card) => card.timeBucket === 'upcoming'),
+            live: cardsToUse.filter((card) => card.timeBucket === 'live'),
+            past: cardsToUse.filter((card) => card.timeBucket === 'past'),
+        };
+        const groupedByCategory = cardsToUse.reduce((acc, card) => {
+            const key = card.group_category || 'Custom';
+            if (!acc[key])
+                acc[key] = [];
+            acc[key].push(card);
+            return acc;
+        }, {});
+        const items = cardsToUse.slice(skip, skip + limit);
+        const featured = cardsToUse.filter((card) => card.featured).slice(0, 10);
+        res.json({
+            items,
+            exams: items,
+            total: cardsToUse.length,
+            page,
+            limit,
+            pages: Math.ceil(cardsToUse.length / limit),
+            featured,
+            grouped: {
+                byTime: groupedByTime,
+                byCategory: groupedByCategory,
+            },
+            serverNow: now.toISOString(),
+        });
+    }
+    catch (err) {
+        console.error('getExamLanding error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+function canAccessExamSync(exam, userId) {
+    if (exam.accessMode === 'specific') {
+        const allowedUsers = exam.allowedUsers;
+        return allowedUsers.some(id => id.toString() === userId);
+    }
+    return true;
+}
+async function ensurePendingExamPaymentRecord(examId, studentId, pendingDueAmount) {
+    if (!mongoose_1.default.Types.ObjectId.isValid(examId) || !mongoose_1.default.Types.ObjectId.isValid(studentId))
+        return;
+    const existing = await ManualPayment_1.default.findOne({
+        studentId,
+        examId,
+        entryType: 'exam_fee',
+        status: { $in: ['pending', 'paid'] },
+    }).lean();
+    if (existing)
+        return;
+    await ManualPayment_1.default.create({
+        studentId,
+        examId,
+        amount: Math.max(0, Number(pendingDueAmount || 0)),
+        currency: 'BDT',
+        method: 'manual',
+        status: 'pending',
+        transactionId: '',
+        reference: '',
+        proofFileUrl: '',
+        proofUrl: '',
+        notes: 'Auto-created pending exam payment record',
+        entryType: 'exam_fee',
+        date: new Date(),
+        recordedBy: new mongoose_1.default.Types.ObjectId(studentId),
+    });
+}
+async function getEligibilitySummary(exam, studentId) {
+    const examId = String(exam._id || '');
+    const [subscriptionState, profile, threshold, attemptsUsed, user, dueLedger, examPayment] = await Promise.all([
+        verifySubscription(studentId),
+        StudentProfile_1.default.findOne({ user_id: studentId }).select('profile_completion_percentage groupIds').lean(),
+        getProfileCompletionThreshold(),
+        ExamResult_1.default.countDocuments({ exam: examId, student: studentId }),
+        User_1.default.findById(studentId).select('subscription').lean(),
+        StudentDueLedger_1.default.findOne({ studentId }).select('netDue').lean(),
+        mongoose_1.default.Types.ObjectId.isValid(examId)
+            ? ManualPayment_1.default.findOne({ studentId, examId, entryType: 'exam_fee' }).sort({ createdAt: -1 }).lean()
+            : Promise.resolve(null),
+    ]);
+    const reasons = [];
+    const currentProfileCompletion = Number(profile?.profile_completion_percentage || 0);
+    const profileComplete = currentProfileCompletion >= threshold;
+    if (!profileComplete) {
+        reasons.push('profile_incomplete');
+    }
+    const attemptLimit = Number(exam.attemptLimit || 1);
+    const attemptsLeft = Math.max(0, attemptLimit - attemptsUsed);
+    if (attemptsLeft <= 0) {
+        reasons.push('attempt_limit_reached');
+    }
+    const examStart = new Date(String(exam.startDate || ''));
+    const examEnd = new Date(String(exam.endDate || ''));
+    const windowOpen = !Number.isNaN(examStart.getTime()) &&
+        !Number.isNaN(examEnd.getTime()) &&
+        Date.now() >= examStart.getTime() &&
+        Date.now() <= examEnd.getTime();
+    if (!windowOpen) {
+        reasons.push('outside_exam_window');
+    }
+    let accessAllowed = true;
+    if (!canAccessExamSync(exam, studentId)) {
+        accessAllowed = false;
+        reasons.push('not_assigned');
+    }
+    const accessControl = (exam.accessControl && typeof exam.accessControl === 'object'
+        ? exam.accessControl
+        : {});
+    const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
+    const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+    const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
+    const subscriptionRequired = Boolean(exam.subscriptionRequired) || requiredPlanCodes.length > 0;
+    const studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
+    const studentPlanCode = String(user?.subscription?.planCode ||
+        user?.subscription?.plan ||
+        '').toLowerCase();
+    let accessDeniedReason = '';
+    if (requiredUserIds.length > 0 && !requiredUserIds.includes(studentId)) {
+        accessAllowed = false;
+        reasons.push('access_user_restricted');
+        accessDeniedReason = 'access_user_restricted';
+    }
+    if (requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds)) {
+        accessAllowed = false;
+        reasons.push('access_group_restricted');
+        if (!accessDeniedReason)
+            accessDeniedReason = 'access_group_restricted';
+    }
+    if (requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode)) {
+        accessAllowed = false;
+        reasons.push('access_plan_restricted');
+        if (!accessDeniedReason)
+            accessDeniedReason = 'access_plan_restricted';
+    }
+    else if (subscriptionRequired && !subscriptionState.allowed) {
+        accessAllowed = false;
+        reasons.push(`subscription_${subscriptionState.reason || 'inactive'}`);
+        if (!accessDeniedReason)
+            accessDeniedReason = 'subscription_required';
+    }
+    const paymentRequired = subscriptionRequired && subscriptionState.allowed;
+    const pendingDueAmount = Number(dueLedger?.netDue || 0);
+    const examPaymentStatus = String(examPayment?.status || '').trim().toLowerCase();
+    const paymentCleared = !paymentRequired || examPaymentStatus === 'paid' || pendingDueAmount <= 0;
+    if (paymentRequired && !paymentCleared) {
+        await ensurePendingExamPaymentRecord(examId, studentId, pendingDueAmount);
+    }
+    if (!paymentCleared) {
+        reasons.push('payment_pending');
+    }
+    const eligible = reasons.length === 0;
+    return {
+        eligible,
+        reasons,
+        profileComplete,
+        requiredProfileCompletion: threshold,
+        currentProfileCompletion,
+        subscriptionRequired,
+        subscriptionActive: subscriptionState.allowed,
+        paymentRequired,
+        paymentCleared,
+        pendingDueAmount,
+        attemptsUsed,
+        attemptsLeft,
+        windowOpen,
+        accessAllowed,
+        accessDeniedReason: accessDeniedReason || undefined,
+    };
+}
+async function getProfileCompletionThreshold() {
+    const security = await (0, securityConfigService_1.getSecurityConfig)(true);
+    if (security.examProtection.requireProfileScoreForExam) {
+        return Number(security.examProtection.profileScoreThreshold || 70);
+    }
+    const config = await StudentDashboardConfig_1.default.findOne().select('profileCompletionThreshold').lean();
+    return Number(config?.profileCompletionThreshold || 70);
+}
+function getDeviceFingerprint(userAgent, ipAddress) {
+    return crypto_1.default.createHash('sha256').update(`${userAgent}::${ipAddress}`).digest('hex');
+}
+function makeSeededRng(seed) {
+    let value = seed >>> 0;
+    return () => {
+        value += 0x6D2B79F5;
+        let t = value;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+function seededShuffle(items, seedText) {
+    const seed = Array.from(seedText).reduce((acc, ch) => acc + ch.charCodeAt(0), 0) || 1;
+    const rng = makeSeededRng(seed);
+    const arr = [...items];
+    for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(rng() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+const ATTEMPT_EVENT_TYPES = new Set([
+    'save',
+    'tab_switch',
+    'fullscreen_exit',
+    'copy_attempt',
+    'submit',
+    'error',
+    'resume',
+]);
+function parseAttemptRevision(input) {
+    if (input === undefined || input === null || input === '')
+        return null;
+    const parsed = Number(input);
+    if (!Number.isFinite(parsed) || parsed < 0)
+        return null;
+    return Math.floor(parsed);
+}
+function resolveSubmissionType(input, isAutoSubmit) {
+    const value = String(input || '').trim().toLowerCase();
+    if (value === 'manual' || value === 'auto_timeout' || value === 'auto_expired' || value === 'forced') {
+        return value;
+    }
+    return isAutoSubmit ? 'auto_timeout' : 'manual';
+}
+function resolveViolationAction(policiesInput) {
+    const policies = policiesInput || {};
+    const actionRaw = String(policies.violation_action || '').trim().toLowerCase();
+    if (actionRaw === 'warn' || actionRaw === 'submit' || actionRaw === 'lock') {
+        return actionRaw;
+    }
+    if (Boolean(policies.auto_submit_on_violation)) {
+        return 'submit';
+    }
+    return 'warn';
+}
+function getResultPublishMode(exam) {
+    const mode = String(exam.resultPublishMode || '').trim().toLowerCase();
+    if (mode === 'immediate' || mode === 'manual' || mode === 'scheduled') {
+        return mode;
+    }
+    return 'scheduled';
+}
+function isExamResultPublished(exam, now = new Date()) {
+    const mode = getResultPublishMode(exam);
+    if (mode === 'immediate')
+        return true;
+    const publishDateRaw = exam.resultPublishDate;
+    const publishDate = publishDateRaw ? new Date(String(publishDateRaw)) : null;
+    if (!publishDate || Number.isNaN(publishDate.getTime()))
+        return false;
+    return now >= publishDate;
+}
+function toStringArray(input) {
+    if (!Array.isArray(input))
+        return [];
+    return input
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
+}
+function normalizeObjectIdArray(input) {
+    if (!Array.isArray(input))
+        return [];
+    return input
+        .map((value) => {
+        if (!value)
+            return '';
+        if (typeof value === 'string')
+            return value;
+        if (typeof value === 'object' && '_id' in value) {
+            return String(value._id || '');
+        }
+        return String(value);
+    })
+        .map((value) => value.trim())
+        .filter(Boolean);
+}
+function hasAnyIntersection(left, right) {
+    if (left.length === 0 || right.length === 0)
+        return false;
+    const rightSet = new Set(right);
+    return left.some((entry) => rightSet.has(entry));
+}
+function getRequestUserAgent(req) {
+    return String(req.headers['user-agent'] || '');
+}
+function getRequestIp(req) {
+    const headers = req.headers || {};
+    const fwd = headers['x-forwarded-for'];
+    const fromForwarded = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0];
+    const fromSocket = req.socket?.remoteAddress || req.connection?.remoteAddress || '';
+    return fromForwarded || fromSocket || '';
+}
+function mapExamSessionForClient(session, examId, studentId) {
+    return {
+        sessionId: String(session._id),
+        examId: String(session.exam || examId),
+        userId: String(session.student || studentId),
+        startedAt: session.startedAt,
+        startedAtUTC: session.startedAt,
+        expiresAt: session.expiresAt,
+        expiresAtUTC: session.expiresAt,
+        status: session.status,
+        savedAnswers: session.answers || [],
+        answers: (session.answers || []).map((answer) => ({
+            questionId: String(answer.questionId || ''),
+            selectedKey: String(answer.selectedAnswer || ''),
+            selectedAnswer: String(answer.selectedAnswer || ''),
+            updatedAtUTC: answer.savedAt || null,
+            changeCount: Number(answer.changeCount || 0),
+            writtenAnswerUrl: String(answer.writtenAnswerUrl || ''),
+        })),
+        attemptNo: Number(session.attemptNo || 1),
+        attemptRevision: Number(session.attemptRevision || 0),
+        sessionLocked: Boolean(session.sessionLocked),
+        lockReason: String(session.lockReason || ''),
+        violationsCount: Number(session.violationsCount || 0),
+        tabSwitchCount: Number(session.tabSwitchCount || 0),
+        deviceInfo: String(session.deviceInfo || ''),
+        ip: String(session.ipAddress || ''),
+        userAgent: String(session.userAgent || ''),
+        serverNow: new Date().toISOString(),
+    };
+}
+function normalizeIncomingAnswers(input) {
+    if (Array.isArray(input)) {
+        return input
+            .map((item) => {
+            const row = item;
+            const updatedAtRaw = String(row.updatedAtUTC || row.savedAt || '').trim();
+            const updatedAt = updatedAtRaw ? new Date(updatedAtRaw) : undefined;
+            return {
+                questionId: String(row.questionId || '').trim(),
+                selectedAnswer: row.selectedAnswer !== undefined ? String(row.selectedAnswer || '') : undefined,
+                writtenAnswerUrl: row.writtenAnswerUrl !== undefined ? String(row.writtenAnswerUrl || '') : undefined,
+                updatedAtUTC: updatedAt && !Number.isNaN(updatedAt.getTime()) ? updatedAt : undefined,
+            };
+        })
+            .filter((row) => row.questionId);
+    }
+    if (input && typeof input === 'object') {
+        const answerObject = input;
+        return Object.entries(answerObject)
+            .map(([questionId, value]) => {
+            if (typeof value === 'string') {
+                return { questionId, selectedAnswer: value };
+            }
+            const item = (value || {});
+            const updatedAtRaw = String(item.updatedAtUTC || item.savedAt || '').trim();
+            const updatedAt = updatedAtRaw ? new Date(updatedAtRaw) : undefined;
+            return {
+                questionId,
+                selectedAnswer: item.selectedAnswer !== undefined ? String(item.selectedAnswer || '') : undefined,
+                writtenAnswerUrl: item.writtenAnswerUrl !== undefined ? String(item.writtenAnswerUrl || '') : undefined,
+                updatedAtUTC: updatedAt && !Number.isNaN(updatedAt.getTime()) ? updatedAt : undefined,
+            };
+        })
+            .filter((row) => row.questionId);
+    }
+    return [];
+}
+function normalizeCheatFlags(input) {
+    if (!Array.isArray(input))
+        return [];
+    const now = new Date();
+    return input
+        .map((entry) => {
+        if (!entry || typeof entry !== 'object')
+            return null;
+        const row = entry;
+        const rawReason = String(row.reason || row.eventType || '').trim();
+        if (!rawReason)
+            return null;
+        let reason = rawReason;
+        if (rawReason === 'blur' || rawReason === 'tab_switch') {
+            reason = 'background_focus_anomaly';
+        }
+        return {
+            reason,
+            timestamp: row.timestamp ? new Date(String(row.timestamp)) : now,
+        };
+    })
+        .filter(Boolean);
+}
+function collectSelectionCount(answer) {
+    const history = Array.isArray(answer.answerHistory)
+        ? answer.answerHistory.filter((h) => String(h.value || '').trim() !== '').length
+        : 0;
+    if (history > 0)
+        return history;
+    return String(answer.selectedAnswer || '').trim() ? 1 : 0;
+}
+function mergeAnswersWithConstraints({ existingAnswers, incomingAnswers, answerEditLimitPerQuestion, maxAttemptSelectByQuestion, now, }) {
+    const answerMap = new Map();
+    for (const row of existingAnswers) {
+        const questionId = String(row.questionId || '').trim();
+        if (!questionId)
+            continue;
+        answerMap.set(questionId, {
+            questionId,
+            selectedAnswer: String(row.selectedAnswer || ''),
+            writtenAnswerUrl: String(row.writtenAnswerUrl || ''),
+            savedAt: row.savedAt ? new Date(String(row.savedAt)) : now,
+            answerHistory: Array.isArray(row.answerHistory) ? row.answerHistory : [],
+            changeCount: Number(row.changeCount || 0),
+        });
+    }
+    const violations = [];
+    const editLimit = Number(answerEditLimitPerQuestion);
+    const enforceEditLimit = Number.isFinite(editLimit) && editLimit >= 0;
+    for (const incoming of incomingAnswers) {
+        const questionId = String(incoming.questionId || '').trim();
+        if (!questionId)
+            continue;
+        const current = answerMap.get(questionId) || {
+            questionId,
+            selectedAnswer: '',
+            writtenAnswerUrl: '',
+            savedAt: now,
+            answerHistory: [],
+            changeCount: 0,
+        };
+        const incomingUpdatedAt = incoming.updatedAtUTC && !Number.isNaN(incoming.updatedAtUTC.getTime())
+            ? incoming.updatedAtUTC
+            : now;
+        const currentSavedAt = current.savedAt ? new Date(String(current.savedAt)) : now;
+        if (incomingUpdatedAt.getTime() < currentSavedAt.getTime()) {
+            continue;
+        }
+        const prevSelected = String(current.selectedAnswer || '');
+        const nextSelected = incoming.selectedAnswer !== undefined ? String(incoming.selectedAnswer || '') : prevSelected;
+        const nextWritten = incoming.writtenAnswerUrl !== undefined
+            ? String(incoming.writtenAnswerUrl || '')
+            : String(current.writtenAnswerUrl || '');
+        const selectedChanged = nextSelected !== prevSelected;
+        const nextChangeCount = Number(current.changeCount || 0) + (selectedChanged && prevSelected !== '' ? 1 : 0);
+        const selectionCount = collectSelectionCount(current);
+        const nextSelectionCount = selectedChanged && nextSelected.trim()
+            ? selectionCount + 1
+            : selectionCount;
+        if (enforceEditLimit && nextChangeCount > editLimit) {
+            violations.push({
+                reason: 'answer_edit_limit_exceeded',
+                questionId,
+                limit: editLimit,
+                attempted: nextChangeCount,
+            });
+            continue;
+        }
+        const maxAttemptSelect = Number(maxAttemptSelectByQuestion.get(questionId) || 0);
+        if (maxAttemptSelect > 0 && nextSelectionCount > maxAttemptSelect) {
+            violations.push({
+                reason: 'max_attempt_select_exceeded',
+                questionId,
+                limit: maxAttemptSelect,
+                attempted: nextSelectionCount,
+            });
+            continue;
+        }
+        const nextHistory = selectedChanged
+            ? [...(Array.isArray(current.answerHistory) ? current.answerHistory : []), { value: nextSelected, timestamp: incomingUpdatedAt }]
+            : (Array.isArray(current.answerHistory) ? current.answerHistory : []);
+        answerMap.set(questionId, {
+            ...current,
+            questionId,
+            selectedAnswer: nextSelected,
+            writtenAnswerUrl: nextWritten,
+            savedAt: incomingUpdatedAt,
+            answerHistory: nextHistory,
+            changeCount: nextChangeCount,
+        });
+    }
+    return {
+        mergedAnswers: Array.from(answerMap.values()),
+        violations,
+    };
+}
+/* ── Schedule window helper ── */
+function isWithinScheduleWindows(exam) {
+    const now = new Date();
+    // Legacy date range check
+    if (now < exam.startDate || now > exam.endDate)
+        return false;
+    // If no advanced schedule windows, legacy check is sufficient
+    if (!exam.scheduleWindows || exam.scheduleWindows.length === 0)
+        return true;
+    // Check at least one window matches
+    const dayOfWeek = now.getUTCDay();
+    return exam.scheduleWindows.some((w) => {
+        if (now < new Date(w.startDateTimeUTC) || now > new Date(w.endDateTimeUTC))
+            return false;
+        if (w.allowedDaysOfWeek && w.allowedDaysOfWeek.length > 0 && !w.allowedDaysOfWeek.includes(dayOfWeek))
+            return false;
+        return true;
+    });
+}
+/* ─────── GET /api/exams/:id/details ─────── */
+async function getStudentExamDetails(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examRef = String(req.params.id || '');
+        const exam = mongoose_1.default.Types.ObjectId.isValid(examRef)
+            ? await Exam_1.default.findById(examRef).lean()
+            : await Exam_1.default.findOne({ share_link: examRef }).lean();
+        if (!exam || !exam.isPublished) {
+            res.status(404).json({ message: 'Exam not found or unavailable' });
+            return;
+        }
+        const examId = String(exam._id || '');
+        const [eligibility, activeSession] = await Promise.all([
+            getEligibilitySummary(exam, studentId),
+            ExamSession_1.default.findOne({
+                exam: examId,
+                student: studentId,
+                isActive: true,
+                status: 'in_progress',
+                expiresAt: { $gt: new Date() },
+            }).lean(),
+        ]);
+        const detailLockedForAudience = !eligibility.accessAllowed
+            || (eligibility.paymentRequired && !eligibility.paymentCleared);
+        if (detailLockedForAudience) {
+            res.status(403).json({
+                message: 'You are not allowed to view this exam.',
+                eligibility,
+            });
+            return;
+        }
+        res.json({
+            exam: {
+                ...sanitizeExamForStudent(exam),
+                attemptLimit: Number(exam.attemptLimit || 1),
+                autosave_interval_sec: Number(exam.autosave_interval_sec || 5),
+                resultPublishMode: getResultPublishMode(exam),
+                resultPublishDate: exam.resultPublishDate,
+                reviewSettings: exam.reviewSettings || {
+                    showQuestion: true,
+                    showSelectedAnswer: true,
+                    showCorrectAnswer: true,
+                    showExplanation: true,
+                    showSolutionImage: true,
+                },
+                certificateSettings: exam.certificateSettings || {
+                    enabled: false,
+                    minPercentage: 40,
+                    passOnly: true,
+                    templateVersion: 'v1',
+                },
+                require_instructions_agreement: Boolean(exam.require_instructions_agreement),
+            },
+            eligibility,
+            hasActiveSession: !!activeSession,
+            activeAttemptId: activeSession ? String(activeSession._id) : null,
+            serverNow: new Date().toISOString(),
+        });
+    }
+    catch (err) {
+        console.error('getStudentExamDetails error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+async function getStudentExamById(req, res) {
+    await getStudentExamDetails(req, res);
+}
+/* ─────── POST /api/exams/:id/start ─────── */
+async function startExam(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examRef = String(req.params.id || '');
+        const user = await User_1.default.findById(studentId).lean();
+        if (!user) {
+            res.status(404).json({ message: 'User not found.' });
+            return;
+        }
+        const security = await (0, securityConfigService_1.getSecurityConfig)(false);
+        if (user.role === 'student' && security.panic.disableExamStarts) {
+            res.status(423).json({
+                code: 'EXAM_STARTS_DISABLED',
+                message: 'Exam starts are temporarily disabled by administrator policy.',
+            });
+            return;
+        }
+        if (user.role === 'student') {
+            const [profile, threshold] = await Promise.all([
+                StudentProfile_1.default.findOne({ user_id: studentId }).select('profile_completion_percentage').lean(),
+                getProfileCompletionThreshold(),
+            ]);
+            const completion = Number(profile?.profile_completion_percentage || 0);
+            if (completion < threshold) {
+                res.status(403).json({
+                    profileIncomplete: true,
+                    requiredCompletion: threshold,
+                    currentCompletion: completion,
+                    message: `Please complete at least ${threshold}% of your profile before accessing exams.`,
+                });
+                return;
+            }
+        }
+        const exam = mongoose_1.default.Types.ObjectId.isValid(examRef)
+            ? await Exam_1.default.findById(examRef)
+            : await Exam_1.default.findOne({ share_link: examRef });
+        if (!exam || !exam.isPublished) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+        const examId = String(exam._id || '');
+        const eligibility = await getEligibilitySummary(exam.toObject(), studentId);
+        if (!eligibility.eligible) {
+            if (eligibility.accessDeniedReason === 'subscription_required') {
+                const subscriptionState = await verifySubscription(studentId);
+                const expiryLabel = subscriptionState.expiryDate ? new Date(subscriptionState.expiryDate).toISOString() : null;
+                res.status(403).json({
+                    subscriptionRequired: true,
+                    reason: subscriptionState.reason || 'inactive',
+                    expiryDate: expiryLabel,
+                    message: subscriptionState.reason === 'expired'
+                        ? `Your subscription has expired${expiryLabel ? ` on ${expiryLabel}` : ''}.`
+                        : 'Subscription required.',
+                    eligibility,
+                });
+                return;
+            }
+            if (eligibility.reasons.includes('outside_exam_window')) {
+                res.status(400).json({
+                    message: 'This exam is currently unavailable.',
+                    eligibility,
+                });
+                return;
+            }
+        }
+        if (!eligibility.accessAllowed) {
+            res.status(403).json({
+                message: 'You are not allowed to take this exam.',
+                eligibility,
+            });
+            return;
+        }
+        if (eligibility.attemptsLeft <= 0) {
+            res.status(400).json({
+                message: `Maximum attempt limit (${exam.attemptLimit}) reached.`,
+                eligibility,
+            });
+            return;
+        }
+        if (!eligibility.paymentCleared) {
+            res.status(402).json({
+                message: 'Payment pending. Please complete your payment to start this exam.',
+                paymentPending: true,
+                pendingDueAmount: eligibility.pendingDueAmount,
+                eligibility,
+            });
+            return;
+        }
+        /* ── External exam redirect ── */
+        if (exam.externalExamUrl) {
+            try {
+                const profileSnapshot = await StudentProfile_1.default.findOne({ user_id: studentId })
+                    .select('registration_id groupIds')
+                    .lean();
+                const forwardedFor = req.headers['x-forwarded-for'];
+                const ipAddress = (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor)?.split(',')[0] || req.socket.remoteAddress || '';
+                const sourcePanel = String(req.body?.sourcePanel || req.query?.source || 'exam_start').trim() || 'exam_start';
+                await ExternalExamJoinLog_1.default.create({
+                    examId: exam._id,
+                    studentId: new mongoose_1.default.Types.ObjectId(studentId),
+                    joinedAt: new Date(),
+                    sourcePanel,
+                    registration_id_snapshot: String(profileSnapshot?.registration_id || ''),
+                    groupIds_snapshot: normalizeObjectIdArray(profileSnapshot?.groupIds || []),
+                    ip: String(ipAddress || ''),
+                    userAgent: String(req.headers['user-agent'] || ''),
+                });
+            }
+            catch (logErr) {
+                console.warn('[startExam external join log]', logErr);
+            }
+            res.json({
+                redirect: true,
+                externalExamUrl: exam.externalExamUrl,
+                exam: sanitizeExamForStudent(exam),
+                serverNow: new Date().toISOString(),
+                serverOffsetMs: 0,
+            });
+            return;
+        }
+        const isDev = process.env.NODE_ENV === 'development';
+        /* ── Enforce schedule windows ── */
+        if (!isDev && !isWithinScheduleWindows(exam)) {
+            res.status(400).json({ message: 'Exam window is not open.' });
+            return;
+        }
+        if (!(await canAccessExam(exam, studentId))) {
+            res.status(403).json({ message: 'You are not allowed to take this exam.' });
+            return;
+        }
+        // Check attempt limit
+        const attemptCount = eligibility.attemptsUsed;
+        if (attemptCount >= exam.attemptLimit) {
+            res.status(400).json({ message: `Maximum attempt limit (${exam.attemptLimit}) reached.` });
+            return;
+        }
+        const attemptNo = attemptCount + 1;
+        const userAgent = req.headers['user-agent'] || '';
+        const fwd = req.headers['x-forwarded-for'];
+        const ipAddress = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0] || req.socket.remoteAddress || '';
+        const deviceFingerprint = getDeviceFingerprint(userAgent, ipAddress);
+        // Check existing active session (resume lock-safe)
+        let session = await ExamSession_1.default.findOne({ exam: examId, student: studentId, isActive: true }).sort({ attemptNo: -1 });
+        if (session && session.isActive) {
+            if (new Date() > new Date(session.expiresAt)) {
+                session.status = 'expired';
+                await session.save();
+                const autoSubmit = await (0, examFinalizationService_1.finalizeExamSession)({
+                    examId,
+                    studentId,
+                    attemptId: String(session._id),
+                    submissionType: 'auto_expired',
+                    isAutoSubmit: true,
+                    requestMeta: {
+                        ipAddress,
+                        userAgent: String(userAgent),
+                    },
+                });
+                res.status(409).json({
+                    message: 'Session expired. Auto-submission has been triggered.',
+                    sessionExpired: true,
+                    autoSubmitted: autoSubmit.ok,
+                    resultReady: autoSubmit.ok,
+                });
+                return;
+            }
+            if (session.sessionLocked) {
+                res.status(423).json({ message: 'Exam session is locked due to device mismatch. Contact admin.' });
+                return;
+            }
+            if (session.deviceFingerprint && session.deviceFingerprint !== deviceFingerprint) {
+                session.sessionLocked = true;
+                session.lockReason = 'device_mismatch';
+                session.cheat_flags = [
+                    ...(session.cheat_flags || []),
+                    { reason: 'device_mismatch', timestamp: new Date() },
+                ];
+                await session.save();
+                (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(session._id), 'attempt-locked', {
+                    reason: session.lockReason,
+                    source: 'start_exam',
+                });
+                res.status(423).json({ message: 'Device mismatch detected. Session locked.' });
+                return;
+            }
+            // Resume existing session
+            const assignedQuestionIds = session.answers.map(a => a.questionId);
+            const questions = await getQuestionsByIdsAndFormat(assignedQuestionIds, exam);
+            // Audit: Resume event
+            await ExamEvent_1.default.create({
+                attempt: session._id,
+                student: studentId,
+                exam: examId,
+                eventType: 'resume',
+                metadata: { action: 'resume_exam' },
+                ip: ipAddress,
+                userAgent
+            });
+            res.json({
+                session: mapExamSessionForClient(session, examId, studentId),
+                exam: sanitizeExamForStudent(exam),
+                questions,
+                serverNow: new Date().toISOString(),
+                serverOffsetMs: 0,
+                resultPublishMode: getResultPublishMode(exam.toObject()),
+                autosaveIntervalSec: Number(exam.autosave_interval_sec || 5),
+            });
+            void broadcastExamMetricsUpdate(examId, 'resume_attempt');
+            return;
+        }
+        // Create new session
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + exam.duration * 60 * 1000);
+        const questions = await generateQuestionsForExam(exam, `${studentId}:${examId}:${attemptNo}`);
+        const initialAnswers = questions.map((q) => ({
+            questionId: q._id.toString(),
+            selectedAnswer: '',
+            changeCount: 0
+        }));
+        session = await ExamSession_1.default.create({
+            exam: examId,
+            student: studentId,
+            attemptNo,
+            attemptRevision: 0,
+            startedAt: now,
+            expiresAt,
+            ipAddress,
+            userAgent,
+            deviceInfo: detectDevice(userAgent),
+            browserInfo: detectBrowser(userAgent),
+            deviceFingerprint,
+            sessionLocked: false,
+            isActive: true,
+            answers: initialAnswers
+        });
+        // Audit: Start event
+        await ExamEvent_1.default.create({
+            attempt: session._id,
+            student: studentId,
+            exam: examId,
+            eventType: 'save',
+            metadata: { action: 'start_new_session' },
+            ip: ipAddress,
+            userAgent
+        });
+        res.json({
+            session: mapExamSessionForClient(session, examId, studentId),
+            exam: sanitizeExamForStudent(exam),
+            questions,
+            serverNow: new Date().toISOString(),
+            serverOffsetMs: 0,
+            resultPublishMode: getResultPublishMode(exam.toObject()),
+            autosaveIntervalSec: Number(exam.autosave_interval_sec || 5),
+        });
+        void broadcastExamMetricsUpdate(examId, 'attempt_started');
+    }
+    catch (err) {
+        console.error('startExam error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+/* ─────── PUT /api/exams/:id/autosave ─────── */
+async function autosaveExam(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examId = String(req.params.id || '');
+        const { answers, tabSwitchCount, cheat_flags, attemptId, currentQuestionId } = req.body || {};
+        const expectedRevision = parseAttemptRevision((req.body || {}).attemptRevision);
+        const sessionQuery = { exam: examId, student: studentId, isActive: true };
+        if (attemptId) {
+            sessionQuery._id = attemptId;
+        }
+        const session = await ExamSession_1.default.findOne(sessionQuery);
+        if (!session) {
+            res.status(404).json({ message: 'No active session found.' });
+            return;
+        }
+        if (session.sessionLocked) {
+            res.status(423).json({
+                message: 'Session is locked due to security policy violation.',
+                action: 'locked',
+                lockReason: String(session.lockReason || ''),
+            });
+            return;
+        }
+        if (expectedRevision !== null && Number(session.attemptRevision || 0) !== expectedRevision) {
+            res.status(409).json({
+                message: 'Attempt state is stale. Please refresh exam state.',
+                latestRevision: Number(session.attemptRevision || 0),
+            });
+            return;
+        }
+        const now = new Date();
+        const exam = await Exam_1.default.findById(examId).select('security_policies answerEditLimitPerQuestion').lean();
+        const tabLimit = Number(exam?.security_policies?.tab_switch_limit || 3);
+        const answerEditLimitPerQuestion = Number(exam?.answerEditLimitPerQuestion);
+        const hasAnswerEditLimit = Number.isFinite(answerEditLimitPerQuestion) && answerEditLimitPerQuestion >= 0;
+        // Check session hasn't expired
+        if (now > session.expiresAt) {
+            session.status = 'expired';
+            await session.save();
+            void (0, examFinalizationService_1.finalizeExamSession)({
+                examId,
+                studentId,
+                attemptId: String(session._id),
+                submissionType: 'auto_expired',
+                isAutoSubmit: true,
+                requestMeta: {
+                    ipAddress: getRequestIp(req),
+                    userAgent: getRequestUserAgent(req),
+                },
+            }).catch((error) => {
+                console.error('autosaveExam auto-expired finalize error:', error);
+            });
+            res.status(409).json({ message: 'Session expired. Auto-submission triggered.' });
+            return;
+        }
+        if (answers) {
+            const allowedQuestionIds = new Set(session.answers.map((answer) => String(answer.questionId)));
+            const incomingAnswers = normalizeIncomingAnswers(answers).filter((answer) => allowedQuestionIds.has(answer.questionId));
+            const incomingQuestionIds = incomingAnswers.map((item) => item.questionId);
+            const questionLimits = await Question_1.default.find({ _id: { $in: incomingQuestionIds } })
+                .select('_id max_attempt_select')
+                .lean();
+            const maxAttemptSelectByQuestion = new Map();
+            for (const row of questionLimits) {
+                maxAttemptSelectByQuestion.set(String(row._id), Number(row.max_attempt_select || 0));
+            }
+            const merge = mergeAnswersWithConstraints({
+                existingAnswers: session.answers.map((answer) => ({
+                    questionId: answer.questionId,
+                    selectedAnswer: answer.selectedAnswer,
+                    writtenAnswerUrl: answer.writtenAnswerUrl,
+                    answerHistory: answer.answerHistory,
+                    changeCount: answer.changeCount,
+                    savedAt: answer.savedAt,
+                })),
+                incomingAnswers,
+                answerEditLimitPerQuestion: hasAnswerEditLimit ? answerEditLimitPerQuestion : undefined,
+                maxAttemptSelectByQuestion,
+                now,
+            });
+            if (merge.violations.length > 0) {
+                session.cheat_flags = [
+                    ...(session.cheat_flags || []),
+                    ...merge.violations.map((violation) => ({
+                        reason: `${violation.reason}:${violation.questionId}:${violation.attempted}/${violation.limit}`,
+                        timestamp: now,
+                    })),
+                ];
+                await session.save();
+                res.status(400).json({
+                    message: 'Answer constraints violated. Please review your last changes.',
+                    violations: merge.violations,
+                });
+                return;
+            }
+            session.answers = merge.mergedAnswers;
+            const totalChanges = merge.mergedAnswers.reduce((sum, a) => sum + Number(a.changeCount || 0), 0);
+            if (totalChanges > 150) {
+                session.cheat_flags = [
+                    ...(session.cheat_flags || []),
+                    { reason: `rapid_answer_flipping:${totalChanges}`, timestamp: now },
+                ];
+            }
+        }
+        if (cheat_flags) {
+            session.cheat_flags = [...(session.cheat_flags || []), ...normalizeCheatFlags(cheat_flags)];
+        }
+        session.lastSavedAt = now;
+        session.autoSaves += 1;
+        if (currentQuestionId !== undefined) {
+            session.currentQuestionId = String(currentQuestionId || '');
+        }
+        session.attemptRevision = Number(session.attemptRevision || 0) + 1;
+        if (tabSwitchCount !== undefined) {
+            session.tabSwitchCount = tabSwitchCount;
+            session.tabSwitchEvents.push({ timestamp: now, count: tabSwitchCount });
+            if (tabSwitchCount > tabLimit) {
+                session.cheat_flags = [
+                    ...(session.cheat_flags || []),
+                    { reason: `tab_switch_excess:${tabSwitchCount}`, timestamp: now },
+                ];
+            }
+        }
+        const currentFingerprint = getDeviceFingerprint(String(req.headers['user-agent'] || ''), (Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'])?.split(',')[0] || req.socket.remoteAddress || '');
+        if (session.deviceFingerprint && session.deviceFingerprint !== currentFingerprint) {
+            session.sessionLocked = true;
+            session.lockReason = 'device_mismatch';
+            session.cheat_flags = [
+                ...(session.cheat_flags || []),
+                { reason: 'device_mismatch', timestamp: new Date() },
+            ];
+            await session.save();
+            (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(session._id), 'attempt-locked', {
+                reason: session.lockReason,
+                source: 'autosave',
+            });
+            (0, adminLiveStream_1.broadcastAdminLiveEvent)('attempt-locked', {
+                attemptId: String(session._id),
+                examId: String(session.exam || examId),
+                studentId: String(session.student || studentId),
+                reason: session.lockReason,
+                source: 'autosave',
+            });
+            void broadcastExamMetricsUpdate(String(session.exam || examId), 'autosave_locked');
+            res.status(423).json({ message: 'Device mismatch detected. Session locked.' });
+            return;
+        }
+        await session.save();
+        (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(session._id), 'revision-update', {
+            revision: Number(session.attemptRevision || 0),
+            savedAt: session.lastSavedAt,
+        });
+        (0, adminLiveStream_1.broadcastAdminLiveEvent)('autosave', {
+            attemptId: String(session._id),
+            examId: String(session.exam || examId),
+            studentId: String(session.student || studentId),
+            savedAt: session.lastSavedAt,
+            attemptRevision: Number(session.attemptRevision || 0),
+            currentQuestionId: String(session.currentQuestionId || ''),
+            tabSwitchCount: Number(session.tabSwitchCount || 0),
+            violationsCount: Number(session.violationsCount || 0),
+        });
+        // Audit: Autosave event
+        await ExamEvent_1.default.create({
+            attempt: session._id,
+            student: studentId,
+            exam: examId,
+            eventType: 'save',
+            metadata: { action: 'autosave' },
+            ip: getRequestIp(req),
+            userAgent: getRequestUserAgent(req),
+        });
+        res.json({
+            saved: true,
+            savedAt: session.lastSavedAt,
+            attemptRevision: Number(session.attemptRevision || 0),
+        });
+        void broadcastExamMetricsUpdate(String(session.exam || examId), 'autosave');
+    }
+    catch (err) {
+        console.error('autosaveExam error:', err);
+        res.status(500).json({
+            message: 'Server error',
+            ...(process.env.NODE_ENV === 'production'
+                ? {}
+                : { error: err instanceof Error ? err.message : String(err) }),
+        });
+    }
+}
+/* ─────── POST /api/exams/:id/submit ─────── */
+async function submitExam(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examId = String(req.params.id);
+        const { answers, tabSwitchCount, isAutoSubmit, cheat_flags, attemptId, submissionType } = req.body || {};
+        const expectedRevision = parseAttemptRevision((req.body || {}).attemptRevision);
+        const resolvedSubmissionType = resolveSubmissionType(submissionType, Boolean(isAutoSubmit));
+        const exam = await Exam_1.default.findById(examId);
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+        const sessionQuery = { exam: examId, student: studentId, isActive: true };
+        if (attemptId)
+            sessionQuery._id = attemptId;
+        const activeSession = await ExamSession_1.default.findOne(sessionQuery).sort({ attemptNo: -1 });
+        if (!activeSession) {
+            const latestResult = await ExamResult_1.default.findOne({ exam: examId, student: studentId })
+                .sort({ submittedAt: -1, attemptNo: -1 })
+                .lean();
+            if (latestResult) {
+                res.json({
+                    message: 'Attempt already submitted.',
+                    resultId: latestResult._id,
+                    submitted: true,
+                    alreadySubmitted: true,
+                    obtainedMarks: Number(latestResult.obtainedMarks || 0),
+                    totalMarks: Number(latestResult.totalMarks || exam.totalMarks),
+                    percentage: Number(latestResult.percentage || 0),
+                    correctCount: Number(latestResult.correctCount || 0),
+                    wrongCount: Number(latestResult.wrongCount || 0),
+                    unansweredCount: Number(latestResult.unansweredCount || 0),
+                    resultPublishDate: exam.resultPublishDate,
+                    resultPublishMode: getResultPublishMode(exam.toObject()),
+                    resultPublished: isExamResultPublished(exam.toObject()),
+                    attemptRevision: null,
+                });
+                return;
+            }
+            res.status(404).json({ message: 'No session found to submit.' });
+            return;
+        }
+        const fwd = req.headers['x-forwarded-for'];
+        const ipAddress = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0] || req.socket.remoteAddress || '';
+        const userAgent = String(req.headers['user-agent'] || '');
+        const submitFingerprint = getDeviceFingerprint(String(userAgent), String(ipAddress));
+        if (activeSession.deviceFingerprint && submitFingerprint !== activeSession.deviceFingerprint) {
+            activeSession.sessionLocked = true;
+            activeSession.lockReason = 'device_mismatch_submit';
+            activeSession.cheat_flags = [
+                ...(activeSession.cheat_flags || []),
+                { reason: 'device_mismatch_submit', timestamp: new Date() },
+            ];
+            await activeSession.save();
+            (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(activeSession._id), 'attempt-locked', {
+                reason: activeSession.lockReason,
+                source: 'submit',
+            });
+            void broadcastExamMetricsUpdate(examId, 'submit_locked_device_mismatch');
+            res.status(423).json({ message: 'Device mismatch detected during submit. Session locked.' });
+            return;
+        }
+        const finalized = await (0, examFinalizationService_1.finalizeExamSession)({
+            examId,
+            studentId,
+            attemptId: String(activeSession._id),
+            expectedRevision,
+            submissionType: resolvedSubmissionType,
+            isAutoSubmit: Boolean(isAutoSubmit),
+            incomingAnswers: answers,
+            tabSwitchCount,
+            cheatFlags: cheat_flags,
+            requestMeta: {
+                ipAddress,
+                userAgent,
+            },
+            forcedSubmittedBy: resolvedSubmissionType === 'forced' ? String(req.user?._id || '') : undefined,
+        });
+        if (!finalized.ok) {
+            res.status(finalized.statusCode).json({
+                message: finalized.message,
+                latestRevision: finalized.latestRevision,
+                lockReason: finalized.lockReason,
+                violations: finalized.violations,
+            });
+            return;
+        }
+        const sessionObj = finalized.session;
+        const resultObj = finalized.result;
+        (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(sessionObj._id || activeSession._id), 'revision-update', {
+            revision: Number(sessionObj.attemptRevision || 0),
+            submitted: true,
+            submissionType: resolvedSubmissionType,
+        });
+        (0, adminLiveStream_1.broadcastAdminLiveEvent)('attempt-updated', {
+            attemptId: String(sessionObj._id || activeSession._id),
+            examId,
+            studentId,
+            submitted: true,
+            submissionType: resolvedSubmissionType,
+            attemptRevision: Number(sessionObj.attemptRevision || 0),
+            obtainedMarks: finalized.obtainedMarks,
+            percentage: finalized.percentage,
+        });
+        if (resolvedSubmissionType === 'forced') {
+            (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(sessionObj._id || activeSession._id), 'forced-submit', {
+                reason: 'forced_submission',
+                resultId: String(resultObj._id || ''),
+            });
+            (0, adminLiveStream_1.broadcastAdminLiveEvent)('forced-submit', {
+                attemptId: String(sessionObj._id || activeSession._id),
+                examId,
+                studentId,
+                resultId: String(resultObj._id || ''),
+            });
+        }
+        await ExamEvent_1.default.create({
+            attempt: String(sessionObj._id || activeSession._id),
+            student: studentId,
+            exam: examId,
+            eventType: 'submit',
+            metadata: {
+                action: finalized.alreadySubmitted ? 'duplicate_submit' : (resolvedSubmissionType === 'manual' ? 'manual_submit' : resolvedSubmissionType),
+                score: finalized.obtainedMarks,
+                percentage: finalized.percentage,
+            },
+            ip: ipAddress,
+            userAgent,
+        });
+        res.json({
+            message: finalized.alreadySubmitted ? 'Attempt already submitted.' : 'Exam submitted successfully.',
+            resultId: resultObj._id,
+            submitted: true,
+            alreadySubmitted: finalized.alreadySubmitted,
+            obtainedMarks: finalized.obtainedMarks,
+            totalMarks: Number(resultObj.totalMarks || exam.totalMarks),
+            percentage: finalized.percentage,
+            correctCount: finalized.correctCount,
+            wrongCount: finalized.wrongCount,
+            unansweredCount: finalized.unansweredCount,
+            resultPublishDate: exam.resultPublishDate,
+            resultPublishMode: getResultPublishMode(exam.toObject()),
+            resultPublished: isExamResultPublished(exam.toObject()),
+            attemptRevision: Number(sessionObj.attemptRevision || 0),
+        });
+        void broadcastExamMetricsUpdate(examId, resolvedSubmissionType === 'forced' ? 'force_submitted' : 'submitted');
+    }
+    catch (err) {
+        console.error('submitExam error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+async function submitExamAsSystem(input) {
+    const { examId, studentId, attemptId, sourceReq, reason, submissionType = 'forced', } = input;
+    const result = await (0, examFinalizationService_1.finalizeExamSession)({
+        examId,
+        studentId,
+        attemptId,
+        submissionType,
+        isAutoSubmit: true,
+        cheatFlags: reason ? [{ reason, timestamp: new Date().toISOString() }] : [],
+        requestMeta: {
+            ipAddress: sourceReq ? getRequestIp(sourceReq) : '',
+            userAgent: sourceReq ? getRequestUserAgent(sourceReq) : 'CampusWay-System',
+        },
+    });
+    if (!result.ok) {
+        return {
+            statusCode: result.statusCode,
+            body: {
+                message: result.message,
+                latestRevision: result.latestRevision,
+                lockReason: result.lockReason,
+            },
+        };
+    }
+    const resultObj = result.result;
+    const sessionObj = result.session;
+    return {
+        statusCode: 200,
+        body: {
+            message: result.alreadySubmitted ? 'Attempt already submitted.' : 'Exam submitted successfully.',
+            resultId: resultObj._id,
+            submitted: true,
+            alreadySubmitted: result.alreadySubmitted,
+            obtainedMarks: result.obtainedMarks,
+            percentage: result.percentage,
+            correctCount: result.correctCount,
+            wrongCount: result.wrongCount,
+            unansweredCount: result.unansweredCount,
+            attemptRevision: Number(sessionObj.attemptRevision || 0),
+        },
+    };
+}
+async function getExamAttemptState(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examId = String(req.params.examId || req.params.id || '');
+        const attemptId = String(req.params.attemptId || '');
+        const [exam, session] = await Promise.all([
+            Exam_1.default.findById(examId),
+            ExamSession_1.default.findOne({ _id: attemptId, exam: examId, student: studentId }),
+        ]);
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+        if (!session) {
+            res.status(404).json({ message: 'Attempt not found.' });
+            return;
+        }
+        const assignedQuestionIds = session.answers.map((answer) => String(answer.questionId)).filter(Boolean);
+        const questions = await getQuestionsByIdsAndFormat(assignedQuestionIds, exam);
+        res.json({
+            session: {
+                ...mapExamSessionForClient(session, examId, studentId),
+                isActive: session.isActive,
+                submittedAt: session.submittedAt,
+            },
+            exam: sanitizeExamForStudent(exam),
+            questions,
+            serverNow: new Date().toISOString(),
+        });
+    }
+    catch (err) {
+        console.error('getExamAttemptState error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+async function saveExamAttemptAnswer(req, res) {
+    const proxiedReq = Object.create(req);
+    proxiedReq.params = {
+        ...req.params,
+        id: String(req.params.examId || req.params.id || ''),
+    };
+    proxiedReq.body = {
+        ...(req.body || {}),
+        attemptId: String(req.params.attemptId || ''),
+    };
+    await autosaveExam(proxiedReq, res);
+}
+async function submitExamAttempt(req, res) {
+    const proxiedReq = Object.create(req);
+    proxiedReq.params = {
+        ...req.params,
+        id: String(req.params.examId || req.params.id || ''),
+    };
+    proxiedReq.body = {
+        ...(req.body || {}),
+        attemptId: String(req.params.attemptId || ''),
+    };
+    await submitExam(proxiedReq, res);
+}
+async function logExamAttemptEvent(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examId = String(req.params.examId || req.params.id || '');
+        const attemptId = String(req.params.attemptId || '');
+        const body = (req.body || {});
+        const eventType = String(body.eventType || '').trim();
+        const metadata = (body.metadata && typeof body.metadata === 'object'
+            ? body.metadata
+            : {});
+        const expectedRevision = parseAttemptRevision(body.attemptRevision);
+        if (!attemptId) {
+            res.status(400).json({ message: 'attemptId is required.' });
+            return;
+        }
+        if (!ATTEMPT_EVENT_TYPES.has(eventType)) {
+            res.status(400).json({ message: 'Invalid eventType.' });
+            return;
+        }
+        const [exam, session] = await Promise.all([
+            Exam_1.default.findById(examId).select('security_policies'),
+            ExamSession_1.default.findOne({ _id: attemptId, exam: examId, student: studentId }),
+        ]);
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+        if (!session) {
+            res.status(404).json({ message: 'Attempt not found.' });
+            return;
+        }
+        if (!session.isActive || String(session.status || '').toLowerCase() === 'submitted') {
+            res.json({
+                logged: false,
+                ignored: true,
+                reason: 'attempt_not_active',
+                attemptRevision: Number(session.attemptRevision || 0),
+            });
+            return;
+        }
+        if (session.sessionLocked) {
+            res.status(423).json({
+                message: 'Session is locked due to security policy violation.',
+                action: 'locked',
+                lockReason: String(session.lockReason || ''),
+                attemptRevision: Number(session.attemptRevision || 0),
+            });
+            return;
+        }
+        if (expectedRevision !== null && Number(session.attemptRevision || 0) !== expectedRevision) {
+            res.status(409).json({
+                message: 'Attempt state is stale. Please refresh exam state.',
+                latestRevision: Number(session.attemptRevision || 0),
+            });
+            return;
+        }
+        const requestedAt = body.timestamp ? new Date(String(body.timestamp)) : new Date();
+        const eventTime = Number.isNaN(requestedAt.getTime()) ? new Date() : requestedAt;
+        const policies = (exam?.security_policies || {});
+        const tabLimit = Number(policies.tab_switch_limit || 3);
+        const copyLimit = Number(policies.copy_paste_violations || 3);
+        const requireFullscreen = Boolean(policies.require_fullscreen);
+        const violationAction = resolveViolationAction(policies);
+        let action = 'logged';
+        let shouldAutoSubmit = false;
+        let shouldLock = false;
+        let shouldWarn = false;
+        const applyViolationPolicy = (trigger) => {
+            if (!trigger)
+                return;
+            if (violationAction === 'submit') {
+                shouldAutoSubmit = true;
+                action = 'warning';
+                shouldWarn = true;
+                return;
+            }
+            if (violationAction === 'lock') {
+                shouldLock = true;
+                action = 'locked';
+                return;
+            }
+            action = 'warning';
+            shouldWarn = true;
+        };
+        if (eventType === 'tab_switch') {
+            const incrementRaw = Number(metadata.increment || 1);
+            const increment = Number.isFinite(incrementRaw) && incrementRaw > 0 ? Math.floor(incrementRaw) : 1;
+            session.tabSwitchCount = Number(session.tabSwitchCount || 0) + increment;
+            session.violationsCount = Number(session.violationsCount || 0) + increment;
+            session.tabSwitchEvents.push({ timestamp: eventTime, count: session.tabSwitchCount });
+            if (session.tabSwitchCount > tabLimit) {
+                session.cheat_flags = [
+                    ...(session.cheat_flags || []),
+                    { reason: `tab_switch_excess:${session.tabSwitchCount}`, timestamp: eventTime },
+                ];
+                applyViolationPolicy(true);
+            }
+        }
+        if (eventType === 'fullscreen_exit') {
+            session.fullscreenExitCount = Number(session.fullscreenExitCount || 0) + 1;
+            session.violationsCount = Number(session.violationsCount || 0) + 1;
+            session.cheat_flags = [
+                ...(session.cheat_flags || []),
+                { reason: 'fullscreen_exit', timestamp: eventTime },
+            ];
+            applyViolationPolicy(requireFullscreen);
+        }
+        if (eventType === 'copy_attempt') {
+            session.copyAttemptCount = Number(session.copyAttemptCount || 0) + 1;
+            session.violationsCount = Number(session.violationsCount || 0) + 1;
+            const nextCount = Number(session.copyAttemptCount || 0);
+            session.cheat_flags = [
+                ...(session.cheat_flags || []),
+                { reason: `copy_attempt:${nextCount}`, timestamp: eventTime },
+            ];
+            if (nextCount > copyLimit) {
+                applyViolationPolicy(true);
+            }
+        }
+        if (eventType === 'error') {
+            session.cheat_flags = [
+                ...(session.cheat_flags || []),
+                { reason: 'client_error', timestamp: eventTime },
+            ];
+        }
+        if (shouldLock) {
+            session.sessionLocked = true;
+            session.lockReason = `policy_lock:${eventType}`;
+        }
+        session.lastSavedAt = eventTime;
+        session.attemptRevision = Number(session.attemptRevision || 0) + 1;
+        await session.save();
+        void broadcastExamMetricsUpdate(examId, `event_${eventType}`);
+        (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(session._id), 'revision-update', {
+            revision: Number(session.attemptRevision || 0),
+            source: 'event_log',
+            eventType,
+        });
+        (0, adminLiveStream_1.broadcastAdminLiveEvent)('violation', {
+            attemptId: String(session._id),
+            examId,
+            studentId,
+            eventType,
+            tabSwitchCount: Number(session.tabSwitchCount || 0),
+            copyAttemptCount: Number(session.copyAttemptCount || 0),
+            fullscreenExitCount: Number(session.fullscreenExitCount || 0),
+            violationsCount: Number(session.violationsCount || 0),
+            action,
+            violationAction,
+            attemptRevision: Number(session.attemptRevision || 0),
+        });
+        await ExamEvent_1.default.create({
+            attempt: session._id,
+            student: studentId,
+            exam: examId,
+            eventType,
+            metadata,
+            ip: getRequestIp(req),
+            userAgent: getRequestUserAgent(req),
+        });
+        if (shouldWarn) {
+            (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(session._id), 'policy-warning', {
+                eventType,
+                tabSwitchCount: Number(session.tabSwitchCount || 0),
+                copyAttemptCount: Number(session.copyAttemptCount || 0),
+                fullscreenExitCount: Number(session.fullscreenExitCount || 0),
+                violationAction,
+            });
+            (0, adminLiveStream_1.broadcastAdminLiveEvent)('warn-sent', {
+                attemptId: String(session._id),
+                examId,
+                studentId,
+                eventType,
+                tabSwitchCount: Number(session.tabSwitchCount || 0),
+                copyAttemptCount: Number(session.copyAttemptCount || 0),
+                fullscreenExitCount: Number(session.fullscreenExitCount || 0),
+                violationAction,
+            });
+        }
+        if (shouldLock) {
+            (0, examAttemptStream_1.broadcastExamAttemptEvent)(String(session._id), 'attempt-locked', {
+                eventType,
+                reason: String(session.lockReason || ''),
+                violationAction,
+            });
+            (0, adminLiveStream_1.broadcastAdminLiveEvent)('attempt-locked', {
+                attemptId: String(session._id),
+                examId,
+                studentId,
+                eventType,
+                reason: String(session.lockReason || ''),
+                violationAction,
+            });
+            res.status(423).json({
+                logged: true,
+                action: 'locked',
+                lockReason: String(session.lockReason || ''),
+                attemptRevision: Number(session.attemptRevision || 0),
+                tabSwitchCount: Number(session.tabSwitchCount || 0),
+            });
+            void broadcastExamMetricsUpdate(examId, `event_locked_${eventType}`);
+            return;
+        }
+        if (shouldAutoSubmit) {
+            const submitResult = await submitExamAsSystem({
+                examId,
+                studentId,
+                attemptId,
+                sourceReq: req,
+                reason: `policy_auto_submit:${eventType}`,
+                submissionType: 'forced',
+            });
+            if (submitResult.statusCode >= 400) {
+                res.status(submitResult.statusCode).json(submitResult.body);
+                return;
+            }
+            res.json({
+                logged: true,
+                action: 'auto_submitted',
+                attemptRevision: Number(session.attemptRevision || 0),
+                violationAction,
+                submit: submitResult.body,
+            });
+            void broadcastExamMetricsUpdate(examId, `event_auto_submitted_${eventType}`);
+            return;
+        }
+        res.json({
+            logged: true,
+            action,
+            attemptRevision: Number(session.attemptRevision || 0),
+            tabSwitchCount: Number(session.tabSwitchCount || 0),
+            violationAction,
+        });
+    }
+    catch (err) {
+        console.error('logExamAttemptEvent error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+async function getExamResult(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examId = req.params.id;
+        const exam = await Exam_1.default.findById(examId).lean();
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+        const result = await ExamResult_1.default.findOne({ exam: examId, student: studentId }).sort({ attemptNo: -1, submittedAt: -1 }).lean();
+        if (!result) {
+            res.status(404).json({ message: 'No result found. You have not submitted this exam.' });
+            return;
+        }
+        const now = new Date();
+        const resultPublished = isExamResultPublished(exam, now);
+        const resultPublishMode = getResultPublishMode(exam);
+        const reviewSettings = (exam.reviewSettings || {
+            showQuestion: true,
+            showSelectedAnswer: true,
+            showCorrectAnswer: true,
+            showExplanation: true,
+            showSolutionImage: true,
+        });
+        if (!resultPublished) {
+            res.json({
+                resultPublished: false,
+                publishDate: exam.resultPublishDate,
+                resultPublishMode,
+                exam: {
+                    title: exam.title,
+                    subject: exam.subject,
+                    totalMarks: exam.totalMarks,
+                    totalQuestions: exam.totalQuestions,
+                },
+                message: 'Result not published yet',
+            });
+            return;
+        }
+        // Include solution details once published
+        const questionIds = result.answers.map((a) => a.question);
+        const questions = await Question_1.default.find({ _id: { $in: questionIds } }).lean();
+        const qMap = new Map(questions.map(q => [q._id.toString(), q]));
+        const rawAnswers = result.answers.map((a) => {
+            const q = qMap.get(a.question.toString());
+            return {
+                questionId: a.question,
+                question: q?.question,
+                questionImage: q?.questionImage,
+                optionA: q?.optionA,
+                optionB: q?.optionB,
+                optionC: q?.optionC,
+                optionD: q?.optionD,
+                correctAnswer: q?.correctAnswer,
+                correctOption: q?.correctAnswer,
+                selectedAnswer: a.selectedAnswer,
+                selectedOption: a.selectedAnswer,
+                isCorrect: a.isCorrect,
+                explanation: q?.explanation,
+                solutionImage: q?.solutionImage,
+                solution: q?.solution || null,
+                section: q?.section,
+                marks: q?.marks,
+            };
+        });
+        const answers = !Boolean(reviewSettings.showQuestion)
+            ? []
+            : rawAnswers.map((answer) => {
+                const next = { ...answer };
+                if (!Boolean(reviewSettings.showSelectedAnswer)) {
+                    delete next.selectedAnswer;
+                    delete next.selectedOption;
+                }
+                if (!Boolean(reviewSettings.showCorrectAnswer)) {
+                    delete next.correctAnswer;
+                    delete next.correctOption;
+                    delete next.optionA;
+                    delete next.optionB;
+                    delete next.optionC;
+                    delete next.optionD;
+                }
+                if (!Boolean(reviewSettings.showExplanation)) {
+                    delete next.explanation;
+                    delete next.solution;
+                }
+                if (!Boolean(reviewSettings.showSolutionImage)) {
+                    delete next.solutionImage;
+                }
+                return next;
+            });
+        // Compute rank
+        const rank = await ExamResult_1.default.countDocuments({
+            exam: examId,
+            obtainedMarks: { $gt: result.obtainedMarks },
+        }) + 1;
+        res.json({
+            resultPublished: true,
+            resultPublishMode,
+            reviewSettings,
+            result: {
+                ...result,
+                rank,
+                answers,
+                detailedAnswers: answers, // Compatibility alias for one release
+            },
+            exam: {
+                title: exam.title,
+                subject: exam.subject,
+                totalMarks: exam.totalMarks,
+                totalQuestions: exam.totalQuestions,
+                negativeMarking: exam.negativeMarking,
+                negativeMarkValue: exam.negativeMarkValue,
+            },
+        });
+    }
+    catch (err) {
+        console.error('getExamResult error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+/* ─────── Helpers ─────── */
+async function getStudentExamQuestions(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examId = String(req.params.examId || req.params.id || '');
+        const random = String(req.query.random || '').toLowerCase() === 'true';
+        const limitRaw = Number(req.query.limit || 0);
+        const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.floor(limitRaw) : 0;
+        const exam = await Exam_1.default.findById(examId);
+        if (!exam || !exam.isPublished) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+        if (!(await canAccessExam(exam, studentId))) {
+            res.status(403).json({ message: 'You are not allowed to access this exam.' });
+            return;
+        }
+        const session = await ExamSession_1.default.findOne({ exam: examId, student: studentId, isActive: true }).lean();
+        let questions = [];
+        if (session && Array.isArray(session.answers) && session.answers.length > 0) {
+            const assignedQuestionIds = session.answers.map((entry) => String(entry.questionId || '')).filter(Boolean);
+            questions = await getQuestionsByIdsAndFormat(assignedQuestionIds, exam);
+        }
+        else {
+            questions = await generateQuestionsForExam(exam, `${studentId}:${examId}:question_list`);
+        }
+        if (random) {
+            questions = seededShuffle(questions, `${studentId}:${examId}:random_query`);
+        }
+        if (limit > 0) {
+            questions = questions.slice(0, limit);
+        }
+        res.json({
+            questions,
+            total: questions.length,
+            serverNow: new Date().toISOString(),
+        });
+    }
+    catch (err) {
+        console.error('getStudentExamQuestions error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+async function streamExamAttempt(req, res) {
+    try {
+        const userId = req.user._id;
+        const userRole = String(req.user?.role || 'student');
+        const examId = String(req.params.examId || req.params.id || '');
+        const attemptId = String(req.params.attemptId || '');
+        if (!attemptId) {
+            res.status(400).json({ message: 'attemptId is required.' });
+            return;
+        }
+        const session = await ExamSession_1.default.findOne({ _id: attemptId, exam: examId });
+        if (!session) {
+            res.status(404).json({ message: 'Attempt not found.' });
+            return;
+        }
+        if (userRole === 'student' && String(session.student) !== userId) {
+            res.status(403).json({ message: 'You are not allowed to stream this attempt.' });
+            return;
+        }
+        (0, examAttemptStream_1.addExamAttemptStreamClient)({
+            res,
+            attemptId,
+            studentId: String(session.student),
+            examId,
+        });
+        (0, examAttemptStream_1.broadcastExamAttemptEvent)(attemptId, 'timer-sync', {
+            serverNow: new Date().toISOString(),
+            expiresAt: session.expiresAt,
+            attemptRevision: Number(session.attemptRevision || 0),
+        });
+        if (session.sessionLocked) {
+            (0, examAttemptStream_1.broadcastExamAttemptEvent)(attemptId, 'attempt-locked', {
+                reason: String(session.lockReason || ''),
+                source: 'stream_connect',
+            });
+        }
+    }
+    catch (err) {
+        console.error('streamExamAttempt error:', err);
+        if (!res.headersSent) {
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+}
+function generateCertificateId(examId, studentId, attemptNo) {
+    const examChunk = examId.slice(-4).toUpperCase();
+    const studentChunk = studentId.slice(-4).toUpperCase();
+    const nonce = Date.now().toString(36).toUpperCase().slice(-5);
+    return `CW-${examChunk}-${studentChunk}-A${attemptNo}-${nonce}`;
+}
+function certificateEligibility(exam, result, resultPublished) {
+    const settings = (exam.certificateSettings || {});
+    const enabled = Boolean(settings.enabled);
+    const minPercentageRaw = Number(settings.minPercentage ?? 40);
+    const minPercentage = Number.isFinite(minPercentageRaw) ? minPercentageRaw : 40;
+    const passOnly = settings.passOnly === undefined ? true : Boolean(settings.passOnly);
+    const passThresholdRaw = Number(exam.passMarks ?? exam.pass_marks ?? minPercentage);
+    const passThreshold = Number.isFinite(passThresholdRaw) ? passThresholdRaw : minPercentage;
+    const percentage = Number(result.percentage || 0);
+    const reasons = [];
+    if (!enabled)
+        reasons.push('certificate_disabled');
+    if (!resultPublished)
+        reasons.push('result_not_published');
+    if (percentage < minPercentage)
+        reasons.push('minimum_percentage_not_met');
+    if (passOnly && percentage < passThreshold)
+        reasons.push('pass_criteria_not_met');
+    return {
+        eligible: reasons.length === 0,
+        reasons,
+        minPercentage,
+        passThreshold,
+    };
+}
+async function getExamCertificate(req, res) {
+    try {
+        const studentId = req.user._id;
+        const examId = String(req.params.id || req.params.examId || '');
+        const exam = await Exam_1.default.findById(examId).lean();
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+        const result = await ExamResult_1.default.findOne({ exam: examId, student: studentId }).sort({ attemptNo: -1, submittedAt: -1 }).lean();
+        if (!result) {
+            res.status(404).json({ message: 'No submitted result found for this exam.' });
+            return;
+        }
+        const published = isExamResultPublished(exam);
+        const eligibility = certificateEligibility(exam, result, published);
+        if (!eligibility.eligible) {
+            res.status(403).json({
+                eligible: false,
+                reasons: eligibility.reasons,
+                message: 'Certificate is not available for this attempt.',
+            });
+            return;
+        }
+        const attemptNo = Number(result.attemptNo || 1);
+        let certificate = await ExamCertificate_1.default.findOne({
+            examId: exam._id,
+            studentId: studentId,
+            attemptNo,
+            status: 'active',
+        });
+        if (!certificate) {
+            let certificateId = generateCertificateId(String(exam._id), studentId, attemptNo);
+            let exists = await ExamCertificate_1.default.findOne({ certificateId }).lean();
+            while (exists) {
+                certificateId = generateCertificateId(String(exam._id), studentId, attemptNo);
+                exists = await ExamCertificate_1.default.findOne({ certificateId }).lean();
+            }
+            certificate = await ExamCertificate_1.default.create({
+                certificateId,
+                verifyToken: crypto_1.default.randomBytes(16).toString('hex'),
+                examId: exam._id,
+                studentId,
+                attemptNo,
+                resultId: result._id,
+                issuedAt: new Date(),
+                status: 'active',
+                meta: {
+                    percentage: result.percentage,
+                    obtainedMarks: result.obtainedMarks,
+                    totalMarks: result.totalMarks,
+                },
+            });
+        }
+        const verifyToken = encodeURIComponent(certificate.verifyToken);
+        const verifyApiUrl = `/api/certificates/${certificate.certificateId}/verify?token=${verifyToken}`;
+        const verifyUrl = `/certificate/verify/${certificate.certificateId}?token=${verifyToken}`;
+        const downloadUrl = `/api/exams/${examId}/certificate?download=1`;
+        if (String(req.query.download || '') === '1') {
+            const payload = [
+                'CampusWay Exam Certificate',
+                `Certificate ID: ${certificate.certificateId}`,
+                `Exam: ${exam.title}`,
+                `Student ID: ${studentId}`,
+                `Attempt: ${attemptNo}`,
+                `Score: ${result.obtainedMarks}/${result.totalMarks} (${result.percentage}%)`,
+                `Issued At: ${new Date(certificate.issuedAt).toISOString()}`,
+                `Verify: ${verifyApiUrl}`,
+            ].join('\n');
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            res.setHeader('Content-Disposition', `attachment; filename=\"${certificate.certificateId}.txt\"`);
+            res.send(payload);
+            return;
+        }
+        res.json({
+            eligible: true,
+            certificate: {
+                certificateId: certificate.certificateId,
+                issuedAt: certificate.issuedAt,
+                status: certificate.status,
+                verifyUrl,
+                verifyApiUrl,
+                downloadUrl,
+                templateVersion: String((exam.certificateSettings || {}).templateVersion || 'v1'),
+            },
+        });
+    }
+    catch (err) {
+        console.error('getExamCertificate error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+async function verifyExamCertificate(req, res) {
+    try {
+        const certificateId = String(req.params.certificateId || '').trim();
+        const token = String(req.query.token || '').trim();
+        if (!certificateId) {
+            res.status(400).json({ valid: false, message: 'certificateId is required.' });
+            return;
+        }
+        const certificate = await ExamCertificate_1.default.findOne({ certificateId, status: 'active' })
+            .populate('examId', 'title subject')
+            .populate('studentId', 'full_name username email')
+            .populate('resultId', 'percentage obtainedMarks totalMarks submittedAt')
+            .lean();
+        if (!certificate) {
+            res.status(404).json({ valid: false, message: 'Certificate not found.' });
+            return;
+        }
+        if (token && token !== String(certificate.verifyToken || '')) {
+            res.status(401).json({ valid: false, message: 'Invalid certificate token.' });
+            return;
+        }
+        const examData = (certificate.examId || {});
+        const studentData = (certificate.studentId || {});
+        const resultData = (certificate.resultId || {});
+        res.json({
+            valid: true,
+            certificate: {
+                certificateId: certificate.certificateId,
+                status: certificate.status,
+                issuedAt: certificate.issuedAt,
+                attemptNo: certificate.attemptNo,
+            },
+            exam: {
+                id: String(examData._id || ''),
+                title: String(examData.title || ''),
+                subject: String(examData.subject || ''),
+            },
+            student: {
+                id: String(studentData._id || ''),
+                name: String(studentData.full_name || studentData.username || ''),
+                email: String(studentData.email || ''),
+            },
+            result: {
+                percentage: Number(resultData.percentage || 0),
+                obtainedMarks: Number(resultData.obtainedMarks || 0),
+                totalMarks: Number(resultData.totalMarks || 0),
+                submittedAt: resultData.submittedAt || null,
+            },
+        });
+    }
+    catch (err) {
+        console.error('verifyExamCertificate error:', err);
+        res.status(500).json({ valid: false, message: 'Server error' });
+    }
+}
+async function generateQuestionsForExam(exam, seedText = '') {
+    let questions = [];
+    const rules = exam.question_selection_rules || [];
+    if (rules.length > 0) {
+        // Phase 8: Dynamic Question Pool Assignment
+        for (const rule of rules) {
+            const query = { active: { $ne: false } };
+            if (rule.subject)
+                query.subject = rule.subject;
+            if (rule.class)
+                query.class = rule.class;
+            if (rule.chapter)
+                query.chapter = rule.chapter;
+            if (rule.difficulty && rule.difficulty !== 'any')
+                query.difficulty = rule.difficulty;
+            if (rule.category)
+                query.category = rule.category;
+            let pool = await Question_1.default.find(query).lean();
+            pool = seededShuffle(pool, `${seedText}:${rule.subject || 'all'}:${rule.chapter || 'all'}`);
+            questions.push(...pool.slice(0, rule.count || 1));
+        }
+    }
+    else {
+        // Legacy fallback: try exam._id first
+        questions = await Question_1.default.find({ exam: exam._id, active: { $ne: false } })
+            .sort({ section: 1, order: 1 })
+            .lean();
+        // If still empty, fall back to subject-based search
+        if (questions.length === 0 && exam.subject) {
+            const subjectQuery = { active: { $ne: false } };
+            subjectQuery.$or = [
+                { subject: { $regex: exam.subject, $options: 'i' } },
+                { exam: exam._id },
+            ];
+            questions = await Question_1.default.find(subjectQuery).sort({ order: 1 }).limit(Number(exam.totalQuestions) || 50).lean();
+        }
+    }
+    if (questions.length === 0) {
+        console.warn(`[generateQuestionsForExam] No questions found for exam ${exam._id}. Pool rules:`, rules);
+    }
+    if (exam.randomizeQuestions) {
+        questions = seededShuffle(questions, `${seedText}:question_order`);
+    }
+    if (exam.randomizeOptions) {
+        questions = questions.map(q => {
+            const opts = seededShuffle([
+                { key: 'A', val: q.optionA },
+                { key: 'B', val: q.optionB },
+                { key: 'C', val: q.optionC },
+                { key: 'D', val: q.optionD },
+            ], `${seedText}:options:${q._id}`);
+            return { ...q, optionA: opts[0].val, optionB: opts[1].val, optionC: opts[2].val, optionD: opts[3].val };
+        });
+    }
+    // Hide answers from payload
+    return questions.map(q => {
+        const { correctAnswer, explanation, solutionImage, solution, explanation_text, explanation_image_url, explanation_formula, negativeMarks, ...safeQ } = q;
+        safeQ.questionType = String(safeQ.questionType || '').trim().toLowerCase() === 'written' ? 'written' : 'mcq';
+        return safeQ;
+    });
+}
+async function getQuestionsByIdsAndFormat(questionIds, exam) {
+    const rawQs = await Question_1.default.find({ _id: { $in: questionIds } }).lean();
+    const qMap = new Map(rawQs.map(q => [q._id.toString(), q]));
+    // Maintain generated order
+    const orderedQs = questionIds.map(id => qMap.get(id)).filter(Boolean);
+    return orderedQs.filter(q => q && q._id).map(q => {
+        const { correctAnswer, explanation, solutionImage, solution, explanation_text, explanation_image_url, explanation_formula, negativeMarks, ...safeQ } = q;
+        safeQ.questionType =
+            String(safeQ.questionType || '').trim().toLowerCase() === 'written'
+                ? 'written'
+                : 'mcq';
+        return safeQ;
+    });
+}
+function sanitizeExamForStudent(exam) {
+    return {
+        _id: exam._id,
+        title: exam.title,
+        subject: exam.subject,
+        subjectBn: exam.subjectBn || '',
+        universityNameBn: exam.universityNameBn || '',
+        examType: exam.examType || 'mcq_only',
+        description: exam.description,
+        totalQuestions: exam.totalQuestions,
+        totalMarks: exam.totalMarks,
+        duration: exam.duration,
+        negativeMarking: exam.negativeMarking,
+        negativeMarkValue: exam.negativeMarkValue,
+        allowBackNavigation: exam.allowBackNavigation,
+        showQuestionPalette: exam.showQuestionPalette,
+        showRemainingTime: exam.showRemainingTime,
+        autoSubmitOnTimeout: exam.autoSubmitOnTimeout,
+        answerEditLimitPerQuestion: exam.answerEditLimitPerQuestion,
+        bannerImageUrl: exam.bannerImageUrl,
+        logoUrl: exam.logoUrl || '',
+        startDate: exam.startDate,
+        endDate: exam.endDate,
+        resultPublishDate: exam.resultPublishDate,
+        resultPublishMode: getResultPublishMode(exam),
+        autosave_interval_sec: Number(exam.autosave_interval_sec || 5),
+        autosaveIntervalSec: Number(exam.autosave_interval_sec || 5),
+        instructions: exam.instructions || '',
+        requireInstructionsAgreement: Boolean(exam.require_instructions_agreement),
+        require_instructions_agreement: Boolean(exam.require_instructions_agreement),
+        security_policies: exam.security_policies || {},
+        reviewSettings: exam.reviewSettings || {
+            showQuestion: true,
+            showSelectedAnswer: true,
+            showCorrectAnswer: true,
+            showExplanation: true,
+            showSolutionImage: true,
+        },
+        certificateSettings: exam.certificateSettings || {
+            enabled: false,
+            minPercentage: 40,
+            passOnly: true,
+            templateVersion: 'v1',
+        },
+    };
+}
+async function updateExamAnalytics(examId) {
+    const results = await ExamResult_1.default.find({ exam: examId }).lean();
+    if (results.length === 0)
+        return;
+    const marks = results.map(r => r.obtainedMarks);
+    const avg = marks.reduce((s, m) => s + m, 0) / marks.length;
+    await Exam_1.default.findByIdAndUpdate(examId, {
+        totalParticipants: results.length,
+        avgScore: Math.round(avg * 10) / 10,
+        highestScore: Math.max(...marks),
+        lowestScore: Math.min(...marks),
+    });
+    // Rank all students
+    const sorted = results.sort((a, b) => {
+        if (b.obtainedMarks !== a.obtainedMarks) {
+            return b.obtainedMarks - a.obtainedMarks;
+        }
+        if (Number(a.timeTaken || 0) !== Number(b.timeTaken || 0)) {
+            return Number(a.timeTaken || 0) - Number(b.timeTaken || 0);
+        }
+        return new Date(String(a.submittedAt || 0)).getTime() - new Date(String(b.submittedAt || 0)).getTime();
+    });
+    const updates = sorted.map((r, idx) => ExamResult_1.default.findByIdAndUpdate(r._id, { rank: idx + 1 }));
+    await Promise.all(updates);
+    // Sync student profile points for all participants
+    const studentIds = Array.from(new Set(results.map(r => String(r.student))));
+    studentIds.map(sid => updateStudentPoints(sid).catch(console.error));
+}
+async function updateStudentPoints(studentId) {
+    const results = await ExamResult_1.default.find({ student: studentId }).lean();
+    const totalPoints = results.reduce((sum, item) => {
+        const rankBonus = item.rank ? Math.max(0, 100 - Number(item.rank)) : 0;
+        return sum + Number(item.percentage || 0) + rankBonus;
+    }, 0);
+    // Also get overall rank across all students
+    const allStudents = await StudentProfile_1.default.find({}).sort({ points: -1 }).select('user_id points').lean();
+    const myIdx = allStudents.findIndex(s => String(s.user_id) === studentId);
+    await StudentProfile_1.default.findOneAndUpdate({ user_id: studentId }, {
+        points: Math.round(totalPoints),
+        rank: myIdx !== -1 ? myIdx + 1 : undefined
+    }, { upsert: true });
+}
+function detectDevice(ua) {
+    if (/mobile/i.test(ua))
+        return 'Mobile';
+    if (/tablet|ipad/i.test(ua))
+        return 'Tablet';
+    return 'Desktop';
+}
+function detectBrowser(ua) {
+    if (/chrome/i.test(ua) && !/edge/i.test(ua))
+        return 'Chrome';
+    if (/firefox/i.test(ua))
+        return 'Firefox';
+    if (/safari/i.test(ua) && !/chrome/i.test(ua))
+        return 'Safari';
+    if (/edge/i.test(ua))
+        return 'Edge';
+    return 'Unknown';
+}
+//# sourceMappingURL=examController.js.map
