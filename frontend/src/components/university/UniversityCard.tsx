@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import { normalizeExternalUrl } from '../../utils/url';
 import { trackAnalyticsEvent, type HomeAnimationLevel, type HomeUniversityCardConfig } from '../../services/api';
 
@@ -216,6 +216,11 @@ const UniversityCard = memo(function UniversityCard({
     const initials = name.split(' ').map((part) => part.slice(0, 1)).join('').slice(0, 2).toUpperCase() || 'U';
     const universityNameSizeClass = getUniversityNameSizeClass(name);
 
+    const shortForm = pickString(university.shortForm, '');
+    const contactNumber = pickString(university.contactNumber, '');
+    const establishedYear = pickString((university.establishedYear ?? university.established) as unknown, '');
+    const email = pickString(university.email, '');
+
     const seats = {
         total: normalizeSeat(university.totalSeats),
         science: normalizeSeat(university.scienceSeats),
@@ -273,12 +278,20 @@ const UniversityCard = memo(function UniversityCard({
                     <h3 className={`pr-6 ${universityNameSizeClass} font-bold leading-tight text-slate-900 dark:text-white line-clamp-2`} title={name}>
                         {name}
                     </h3>
-
+                    {shortForm && (
+                        <p className="text-[11px] font-bold text-primary/70 dark:text-primary/60 mt-0.5 uppercase tracking-wide">
+                            {shortForm}
+                        </p>
+                    )}
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                         <span className="flex items-center gap-1 text-[13px] text-slate-500 dark:text-slate-400">
                             <MapPin className="h-3.5 w-3.5" />
                             {address}
                         </span>
+                        <span className="flex items-center gap-1 text-[12px] text-slate-500 dark:text-slate-400">
+                            <Phone className="h-3 w-3" /> {contactNumber || 'N/A'}
+                        </span>
+                        <span className="text-[12px] text-slate-500 dark:text-slate-400">Est. {establishedYear || 'N/A'}</span>
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -293,6 +306,9 @@ const UniversityCard = memo(function UniversityCard({
                     <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
                         Application: {appMeta.windowLabel}
                         {appDurationDays !== null ? ` (${appDurationDays} days)` : ''}
+                    </p>
+                    <p className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                        <Mail className="h-3 w-3" /> {email || 'N/A'}
                     </p>
                 </div>
             </div>
@@ -335,14 +351,25 @@ const UniversityCard = memo(function UniversityCard({
                 </div>
 
                 <div className="space-y-2">
-                    {unitExamRows.map((row) => (
-                        <div key={row.key} className="flex items-center justify-between gap-2">
-                            <span className="text-sm text-slate-600 dark:text-slate-400">{row.label}</span>
-                            <span className="rounded-lg bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                {formatDateShort(row.dateRaw)}
-                            </span>
-                        </div>
-                    ))}
+                    {unitExamRows.map((row) => {
+                        const daysLeft = daysDiffFromNow(row.dateRaw);
+                        const dateStr = formatDateShort(row.dateRaw);
+                        return (
+                            <div key={row.key} className="flex items-center justify-between gap-2">
+                                <span className="text-sm text-slate-600 dark:text-slate-400">{row.label}</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="rounded-lg bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                        {dateStr}
+                                    </span>
+                                    {daysLeft !== null && daysLeft >= 0 && (
+                                        <span className={`rounded-lg px-2 py-1 text-[10px] font-bold ${daysLeft <= 3 ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300' : daysLeft <= 10 ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300'}`}>
+                                            {daysLeft === 0 ? 'Today' : `${daysLeft}d`}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

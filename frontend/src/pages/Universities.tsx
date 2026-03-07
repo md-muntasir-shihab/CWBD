@@ -9,6 +9,7 @@ import {
     type ApiUniversity,
     type HomeSettingsConfig,
     type UniversityCategorySummary,
+    type UniversityCardSort,
 } from '../services/api';
 
 function normalizeUniversity(item: ApiUniversity): Record<string, unknown> {
@@ -56,27 +57,11 @@ function unpackUniversityList(payload: unknown): ApiUniversity[] {
     return [];
 }
 
-function mergeUniqueUniversities(items: ApiUniversity[]): ApiUniversity[] {
-    const seen = new Set<string>();
-    const output: ApiUniversity[] = [];
-    items.forEach((item) => {
-        const key = String(
-            item._id
-            || item.slug
-            || `${String(item.name || '').trim().toLowerCase()}::${String(item.category || '').trim().toLowerCase()}`
-        );
-        if (!key || seen.has(key)) return;
-        seen.add(key);
-        output.push(item);
-    });
-    return output;
-}
-
 export default function UniversitiesPage() {
     const [search, setSearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedCluster, setSelectedCluster] = useState('');
-    const [sort, setSort] = useState<'deadline' | 'alphabetical'>('deadline');
+    const [sort, setSort] = useState<UniversityCardSort>('closing_soon');
 
     const homeSettingsQuery = useQuery<HomeSettingsConfig>({
         queryKey: ['home-settings-public'],
@@ -98,19 +83,17 @@ export default function UniversitiesPage() {
 
     useEffect(() => {
         if (!categories.length) return;
-        const isAll = selectedCategory.trim().toLowerCase() === 'all';
-        if (isAll) return;
-        const exists = categories.some((item) => item.categoryName === selectedCategory);
-        if (!exists) {
-            setSelectedCategory('all');
+        const isAll = !selectedCategory || selectedCategory.trim().toLowerCase() === 'all';
+        if (isAll) {
+            if (defaultCategoryFromAdmin && !showAllCategories) {
+                const match = categories.find((c) => c.categoryName === defaultCategoryFromAdmin);
+                if (match) { setSelectedCategory(match.categoryName); return; }
+            }
+            if (categories[0]) setSelectedCategory(categories[0].categoryName);
             return;
         }
-        if (defaultCategoryFromAdmin && !showAllCategories) {
-            const adminDefault = categories.find((item) => item.categoryName === defaultCategoryFromAdmin)?.categoryName;
-            if (adminDefault && selectedCategory !== adminDefault) {
-                setSelectedCategory(adminDefault);
-            }
-        }
+        const exists = categories.some((c) => c.categoryName === selectedCategory);
+        if (!exists) setSelectedCategory(categories[0]?.categoryName ?? '');
     }, [categories, selectedCategory, defaultCategoryFromAdmin, showAllCategories]);
 
     const activeCategory = selectedCategory || 'all';
@@ -131,47 +114,15 @@ export default function UniversitiesPage() {
     const universitiesQuery = useQuery<ApiUniversity[]>({
         queryKey: [
             'universities',
-            {
-                category: activeCategory,
-                categoryCatalog: categories.map((item) => item.categoryName).join('|'),
-                defaultCategoryFromAdmin,
-                clusterGroup: selectedCluster,
-                q: search.trim(),
-                sort,
-            },
+            { category: activeCategory, clusterGroup: selectedCluster, q: search.trim(), sort },
         ],
-        enabled: activeCategory.toLowerCase() !== 'all' || categoriesQuery.isSuccess || Boolean(defaultCategoryFromAdmin),
+        enabled: Boolean(activeCategory && activeCategory.toLowerCase() !== 'all'),
         queryFn: async () => {
-            const params: Record<string, string | number> = {
-                page: 1,
-                limit: 300,
-                sort,
-            };
+            const params: Record<string, string | number> = { page: 1, limit: 300, sort };
             if (search.trim()) params.q = search.trim();
             if (selectedCluster) params.clusterGroup = selectedCluster;
-            if (activeCategory && activeCategory.toLowerCase() !== 'all') {
-                const response = await getUniversities({ ...params, category: activeCategory });
-                return unpackUniversityList(response.data);
-            }
-
-            const categoriesFromConfig = categories.map((item) => String(item.categoryName || '').trim()).filter(Boolean);
-            const requestCategories = categoriesFromConfig.length
-                ? categoriesFromConfig
-                : (defaultCategoryFromAdmin ? [defaultCategoryFromAdmin] : []);
-
-            if (!requestCategories.length) return [];
-
-            const settled = await Promise.allSettled(
-                requestCategories.map((categoryName) => getUniversities({ ...params, category: categoryName }))
-            );
-            const merged = mergeUniqueUniversities(
-                settled.flatMap((result) => (
-                    result.status === 'fulfilled'
-                        ? unpackUniversityList(result.value.data)
-                        : []
-                ))
-            );
-            return merged;
+            const response = await getUniversities({ ...params, category: activeCategory });
+            return unpackUniversityList(response.data);
         },
         staleTime: 60_000,
         refetchInterval: 90_000,
@@ -197,28 +148,6 @@ export default function UniversitiesPage() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
                     <div className="flex flex-1 flex-col gap-1.5">
                         <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50">
-                            Select Category
-                        </label>
-                        <select
-                            value={activeCategory || 'all'}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setSelectedCategory(val);
-                                setSelectedCluster('');
-                            }}
-                            className="input-field h-11 border-primary/20 bg-primary/5 font-bold focus:border-primary focus:ring-1 focus:ring-primary/30 dark:border-primary/30 dark:bg-primary/10"
-                        >
-                            <option value="all">All Universities</option>
-                            {categories.map((item, index) => (
-                                <option key={`${String(item.categoryName || '').toLowerCase()}-${index}`} value={item.categoryName}>
-                                    {item.categoryName} ({item.count})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="flex flex-1 flex-col gap-1.5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50">
                             Search Universities
                         </label>
                         <div className="relative">
@@ -226,7 +155,7 @@ export default function UniversitiesPage() {
                             <input
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
-                                placeholder="Search by name or short form..."
+                                placeholder="Search by name, short form or address..."
                                 className="input-field h-11 pl-10"
                             />
                         </div>
@@ -238,14 +167,35 @@ export default function UniversitiesPage() {
                         </label>
                         <select
                             value={sort}
-                            onChange={(event) => setSort(event.target.value as 'deadline' | 'alphabetical')}
+                            onChange={(event) => setSort(event.target.value as UniversityCardSort)}
                             className="input-field h-11"
                         >
-                            <option value="deadline">Nearest Deadline</option>
-                            <option value="alphabetical">Alphabetical (A-Z)</option>
+                            <option value="closing_soon">Closing Soon</option>
+                            <option value="exam_soon">Exam Soon</option>
+                            <option value="name_asc">Name (A → Z)</option>
+                            <option value="name_desc">Name (Z → A)</option>
                         </select>
                     </div>
                 </div>
+
+                {categories.length > 0 && (
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide" role="tablist">
+                        {categories.map((item) => (
+                            <button
+                                key={item.categoryName}
+                                type="button"
+                                role="tab"
+                                aria-selected={activeCategory === item.categoryName}
+                                onClick={() => { setSelectedCategory(item.categoryName); setSelectedCluster(''); }}
+                                className={`tab-pill whitespace-nowrap ${activeCategory === item.categoryName ? 'tab-pill-active' : 'tab-pill-inactive'}`}
+                                data-testid="university-category-tab"
+                                data-category={item.categoryName}
+                            >
+                                {item.categoryName} ({item.count})
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {clusters.length > 0 && (
                     <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -279,7 +229,7 @@ export default function UniversitiesPage() {
                     <div className="mb-4 card-flat p-4 text-sm">
                         <p className="inline-flex items-center gap-2 font-semibold text-danger">
                             <TriangleAlert className="h-4 w-4" />
-                            Universities load করা যায়নি
+                            Failed to load universities
                         </p>
                         <button
                             type="button"
@@ -297,6 +247,7 @@ export default function UniversitiesPage() {
                     animationLevel={animationLevel}
                     loading={universitiesQuery.isLoading || categoriesQuery.isLoading || homeSettingsQuery.isLoading}
                     emptyText="No universities in this category."
+                    sort={sort}
                 />
             </div>
         </div>

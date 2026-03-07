@@ -453,7 +453,7 @@ export interface AdminDashboardSummary {
 export type HomeAnimationLevel = 'off' | 'minimal' | 'normal';
 export type HomeLockedExamVisibility = 'show_locked' | 'hide';
 export type UniversityCardDensity = 'compact' | 'comfortable';
-export type UniversityCardSort = 'nearest_deadline' | 'alphabetical';
+export type UniversityCardSort = 'nearest_deadline' | 'alphabetical' | 'name_asc' | 'name_desc' | 'closing_soon' | 'exam_soon';
 
 export interface HomeLinkItem {
     label: string;

@@ -375,12 +375,12 @@ async function handleShare(news: ApiNews, channel: 'whatsapp' | 'facebook' | 'me
                                         <div className="space-y-2">
                                             <h2 className="line-clamp-2 text-lg font-semibold text-slate-900 dark:text-white">{news.title}</h2>
                                             <p className="line-clamp-2 text-sm text-slate-600 dark:text-slate-300">
-                                                {news.shortSummary || news.shortDescription}
+                                                {news.shortSummary || news.shortDescription || 'No summary available'}
                                             </p>
                                             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-300">
                                                 {settings.appearance.showSourceIcons && (
                                                     <img
-                                                        src={news.sourceIconUrl || settings.defaultSourceIconUrl || getArticleImage(news, settings)}
+                                                        src={news.sourceIconUrl || settings.defaultSourceIconUrl || '/logo.png'}
                                                         alt={news.sourceName || 'Source'}
                                                         className="h-4 w-4 rounded-full object-cover"
                                                     />
@@ -578,7 +578,7 @@ async function handleShare(news: ApiNews, channel: 'whatsapp' | 'facebook' | 'me
                                 />
                                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{preview.title}</h3>
                                 <p className="text-sm text-slate-600 dark:text-slate-300">
-                                    {preview.shortSummary || preview.shortDescription}
+                                    {preview.shortSummary || preview.shortDescription || 'No summary available'}
                                 </p>
                                 <div className="text-xs text-slate-500 dark:text-slate-300">
                                     <p>Source: {preview.sourceName || 'CampusWay'}</p>

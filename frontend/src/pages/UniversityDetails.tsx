@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
     MapPin, Calendar, Users, Globe, ExternalLink, Share2, Bookmark, ChevronDown,
     AlertTriangle, CheckCircle, Clock, BookOpen, Star, Phone, Mail,
@@ -248,13 +249,30 @@ function GroupedCenters({ centers, expanded }: { centers: { city: string; addres
 /* ──────────────────────────── MAIN PAGE ──────────────────────────── */
 export default function UniversityDetailsPage() {
     const { slug } = useParams<{ slug: string }>();
-    const [uni, setUni] = useState<ApiUniversity | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [activeUnit, setActiveUnit] = useState(0);
     const [centersExpanded, setCentersExpanded] = useState(false);
     const [bookmarked, setBookmarked] = useState(false);
     const [shareMsg, setShareMsg] = useState('');
+
+    const {
+        data: uni,
+        isLoading: loading,
+        isError,
+        error: queryError,
+        refetch,
+    } = useQuery<ApiUniversity>({
+        queryKey: ['universities', slug],
+        queryFn: async () => (await getUniversityBySlug(slug!)).data.university,
+        enabled: Boolean(slug),
+        staleTime: 60_000,
+        retry: 1,
+    });
+
+    const error = isError
+        ? ((queryError as { response?: { status?: number } })?.response?.status === 404
+            ? 'University not found'
+            : 'Failed to load university details. Please try again.')
+        : null;
 
     // Dynamic SEO tags
     useSEO(
@@ -269,19 +287,9 @@ export default function UniversityDetailsPage() {
         return () => clearInterval(t);
     }, []);
 
-    // Fetch from API
+    // Reset active unit when slug changes
     useEffect(() => {
-        if (!slug) return;
-        setLoading(true);
-        setError(null);
         setActiveUnit(0);
-        getUniversityBySlug(slug)
-            .then(res => setUni(res.data.university))
-            .catch(err => {
-                if (err.response?.status === 404) setError('University not found');
-                else setError('Failed to load university details. Please try again.');
-            })
-            .finally(() => setLoading(false));
     }, [slug]);
 
     const handleShare = useCallback(() => {
@@ -307,7 +315,7 @@ export default function UniversityDetailsPage() {
                 <p className="text-text-muted dark:text-dark-text/60 text-sm">The university page you're looking for doesn't exist or has been removed.</p>
             </div>
             <div className="flex gap-3">
-                <button onClick={() => window.location.reload()} className="btn-outline gap-2"><Loader2 className="w-4 h-4" />Retry</button>
+                <button onClick={() => refetch()} className="btn-outline gap-2"><Loader2 className="w-4 h-4" />Retry</button>
                 <Link to="/" className="btn-primary">← Back to Home</Link>
             </div>
         </div>
@@ -438,27 +446,40 @@ export default function UniversityDetailsPage() {
                     <div className="lg:col-span-2 space-y-8">
 
                         {/* ABOUT */}
-                        {(uni.description || uni.shortDescription) && (
                             <div className="card p-5 sm:p-6">
                                 <SectionHeader icon={Info} title="About" />
-                                <p className="text-sm text-text-muted dark:text-dark-text/70 leading-relaxed">
-                                    {uni.description || uni.shortDescription}
-                                </p>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
+                                {(uni.description || uni.shortDescription) && (
+                                    <p className="text-sm text-text-muted dark:text-dark-text/70 leading-relaxed mb-5">
+                                        {uni.description || uni.shortDescription}
+                                    </p>
+                                )}
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                     {[
-                                        { label: 'Total Seats', value: uni.totalSeats?.toLocaleString() ?? '—' },
-                                        { label: 'Departments', value: uni.units?.length ?? 0 },
-                                        { label: 'Est. Year', value: uni.established ?? '—' },
-                                        { label: 'Status', value: uni.isAdmissionOpen ? 'Open ●' : 'Closed ●' },
+                                        { label: 'Total Seats', value: sanitizeDisplayText(String(uni.totalSeats ?? '')) },
+                                        { label: 'Science/Eng', value: sanitizeDisplayText(String(uni.scienceSeats ?? uni.seatsScienceEng ?? '')) },
+                                        { label: 'Arts/Hum', value: sanitizeDisplayText(String(uni.artsSeats ?? uni.seatsArtsHum ?? '')) },
+                                        { label: 'Business', value: sanitizeDisplayText(String(uni.businessSeats ?? uni.seatsBusiness ?? '')) },
                                     ].map(s => (
                                         <div key={s.label} className="bg-background dark:bg-dark-bg rounded-xl p-3 text-center">
-                                            <p className={`text-lg font-bold ${s.label === 'Status' ? (uni.isAdmissionOpen ? 'text-success' : 'text-danger') : 'text-primary dark:text-primary-300'}`}>{s.value}</p>
+                                            <p className="text-lg font-bold text-primary dark:text-primary-300">{s.value}</p>
+                                            <p className="text-[10px] text-text-muted dark:text-dark-text/50 uppercase tracking-wide mt-0.5">{s.label}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                                    {[
+                                        { label: 'Established', value: sanitizeDisplayText(String(uni.established ?? '')) },
+                                        { label: 'Phone', value: sanitizeDisplayText(uni.contactNumber) },
+                                        { label: 'Email', value: sanitizeDisplayText(uni.email) },
+                                        { label: 'Status', value: uni.isAdmissionOpen ? 'Open' : 'Closed' },
+                                    ].map(s => (
+                                        <div key={s.label} className="bg-background dark:bg-dark-bg rounded-xl p-3 text-center">
+                                            <p className={`text-sm font-bold truncate ${s.label === 'Status' ? (uni.isAdmissionOpen ? 'text-success' : 'text-danger') : 'text-slate-800 dark:text-dark-text'}`}>{s.value}</p>
                                             <p className="text-[10px] text-text-muted dark:text-dark-text/50 uppercase tracking-wide mt-0.5">{s.label}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        )}
 
                         {/* 2. QUICK INFO PANEL + Application Progress */}
                         <div className="card p-5 sm:p-6">
@@ -594,6 +615,36 @@ export default function UniversityDetailsPage() {
                                 <DonutChart science={Number(uni.scienceSeats) || 0} arts={Number(uni.artsSeats) || 0} business={Number(uni.businessSeats) || 0} />
                             </div>
                         )}
+
+                        {/* EXAM SCHEDULE — top-level Science/Arts/Business dates */}
+                        <div className="card p-5 sm:p-6">
+                            <SectionHeader icon={Calendar} title="Exam Schedule"
+                                sub="Scheduled exam dates by unit" />
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                {[
+                                    { label: 'Science Unit', date: uni.scienceExamDate || uni.examDateScience },
+                                    { label: 'Arts Unit', date: uni.artsExamDate || uni.examDateArts },
+                                    { label: 'Business Unit', date: uni.businessExamDate || uni.examDateBusiness },
+                                ].map((row) => {
+                                    const displayDate = row.date && row.date !== 'N/A' ? fmtDate(row.date) : 'N/A';
+                                    const days = row.date && row.date !== 'N/A' ? getDays(row.date) : null;
+                                    return (
+                                        <div key={row.label} className="bg-background dark:bg-dark-bg rounded-xl p-4 space-y-2">
+                                            <p className="text-[10px] text-text-muted uppercase tracking-wide font-semibold">{row.label}</p>
+                                            <p className="text-sm font-bold dark:text-dark-text">{displayDate}</p>
+                                            {days !== null && (
+                                                <span className={`${countdownClass(days)} text-xs inline-block`}>
+                                                    {days >= 0 ? `${days} day${days !== 1 ? 's' : ''} left` : 'Exam ended'}
+                                                </span>
+                                            )}
+                                            {days !== null && days > 0 && (
+                                                <CountdownBadge date={row.date} />
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
                         {/* 6. APPLICATION PROCESS TIMELINE */}
                         {(uni.applicationSteps?.length ?? 0) > 0 && (
@@ -789,7 +840,7 @@ export default function UniversityDetailsPage() {
                                 <h3 className="text-base font-heading font-bold dark:text-dark-text mb-4">Related Universities</h3>
                                 <div className="space-y-2">
                                     {uni.relatedUniversities!.slice(0, 3).map(r => (
-                                        <Link key={r.slug} to={`/university/${r.slug}`}
+                                        <Link key={r.slug} to={`/universities/${r.slug}`}
                                             className="flex items-center gap-3 p-3 bg-background dark:bg-dark-bg rounded-xl hover:bg-primary/5 dark:hover:bg-primary/10 transition group">
                                             <div className="w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <BookOpen className="w-3.5 h-3.5 text-primary dark:text-primary-300" />

@@ -4,6 +4,7 @@ const newsSettingsSchema = new Schema(
   {
     newsPageTitle: { type: String, default: "CampusWay News" },
     newsPageSubtitle: { type: String, default: "Latest updates" },
+    headerBannerUrl: { type: String, default: "" },
     defaultBannerUrl: { type: String, default: "" },
     defaultThumbUrl: { type: String, default: "" },
     defaultSourceIconUrl: { type: String, default: "" },
