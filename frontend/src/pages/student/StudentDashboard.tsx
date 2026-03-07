@@ -193,14 +193,14 @@ function ExamCard({
                 >
                     {!canTake && accessDeniedLabel ? 'Access Denied' : (isExternal ? 'Open External Exam' : 'Take Exam')}
                 </button>
-                <button
-                    type="button"
+                <Link
+                    to={`/exams/${exam._id}`}
                     aria-label={`View exam details for ${exam.universityNameBn || exam.title}`}
                     title="View details"
                     className="rounded-xl px-3 py-2 text-xs font-medium text-slate-200 bg-white/5 border border-slate-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
                 >
                     View Details
-                </button>
+                </Link>
             </div>
         </article>
     );

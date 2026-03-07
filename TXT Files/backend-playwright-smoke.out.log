@@ -1,8 +1,0 @@
-
-> campusway-backend@1.0.0 dev
-> tsx watch src/server.ts
-
-[db] MongoDB connected successfully
-[db] All critical indexes ensured
-ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
-[cron] Starting exam auto-submit worker (every minute).
