@@ -79,21 +79,21 @@ studentExamRoutes.get("/exams/:examId", async (req, res) => {
 });
 
 studentExamRoutes.post("/exams/:examId/sessions/start", requireAuth, async (req, res) => {
-  const result = await startSession(req.params.examId, req.user!.id, { ip: req.ip, ua: req.headers["user-agent"] as string });
+  const result = await startSession(String(req.params.examId), req.user!.id, { ip: req.ip, ua: req.headers["user-agent"] as string });
   if ((result as any).blocked) return res.status(403).json((result as any).blocked);
   res.json(result);
 });
 
 studentExamRoutes.get("/exams/:examId/sessions/:sessionId/questions", requireAuth, async (req, res) => {
-  res.json(await getSessionQuestions(req.params.examId, req.params.sessionId, req.user!.id));
+  res.json(await getSessionQuestions(String(req.params.examId), String(req.params.sessionId), req.user!.id));
 });
 
 studentExamRoutes.post("/exams/:examId/sessions/:sessionId/answers", requireAuth, async (req, res) => {
-  res.json(await saveSessionAnswers(req.params.examId, req.params.sessionId, req.user!.id, req.body));
+  res.json(await saveSessionAnswers(String(req.params.examId), String(req.params.sessionId), req.user!.id, req.body));
 });
 
 studentExamRoutes.post("/exams/:examId/sessions/:sessionId/submit", requireAuth, async (req, res) => {
-  res.json(await submitSession(req.params.examId, req.params.sessionId, req.user!.id));
+  res.json(await submitSession(String(req.params.examId), String(req.params.sessionId), req.user!.id));
 });
 
 studentExamRoutes.get("/exams/:examId/sessions/:sessionId/result", requireAuth, async (req, res) => {

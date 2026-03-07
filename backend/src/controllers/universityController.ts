@@ -49,6 +49,10 @@ function normalizeSort(sortBy: unknown, sortOrder: unknown, legacySort: unknown)
     const sortParam = String(sortBy || legacySort || '').trim().toLowerCase();
     if (sortParam === 'deadline' || sortParam === 'nearest_application_deadline') return { applicationEndDate: 1, name: 1 };
     if (sortParam === 'alphabetical') return { name: 1 };
+    if (sortParam === 'name_asc') return { name: 1 };
+    if (sortParam === 'name_desc') return { name: -1 };
+    if (sortParam === 'closing_soon' || sortParam === 'nearest_deadline') return { applicationEndDate: 1, name: 1 };
+    if (sortParam === 'exam_soon') return { scienceExamDate: 1, artsExamDate: 1, businessExamDate: 1, name: 1 };
 
     const legacy = String(legacySort || '').trim();
     if (legacy.startsWith('-') && SORT_WHITELIST[legacy.slice(1)]) return { [SORT_WHITELIST[legacy.slice(1)]]: -1 };

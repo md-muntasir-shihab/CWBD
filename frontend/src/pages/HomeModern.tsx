@@ -178,6 +178,7 @@ function HomeSkeleton() {
             {[
                 'home-section-hero',
                 'home-section-campaign-banners',
+                'home-section-featured-universities',
                 'home-section-deadlines',
                 'home-section-upcoming-exams',
                 'home-section-online-exams',
@@ -198,6 +199,7 @@ export default function HomeModernPage() {
     const [selectedCluster, setSelectedCluster] = useState('all');
     const [categoryInteracted, setCategoryInteracted] = useState(false);
     const campaignTrackRef = useRef<HTMLDivElement | null>(null);
+    const featuredTrackRef = useRef<HTMLDivElement | null>(null);
     const deadlineTrackRef = useRef<HTMLDivElement | null>(null);
     const examSoonTrackRef = useRef<HTMLDivElement | null>(null);
     const onlineExamTrackRef = useRef<HTMLDivElement | null>(null);
@@ -329,6 +331,12 @@ export default function HomeModernPage() {
     const examLimit = toCount(homeSettings?.universityPreview?.maxExamItems, 6);
     const newsLimit = toCount(homeSettings?.newsPreview?.maxItems, 4);
     const resourceLimit = toCount(homeSettings?.resourcesPreview?.maxItems, 4);
+
+    const featuredLimit = toCount(homeSettings?.universityPreview?.maxFeaturedItems, 12);
+
+    const filteredFeaturedUniversities = featuredUniversities
+        .filter(matchesUniversityFilter)
+        .slice(0, featuredLimit);
 
     const filteredDeadlineUniversities = deadlineUniversities
         .filter(matchesUniversityFilter)
@@ -529,6 +537,45 @@ export default function HomeModernPage() {
                 ) : (
                     <div className="card-flat p-5 text-sm text-text-muted dark:text-dark-text/70">No active campaign banners.</div>
                 )}
+                </section>
+            ) : null}
+
+            {showUniversityArea && filteredFeaturedUniversities.length > 0 ? (
+                <section className="section-container mt-8" data-testid="home-section-featured-universities">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                            <h2 className="section-title text-2xl">Featured Universities</h2>
+                            <p className="section-subtitle">Curated and ordered by admin — managed under University Settings.</p>
+                        </div>
+                        {filteredFeaturedUniversities.length > 1 ? (
+                            <CarouselControls
+                                label="featured universities"
+                                onPrev={() => scrollCarousel(featuredTrackRef, 'prev')}
+                                onNext={() => scrollCarousel(featuredTrackRef, 'next')}
+                            />
+                        ) : null}
+                    </div>
+                    <div ref={featuredTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2" data-testid="home-featured-grid">
+                        <div className="flex min-w-max snap-x snap-mandatory gap-5">
+                            {filteredFeaturedUniversities.map((university, index) => (
+                                <motion.div
+                                    key={university.id}
+                                    initial={{ opacity: 0, y: 14 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, amount: 0.2 }}
+                                    transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
+                                    whileHover={{ y: -4, scale: 1.01 }}
+                                    className="w-[330px] shrink-0 snap-start md:w-[380px] lg:w-[420px]"
+                                >
+                                    <UniversityCard
+                                        university={university}
+                                        config={homeSettings?.universityCardConfig}
+                                        actionVariant="default"
+                                    />
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
                 </section>
             ) : null}
 
@@ -735,7 +782,7 @@ export default function HomeModernPage() {
                                             </div>
                                             {requiresSubscription ? (
                                                 <p className="mt-3 text-xs font-medium text-amber-300/90">
-                                                    Exam দিতে active subscription প্রয়োজন।
+                                                    An active subscription is required to attend this exam.
                                                 </p>
                                             ) : null}
                                         </div>

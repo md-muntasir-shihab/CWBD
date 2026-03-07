@@ -38,6 +38,7 @@ test.describe('Home Master Smoke', () => {
             'home-section-search',
             'home-section-hero',
             'home-section-campaign-banners',
+            'home-section-featured-universities',
             'home-section-deadlines',
             'home-section-upcoming-exams',
             'home-section-online-exams',

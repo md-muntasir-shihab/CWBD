@@ -789,7 +789,7 @@ export default function UniversityDetailsPage() {
                                 <h3 className="text-base font-heading font-bold dark:text-dark-text mb-4">Related Universities</h3>
                                 <div className="space-y-2">
                                     {uni.relatedUniversities!.slice(0, 3).map(r => (
-                                        <Link key={r.slug} to={`/university/${r.slug}`}
+                                        <Link key={r.slug} to={`/universities/${r.slug}`}
                                             className="flex items-center gap-3 p-3 bg-background dark:bg-dark-bg rounded-xl hover:bg-primary/5 dark:hover:bg-primary/10 transition group">
                                             <div className="w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <BookOpen className="w-3.5 h-3.5 text-primary dark:text-primary-300" />
