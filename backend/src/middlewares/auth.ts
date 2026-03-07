@@ -14,21 +14,14 @@ import {
     type PermissionModule,
 } from '../security/permissionsMatrix';
 
-export interface AuthRequest extends Request {
-    user?: {
-        _id: string;
-        username: string;
-        email: string;
-        role: UserRole;
-        fullName: string;
-        permissions?: Partial<IUserPermissions>;
-        permissionsV2?: Partial<Record<string, Partial<Record<string, boolean>>>>;
-        sessionId?: string;
-    };
-}
+// user? is now declared globally via src/types/express-user-augmentation.d.ts
+// (Express.Request namespace augmentation for @types/express v5 compatibility).
+// AuthRequest is kept as a named alias for Request so callsites can import it.
+export type AuthRequest = Request;
 
 interface DecodedAuthToken {
     _id: string;
+    id?: string;
     username: string;
     email: string;
     role: UserRole;
@@ -40,7 +33,7 @@ interface DecodedAuthToken {
 
 function decodeAndAttach(req: AuthRequest, token: string): void {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedAuthToken;
-    req.user = decoded;
+    req.user = { ...decoded, id: decoded._id };
 }
 
 function extractToken(req: AuthRequest): string | null {
@@ -338,7 +331,7 @@ export function requirePermission(moduleName: PermissionModule, action: Permissi
             return;
         }
 
-        const role = req.user.role;
+        const role = req.user.role as UserRole;
         if (role === 'superadmin') {
             next();
             return;

@@ -1,0 +1,24 @@
+
+> campusway-frontend@1.0.0 dev
+> vite --port 5175
+
+[2m10:06:52 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v6.4.1[39m  [2mready in [0m[1m31145[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5175[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m10:16:34 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m10:22:11 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m10:22:20 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m10:25:44 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m10:29:35 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m10:35:38 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m10:42:04 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m10:42:38 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m11:11:46 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m11:11:52 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m11:12:03 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m11:12:14 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/HomeModern.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+^Cnpm error A complete log of this run can be found in: C:\Users\Muntasir Shihab\AppData\Local\npm-cache\_logs\2026-03-07T16_06_20_596Z-debug-0.log

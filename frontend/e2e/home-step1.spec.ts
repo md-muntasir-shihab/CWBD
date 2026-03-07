@@ -106,4 +106,31 @@ test.describe('Home Step1', () => {
             .poll(() => page.evaluate(() => localStorage.getItem('campusway_theme')))
             .not.toBe(before);
     });
+
+    test('featured universities section renders when API returns featured items', async ({ page }) => {
+        const homeResponse = page.waitForResponse((response) =>
+            response.url().includes('/api/home') && response.ok(),
+        );
+        await page.goto('/');
+        await homeResponse;
+
+        const hasFeatured = await page.evaluate(async () => {
+            const response = await fetch('/api/home', { credentials: 'include' });
+            if (!response.ok) return false;
+            const body = await response.json();
+            const items = Array.isArray(body?.featuredUniversities) ? body.featuredUniversities : [];
+            return items.length > 0;
+        });
+
+        const featuredSection = page.getByTestId('home-section-featured-universities');
+        if (hasFeatured) {
+            await expect
+                .poll(async () => featuredSection.count(), { timeout: 8_000 })
+                .toBeGreaterThan(0);
+            await expect(featuredSection.first()).toBeVisible();
+        } else {
+            // Featured section is correctly absent when no featured universities are configured
+            await expect(featuredSection).toHaveCount(0);
+        }
+    });
 });

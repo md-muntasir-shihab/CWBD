@@ -102,7 +102,7 @@ export const saveSessionAnswers = async (examId: string, sessionId: string, user
     const oldSelected = prev?.selectedKey ?? null;
     const willChange = oldSelected !== row.selectedKey;
     const nextChangeCount = (prev?.changeCount || 0) + (willChange ? 1 : 0);
-    if (exam.answerChangeLimit !== null && nextChangeCount > exam.answerChangeLimit) continue;
+    if ((exam.answerChangeLimit ?? null) !== null && nextChangeCount > (exam.answerChangeLimit as number)) continue;
 
     const saved = await AnswerModel.findOneAndUpdate(
       { sessionId, questionId: row.questionId, userId },
@@ -125,7 +125,7 @@ export const submitSession = async (examId: string, sessionId: string, userId: s
   const submittedAtUTC = new Date();
   session.submittedAtUTC = submittedAtUTC;
   session.status = "submitted";
-  session.timeTakenSeconds = Math.max(0, Math.floor((submittedAtUTC.getTime() - new Date(session.startedAtUTC).getTime()) / 1000));
+  session.timeTakenSeconds = Math.max(0, Math.floor((submittedAtUTC.getTime() - new Date(session.startedAtUTC as unknown as string).getTime()) / 1000));
   await session.save();
 
   const questions = await ExamQuestionModel.find({ examId }).lean();

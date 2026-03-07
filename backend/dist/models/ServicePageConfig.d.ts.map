@@ -1,1 +1,0 @@
-{"version":3,"file":"ServicePageConfig.d.ts","sourceRoot":"","sources":["../../src/models/ServicePageConfig.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAU,QAAQ,EAAE,MAAM,UAAU,CAAC;AAEtD,MAAM,WAAW,kBAAmB,SAAQ,QAAQ;IAChD,SAAS,EAAE,MAAM,CAAC;IAClB,YAAY,EAAE,MAAM,CAAC;IACrB,eAAe,EAAE,MAAM,CAAC;IACxB,OAAO,EAAE,MAAM,CAAC;IAChB,OAAO,EAAE,MAAM,CAAC;CACnB;;;;;;AAUD,wBAAgG"}

@@ -50,7 +50,7 @@ export const adminUpdateHomeSettings = async (req: Request, res: Response): Prom
 
         res.json({
             message: 'Home settings updated successfully',
-            homeSettings: settingsDoc.toObject(),
+            homeSettings: mergeHomeSettings(getHomeSettingsDefaults(), settingsDoc.toObject()),
             updatedAt: settingsDoc.updatedAt,
         });
     } catch (error) {
