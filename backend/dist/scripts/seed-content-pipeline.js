@@ -1,0 +1,1191 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.seedContentPipeline = seedContentPipeline;
+const dotenv_1 = __importDefault(require("dotenv"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const mongoose_1 = __importDefault(require("mongoose"));
+const slugify_1 = __importDefault(require("slugify"));
+const db_1 = require("../config/db");
+const User_1 = __importDefault(require("../models/User"));
+const StudentProfile_1 = __importDefault(require("../models/StudentProfile"));
+const SubscriptionPlan_1 = __importDefault(require("../models/SubscriptionPlan"));
+const UserSubscription_1 = __importDefault(require("../models/UserSubscription"));
+const University_1 = __importDefault(require("../models/University"));
+const UniversityCategory_1 = __importDefault(require("../models/UniversityCategory"));
+const UniversitySettings_1 = __importDefault(require("../models/UniversitySettings"));
+const HomeSettings_1 = __importDefault(require("../models/HomeSettings"));
+const WebsiteSettings_1 = __importDefault(require("../models/WebsiteSettings"));
+const Settings_1 = __importDefault(require("../models/Settings"));
+const Banner_1 = __importDefault(require("../models/Banner"));
+const News_1 = __importDefault(require("../models/News"));
+const NewsSource_1 = __importDefault(require("../models/NewsSource"));
+const Resource_1 = __importDefault(require("../models/Resource"));
+const Exam_1 = __importDefault(require("../models/Exam"));
+const Question_1 = __importDefault(require("../models/Question"));
+const ExamResult_1 = __importDefault(require("../models/ExamResult"));
+const ExamSession_1 = __importDefault(require("../models/ExamSession"));
+const Notification_1 = __importDefault(require("../models/Notification"));
+const AnnouncementNotice_1 = __importDefault(require("../models/AnnouncementNotice"));
+const SupportTicket_1 = __importDefault(require("../models/SupportTicket"));
+const ManualPayment_1 = __importDefault(require("../models/ManualPayment"));
+const StudentDueLedger_1 = __importDefault(require("../models/StudentDueLedger"));
+const StudentDashboardConfig_1 = __importDefault(require("../models/StudentDashboardConfig"));
+const Badge_1 = __importDefault(require("../models/Badge"));
+const StudentBadge_1 = __importDefault(require("../models/StudentBadge"));
+const universityCategories_1 = require("../utils/universityCategories");
+const permissions_1 = require("../utils/permissions");
+dotenv_1.default.config();
+const DAY_MS = 24 * 60 * 60 * 1000;
+const PLACEHOLDER_BANNER = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085';
+const PLACEHOLDER_NEWS = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c';
+const PLACEHOLDER_RESOURCE = 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173';
+function deterministicPhone(seed, suffix = 0) {
+    const normalized = `${seed}:${suffix}`.toLowerCase();
+    let hash = 0;
+    for (const char of normalized) {
+        hash = (hash * 33 + char.charCodeAt(0)) % 1000000000;
+    }
+    return `01${String(hash).padStart(9, '0')}`.slice(0, 11);
+}
+function toSlug(value) {
+    return (0, slugify_1.default)(String(value || '').trim(), { lower: true, strict: true });
+}
+function nowPlusDays(days) {
+    return new Date(Date.now() + days * DAY_MS);
+}
+function ensureObjectId(value) {
+    return value instanceof mongoose_1.default.Types.ObjectId
+        ? value
+        : new mongoose_1.default.Types.ObjectId(String(value));
+}
+async function ensureFallbackUsers() {
+    const adminCount = await User_1.default.countDocuments({ role: { $in: ['superadmin', 'admin'] } });
+    const studentCount = await User_1.default.countDocuments({ role: 'student' });
+    if (adminCount === 0) {
+        const email = String(process.env.DEFAULT_ADMIN_EMAIL || 'admin@campusway.com').toLowerCase();
+        const username = String(process.env.DEFAULT_ADMIN_USERNAME || 'campusway_admin').toLowerCase();
+        const password = String(process.env.DEFAULT_ADMIN_PASSWORD || 'admin123456');
+        const hashedPassword = await bcryptjs_1.default.hash(password, 12);
+        await User_1.default.findOneAndUpdate({ email }, {
+            $set: {
+                full_name: 'Super Admin',
+                email,
+                username,
+                password: hashedPassword,
+                role: 'superadmin',
+                status: 'active',
+                permissions: (0, permissions_1.resolvePermissions)('superadmin'),
+                mustChangePassword: false,
+                twoFactorEnabled: false,
+                two_factor_method: null,
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    }
+    if (studentCount === 0) {
+        const email = String(process.env.DEFAULT_STUDENT_EMAIL || 'student@campusway.com').toLowerCase();
+        const username = String(process.env.DEFAULT_STUDENT_USERNAME || 'campusway_student').toLowerCase();
+        const password = String(process.env.DEFAULT_STUDENT_PASSWORD || 'student123456');
+        const hashedPassword = await bcryptjs_1.default.hash(password, 12);
+        const now = new Date();
+        const expiry = nowPlusDays(365);
+        const student = await User_1.default.findOneAndUpdate({ email }, {
+            $set: {
+                full_name: 'Test Student',
+                email,
+                username,
+                password: hashedPassword,
+                role: 'student',
+                status: 'active',
+                permissions: (0, permissions_1.resolvePermissions)('student'),
+                mustChangePassword: false,
+                twoFactorEnabled: false,
+                two_factor_method: null,
+                subscription: {
+                    plan: 'demo',
+                    planCode: 'demo',
+                    planName: 'Demo Plan',
+                    isActive: true,
+                    startDate: now,
+                    expiryDate: expiry,
+                    assignedAt: now,
+                },
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+        await StudentProfile_1.default.findOneAndUpdate({ user_id: student._id }, {
+            $set: {
+                user_id: student._id,
+                full_name: 'Test Student',
+                username,
+                email,
+                department: 'science',
+                ssc_batch: '2022',
+                hsc_batch: '2024',
+                college_name: 'CampusWay Demo College',
+                college_address: 'Dhaka',
+                phone_number: deterministicPhone(email, 1),
+                guardian_phone: deterministicPhone(email, 2),
+                guardianPhoneVerificationStatus: 'verified',
+                guardianPhoneVerifiedAt: now,
+                profile_completion_percentage: 100,
+                points: 1000,
+                rank: 1,
+            },
+        }, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
+    }
+    const [admins, students] = await Promise.all([
+        User_1.default.find({ role: { $in: ['superadmin', 'admin'] }, status: { $ne: 'blocked' } })
+            .select('_id email username full_name role subscription')
+            .sort({ createdAt: 1 })
+            .lean(),
+        User_1.default.find({ role: 'student', status: { $ne: 'blocked' } })
+            .select('_id email username full_name role subscription')
+            .sort({ createdAt: 1 })
+            .lean(),
+    ]);
+    return { admins, students };
+}
+async function ensureStudentProfiles(students) {
+    await Promise.all(students.map(async (student, index) => {
+        const phone = deterministicPhone(student.email || student.username, index + 11);
+        const guardianPhone = deterministicPhone(student.email || student.username, index + 311);
+        await StudentProfile_1.default.findOneAndUpdate({ user_id: student._id }, {
+            $set: {
+                full_name: student.full_name || student.username || `Student ${index + 1}`,
+                username: student.username,
+                email: student.email,
+                phone_number: phone,
+                guardian_phone: guardianPhone,
+                guardianPhoneVerificationStatus: 'verified',
+                guardianPhoneVerifiedAt: new Date(),
+                department: index % 3 === 0 ? 'science' : index % 3 === 1 ? 'commerce' : 'arts',
+                ssc_batch: String(2020 + (index % 4)),
+                hsc_batch: String(2022 + (index % 4)),
+                college_name: index % 2 === 0 ? 'Dhaka City College' : 'Rajshahi College',
+                college_address: index % 2 === 0 ? 'Dhaka' : 'Rajshahi',
+                profile_completion_percentage: 100,
+                points: Math.max(200, 1200 - index * 120),
+                rank: index + 1,
+            },
+        }, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
+    }));
+}
+async function seedContentPipeline(options = {}) {
+    const runLabel = String(options.runLabel || 'default').trim() || 'default';
+    const now = new Date();
+    const { admins, students } = await ensureFallbackUsers();
+    if (!admins.length) {
+        throw new Error('No admin user available for seeding.');
+    }
+    if (!students.length) {
+        throw new Error('No student user available for seeding.');
+    }
+    await ensureStudentProfiles(students);
+    const primaryAdmin = admins[0];
+    const primaryStudent = students[0];
+    const secondaryStudent = students[1] || students[0];
+    const primaryAdminId = ensureObjectId(primaryAdmin._id);
+    const primaryStudentId = ensureObjectId(primaryStudent._id);
+    const secondaryStudentId = ensureObjectId(secondaryStudent._id);
+    const categoryDocs = await Promise.all(universityCategories_1.UNIVERSITY_CATEGORY_ORDER.map(async (name, index) => {
+        const slug = toSlug(name);
+        return UniversityCategory_1.default.findOneAndUpdate({ slug }, {
+            $set: {
+                name,
+                slug,
+                labelEn: name,
+                labelBn: '',
+                colorToken: '',
+                icon: '',
+                isActive: true,
+                homeHighlight: index < 4,
+                homeOrder: index + 1,
+                updatedBy: primaryAdminId,
+            },
+            $setOnInsert: { createdBy: primaryAdminId },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    }));
+    const categoryIdByName = new Map(categoryDocs.map((doc) => [doc.name, ensureObjectId(doc._id)]));
+    const planSeeds = [
+        {
+            code: 'demo',
+            name: 'Demo Plan',
+            type: 'free',
+            priceBDT: 0,
+            durationDays: 365,
+            durationValue: 12,
+            durationUnit: 'months',
+            shortDescription: 'Basic access for platform familiarization.',
+            description: 'Free starter plan with selected resources and sample exams.',
+            features: ['Public resources', 'Selected mock exams', 'Basic dashboard'],
+            includedModules: ['dashboard', 'resources', 'news'],
+            tags: ['starter', 'free'],
+            enabled: true,
+            isActive: true,
+            isFeatured: true,
+            displayOrder: 1,
+            priority: 1,
+            sortOrder: 1,
+            contactCtaLabel: 'Start Free',
+            contactCtaUrl: '/register',
+            bannerImageUrl: PLACEHOLDER_BANNER,
+        },
+        {
+            code: 'admission-pro',
+            name: 'Admission Pro',
+            type: 'paid',
+            priceBDT: 799,
+            durationDays: 30,
+            durationValue: 1,
+            durationUnit: 'months',
+            shortDescription: 'For serious admission candidates.',
+            description: 'Unlock all live exams, advanced analytics, and priority support.',
+            features: ['All exam access', 'Detailed analytics', 'Priority support'],
+            includedModules: ['dashboard', 'exam_portal', 'results', 'resources', 'support'],
+            tags: ['popular', 'premium'],
+            enabled: true,
+            isActive: true,
+            isFeatured: true,
+            displayOrder: 2,
+            priority: 2,
+            sortOrder: 2,
+            contactCtaLabel: 'Subscribe Now',
+            contactCtaUrl: '/contact',
+            bannerImageUrl: PLACEHOLDER_BANNER,
+        },
+        {
+            code: 'medical-elite',
+            name: 'Medical Elite',
+            type: 'paid',
+            priceBDT: 1199,
+            durationDays: 30,
+            durationValue: 1,
+            durationUnit: 'months',
+            shortDescription: 'Specialized plan for medical admission prep.',
+            description: 'Medical-focused question sets, mock tests, and deep result insights.',
+            features: ['Medical-only content', 'Exam simulations', 'Mentor guidance'],
+            includedModules: ['dashboard', 'exam_portal', 'results', 'medical_resources'],
+            tags: ['medical'],
+            enabled: true,
+            isActive: true,
+            isFeatured: false,
+            displayOrder: 3,
+            priority: 3,
+            sortOrder: 3,
+            contactCtaLabel: 'Contact for Enrollment',
+            contactCtaUrl: '/contact',
+            bannerImageUrl: PLACEHOLDER_BANNER,
+        },
+    ];
+    const planDocs = await Promise.all(planSeeds.map(async (seed) => SubscriptionPlan_1.default.findOneAndUpdate({ code: String(seed.code) }, { $set: seed }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true })));
+    const planByCode = new Map(planDocs.map((doc) => [String(doc.code), doc.toObject()]));
+    const admissionPro = planByCode.get('admission-pro');
+    const demoPlan = planByCode.get('demo');
+    const usersToActivate = students.map((student, index) => ({
+        student,
+        planCode: index === 0 ? 'admission-pro' : 'demo',
+    }));
+    await Promise.all(usersToActivate.map(async ({ student, planCode }) => {
+        const plan = planByCode.get(planCode) || admissionPro || demoPlan;
+        if (!plan)
+            return;
+        const startAt = now;
+        const expiresAt = nowPlusDays(Number(plan.durationDays || 30));
+        await UserSubscription_1.default.findOneAndUpdate({
+            userId: ensureObjectId(student._id),
+            planId: ensureObjectId(plan._id),
+        }, {
+            $set: {
+                status: 'active',
+                startAtUTC: startAt,
+                expiresAtUTC: expiresAt,
+                activatedByAdminId: primaryAdminId,
+                notes: `Seeded by content pipeline (${runLabel})`,
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+        await User_1.default.findByIdAndUpdate(student._id, {
+            $set: {
+                subscription: {
+                    plan: String(plan.code || ''),
+                    planCode: String(plan.code || ''),
+                    planName: String(plan.name || ''),
+                    isActive: true,
+                    startDate: startAt,
+                    expiryDate: expiresAt,
+                    assignedBy: primaryAdminId,
+                    assignedAt: new Date(),
+                },
+            },
+        });
+    }));
+    const universitySeeds = [
+        {
+            name: 'University of Dhaka',
+            shortForm: 'DU',
+            category: 'Individual Admission',
+            clusterGroup: 'Dhaka Metro',
+            featured: true,
+            featuredOrder: 1,
+            established: 1921,
+            address: 'Shahbag, Dhaka',
+        },
+        {
+            name: 'Jahangirnagar University',
+            shortForm: 'JU',
+            category: 'Individual Admission',
+            clusterGroup: 'Dhaka Metro',
+            featured: true,
+            featuredOrder: 2,
+            established: 1970,
+            address: 'Savar, Dhaka',
+        },
+        {
+            name: 'Rajshahi University of Engineering & Technology',
+            shortForm: 'RUET',
+            category: 'Science & Technology',
+            clusterGroup: 'Engineering Cluster',
+            featured: true,
+            featuredOrder: 3,
+            established: 1964,
+            address: 'Kazla, Rajshahi',
+        },
+        {
+            name: 'Khulna University',
+            shortForm: 'KU',
+            category: 'GST (General/Public)',
+            clusterGroup: 'GST Cluster',
+            featured: true,
+            featuredOrder: 4,
+            established: 1991,
+            address: 'Khulna',
+        },
+        {
+            name: 'Mymensingh Medical College',
+            shortForm: 'MMC',
+            category: 'Medical College',
+            clusterGroup: 'Medical',
+            featured: false,
+            featuredOrder: 20,
+            established: 1924,
+            address: 'Mymensingh',
+        },
+        {
+            name: 'Bangladesh Agricultural University',
+            shortForm: 'BAU',
+            category: 'AGRI Cluster',
+            clusterGroup: 'Agri',
+            featured: false,
+            featuredOrder: 21,
+            established: 1961,
+            address: 'Mymensingh',
+        },
+    ];
+    const universityDocs = await Promise.all(universitySeeds.map(async (seed, index) => {
+        const categoryName = (0, universityCategories_1.normalizeUniversityCategoryStrict)(seed.category);
+        const slug = toSlug(String(seed.name));
+        const startDate = nowPlusDays(-7 + index);
+        const endDate = nowPlusDays(10 + index * 2);
+        const examScience = nowPlusDays(15 + index * 2).toISOString();
+        const examArts = nowPlusDays(16 + index * 2).toISOString();
+        const examBusiness = nowPlusDays(17 + index * 2).toISOString();
+        const record = await University_1.default.findOneAndUpdate({ slug }, {
+            $set: {
+                name: String(seed.name),
+                shortForm: String(seed.shortForm),
+                category: categoryName,
+                categoryId: categoryIdByName.get(categoryName) || null,
+                established: Number(seed.established || 2000),
+                establishedYear: Number(seed.established || 2000),
+                address: String(seed.address || 'Dhaka'),
+                contactNumber: '+8801711000000',
+                email: `${slug}@campusway.local`,
+                website: `https://${slug}.example.com`,
+                websiteUrl: `https://${slug}.example.com`,
+                admissionWebsite: `https://${slug}.example.com/admission`,
+                admissionUrl: `https://${slug}.example.com/admission`,
+                totalSeats: String(1200 + index * 100),
+                scienceSeats: String(500 + index * 50),
+                artsSeats: String(350 + index * 30),
+                businessSeats: String(300 + index * 20),
+                seatsScienceEng: String(500 + index * 50),
+                seatsArtsHum: String(350 + index * 30),
+                seatsBusiness: String(300 + index * 20),
+                shortDescription: `${seed.shortForm} admission profile and deadlines`,
+                description: `${seed.name} admission information, exam schedules, and seat breakdown.`,
+                clusterGroup: String(seed.clusterGroup || ''),
+                applicationStartDate: startDate,
+                applicationEndDate: endDate,
+                applicationStart: startDate,
+                applicationEnd: endDate,
+                scienceExamDate: examScience,
+                examDateScience: examScience,
+                artsExamDate: examArts,
+                examDateArts: examArts,
+                businessExamDate: examBusiness,
+                examDateBusiness: examBusiness,
+                featured: Boolean(seed.featured),
+                featuredOrder: Number(seed.featuredOrder || 0),
+                isActive: true,
+                isArchived: false,
+                archivedAt: null,
+                archivedBy: null,
+                logoUrl: '',
+                unitLayout: 'compact',
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+        return record;
+    }));
+    const featuredUniversityDocs = universityDocs
+        .filter((row) => Boolean(row.featured))
+        .sort((a, b) => Number(a.featuredOrder || 0) - Number(b.featuredOrder || 0));
+    await HomeSettings_1.default.findOneAndUpdate({}, {
+        $set: {
+            'universityDashboard.defaultCategory': 'Individual Admission',
+            'universityDashboard.showAllCategories': true,
+            'universityPreview.defaultActiveCategory': 'Individual Admission',
+            'universityPreview.useHighlightedCategoriesOnly': false,
+            'universityPreview.featuredMode': 'manual',
+            'universityPreview.maxFeaturedItems': 12,
+            highlightedCategories: universityCategories_1.UNIVERSITY_CATEGORY_ORDER.slice(0, 4).map((category, index) => ({
+                category,
+                order: index + 1,
+                enabled: true,
+                badgeText: index === 0 ? 'Popular' : '',
+            })),
+            featuredUniversities: featuredUniversityDocs.map((item, index) => ({
+                universityId: String(item._id),
+                order: index + 1,
+                badgeText: index === 0 ? 'Top' : '',
+                enabled: true,
+            })),
+            'subscriptionBanner.showPlanCards': true,
+            'subscriptionBanner.planIdsToShow': planDocs.map((plan) => String(plan._id)),
+            'hero.primaryCTA': { label: 'Explore Universities', url: '/universities' },
+            'hero.secondaryCTA': { label: 'View Exams', url: '/exam-portal' },
+            'newsPreview.maxItems': 6,
+            'resourcesPreview.maxItems': 6,
+            'sectionVisibility.newsPreview': true,
+            'sectionVisibility.resourcesPreview': true,
+            'sectionVisibility.universityDashboard': true,
+            'sectionVisibility.examsWidget': true,
+            'ui.animationLevel': 'normal',
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    await UniversitySettings_1.default.findOneAndUpdate({}, {
+        $set: {
+            categoryOrder: [...universityCategories_1.UNIVERSITY_CATEGORY_ORDER],
+            highlightedCategories: universityCategories_1.UNIVERSITY_CATEGORY_ORDER.slice(0, 4),
+            defaultCategory: 'Individual Admission',
+            featuredUniversitySlugs: featuredUniversityDocs.map((item) => String(item.slug || '')),
+            maxFeaturedItems: 12,
+            enableClusterFilterOnHome: true,
+            enableClusterFilterOnUniversities: true,
+            allowCustomCategories: false,
+            lastEditedByAdminId: String(primaryAdminId),
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    await WebsiteSettings_1.default.findOneAndUpdate({}, {
+        $set: {
+            websiteName: 'CampusWay',
+            motto: 'Admission prep and live updates in one place',
+            contactEmail: 'support@campusway.com',
+            contactPhone: '+8801700000000',
+            socialLinks: {
+                facebook: 'https://facebook.com/campusway',
+                whatsapp: 'https://wa.me/8801700000000',
+                messenger: 'https://m.me/campusway',
+                telegram: 'https://t.me/campusway',
+                twitter: 'https://twitter.com/campusway',
+                youtube: 'https://youtube.com/@campusway',
+                instagram: 'https://instagram.com/campusway',
+            },
+            subscriptionPageTitle: 'Subscription Plans',
+            subscriptionPageSubtitle: 'Choose a plan and unlock full exam experience.',
+            subscriptionDefaultBannerUrl: PLACEHOLDER_BANNER,
+            subscriptionLoggedOutCtaMode: 'contact',
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    await Settings_1.default.findOneAndUpdate({}, {
+        $set: {
+            siteName: 'CampusWay',
+            contactEmail: 'support@campusway.com',
+            contactPhone: '+8801700000000',
+            socialLinks: [
+                {
+                    platform: 'whatsapp',
+                    url: 'https://wa.me/8801700000000',
+                    enabled: true,
+                    placements: ['header', 'footer', 'home', 'news', 'contact'],
+                },
+                {
+                    platform: 'facebook',
+                    url: 'https://facebook.com/campusway',
+                    enabled: true,
+                    placements: ['header', 'footer', 'home', 'news', 'contact'],
+                },
+                {
+                    platform: 'telegram',
+                    url: 'https://t.me/campusway',
+                    enabled: true,
+                    placements: ['header', 'footer', 'home', 'news', 'contact'],
+                },
+            ],
+            'featureFlags.subscriptionEngineV2': true,
+            'featureFlags.studentDashboardV2': true,
+            'featureFlags.studentManagementV2': true,
+            'featureFlags.pushNotifications': true,
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    const bannerSeeds = [
+        { slot: 'top', title: 'Seed Top Banner', order: 1 },
+        { slot: 'middle', title: 'Seed Middle Banner', order: 2 },
+        { slot: 'footer', title: 'Seed Footer Banner', order: 3 },
+        { slot: 'home_ads', title: 'Seed Home Ads Banner', order: 4 },
+    ];
+    const bannerDocs = await Promise.all(bannerSeeds.map(async (seed) => Banner_1.default.findOneAndUpdate({ title: seed.title }, {
+        $set: {
+            title: seed.title,
+            subtitle: 'CampusWay announcement',
+            imageUrl: PLACEHOLDER_BANNER,
+            mobileImageUrl: PLACEHOLDER_BANNER,
+            linkUrl: '/subscription-plans',
+            altText: seed.title,
+            isActive: true,
+            status: 'published',
+            slot: seed.slot,
+            priority: 100 - seed.order,
+            order: seed.order,
+            startDate: nowPlusDays(-5),
+            endDate: nowPlusDays(90),
+            createdBy: primaryAdminId,
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true })));
+    const sourceSeeds = [
+        {
+            name: 'CampusWay Official',
+            feedUrl: 'https://example.com/campusway-news-rss.xml',
+            siteUrl: 'https://example.com',
+            categoryDefault: 'Admission',
+            tagsDefault: ['admission', 'update'],
+            order: 1,
+        },
+        {
+            name: 'Education Updates BD',
+            feedUrl: 'https://example.com/edu-updates-rss.xml',
+            siteUrl: 'https://example.com/edu',
+            categoryDefault: 'General',
+            tagsDefault: ['education', 'deadline'],
+            order: 2,
+        },
+    ];
+    const sourceDocs = await Promise.all(sourceSeeds.map(async (seed) => NewsSource_1.default.findOneAndUpdate({ feedUrl: seed.feedUrl }, {
+        $set: {
+            name: seed.name,
+            feedUrl: seed.feedUrl,
+            rssUrl: seed.feedUrl,
+            siteUrl: seed.siteUrl,
+            iconType: 'url',
+            iconUrl: PLACEHOLDER_NEWS,
+            enabled: true,
+            isActive: true,
+            priority: seed.order,
+            order: seed.order,
+            fetchIntervalMinutes: 30,
+            fetchIntervalMin: 30,
+            categoryDefault: seed.categoryDefault,
+            categoryTags: [seed.categoryDefault],
+            tagsDefault: [...seed.tagsDefault],
+            maxItemsPerFetch: 20,
+            createdBy: primaryAdminId,
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true })));
+    const newsSeeds = [
+        {
+            title: 'DU admission circular published for 2026 session',
+            category: 'Admission',
+            tags: ['du', 'circular'],
+            sourceIndex: 0,
+        },
+        {
+            title: 'GST application timeline updated',
+            category: 'Admission',
+            tags: ['gst', 'timeline'],
+            sourceIndex: 0,
+        },
+        {
+            title: 'Medical exam seat plan released',
+            category: 'Medical',
+            tags: ['medical', 'exam'],
+            sourceIndex: 1,
+        },
+        {
+            title: 'New scholarship notice for public university applicants',
+            category: 'Scholarship',
+            tags: ['scholarship'],
+            sourceIndex: 1,
+        },
+        {
+            title: 'CampusWay weekly admission digest',
+            category: 'General',
+            tags: ['digest'],
+            sourceIndex: 0,
+        },
+    ];
+    const newsDocs = await Promise.all(newsSeeds.map(async (seed, index) => {
+        const source = sourceDocs[seed.sourceIndex] || sourceDocs[0];
+        const slug = toSlug(seed.title);
+        const publishDate = nowPlusDays(-index);
+        return News_1.default.findOneAndUpdate({ slug }, {
+            $set: {
+                title: seed.title,
+                slug,
+                shortSummary: `${seed.title} - full details inside.`,
+                shortDescription: `${seed.title} - full details inside.`,
+                fullContent: `<p>${seed.title}. Please follow official instructions and deadlines.</p>`,
+                content: `<p>${seed.title}. Please follow official instructions and deadlines.</p>`,
+                coverImageUrl: PLACEHOLDER_NEWS,
+                coverImage: PLACEHOLDER_NEWS,
+                featuredImage: PLACEHOLDER_NEWS,
+                coverImageSource: 'default',
+                category: seed.category,
+                tags: [...seed.tags],
+                isPublished: true,
+                status: 'published',
+                sourceType: 'manual',
+                sourceId: source?._id || null,
+                sourceName: String(source?.name || 'CampusWay'),
+                sourceIconUrl: PLACEHOLDER_NEWS,
+                sourceUrl: String(source?.siteUrl || 'https://example.com'),
+                originalArticleUrl: String(source?.siteUrl || 'https://example.com/news'),
+                originalLink: String(source?.siteUrl || 'https://example.com/news'),
+                publishDate,
+                publishedAt: publishDate,
+                isFeatured: index === 0,
+                fallbackBanner: PLACEHOLDER_NEWS,
+                createdBy: primaryAdminId,
+                createdByAdminId: primaryAdminId,
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    }));
+    const resourceSeeds = [
+        {
+            title: 'Admission Preparation Guide PDF',
+            type: 'pdf',
+            category: 'Admission',
+            fileUrl: 'https://example.com/resources/admission-guide.pdf',
+            externalUrl: '',
+            isFeatured: true,
+        },
+        {
+            title: 'Physics Short Notes',
+            type: 'note',
+            category: 'Science',
+            fileUrl: '',
+            externalUrl: 'https://example.com/resources/physics-notes',
+            isFeatured: true,
+        },
+        {
+            title: 'Medical MCQ Practice Set',
+            type: 'link',
+            category: 'Medical',
+            fileUrl: '',
+            externalUrl: 'https://example.com/resources/medical-mcq',
+            isFeatured: false,
+        },
+        {
+            title: 'Video: University Admission Roadmap',
+            type: 'video',
+            category: 'General',
+            fileUrl: '',
+            externalUrl: 'https://example.com/resources/admission-video',
+            isFeatured: false,
+        },
+    ];
+    const resourceDocs = await Promise.all(resourceSeeds.map(async (seed, index) => Resource_1.default.findOneAndUpdate({ title: seed.title }, {
+        $set: {
+            title: seed.title,
+            description: `${seed.title} for students preparing for upcoming admission.`,
+            type: seed.type,
+            category: seed.category,
+            tags: ['admission', 'campusway', seed.category.toLowerCase()],
+            fileUrl: seed.fileUrl || undefined,
+            externalUrl: seed.externalUrl || undefined,
+            thumbnailUrl: PLACEHOLDER_RESOURCE,
+            isPublic: true,
+            isFeatured: seed.isFeatured,
+            views: 100 + index * 15,
+            downloads: 30 + index * 6,
+            order: index + 1,
+            publishDate: nowPlusDays(-index),
+            expiryDate: nowPlusDays(365),
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true })));
+    const examSeeds = [
+        {
+            title: 'General Admission Live Mock 01',
+            subject: 'General Knowledge',
+            group_category: 'Admission',
+            startDate: nowPlusDays(-1),
+            endDate: nowPlusDays(2),
+            resultPublishDate: nowPlusDays(3),
+            status: 'live',
+            deliveryMode: 'internal',
+            externalExamUrl: '',
+            allowedPlanCodes: [],
+            attemptLimit: 2,
+        },
+        {
+            title: 'HSC Final Prep Challenge',
+            subject: 'HSC Mixed',
+            group_category: 'HSC',
+            startDate: nowPlusDays(2),
+            endDate: nowPlusDays(3),
+            resultPublishDate: nowPlusDays(4),
+            status: 'scheduled',
+            deliveryMode: 'internal',
+            externalExamUrl: '',
+            allowedPlanCodes: ['admission-pro'],
+            attemptLimit: 1,
+        },
+        {
+            title: 'External Partner Scholarship Exam',
+            subject: 'Scholarship',
+            group_category: 'Custom',
+            startDate: nowPlusDays(-1),
+            endDate: nowPlusDays(5),
+            resultPublishDate: nowPlusDays(6),
+            status: 'live',
+            deliveryMode: 'external_link',
+            externalExamUrl: 'https://example.com/external-exam-entry',
+            allowedPlanCodes: [],
+            attemptLimit: 1,
+        },
+    ];
+    const examDocs = await Promise.all(examSeeds.map(async (seed) => Exam_1.default.findOneAndUpdate({ title: seed.title }, {
+        $set: {
+            title: seed.title,
+            subject: seed.subject,
+            subjectBn: seed.subject,
+            universityNameBn: seed.title,
+            group_category: seed.group_category,
+            description: `${seed.title} generated by seed pipeline (${runLabel}).`,
+            totalQuestions: seed.deliveryMode === 'internal' ? 5 : 0,
+            totalMarks: seed.deliveryMode === 'internal' ? 5 : 0,
+            duration: 30,
+            negativeMarking: false,
+            negativeMarkValue: 0,
+            randomizeQuestions: false,
+            randomizeOptions: false,
+            allowBackNavigation: true,
+            showQuestionPalette: true,
+            showRemainingTime: true,
+            autoSubmitOnTimeout: true,
+            allowPause: false,
+            startDate: seed.startDate,
+            endDate: seed.endDate,
+            resultPublishDate: seed.resultPublishDate,
+            isPublished: true,
+            status: seed.status,
+            deliveryMode: seed.deliveryMode,
+            externalExamUrl: seed.externalExamUrl || undefined,
+            accessMode: 'all',
+            attemptLimit: seed.attemptLimit,
+            defaultMarksPerQuestion: 1,
+            bannerSource: 'url',
+            bannerImageUrl: PLACEHOLDER_BANNER,
+            bannerAltText: seed.title,
+            resultPublishMode: 'scheduled',
+            accessControl: {
+                allowedGroupIds: [],
+                allowedUserIds: [],
+                allowedPlanCodes: seed.allowedPlanCodes,
+            },
+            createdBy: primaryAdminId,
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true })));
+    let totalQuestionCount = 0;
+    for (const exam of examDocs) {
+        const deliveryMode = String(exam.deliveryMode || 'internal');
+        if (deliveryMode !== 'internal')
+            continue;
+        const questionSeeds = [1, 2, 3, 4, 5].map((order) => ({
+            order,
+            question: `${exam.title} - Sample question ${order}?`,
+            optionA: 'Option A',
+            optionB: 'Option B',
+            optionC: 'Option C',
+            optionD: 'Option D',
+            correctAnswer: order % 2 === 0 ? 'B' : 'C',
+        }));
+        for (const seed of questionSeeds) {
+            await Question_1.default.findOneAndUpdate({ exam: exam._id, order: seed.order }, {
+                $set: {
+                    exam: exam._id,
+                    question: seed.question,
+                    question_text: seed.question,
+                    questionType: 'mcq',
+                    question_type: 'MCQ',
+                    optionA: seed.optionA,
+                    optionB: seed.optionB,
+                    optionC: seed.optionC,
+                    optionD: seed.optionD,
+                    options: [
+                        { key: 'A', text: seed.optionA },
+                        { key: 'B', text: seed.optionB },
+                        { key: 'C', text: seed.optionC },
+                        { key: 'D', text: seed.optionD },
+                    ],
+                    correctAnswer: seed.correctAnswer,
+                    correct_answer: [seed.correctAnswer],
+                    marks: 1,
+                    difficulty: seed.order <= 2 ? 'easy' : seed.order <= 4 ? 'medium' : 'hard',
+                    subject: String(exam.subject || 'General'),
+                    class_level: String(exam.group_category || 'Admission'),
+                    chapter: 'Seed Chapter',
+                    topic: 'Seed Topic',
+                    active: true,
+                    status: 'approved',
+                    media_status: 'approved',
+                    has_explanation: true,
+                    explanation: 'Seed explanation',
+                    explanation_text: 'Seed explanation',
+                    created_by: primaryAdminId,
+                },
+            }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+            totalQuestionCount += 1;
+        }
+        await Exam_1.default.findByIdAndUpdate(exam._id, { $set: { totalQuestions: 5, totalMarks: 5 } });
+    }
+    const primaryLiveExam = examDocs.find((item) => String(item.deliveryMode || 'internal') === 'internal');
+    const upcomingExam = examDocs.find((item) => String(item.status || '') === 'scheduled');
+    if (primaryLiveExam) {
+        const questionRows = await Question_1.default.find({ exam: primaryLiveExam._id }).sort({ order: 1 }).limit(5).lean();
+        const answers = questionRows.map((question, index) => ({
+            question: ensureObjectId(question._id),
+            questionType: 'mcq',
+            selectedAnswer: index % 2 === 0 ? 'C' : 'B',
+            isCorrect: index % 2 === 0,
+            timeTaken: 25 + index * 3,
+        }));
+        const correctCount = answers.filter((item) => item.isCorrect).length;
+        const wrongCount = answers.length - correctCount;
+        const totalMarks = Math.max(answers.length, Number(primaryLiveExam.totalMarks || answers.length));
+        const obtainedMarks = correctCount;
+        const percentage = totalMarks > 0 ? Number(((obtainedMarks / totalMarks) * 100).toFixed(2)) : 0;
+        await ExamResult_1.default.findOneAndUpdate({
+            exam: primaryLiveExam._id,
+            student: primaryStudentId,
+            attemptNo: 1,
+        }, {
+            $set: {
+                exam: primaryLiveExam._id,
+                student: primaryStudentId,
+                attemptNo: 1,
+                answers,
+                totalMarks,
+                obtainedMarks,
+                correctCount,
+                wrongCount,
+                unansweredCount: 0,
+                percentage,
+                rank: 1,
+                pointsEarned: Math.round(percentage),
+                timeTaken: 900,
+                deviceInfo: 'Desktop',
+                browserInfo: 'Chrome',
+                ipAddress: '127.0.0.1',
+                tabSwitchCount: 0,
+                submittedAt: nowPlusDays(-1),
+                isAutoSubmitted: false,
+                status: 'evaluated',
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    }
+    if (upcomingExam) {
+        await ExamSession_1.default.findOneAndUpdate({
+            exam: upcomingExam._id,
+            student: primaryStudentId,
+            attemptNo: 1,
+            status: 'in_progress',
+        }, {
+            $set: {
+                exam: upcomingExam._id,
+                student: primaryStudentId,
+                attemptNo: 1,
+                attemptRevision: 0,
+                startedAt: nowPlusDays(-0.1),
+                lastSavedAt: new Date(),
+                autoSaves: 2,
+                answers: [],
+                tabSwitchEvents: [],
+                ipAddress: '127.0.0.1',
+                deviceInfo: 'Desktop',
+                browserInfo: 'Chrome',
+                userAgent: 'Seed Agent',
+                deviceFingerprint: 'seed-fingerprint',
+                sessionLocked: false,
+                lockReason: '',
+                isActive: true,
+                expiresAt: nowPlusDays(1),
+                tabSwitchCount: 0,
+                copyAttemptCount: 0,
+                fullscreenExitCount: 0,
+                violationsCount: 0,
+                currentQuestionId: '',
+                cheat_flags: [],
+                auto_submitted: false,
+                status: 'in_progress',
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    }
+    const notificationSeeds = [
+        {
+            title: 'Exam Reminder',
+            message: 'A live mock exam is currently running. Join from your exam portal.',
+            category: 'exam',
+            targetRole: 'student',
+            linkUrl: '/exams',
+        },
+        {
+            title: 'Resource Update',
+            message: 'New preparation resources have been added to your library.',
+            category: 'update',
+            targetRole: 'all',
+            linkUrl: '/resources',
+        },
+        {
+            title: 'Payment Support',
+            message: 'Need help with payment proof submission? Contact support.',
+            category: 'general',
+            targetRole: 'student',
+            linkUrl: '/support',
+        },
+    ];
+    const notificationDocs = await Promise.all(notificationSeeds.map(async (seed, index) => Notification_1.default.findOneAndUpdate({ title: seed.title }, {
+        $set: {
+            title: seed.title,
+            message: seed.message,
+            category: seed.category,
+            publishAt: nowPlusDays(-(index + 1)),
+            expireAt: nowPlusDays(30),
+            isActive: true,
+            linkUrl: seed.linkUrl,
+            attachmentUrl: '',
+            targetRole: seed.targetRole,
+            targetUserIds: seed.targetRole === 'student' ? [primaryStudentId] : [],
+            createdBy: primaryAdminId,
+            updatedBy: primaryAdminId,
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true })));
+    const noticeDocs = await Promise.all([
+        AnnouncementNotice_1.default.findOneAndUpdate({ title: 'Admission Helpline Notice' }, {
+            $set: {
+                title: 'Admission Helpline Notice',
+                message: 'Support center is available 10:00 AM - 8:00 PM every day.',
+                target: 'all',
+                targetIds: [],
+                startAt: nowPlusDays(-2),
+                endAt: nowPlusDays(60),
+                isActive: true,
+                createdBy: primaryAdminId,
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }),
+    ]);
+    const supportDocs = await Promise.all([
+        SupportTicket_1.default.findOneAndUpdate({ ticketNo: 'TKT-SEED-0001' }, {
+            $set: {
+                ticketNo: 'TKT-SEED-0001',
+                studentId: primaryStudentId,
+                subject: 'Unable to find exam result in dashboard',
+                message: 'Please check if my result publication is enabled.',
+                status: 'open',
+                priority: 'medium',
+                assignedTo: primaryAdminId,
+                timeline: [
+                    {
+                        actorId: primaryStudentId,
+                        actorRole: 'student',
+                        message: 'Created support request from dashboard.',
+                        createdAt: nowPlusDays(-1),
+                    },
+                    {
+                        actorId: primaryAdminId,
+                        actorRole: 'admin',
+                        message: 'Ticket received. We are checking your exam data.',
+                        createdAt: now,
+                    },
+                ],
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }),
+    ]);
+    const paymentDocs = await Promise.all([
+        ManualPayment_1.default.findOneAndUpdate({ reference: 'seed-paid-primary' }, {
+            $set: {
+                studentId: primaryStudentId,
+                subscriptionPlanId: admissionPro ? ensureObjectId(admissionPro._id) : null,
+                amount: 799,
+                currency: 'BDT',
+                method: 'bkash',
+                status: 'paid',
+                date: nowPlusDays(-2),
+                paidAt: nowPlusDays(-2),
+                transactionId: 'TXN-SEED-PAID-001',
+                reference: 'seed-paid-primary',
+                proofUrl: 'https://example.com/payments/seed-paid-proof.png',
+                proofFileUrl: 'https://example.com/payments/seed-paid-proof.png',
+                notes: 'Seeded paid subscription payment.',
+                entryType: 'subscription',
+                recordedBy: primaryAdminId,
+                approvedBy: primaryAdminId,
+                approvedAt: nowPlusDays(-2),
+                verifiedByAdminId: primaryAdminId,
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }),
+        ManualPayment_1.default.findOneAndUpdate({ reference: 'seed-pending-secondary' }, {
+            $set: {
+                studentId: secondaryStudentId,
+                subscriptionPlanId: admissionPro ? ensureObjectId(admissionPro._id) : null,
+                amount: 799,
+                currency: 'BDT',
+                method: 'manual',
+                status: 'pending',
+                date: nowPlusDays(-1),
+                paidAt: null,
+                transactionId: 'TXN-SEED-PENDING-001',
+                reference: 'seed-pending-secondary',
+                proofUrl: 'https://example.com/payments/seed-pending-proof.png',
+                proofFileUrl: 'https://example.com/payments/seed-pending-proof.png',
+                notes: 'Seeded pending payment proof.',
+                entryType: 'subscription',
+                recordedBy: secondaryStudentId,
+                approvedBy: null,
+                approvedAt: null,
+                verifiedByAdminId: null,
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }),
+    ]);
+    await Promise.all([
+        StudentDueLedger_1.default.findOneAndUpdate({ studentId: primaryStudentId }, {
+            $set: {
+                computedDue: 0,
+                manualAdjustment: 0,
+                waiverAmount: 0,
+                netDue: 0,
+                lastComputedAt: new Date(),
+                updatedBy: primaryAdminId,
+                note: 'Primary seeded student has no pending due.',
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }),
+        StudentDueLedger_1.default.findOneAndUpdate({ studentId: secondaryStudentId }, {
+            $set: {
+                computedDue: 799,
+                manualAdjustment: 0,
+                waiverAmount: 120,
+                netDue: 679,
+                lastComputedAt: new Date(),
+                updatedBy: primaryAdminId,
+                note: 'Secondary seeded student has pending due.',
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }),
+    ]);
+    await StudentDashboardConfig_1.default.findOneAndUpdate({}, {
+        $set: {
+            welcomeMessageTemplate: 'Welcome, {{name}}! Your dashboard is up to date.',
+            profileCompletionThreshold: 60,
+            enableRealtime: true,
+            enableDeviceLock: true,
+            enableCheatFlags: true,
+            enableBadges: true,
+            enableProgressCharts: true,
+            featuredOrderingMode: 'manual',
+            celebrationRules: {
+                enabled: true,
+                windowDays: 7,
+                minPercentage: 75,
+                maxRank: 10,
+                ruleMode: 'score_or_rank',
+                messageTemplates: [
+                    'Excellent performance! Keep it up.',
+                    'Great job. You are among the top performers.',
+                ],
+                showForSec: 10,
+                dismissible: true,
+                maxShowsPerDay: 2,
+            },
+            updatedBy: primaryAdminId,
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+    const badgeDocs = await Promise.all([
+        Badge_1.default.findOneAndUpdate({ code: 'consistent-performer' }, {
+            $set: {
+                code: 'consistent-performer',
+                title: 'Consistent Performer',
+                description: 'Awarded for stable performance in mock exams.',
+                iconUrl: '',
+                criteriaType: 'manual',
+                minAvgPercentage: 70,
+                minCompletedExams: 1,
+                isActive: true,
+            },
+        }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }),
+    ]);
+    await Promise.all(badgeDocs.map(async (badge) => StudentBadge_1.default.findOneAndUpdate({
+        student: primaryStudentId,
+        badge: badge._id,
+    }, {
+        $set: {
+            student: primaryStudentId,
+            badge: badge._id,
+            awardedBy: primaryAdminId,
+            source: 'manual',
+            note: 'Seeded badge assignment',
+            awardedAt: nowPlusDays(-1),
+        },
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true })));
+    return {
+        ok: true,
+        runLabel,
+        users: {
+            admins: admins.length,
+            students: students.length,
+        },
+        seeded: {
+            categories: categoryDocs.length,
+            universities: universityDocs.length,
+            plans: planDocs.length,
+            banners: bannerDocs.length,
+            newsSources: sourceDocs.length,
+            news: newsDocs.length,
+            resources: resourceDocs.length,
+            exams: examDocs.length,
+            questions: totalQuestionCount,
+            notifications: notificationDocs.length,
+            notices: noticeDocs.length,
+            supportTickets: supportDocs.length,
+            payments: paymentDocs.length,
+            badges: badgeDocs.length,
+        },
+    };
+}
+async function runStandalone() {
+    try {
+        await (0, db_1.connectDB)();
+        const summary = await seedContentPipeline({ runLabel: 'standalone' });
+        // eslint-disable-next-line no-console
+        console.log(JSON.stringify(summary, null, 2));
+    }
+    catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[seed-content-pipeline] failed', error);
+        process.exitCode = 1;
+    }
+    finally {
+        await mongoose_1.default.disconnect();
+    }
+}
+if (require.main === module) {
+    void runStandalone();
+}
+//# sourceMappingURL=seed-content-pipeline.js.map

@@ -32,6 +32,8 @@ export interface IStudentProfile extends Document {
     district?: string;
     country?: string;
     profile_completion_percentage: number;
+    points: number;
+    rank?: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -45,7 +47,7 @@ const StudentProfileSchema = new Schema<IStudentProfile>({
     email: { type: String, trim: true, lowercase: true },
     profile_photo_url: { type: String },
     phone: { type: String, trim: true },
-    phone_number: { type: String, trim: true },
+    phone_number: { type: String, unique: true, sparse: true, index: true },
     guardian_phone: { type: String, trim: true },
     guardianOtpHash: { type: String, default: '' },
     guardianOtpExpiresAt: { type: Date, default: null },
@@ -71,7 +73,9 @@ const StudentProfileSchema = new Schema<IStudentProfile>({
     permanent_address: { type: String },
     district: { type: String },
     country: { type: String, default: 'Bangladesh' },
-    profile_completion_percentage: { type: Number, default: 0, min: 0, max: 100 }
+    profile_completion_percentage: { type: Number, default: 0, min: 0, max: 100 },
+    points: { type: Number, default: 0, index: true },
+    rank: { type: Number },
 }, { timestamps: true });
 
 StudentProfileSchema.index({ full_name: 1 });

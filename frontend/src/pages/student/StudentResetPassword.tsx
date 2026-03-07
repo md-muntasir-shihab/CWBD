@@ -39,7 +39,7 @@ export default function StudentResetPassword() {
             toast.success('Password reset successful');
 
             setTimeout(() => {
-                navigate('/student/login');
+                navigate('/login');
             }, 3000);
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Failed to reset password');
@@ -144,7 +144,7 @@ export default function StudentResetPassword() {
                     ) : (
                         <div className="mt-8 space-y-6">
                             <Link
-                                to="/student/login"
+                                to="/login"
                                 className="flex w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#061226]"
                             >
                                 Go to Login

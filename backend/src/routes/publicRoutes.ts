@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import {
     login,
+    loginAdmin,
+    loginChairman,
     getMe,
     changePassword,
     register,
@@ -22,15 +24,19 @@ import { getFeaturedUniversityClusters, getPublicUniversityClusterMembers } from
 import { getPublicResources, incrementResourceView, incrementResourceDownload } from '../controllers/resourceController';
 import { getActiveBanners } from '../controllers/bannerController';
 import { getHomeConfig } from '../controllers/homeConfigController';
-import { getPublicServiceConfig, getSiteSettings } from '../controllers/cmsController';
+import { getSiteSettings } from '../controllers/cmsController';
+import { getPublicServiceConfig } from '../controllers/cmsController';
 import { getPublicAlerts, getActiveStudentAlerts, ackStudentAlert } from '../controllers/homeAlertController';
 import {
-    getAggregatedHomeData,
     getHomeStream,
     getSettings,
     getStats
 } from '../controllers/homeSystemController';
+import { getAggregatedHomeData } from '../controllers/homeAggregateController';
+import { getPublicHomeSettings } from '../controllers/homeSettingsAdminController';
+import { getUniversityCategories as getUniversityCategoriesWithClusters } from '../controllers/universityCategoriesPublicController';
 import {
+    getPublicExamList,
     getExamLanding,
     getStudentExams,
     getStudentExamById,
@@ -49,20 +55,28 @@ import {
     verifyExamCertificate,
 } from '../controllers/examController';
 import { getQbankPicker, incrementQbankUsage } from '../controllers/questionBankController';
-import { authenticate } from '../middlewares/auth';
+import { authenticate, optionalAuthenticate, requireAuthStudent } from '../middlewares/auth';
 import { enforceRegistrationPolicy } from '../middlewares/securityGuards';
-import { examStartRateLimiter, examSubmitRateLimiter, loginRateLimiter, uploadRateLimiter } from '../middlewares/securityRateLimit';
+import { adminLoginRateLimiter, examStartRateLimiter, examSubmitRateLimiter, loginRateLimiter, subscriptionActionRateLimiter, uploadRateLimiter } from '../middlewares/securityRateLimit';
 import { getProfile, getProfileDashboard, updateProfile } from '../controllers/profileController';
 import { getServices, getServiceDetails } from '../controllers/serviceController';
 import { getCategories as getServiceCategories } from '../controllers/serviceCategoryController';
 import { studentCreateSupportTicket, studentGetNotices, studentGetSupportTickets } from '../controllers/adminSupportController';
-import { getPublicSubscriptionPlans } from '../controllers/adminUserController';
 import { updateStudentProfile } from '../controllers/studentController';
+import {
+    getMySubscription,
+    getPublicSubscriptionPlanById,
+    getPublicSubscriptionPlans,
+    requestSubscriptionPayment,
+    uploadSubscriptionProof,
+} from '../controllers/subscriptionController';
 import {
     getPublicNewsV2List,
     getPublicNewsV2BySlug,
     getPublicNewsV2Appearance,
     getPublicNewsV2Widgets,
+    getPublicNewsV2Sources,
+    getPublicNewsV2Settings,
     trackPublicNewsV2Share,
 } from '../controllers/newsV2Controller';
 import { getPublicSecurityConfigController } from '../controllers/securityCenterController';
@@ -77,12 +91,25 @@ import {
     getStudentMeResults,
     markStudentNotificationsRead,
 } from '../controllers/studentHubController';
+import ContactMessage from '../models/ContactMessage';
+import { contactRateLimiter } from '../middlewares/securityRateLimit';
+import { uploadMedia, uploadMiddleware } from '../controllers/mediaController';
+import {
+    getPublicFeaturedNews,
+    getPublicNewsCategories,
+    getTrendingNews
+} from '../controllers/cmsController';
+import { getPublicSocialLinks } from '../controllers/socialLinksController';
+import { getPublicAnalyticsSettings, trackEvent } from '../controllers/analyticsController';
 
 const router = Router();
+const examAccessMiddlewares = [authenticate, requireAuthStudent] as const;
 
 /* ── Auth ── */
 router.post('/auth/register', loginRateLimiter, enforceRegistrationPolicy, register);
 router.post('/auth/login', loginRateLimiter, login);
+router.post('/auth/admin/login', adminLoginRateLimiter, loginAdmin);
+router.post('/auth/chairman/login', loginRateLimiter, loginChairman);
 router.post('/auth/refresh', refresh);
 router.post('/auth/logout', authenticate, logout);
 router.get('/auth/verify', verifyEmail);
@@ -100,7 +127,9 @@ router.get('/auth/oauth/:provider/callback', oauthCallback);
 
 /* ── Public — Universities ── */
 router.get('/universities', getUniversities);
+router.get('/university-categories', getUniversityCategories);
 router.get('/universities/categories', getUniversityCategories);
+router.get('/university-categories/with-clusters', getUniversityCategoriesWithClusters);
 router.get('/home/clusters/featured', getFeaturedUniversityClusters);
 router.get('/home/clusters/:slug/members', getPublicUniversityClusterMembers);
 
@@ -116,35 +145,39 @@ router.get('/universities/:slug', getUniversityBySlug);
 
 /* ── Public — Settings ── */
 router.get('/settings/site', getSiteSettings);
+router.get('/settings/public', getSettings);
+router.get('/settings/analytics', getPublicAnalyticsSettings);
 router.get('/security/public-config', getPublicSecurityConfigController);
+router.get('/subscription-plans', getPublicSubscriptionPlans);
+router.get('/subscription-plans/:id', getPublicSubscriptionPlanById);
 router.get('/subscription-plans/public', getPublicSubscriptionPlans);
+router.get('/home-settings/public', getPublicHomeSettings);
+router.get('/social-links/public', getPublicSocialLinks);
 
 /* ── Public — Dynamic Home System ── */
-router.get('/home', getAggregatedHomeData);
+router.get('/home', optionalAuthenticate, getAggregatedHomeData);
 router.get('/home/stream', getHomeStream);
 router.get('/home/alerts', getPublicAlerts);
 router.get('/settings', getSettings);
 router.get('/stats', getStats);
 
 /* ── Public — News ── */
-import {
-    getPublicNews,
-    getPublicFeaturedNews,
-    getPublicNewsBySlug,
-    getPublicNewsCategories,
-    getTrendingNews
-} from '../controllers/cmsController';
-
-router.get('/news', getPublicNews);
+router.get('/news', getPublicNewsV2List);
+router.get('/news/settings', getPublicNewsV2Settings);
+router.get('/news/sources', getPublicNewsV2Sources);
 router.get('/news/featured', getPublicFeaturedNews);
 router.get('/news/trending', getTrendingNews);
 router.get('/news/categories', getPublicNewsCategories);
-router.get('/news/:slug', getPublicNewsBySlug);
+router.get('/news/:slug', getPublicNewsV2BySlug);
 router.get('/news-v2/list', getPublicNewsV2List);
 router.get('/news-v2/config/appearance', getPublicNewsV2Appearance);
 router.get('/news-v2/widgets', getPublicNewsV2Widgets);
+router.get('/news-v2/sources', getPublicNewsV2Sources);
+router.get('/news-v2/settings', getPublicNewsV2Settings);
 router.get('/news-v2/:slug', getPublicNewsV2BySlug);
 router.post('/news-v2/share/track', trackPublicNewsV2Share);
+router.post('/news/share/track', trackPublicNewsV2Share);
+router.post('/events/track', optionalAuthenticate, trackEvent);
 
 /* ── Public — Services ── */
 router.get('/services', getServices);
@@ -153,34 +186,54 @@ router.get('/service-categories', getServiceCategories);
 router.get('/services/:id', getServiceDetails);
 
 /* ── Public — Contact Submit ── */
-import ContactMessage from '../models/ContactMessage';
-router.post('/contact', async (req, res) => {
+router.post('/contact', contactRateLimiter, async (req, res) => {
     try {
-        const msg = await ContactMessage.create(req.body);
+        const { name, email, subject, message, phone } = req.body;
+
+        if (!name || !email || !subject || !message) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+
+        const msg = await ContactMessage.create({
+            name: String(name).slice(0, 100),
+            email: String(email).toLowerCase(),
+            phone: phone ? String(phone).slice(0, 20) : undefined,
+            subject: String(subject).slice(0, 200),
+            message: String(message).slice(0, 5000),
+            ip: req.ip,
+            userAgent: req.headers['user-agent']
+        });
+
         res.status(201).json({ message: 'Message sent successfully', id: msg._id });
-    } catch { res.status(500).json({ message: 'Server error' }); }
+    } catch (error: any) {
+        console.error('Contact form error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 /* ── Protected — Student Exam Portal ── */
-import { uploadMedia, uploadMiddleware } from '../controllers/mediaController';
-
-router.get('/exams', authenticate, getStudentExams);
-router.get('/exams/landing', authenticate, getExamLanding);
-router.get('/exams/:id', authenticate, getStudentExamById);
-router.get('/exams/:id/details', authenticate, getStudentExamDetails);
-router.post('/exams/:id/start', authenticate, examStartRateLimiter, startExam);
-router.put('/exams/:id/autosave', authenticate, autosaveExam);
-router.post('/exams/:id/submit', authenticate, examSubmitRateLimiter, submitExam);
-router.get('/exams/:id/result', authenticate, getExamResult);
-router.get('/exams/:examId/questions', authenticate, getStudentExamQuestions);
-router.get('/exams/:examId/attempt/:attemptId', authenticate, getExamAttemptState);
-router.get('/exams/:examId/attempt/:attemptId/stream', authenticate, streamExamAttempt);
-router.post('/exams/:examId/attempt/:attemptId/answer', authenticate, saveExamAttemptAnswer);
-router.post('/exams/:examId/attempt/:attemptId/event', authenticate, logExamAttemptEvent);
-router.post('/exams/:examId/attempt/:attemptId/submit', authenticate, examSubmitRateLimiter, submitExamAttempt);
-router.get('/exams/:id/certificate', authenticate, getExamCertificate);
+router.get('/exams/public-list', optionalAuthenticate, getPublicExamList);
+router.get('/exams', ...examAccessMiddlewares, getStudentExams);
+router.get('/exams/landing', ...examAccessMiddlewares, getExamLanding);
+router.get('/exams/:id', ...examAccessMiddlewares, getStudentExamById);
+router.get('/exams/:id/details', ...examAccessMiddlewares, getStudentExamDetails);
+router.post('/exams/:id/start', ...examAccessMiddlewares, examStartRateLimiter, startExam);
+router.put('/exams/:id/autosave', ...examAccessMiddlewares, autosaveExam);
+router.post('/exams/:id/submit', ...examAccessMiddlewares, examSubmitRateLimiter, submitExam);
+router.get('/exams/:id/result', ...examAccessMiddlewares, getExamResult);
+router.get('/exams/:examId/questions', ...examAccessMiddlewares, getStudentExamQuestions);
+router.get('/exams/:examId/attempt/:attemptId', ...examAccessMiddlewares, getExamAttemptState);
+router.get('/exams/:examId/attempt/:attemptId/stream', ...examAccessMiddlewares, streamExamAttempt);
+router.post('/exams/:examId/attempt/:attemptId/answer', ...examAccessMiddlewares, saveExamAttemptAnswer);
+router.post('/exams/:examId/attempt/:attemptId/event', ...examAccessMiddlewares, logExamAttemptEvent);
+router.post('/exams/:examId/attempt/:attemptId/submit', ...examAccessMiddlewares, examSubmitRateLimiter, submitExamAttempt);
+router.get('/exams/:id/certificate', ...examAccessMiddlewares, getExamCertificate);
 router.get('/certificates/:certificateId/verify', verifyExamCertificate);
-router.post('/exams/upload-written-answer', authenticate, uploadRateLimiter, uploadMiddleware.single('file'), uploadMedia);
+router.post('/exams/upload-written-answer', ...examAccessMiddlewares, uploadRateLimiter, uploadMiddleware.single('file'), uploadMedia);
 router.get('/alerts/active', authenticate, getActiveStudentAlerts);
 router.post('/alerts/:alertId/ack', authenticate, ackStudentAlert);
 router.get('/qbank/picker', authenticate, getQbankPicker);
@@ -188,6 +241,9 @@ router.post('/qbank/usage/increment', authenticate, incrementQbankUsage);
 router.get('/student/notices', authenticate, studentGetNotices);
 router.post('/student/support-tickets', authenticate, studentCreateSupportTicket);
 router.get('/student/support-tickets', authenticate, studentGetSupportTickets);
+router.get('/subscriptions/me', authenticate, getMySubscription);
+router.post('/subscriptions/:planId/request-payment', authenticate, subscriptionActionRateLimiter, requestSubscriptionPayment);
+router.post('/subscriptions/:planId/upload-proof', authenticate, subscriptionActionRateLimiter, uploadSubscriptionProof);
 router.get('/users/me', authenticate, getStudentMe);
 router.put('/users/me', authenticate, updateStudentProfile);
 router.get('/students/me/exams', authenticate, getStudentMeExams);

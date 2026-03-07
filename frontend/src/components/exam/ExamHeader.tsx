@@ -12,9 +12,18 @@ interface Props {
     isOffline?: boolean;
     answeredCount: number;
     totalQuestions: number;
+    lastSavedAt?: string | null;
 }
 
-export default function ExamHeader({ exam, timeLeftFormatted, isTimeUp, isSaving, isOffline, answeredCount, totalQuestions }: Props) {
+function formatSavedAgo(lastSavedAt?: string | null): string {
+    if (!lastSavedAt) return 'Saved';
+    const savedTs = new Date(lastSavedAt).getTime();
+    if (!Number.isFinite(savedTs)) return 'Saved';
+    const seconds = Math.max(0, Math.floor((Date.now() - savedTs) / 1000));
+    return `Saved ${seconds}s ago`;
+}
+
+export default function ExamHeader({ exam, timeLeftFormatted, isTimeUp, isSaving, isOffline, answeredCount, totalQuestions, lastSavedAt }: Props) {
     const { data: settings } = useWebsiteSettings();
 
     const progressPercentage = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
@@ -32,7 +41,7 @@ export default function ExamHeader({ exam, timeLeftFormatted, isTimeUp, isSaving
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                        <img src={settings?.logo || '/logo.png'} alt="Logo" className="h-7 sm:h-8 w-auto object-contain shrink-0" />
+                        <img src={settings?.logoUrl || settings?.logo || '/logo.png'} alt="Logo" className="h-7 sm:h-8 w-auto object-contain shrink-0" />
                         <div className="min-w-0">
                             <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{exam.title}</h1>
                             <p className="text-[11px] text-slate-500 truncate">
@@ -77,7 +86,7 @@ export default function ExamHeader({ exam, timeLeftFormatted, isTimeUp, isSaving
                                 </span>
                             ) : (
                                 <span className="flex items-center text-emerald-500">
-                                    <CheckCircle className="w-4 h-4 mr-1" /> Saved
+                                    <CheckCircle className="w-4 h-4 mr-1" /> {formatSavedAgo(lastSavedAt)}
                                 </span>
                             )}
                         </div>

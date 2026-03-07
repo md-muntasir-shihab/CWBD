@@ -1,0 +1,127 @@
+
+> campusway-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+[db] MongoDB connected successfully
+[db] Failed to ensure critical indexes: MongoServerError: ns does not exist: campusway_admin_sidebar_audit_20260306175620.student_results
+    at Connection.sendCommand (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:559:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Connection.command (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:633:22)
+    at async Server.command (F:\CampusWay\backend\node_modules\mongodb\src\sdam\server.ts:350:21)
+    at async tryOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:289:24)
+    at async executeOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async ListIndexesCursor._initialize (F:\CampusWay\backend\node_modules\mongodb\src\cursor\list_indexes_cursor.ts:33:22)
+    at async ListIndexesCursor.cursorInit (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:949:21)
+    at async ListIndexesCursor.fetchBatch (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:987:7)
+    at async ListIndexesCursor.next (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:608:9)
+    at async ListIndexesCursor.[Symbol.asyncIterator] (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:502:26)
+    at async ListIndexesCursor.toArray (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:696:22)
+    at async Collection.indexes (F:\CampusWay\backend\node_modules\mongodb\src\collection.ts:914:45)
+    at async ensureCriticalIndexes (F:\CampusWay\backend\src\config\db.ts:15:31)
+    at async connectDB (F:\CampusWay\backend\src\config\db.ts:112:9)
+    at async start (F:\CampusWay\backend\src\server.ts:265:5) {
+  errorLabelSet: Set(0) {},
+  errorResponse: {
+    ok: 0,
+    errmsg: 'ns does not exist: campusway_admin_sidebar_audit_20260306175620.student_results',
+    code: 26,
+    codeName: 'NamespaceNotFound'
+  },
+  ok: 0,
+  code: 26,
+  codeName: 'NamespaceNotFound'
+}
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+[cron] Starting exam auto-submit worker (every minute).
+🚀 CampusWay Backend running on port 5073
+📡 Public API: http://localhost:5073/api
+🔒 Admin API:  http://localhost:5073/api/campusway-secure-admin
+[0mGET /api/health [32m200[0m 290.180 ms - 87[0m
+[0mGET /api/settings/public [32m200[0m 38.408 ms - -[0m
+[0mPOST /api/auth/admin/login [32m200[0m 502.257 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab154ef1457f5c3f47e894',
+  sessionId: '79ac5d39-f595-461b-90f5-8a20dc003618',
+  clientsForSession: 1
+}
+[0mGET /api/auth/me [32m200[0m 21.821 ms - 696[0m
+[0mGET /api/campusway-secure-admin/dashboard/summary [32m200[0m 21.642 ms - 464[0m
+[auth-stream] disconnected {
+  userId: '69ab154ef1457f5c3f47e894',
+  sessionId: '79ac5d39-f595-461b-90f5-8a20dc003618'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMTU0ZWYxNDU3ZjVjM2Y0N2U4OTQiLCJ1c2VybmFtZSI6ImUyZV9hZG1pbl9kZXNrdG9wIiwiZW1haWwiOiJlMmVfYWRtaW5fZGVza3RvcEBjYW1wdXN3YXkubG9jYWwiLCJyb2xlIjoiYWRtaW4iLCJmdWxsTmFtZSI6IkUyRSBBZG1pbiBEZXNrdG9wIiwicGVybWlzc2lvbnMiOnsiY2FuRWRpdEV4YW1zIjp0cnVlLCJjYW5NYW5hZ2VTdHVkZW50cyI6dHJ1ZSwiY2FuVmlld1JlcG9ydHMiOnRydWUsImNhbkRlbGV0ZURhdGEiOmZhbHNlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3OWFjNWQzOS1mNTk1LTQ2MWItOTBmNS04YTIwZGMwMDM2MTgiLCJpYXQiOjE3NzI4MTk3OTQsImV4cCI6MTc3MjgyMDk5NH0.Lnkt2SMuNE9ixu_6fWfVN4reIdRF5DvaVFf-scv3r-g [32m200[0m 10.497 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab154ef1457f5c3f47e894',
+  sessionId: '79ac5d39-f595-461b-90f5-8a20dc003618',
+  clientsForSession: 1
+}
+[0mGET /api/campusway-secure-admin/home-settings/defaults [32m200[0m 15.006 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [32m200[0m 21.323 ms - 17[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=1000&status=all&sortBy=name&sortOrder=asc [32m200[0m 45.392 ms - 75[0m
+[0mGET /api/campusway-secure-admin/home-settings [32m200[0m 65.516 ms - -[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 11.275 ms - 55[0m
+[0mGET /api/campusway-secure-admin/settings/university [32m200[0m 11.208 ms - 524[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=1000&status=all&sortBy=name&sortOrder=asc&fields=name,slug,shortForm [32m200[0m 12.813 ms - 75[0m
+[0mGET /api/settings/public [32m200[0m 15.116 ms - -[0m
+[0mGET /api/campusway-secure-admin/settings/runtime [32m200[0m 21.778 ms - -[0m
+[0mGET /api/campusway-secure-admin/social-links [32m200[0m 5.975 ms - 12[0m
+[0mGET /api/campusway-secure-admin/banners [32m200[0m 12.289 ms - 14[0m
+[0mGET /api/campusway-secure-admin/news-settings [32m200[0m 11.986 ms - -[0m
+[0mGET /api/campusway-secure-admin/banners [36m304[0m 6.615 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [36m304[0m 34.509 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [32m200[0m 53.489 ms - 74[0m
+[0mGET /api/campusway-secure-admin/university-clusters [32m200[0m 57.287 ms - 15[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [32m200[0m 56.842 ms - 75[0m
+[0mGET /api/campusway-secure-admin/home-settings [36m304[0m 22.070 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-categories?status=all [32m200[0m 34.917 ms - 17[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [36m304[0m 16.671 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [36m304[0m 40.463 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-clusters [36m304[0m 28.606 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [36m304[0m 33.247 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-categories?status=all [36m304[0m 27.560 ms - -[0m
+[0mGET /api/campusway-secure-admin/home-settings [36m304[0m 13.049 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [32m200[0m 14.233 ms - 135[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [32m200[0m 18.842 ms - 41[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 18.593 ms - 55[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [32m200[0m 35.013 ms - 68[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [32m200[0m 29.092 ms - 74[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 17.534 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 20.908 ms - 55[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 77.180 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 35.937 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMTU0ZWYxNDU3ZjVjM2Y0N2U4OTQiLCJ1c2VybmFtZSI6ImUyZV9hZG1pbl9kZXNrdG9wIiwiZW1haWwiOiJlMmVfYWRtaW5fZGVza3RvcEBjYW1wdXN3YXkubG9jYWwiLCJyb2xlIjoiYWRtaW4iLCJmdWxsTmFtZSI6IkUyRSBBZG1pbiBEZXNrdG9wIiwicGVybWlzc2lvbnMiOnsiY2FuRWRpdEV4YW1zIjp0cnVlLCJjYW5NYW5hZ2VTdHVkZW50cyI6dHJ1ZSwiY2FuVmlld1JlcG9ydHMiOnRydWUsImNhbkRlbGV0ZURhdGEiOmZhbHNlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3OWFjNWQzOS1mNTk1LTQ2MWItOTBmNS04YTIwZGMwMDM2MTgiLCJpYXQiOjE3NzI4MTk3OTQsImV4cCI6MTc3MjgyMDk5NH0.Lnkt2SMuNE9ixu_6fWfVN4reIdRF5DvaVFf-scv3r-g [32m200[0m 7.476 ms - -[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 6.076 ms - 55[0m
+[0mGET /api/campusway-secure-admin/finance/summary [32m200[0m 53.735 ms - 119[0m
+[0mGET /api/campusway-secure-admin/expenses?page=1&limit=6 [32m200[0m 17.146 ms - 41[0m
+[0mGET /api/campusway-secure-admin/dues?page=1&limit=6 [32m200[0m 16.026 ms - 41[0m
+[0mGET /api/campusway-secure-admin/payments?page=1&limit=6 [32m200[0m 20.879 ms - 41[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 24.503 ms - 55[0m
+[0mGET /api/campusway-secure-admin/expenses?page=1&limit=6 [36m304[0m 23.191 ms - -[0m
+[0mGET /api/campusway-secure-admin/finance/summary [36m304[0m 20.808 ms - -[0m
+[0mGET /api/campusway-secure-admin/students?page=1&limit=200 [32m200[0m 36.286 ms - -[0m
+[0mGET /api/campusway-secure-admin/dues?page=1&limit=6 [36m304[0m 14.742 ms - -[0m
+[0mGET /api/campusway-secure-admin/payments?page=1&limit=6 [36m304[0m 15.107 ms - -[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 14.182 ms - 55[0m
+[0mGET /api/campusway-secure-admin/students?page=1&limit=200 [32m200[0m 12.284 ms - -[0m
+[0mGET /api/campusway-secure-admin/resources [32m200[0m 8.920 ms - 71[0m
+[0mGET /api/campusway-secure-admin/resources [36m304[0m 9.215 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?page=1&limit=50 [32m200[0m 16.223 ms - 41[0m
+[0mGET /api/campusway-secure-admin/notices?page=1&limit=20 [32m200[0m 15.114 ms - 41[0m
+[0mGET /api/campusway-secure-admin/settings/runtime [36m304[0m 22.410 ms - -[0m
+[0mGET /api/campusway-secure-admin/reports/summary [32m200[0m 19.307 ms - 376[0m
+[0mGET /api/campusway-secure-admin/exams?page=1&limit=100 [32m200[0m 20.544 ms - 68[0m
+[0mGET /api/campusway-secure-admin/security-settings [32m200[0m 11.360 ms - -[0m
+[0mGET /api/campusway-secure-admin/approvals/pending?limit=100 [32m200[0m 13.029 ms - 22[0m
+[0mGET /api/campusway-secure-admin/health [32m200[0m 12.664 ms - 87[0m
+[0mGET /api/campusway-secure-admin/jobs/health?hours=24 [32m200[0m 20.174 ms - 300[0m
+[0mGET /api/campusway-secure-admin/audit-logs?page=1&limit=50&scope=news [32m200[0m 28.193 ms - 41[0m
+[0mGET /api/campusway-secure-admin/jobs/runs?limit=40 [32m200[0m 19.960 ms - -[0m
+[0mGET /api/profile/me [32m200[0m 10.234 ms - -[0m
+[0mGET /api/profile/me [36m304[0m 10.955 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 10.521 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab154ef1457f5c3f47e894',
+  sessionId: '79ac5d39-f595-461b-90f5-8a20dc003618'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMTU0ZWYxNDU3ZjVjM2Y0N2U4OTQiLCJ1c2VybmFtZSI6ImUyZV9hZG1pbl9kZXNrdG9wIiwiZW1haWwiOiJlMmVfYWRtaW5fZGVza3RvcEBjYW1wdXN3YXkubG9jYWwiLCJyb2xlIjoiYWRtaW4iLCJmdWxsTmFtZSI6IkUyRSBBZG1pbiBEZXNrdG9wIiwicGVybWlzc2lvbnMiOnsiY2FuRWRpdEV4YW1zIjp0cnVlLCJjYW5NYW5hZ2VTdHVkZW50cyI6dHJ1ZSwiY2FuVmlld1JlcG9ydHMiOnRydWUsImNhbkRlbGV0ZURhdGEiOmZhbHNlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3OWFjNWQzOS1mNTk1LTQ2MWItOTBmNS04YTIwZGMwMDM2MTgiLCJpYXQiOjE3NzI4MTk3OTQsImV4cCI6MTc3MjgyMDk5NH0.Lnkt2SMuNE9ixu_6fWfVN4reIdRF5DvaVFf-scv3r-g [32m200[0m 8.895 ms - -[0m

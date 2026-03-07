@@ -1,297 +1,436 @@
-import { useParams, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import {
-    ArrowLeft, Newspaper, Eye,
-    AlertCircle, Share2, Facebook,
-    Twitter, Link as LinkIcon, TrendingUp, CalendarDays, Star
+    ArrowLeft,
+    CalendarDays,
+    Copy,
+    ExternalLink,
+    Facebook,
+    Globe2,
+    Link as LinkIcon,
+    MessageCircle,
+    Send,
 } from 'lucide-react';
-import { getPublicNewsBySlug, getPublicNews, getTrendingNews, ApiNews } from '../services/api';
-import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import {
+    ApiNews,
+    ApiNewsPublicSettings,
+    getPublicNewsSettings,
+    getPublicNewsV2BySlug,
+    trackAnalyticsEvent,
+    trackPublicNewsV2Share,
+} from '../services/api';
+import InfoHint from '../components/ui/InfoHint';
+
+const DEFAULT_SETTINGS: ApiNewsPublicSettings = {
+    pageTitle: 'Admission News & Updates',
+    pageSubtitle: 'Live updates from verified CampusWay RSS feeds.',
+    headerBannerUrl: '',
+    defaultBannerUrl: '',
+    defaultThumbUrl: '',
+    defaultSourceIconUrl: '',
+    appearance: {
+        layoutMode: 'rss_reader',
+        density: 'comfortable',
+        cardDensity: 'comfortable',
+        paginationMode: 'pages',
+        showWidgets: {
+            trending: true,
+            latest: true,
+            sourceSidebar: true,
+            tagChips: true,
+            previewPanel: true,
+            breakingTicker: false,
+        },
+        showSourceIcons: true,
+        showTrendingWidget: true,
+        showCategoryWidget: true,
+        showShareButtons: true,
+        animationLevel: 'normal',
+        thumbnailFallbackUrl: '',
+    },
+    shareTemplates: {},
+    shareButtons: {
+        whatsapp: true,
+        facebook: true,
+        messenger: true,
+        telegram: true,
+        copyLink: true,
+        copyText: true,
+    },
+    workflow: {
+        allowScheduling: true,
+        openOriginalWhenExtractionIncomplete: true,
+    },
+};
+
+function getArticleImage(news: ApiNews, settings: ApiNewsPublicSettings): string {
+    const fallback =
+        settings.defaultBannerUrl
+        || settings.defaultThumbUrl
+        || settings.appearance.thumbnailFallbackUrl
+        || '/logo.png';
+    const forceDefault = String(news.coverImageSource || news.coverSource || '').toLowerCase() === 'default';
+    if (forceDefault) return fallback;
+    return (
+        news.coverImageUrl
+        || news.coverImage
+        || news.thumbnailImage
+        || news.featuredImage
+        || news.fallbackBanner
+        || fallback
+    );
+}
+
+function renderDate(value?: string): string {
+    if (!value) return 'N/A';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleString();
+}
+
+type ShareChannel = 'whatsapp' | 'facebook' | 'messenger' | 'telegram' | 'copy_link' | 'copy_text';
 
 export default function SingleNewsPage() {
-    const { slug } = useParams<{ slug: string }>();
-    const [scrolled, setScrolled] = useState(false);
+    const { slug = '' } = useParams<{ slug: string }>();
+
+    const settingsQuery = useQuery({
+        queryKey: ['newsSettings'],
+        queryFn: async () => (await getPublicNewsSettings()).data,
+    });
+
+    const itemQuery = useQuery({
+        queryKey: ['newsDetail', slug],
+        queryFn: async () => (await getPublicNewsV2BySlug(slug)).data,
+        enabled: Boolean(slug),
+    });
+
+    const settings = settingsQuery.data || DEFAULT_SETTINGS;
+    const shareButtons = settings.shareButtons || DEFAULT_SETTINGS.shareButtons;
+    const newsItem = itemQuery.data?.item;
+    const relatedNews = itemQuery.data?.related || [];
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 300);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const { data: newsItem, isLoading, isError } = useQuery({
-        queryKey: ['news-single', slug],
-        queryFn: async () => {
-            const r = await getPublicNewsBySlug(slug as string);
-            return r.data?.data;
-        },
-        enabled: !!slug
-    });
-
-    const { data: trendingNews = [] } = useQuery({
-        queryKey: ['news-trending'],
-        queryFn: async () => {
-            const r = await getTrendingNews({ limit: 5 });
-            return r.data?.data || [];
+        if (!newsItem) {
+            document.title = 'News | CampusWay';
+            return;
         }
-    });
+        document.title = `${newsItem.seoTitle || newsItem.title} | CampusWay News`;
+        void trackAnalyticsEvent({
+            eventName: 'news_view',
+            module: 'news',
+            source: 'public',
+            meta: { slug: newsItem.slug || slug, newsId: newsItem._id, source: newsItem.sourceName || '' },
+        }).catch(() => undefined);
+    }, [newsItem, slug]);
 
-    const { data: relatedNews = [] } = useQuery({
-        queryKey: ['news-related', newsItem?.category],
-        queryFn: async () => {
-            const params: Record<string, string | number> = { limit: 4 };
-            if (newsItem?.category) params.category = newsItem.category;
-            const r = await getPublicNews(params);
-            return (r.data?.data || []).filter((n: any) => n._id !== newsItem?._id).slice(0, 4);
-        },
-        enabled: !!newsItem?.category
-    });
+    async function handleShare(channel: ShareChannel) {
+        if (!newsItem) return;
+        try {
+            const newsTarget = newsItem.slug || newsItem._id;
+            const shareUrl = newsItem.shareUrl || `${window.location.origin}/news/${newsTarget}`;
+            const channelKey = channel.replace('copy_', '') as 'whatsapp' | 'facebook' | 'messenger' | 'telegram';
+            const shareText = newsItem.shareText?.[channelKey] || `${newsItem.title}\n${shareUrl}`;
+            const links = {
+                whatsapp: newsItem.shareLinks?.whatsapp || `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+                facebook: newsItem.shareLinks?.facebook || `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                messenger: newsItem.shareLinks?.messenger || `https://www.facebook.com/dialog/send?link=${encodeURIComponent(shareUrl)}`,
+                telegram: newsItem.shareLinks?.telegram || `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+            };
 
-    if (isLoading) {
+            if (channel === 'copy_link') {
+                await navigator.clipboard.writeText(shareUrl);
+                toast.success('Link copied');
+            } else if (channel === 'copy_text') {
+                await navigator.clipboard.writeText(shareText);
+                toast.success('Share text copied');
+            } else {
+                window.open(links[channel], '_blank', 'noopener,noreferrer');
+            }
+        } catch {
+            toast.error('Share failed');
+            return;
+        }
+
+        try {
+            const trackChannel = channel === 'copy_link' || channel === 'copy_text' ? 'copy' : channel;
+            if (newsItem.slug) {
+                await trackPublicNewsV2Share(newsItem.slug, trackChannel);
+            }
+            await trackAnalyticsEvent({
+                eventName: 'news_share',
+                module: 'news',
+                source: 'public',
+                meta: { slug: newsItem.slug || slug, newsId: newsItem._id, platform: trackChannel },
+            });
+        } catch {
+            // Share tracking failures should not block user-facing share action.
+        }
+    }
+
+    if (itemQuery.isLoading || settingsQuery.isLoading) {
         return (
-            <div className="min-h-screen bg-white dark:bg-[#0a0f1c] flex flex-col items-center justify-center gap-6">
-                <div className="relative">
-                    <div className="w-20 h-20 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-                    <Newspaper className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-indigo-500" />
+            <div className="min-h-screen bg-slate-50 dark:bg-[#060f23] px-4 py-12 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-6xl space-y-4">
+                    <div className="skeleton h-12 w-64 rounded-xl" />
+                    <div className="skeleton h-[320px] w-full rounded-3xl" />
+                    <div className="skeleton h-10 w-full rounded-xl" />
+                    <div className="skeleton h-64 w-full rounded-xl" />
                 </div>
-                <p className="text-slate-400 font-black text-xs uppercase tracking-widest animate-pulse">Retrieving Dispatch...</p>
             </div>
         );
     }
 
-    if (isError || !newsItem) {
+    if (!newsItem) {
         return (
-            <div className="min-h-screen bg-white dark:bg-[#0a0f1c] flex items-center justify-center px-4">
-                <div className="text-center max-w-md">
-                    <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                        <AlertCircle className="w-12 h-12 text-red-500" />
-                    </div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">Lost in Broadcast</h1>
-                    <p className="text-slate-500 dark:text-slate-400 mb-10 font-medium leading-relaxed">
-                        The frequency you're looking for has been terminated or moved. Return to the main newsroom to continue.
-                    </p>
-                    <Link
-                        to="/news"
-                        className="inline-flex items-center gap-2 bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
-                    >
-                        <ArrowLeft className="w-5 h-5" /> Newsroom Main
-                    </Link>
-                </div>
+            <div className="min-h-screen bg-slate-50 dark:bg-[#060f23] px-4 py-16 text-center sm:px-6 lg:px-8">
+                <h1 className="text-3xl font-black text-slate-900 dark:text-white">Article not found</h1>
+                <p className="mt-3 text-sm text-slate-500 dark:text-slate-300">
+                    This article is not available or was unpublished.
+                </p>
+                <Link
+                    to="/news"
+                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-500"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to News
+                </Link>
             </div>
         );
     }
 
-    // Set SEO Meta tags dynamically
-    document.title = `${newsItem.seoTitle || newsItem.title} | CampusWay News`;
-
-    // const shareUrl = window.location.href;
+    const image = getArticleImage(newsItem, settings);
+    const sourceName = newsItem.sourceName || 'CampusWay';
+    const sourceUrl = newsItem.sourceUrl || '#';
+    const originalUrl = newsItem.originalArticleUrl || newsItem.originalLink || '';
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#0a0f1c] selection:bg-indigo-500 selection:text-white pb-32">
-            {/* Scroll Indicator Top Bar */}
-            <div className={`fixed top-0 left-0 right-0 z-[60] h-1 bg-indigo-500 origin-left transition-transform duration-300 ${scrolled ? 'scale-x-100' : 'scale-x-0'}`} />
-
-            {/* Sticky Header Nav */}
-            <div className={`fixed top-16 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/80 dark:bg-[#0a0f1c]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 py-2' : 'bg-transparent py-4'}`}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-                    <Link to="/news" className="group flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-600 transition-all">
-                            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-white transition-colors" />
-                        </div>
-                        <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500 transition-colors hidden sm:block">Back to Desk</span>
+        <div className="min-h-screen bg-slate-50 pb-14 dark:bg-[#060f23]">
+            <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+                <div className="mb-4 flex items-center justify-between">
+                    <Link
+                        to="/news"
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20 dark:bg-slate-900 dark:text-slate-200"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to News
                     </Link>
+                    <span className="text-xs text-slate-500 dark:text-slate-300">
+                        {renderDate(newsItem.publishedAt || newsItem.publishDate || newsItem.createdAt)}
+                    </span>
+                </div>
 
-                    <div className="flex items-center gap-4">
-                        <span className={`text-[10px] font-black uppercase tracking-tighter text-slate-400 transition-opacity duration-300 ${scrolled ? 'opacity-100' : 'opacity-0'}`}>
-                            Now Reading: {newsItem.title.slice(0, 30)}...
-                        </span>
-                        <div className="flex items-center gap-2">
-                            <button className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
-                                <Share2 className="w-4 h-4" />
-                            </button>
+                <motion.header
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.24 }}
+                    className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-slate-950/60"
+                >
+                    <img src={image} alt={newsItem.title} className="h-64 w-full object-cover sm:h-80 lg:h-[420px]" />
+                    <div className="space-y-4 p-5 sm:p-7">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-300">
+                            <span className="rounded-full bg-cyan-500/15 px-2.5 py-1 font-medium text-cyan-700 dark:text-cyan-200">
+                                {newsItem.category || 'General'}
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                                <CalendarDays className="h-3.5 w-3.5" />
+                                {renderDate(newsItem.publishedAt || newsItem.publishDate || newsItem.createdAt)}
+                            </span>
+                        </div>
+                        <h1 className="text-2xl font-black leading-tight text-slate-900 dark:text-white sm:text-4xl">
+                            {newsItem.title}
+                        </h1>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 sm:text-base">
+                            {newsItem.shortSummary || newsItem.shortDescription}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-200">
+                            <a
+                                href={sourceUrl}
+                                target={sourceUrl !== '#' ? '_blank' : undefined}
+                                rel={sourceUrl !== '#' ? 'noopener noreferrer' : undefined}
+                                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                            >
+                                {settings.appearance.showSourceIcons ? (
+                                    <img
+                                        src={newsItem.sourceIconUrl || settings.defaultSourceIconUrl || image}
+                                        alt={sourceName}
+                                        className="h-4 w-4 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <Globe2 className="h-4 w-4" />
+                                )}
+                                {sourceName}
+                                {sourceUrl !== '#' ? <ExternalLink className="h-3.5 w-3.5" /> : null}
+                            </a>
+                            {originalUrl ? (
+                                <a
+                                    href={originalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                                >
+                                    <LinkIcon className="h-4 w-4" />
+                                    Original Source
+                                </a>
+                            ) : (
+                                <span className="inline-flex items-center gap-2 rounded-lg border border-slate-300/70 px-2.5 py-1.5 text-slate-400 dark:border-white/10 dark:text-slate-500">
+                                    <LinkIcon className="h-4 w-4" />
+                                    Original Source Unavailable
+                                </span>
+                            )}
+                            {newsItem.aiUsed ? (
+                                <InfoHint
+                                    title={newsItem.aiMeta?.noHallucinationPassed ? 'AI Verified Draft' : 'AI Draft'}
+                                    description={newsItem.aiMeta?.noHallucinationPassed
+                                        ? 'This article passed strict AI verification with source citations.'
+                                        : 'This article came from an AI draft workflow and may need admin review.'}
+                                />
+                            ) : null}
                         </div>
                     </div>
-                </div>
-            </div>
+                </motion.header>
 
-            {/* Immersive Hero Header */}
-            <header className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none" />
-
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-3 bg-indigo-500/10 border border-indigo-500/20 px-4 py-1.5 rounded-full mb-8 animate-fade-in">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">{newsItem.category}</span>
-                        <div className="w-1 h-1 rounded-full bg-indigo-500/30" />
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{new Date(newsItem.publishDate).toLocaleDateString()}</span>
-                    </div>
-
-                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-8 leading-[1.1] tracking-tight animate-fade-in-up">
-                        {newsItem.title}
-                    </h1>
-
-                    <p className="text-xl md:text-2xl font-bold text-slate-500 dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                        {newsItem.shortDescription}
-                    </p>
-
-                    <div className="flex flex-wrap items-center justify-center gap-8 py-8 border-y border-slate-100 dark:border-white/5">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-xl shadow-indigo-600/20">
-                                {newsItem.createdBy?.fullName.charAt(0) || 'A'}
+                <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_320px]">
+                    <article className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/60 sm:p-7">
+                        {newsItem.fetchedFullText === false && originalUrl ? (
+                            <div className="mb-4 rounded-xl border border-amber-300/70 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-900/20 dark:text-amber-200">
+                                Full article content could not be extracted.{' '}
+                                <a href={originalUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
+                                    Open original source
+                                </a>
+                                .
                             </div>
-                            <div className="text-left">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Author</p>
-                                <p className="text-sm font-black text-slate-900 dark:text-white">{newsItem.createdBy?.fullName || 'Admin Editor'}</p>
-                            </div>
-                        </div>
-                        <div className="hidden sm:block w-px h-10 bg-slate-100 dark:bg-white/5" />
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-400">
-                                <CalendarDays className="w-6 h-6" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Updated</p>
-                                <p className="text-sm font-black text-slate-900 dark:text-white">{new Date(newsItem.updatedAt || newsItem.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                            </div>
-                        </div>
-                        <div className="hidden sm:block w-px h-10 bg-slate-100 dark:bg-white/5" />
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-400">
-                                <Eye className="w-6 h-6" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Visibility</p>
-                                <p className="text-sm font-black text-slate-900 dark:text-white">{newsItem.views || 0} Global Reads</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Immersive Media */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <div className="relative aspect-[16/9] md:aspect-[21/9] rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl">
-                    <img
-                        src={newsItem.coverImage || newsItem.featuredImage || 'https://images.unsplash.com/photo-1585829365234-78d910eb6f4e?q=80&w=2070'}
-                        alt={newsItem.title}
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                </div>
-            </div>
-
-            {/* Content Layout */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col lg:flex-row gap-16">
-                    {/* Main Content */}
-                    <div className="lg:w-2/3">
+                        ) : null}
                         <div
-                            className="news-content prose prose-xl dark:prose-invert prose-indigo max-w-none 
-                            font-medium text-slate-700 dark:text-slate-300 leading-[1.8] tracking-normal
-                            prose-headings:font-black prose-headings:tracking-tight prose-headings:mb-8
-                            prose-p:mb-8 prose-strong:text-slate-900 dark:prose-strong:text-white
-                            prose-img:rounded-[2rem] prose-img:shadow-2xl"
-                            dangerouslySetInnerHTML={{ __html: newsItem.content }}
+                            className="prose prose-slate max-w-none dark:prose-invert prose-headings:font-bold prose-img:rounded-xl"
+                            dangerouslySetInnerHTML={{ __html: newsItem.fullContent || newsItem.content || '' }}
                         />
 
-                        {/* Social Share Footer */}
-                        <div className="mt-20 py-12 border-t border-slate-100 dark:border-white/5">
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
-                                <div className="space-y-2">
-                                    <h4 className="text-xl font-black text-slate-900 dark:text-white">Share this insight</h4>
-                                    <p className="text-sm text-slate-400 font-medium">Empower your colleagues with this latest update.</p>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-3 rounded-2xl bg-[#1877F2] text-white font-bold text-sm hover:scale-105 transition-all shadow-lg active:scale-95">
-                                        <Facebook className="w-5 h-5 fill-white" /> Facebook
-                                    </button>
-                                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-3 rounded-2xl bg-[#1DA1F2] text-white font-bold text-sm hover:scale-105 transition-all shadow-lg active:scale-95">
-                                        <Twitter className="w-5 h-5 fill-white" /> Twitter
-                                    </button>
-                                    <button className="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-indigo-500 transition-all">
-                                        <LinkIcon className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Tags */}
-                        {newsItem.tags && newsItem.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2 pt-12">
-                                {newsItem.tags.map((tag: string, i: number) => (
-                                    <span key={i} className="px-5 py-2.5 bg-slate-50 dark:bg-white/5 rounded-2xl text-xs font-black text-slate-400 transition-all hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 cursor-pointer uppercase tracking-widest">
-                                        # {tag}
+                        {newsItem.tags?.length ? (
+                            <div className="mt-8 flex flex-wrap gap-2 border-t border-slate-200 pt-5 dark:border-white/10">
+                                {newsItem.tags.map((item) => (
+                                    <span
+                                        key={`${newsItem._id}-${item}`}
+                                        className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-700 dark:text-cyan-200"
+                                    >
+                                        #{item}
                                     </span>
                                 ))}
                             </div>
-                        )}
-                    </div>
+                        ) : null}
+                    </article>
 
-                    {/* Sidebar */}
-                    <aside className="lg:w-1/3">
-                        <div className="sticky top-28 space-y-12">
-                            {/* Trending Widget */}
-                            <div className="bg-slate-900 dark:bg-white p-10 rounded-[3rem] shadow-2xl">
-                                <h3 className="text-xl font-black text-white dark:text-slate-900 mb-8 flex items-center gap-3">
-                                    <TrendingUp className="w-5 h-5 text-indigo-400" />
-                                    Viral Now
-                                </h3>
-                                <div className="space-y-8">
-                                    {trendingNews.map((news: ApiNews, idx: number) => (
-                                        <Link to={`/news/${news.slug}`} key={news._id} className="flex gap-4 group/item">
-                                            <span className="text-4xl font-black text-white/10 dark:text-slate-100 group-hover/item:text-indigo-500 transition-colors">0{idx + 1}</span>
-                                            <div>
-                                                <h4 className="text-sm font-black text-white dark:text-slate-900 line-clamp-2 leading-snug group-hover/item:text-indigo-400 transition-colors">{news.title}</h4>
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase mt-2">{news.category}</p>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
+                    <aside className="space-y-4">
+                        <div className="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Share</h2>
+                                <InfoHint
+                                    title="Share Options"
+                                    description="Use quick share actions for WhatsApp, Facebook, Messenger, Telegram, or copy."
+                                />
                             </div>
-
-                            {/* Author Card / CTA */}
-                            <div className="bg-indigo-600 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
-                                <Star className="absolute -right-10 -top-10 w-40 h-40 text-white/10" />
-                                <h3 className="text-2xl font-black mb-4">Master Your Prep</h3>
-                                <p className="text-white/80 text-sm font-medium mb-8 leading-relaxed">
-                                    Unlock premium resources and real-time exam notifications by upgrading your profile.
-                                </p>
-                                <Link
-                                    to="/pricing"
-                                    className="w-full block text-center py-4 rounded-2xl bg-white text-indigo-600 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-xl active:scale-95"
-                                >
-                                    View Premium Plans
-                                </Link>
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                                {shareButtons.whatsapp ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShare('whatsapp')}
+                                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-300 px-2 py-2 text-xs font-semibold transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                                    >
+                                        <MessageCircle className="h-3.5 w-3.5" />
+                                        WhatsApp
+                                    </button>
+                                ) : null}
+                                {shareButtons.facebook ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShare('facebook')}
+                                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-300 px-2 py-2 text-xs font-semibold transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                                    >
+                                        <Facebook className="h-3.5 w-3.5" />
+                                        Facebook
+                                    </button>
+                                ) : null}
+                                {shareButtons.messenger ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShare('messenger')}
+                                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-300 px-2 py-2 text-xs font-semibold transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                                    >
+                                        <MessageCircle className="h-3.5 w-3.5" />
+                                        Messenger
+                                    </button>
+                                ) : null}
+                                {shareButtons.telegram ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShare('telegram')}
+                                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-300 px-2 py-2 text-xs font-semibold transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                                    >
+                                        <Send className="h-3.5 w-3.5" />
+                                        Telegram
+                                    </button>
+                                ) : null}
+                                {shareButtons.copyLink ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShare('copy_link')}
+                                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-300 px-2 py-2 text-xs font-semibold transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                                    >
+                                        <LinkIcon className="h-3.5 w-3.5" />
+                                        Copy Link
+                                    </button>
+                                ) : null}
+                                {shareButtons.copyText ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShare('copy_text')}
+                                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-300 px-2 py-2 text-xs font-semibold transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20"
+                                    >
+                                        <Copy className="h-3.5 w-3.5" />
+                                        Copy Text
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
                     </aside>
                 </div>
 
-                {/* Related Footer Grid */}
-                {relatedNews.length > 0 && (
-                    <div className="mt-32 pt-20 border-t border-slate-100 dark:border-white/5">
-                        <div className="flex items-center justify-between mb-12">
-                            <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Broadening Horizons</h3>
-                            <Link to="/news" className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest hover:underline">View All Stories</Link>
+                {relatedNews.length > 0 ? (
+                    <section className="mt-7 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Related Articles</h2>
+                            <Link to="/news" className="text-sm font-semibold text-cyan-600 hover:text-cyan-500">
+                                View all
+                            </Link>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {relatedNews.map((news: any) => (
-                                <Link to={`/news/${news.slug}`} key={news._id} className="group block h-full">
-                                    <div className="aspect-[4/3] rounded-[2rem] overflow-hidden mb-6 bg-slate-100 dark:bg-white/5 relative">
-                                        <img
-                                            src={news.featuredImage || 'https://images.unsplash.com/photo-1585829365234-78d910eb6f4e?q=80&w=2070'}
-                                            alt={news.title}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                        />
-                                        <div className="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {relatedNews.slice(0, 5).map((item) => (
+                                <Link
+                                    key={item._id}
+                                    to={`/news/${item.slug || item._id}`}
+                                    className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition hover:-translate-y-0.5 hover:border-cyan-500/60 dark:border-white/10 dark:bg-slate-900/60"
+                                >
+                                    <img
+                                        src={getArticleImage(item, settings)}
+                                        alt={item.title}
+                                        className="h-32 w-full object-cover"
+                                        loading="lazy"
+                                    />
+                                    <div className="space-y-2 p-3">
+                                        <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-white">
+                                            {item.title}
+                                        </h3>
+                                        <p className="text-xs text-slate-500 dark:text-slate-300">
+                                            {renderDate(item.publishedAt || item.publishDate || item.createdAt)}
+                                        </p>
                                     </div>
-                                    <h4 className="font-black text-lg text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors mb-3">
-                                        {news.title}
-                                    </h4>
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{new Date(news.publishDate).toLocaleDateString()}</p>
                                 </Link>
                             ))}
                         </div>
-                    </div>
-                )}
+                    </section>
+                ) : null}
             </div>
         </div>
     );

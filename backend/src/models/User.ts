@@ -1,7 +1,17 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export type UserRole = 'superadmin' | 'admin' | 'moderator' | 'student' | 'editor' | 'viewer';
+export type UserRole =
+    | 'superadmin'
+    | 'admin'
+    | 'moderator'
+    | 'editor'
+    | 'viewer'
+    | 'support_agent'
+    | 'finance_agent'
+    | 'student'
+    | 'chairman';
 export type UserStatus = 'active' | 'suspended' | 'blocked' | 'pending';
+export type IUserPermissionsV2 = Partial<Record<string, Partial<Record<string, boolean>>>>;
 
 export interface IUserPermissions {
     canEditExams: boolean;
@@ -23,6 +33,7 @@ export interface IUser extends Document {
     role: UserRole;
     status: UserStatus;
     permissions: IUserPermissions;
+    permissionsV2?: IUserPermissionsV2;
     phone_number?: string;
     profile_photo?: string;
     mustChangePassword: boolean;
@@ -72,7 +83,7 @@ const UserSchema = new Schema<IUser>(
         password: { type: String, required: true, select: false },
         role: {
             type: String,
-            enum: ['superadmin', 'admin', 'moderator', 'student', 'editor', 'viewer'],
+            enum: ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent', 'student', 'chairman'],
             default: 'student',
         },
         status: {
@@ -94,7 +105,11 @@ const UserSchema = new Schema<IUser>(
                 canRevealPasswords: false,
             }),
         },
-        phone_number: { type: String, trim: true },
+        permissionsV2: {
+            type: Schema.Types.Mixed,
+            default: () => ({}),
+        },
+        phone_number: { type: String, unique: true, sparse: true, index: true },
         profile_photo: { type: String, trim: true },
         mustChangePassword: { type: Boolean, default: false },
         loginAttempts: { type: Number, default: 0 },
@@ -122,5 +137,6 @@ const UserSchema = new Schema<IUser>(
 
 UserSchema.index({ role: 1, status: 1 });
 UserSchema.index({ createdAt: -1 });
+UserSchema.index({ username: 1, email: 1, phone_number: 1 });
 
 export default mongoose.model<IUser>('User', UserSchema);

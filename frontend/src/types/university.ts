@@ -1,4 +1,18 @@
-/* ── Canonical University data model ── */
+export interface UniversityCategorySummary {
+    categoryName: string;
+    order: number;
+    count: number;
+    clusterGroups: string[];
+}
+
+export interface UniversityListQuery {
+    category: string;
+    clusterGroup?: string;
+    q?: string;
+    sort?: 'deadline' | 'alphabetical';
+    page?: number;
+    limit?: number;
+}
 
 export interface UniversitySeats {
     science?: number | null;
@@ -20,7 +34,7 @@ export interface ExamCenter {
 
 export interface NextExam {
     department: string;
-    date: string; // ISO 8601
+    date: string;
 }
 
 export interface UniversityContact {
@@ -50,22 +64,34 @@ export interface University {
     shortForm: string;
     slug: string;
     category: string;
+    clusterGroup?: string;
     description?: string;
     shortDescription?: string;
     established?: number;
+    establishedYear?: number;
     totalSeats?: string;
     scienceSeats?: string;
+    seatsScienceEng?: string;
     artsSeats?: string;
+    seatsArtsHum?: string;
     businessSeats?: string;
-    applicationStart?: string;
-    applicationEnd?: string;
+    seatsBusiness?: string;
+    applicationStart: string;
+    applicationEnd: string;
+    applicationStartDate?: string;
+    applicationEndDate?: string;
     scienceExamDate?: string;
+    examDateScience?: string;
     artsExamDate?: string;
+    examDateArts?: string;
     businessExamDate?: string;
+    examDateBusiness?: string;
     examCenters?: ExamCenter[];
     contact?: UniversityContact;
     website?: string;
+    websiteUrl?: string;
     admissionWebsite?: string;
+    admissionUrl?: string;
     logo?: UniversityLogo;
     defaultLogo?: DefaultLogo;
     featured?: boolean;
@@ -87,7 +113,8 @@ export interface University {
     updatedAt: string;
 }
 
-/* ── Paginated response ── */
+export interface UniversityEntity extends University {}
+
 export interface UniversityPaginatedResponse {
     universities: University[];
     pagination: {
@@ -98,12 +125,12 @@ export interface UniversityPaginatedResponse {
     };
 }
 
-/* ── Filter params ── */
 export interface UniversityFilterParams {
     page?: number;
     limit?: number;
     search?: string;
     category?: string;
+    clusterGroup?: string;
     sort?: string;
     minSeats?: number;
     maxSeats?: number;

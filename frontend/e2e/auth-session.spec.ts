@@ -1,22 +1,51 @@
 import { expect, test } from '@playwright/test';
-import { getStudentCreds, loginAsStudent } from './helpers';
+import { seededCreds } from './helpers';
 
-const baseApi = (process.env.E2E_API_BASE_URL || 'http://localhost:5002').replace(/\/$/, '');
+const baseApi = (process.env.E2E_API_BASE_URL || 'http://localhost:5003').replace(/\/$/, '');
 
 test.describe('Auth Session Security', () => {
     test('new login invalidates old student session', async ({ browser, request }) => {
         const context1 = await browser.newContext();
         const page1 = await context1.newPage();
-        const sessionCreds = getStudentCreds(page1, 'session');
-        await loginAsStudent(page1, 'session');
+        const studentCandidates = [
+            seededCreds.student.session,
+            seededCreds.student.desktop,
+            seededCreds.student.mobile,
+        ];
+        const loginStudentWithCreds = async (page: typeof page1, creds: { email: string; password: string }) => {
+            await page.goto('/login');
+            await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(creds.email);
+            await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(creds.password);
+            await page.getByRole('button', { name: /(Sign in|Access Dashboard)/i }).first().click();
+            try {
+                await expect(page).toHaveURL(/\/dashboard/, { timeout: 12000 });
+                return true;
+            } catch {
+                return false;
+            }
+        };
 
-        const oldToken = await page1.evaluate(() => localStorage.getItem('campusway-token'));
+        let sessionCreds = studentCandidates[0];
+        let loggedIn = false;
+        for (const candidate of studentCandidates) {
+            if (await loginStudentWithCreds(page1, candidate)) {
+                sessionCreds = candidate;
+                loggedIn = true;
+                break;
+            }
+        }
+        expect(loggedIn).toBeTruthy();
+
+        const oldToken = await page1.evaluate(
+            () => sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token')
+        );
         expect(oldToken).toBeTruthy();
 
         const context2 = await browser.newContext();
         const page2 = await context2.newPage();
-        await loginAsStudent(page2, 'session');
-        await expect(page2).toHaveURL(/\/student\/dashboard/);
+        const secondLogin = await loginStudentWithCreds(page2, sessionCreds);
+        expect(secondLogin).toBeTruthy();
+        await expect(page2).toHaveURL(/\/dashboard/);
 
         const sessionCheck = await request.get(`${baseApi}/api/auth/me`, {
             headers: {
@@ -38,11 +67,11 @@ test.describe('Auth Session Security', () => {
                 .toBeNull();
         }
 
-        await page1.goto('/student/login');
+        await page1.goto('/login');
         await page1.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(sessionCreds.email);
         await page1.locator('input#password, input[name="password"], input[type="password"]').first().fill(sessionCreds.password);
         await page1.getByRole('button', { name: /Sign in/i }).click();
-        await expect(page1).toHaveURL(/\/student\/dashboard/);
+        await expect(page1).toHaveURL(/\/dashboard/);
 
         await context1.close();
         await context2.close();

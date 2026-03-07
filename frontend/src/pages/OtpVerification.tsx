@@ -9,7 +9,12 @@ export default function OtpVerificationPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    const loginRoute = searchParams.get('from') === 'student' ? '/student/login' : '/login';
+    const from = String(searchParams.get('from') || '').toLowerCase();
+    const loginRoute = from === 'admin'
+        ? '/__cw_admin__/login'
+        : from === 'chairman'
+            ? '/chairman/login'
+            : '/login';
 
     useEffect(() => {
         if (!pending2FA) {
@@ -34,7 +39,11 @@ export default function OtpVerificationPage() {
 
                 <OtpForm
                     onComplete={(user) => {
-                        const target = user.role === 'student' ? '/student/dashboard' : '/campusway-secure-admin';
+                        const target = user.role === 'student'
+                            ? '/dashboard'
+                            : user.role === 'chairman'
+                                ? '/chairman/dashboard'
+                                : '/__cw_admin__/dashboard';
                         navigate(target, { replace: true });
                     }}
                     onBackToLogin={() => navigate(loginRoute, { replace: true })}

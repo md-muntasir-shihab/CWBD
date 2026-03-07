@@ -36,7 +36,7 @@ const EMPTY_FORM = {
     altText: '',
     isActive: true,
     status: 'draft' as 'draft' | 'published',
-    slot: 'top' as 'top' | 'middle' | 'footer',
+    slot: 'top' as 'top' | 'middle' | 'footer' | 'home_ads',
     priority: 0,
     order: 0,
     startDate: '',
@@ -56,6 +56,7 @@ export default function BannerPanel() {
             top: banners.filter((banner) => banner.slot === 'top').sort((a, b) => b.priority - a.priority || a.order - b.order),
             middle: banners.filter((banner) => banner.slot === 'middle').sort((a, b) => b.priority - a.priority || a.order - b.order),
             footer: banners.filter((banner) => banner.slot === 'footer').sort((a, b) => b.priority - a.priority || a.order - b.order),
+            home_ads: banners.filter((banner) => (banner.slot as string) === 'home_ads').sort((a, b) => b.priority - a.priority || a.order - b.order),
         };
     }, [banners]);
 
@@ -206,7 +207,7 @@ export default function BannerPanel() {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                {(['top', 'middle', 'footer'] as const).map((slot) => (
+                {(['top', 'middle', 'footer', 'home_ads'] as const).map((slot) => (
                     <div key={slot} className="bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-indigo-500/10 overflow-hidden">
                         <div className="px-4 py-3 border-b border-indigo-500/10">
                             <h3 className="text-sm font-semibold text-white capitalize">{slot} Slot</h3>
@@ -293,6 +294,7 @@ export default function BannerPanel() {
                                         <option value="top">Top</option>
                                         <option value="middle">Middle</option>
                                         <option value="footer">Footer</option>
+                                        <option value="home_ads">Home Ads (Scrollable)</option>
                                     </select>
                                 </div>
                                 <div>

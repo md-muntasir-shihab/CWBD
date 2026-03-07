@@ -1,0 +1,455 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusWay Homepage Master Spec</title>
+  <style>
+    :root {
+      --bg: #f3f7ff;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #5b6478;
+      --line: #d8e2f4;
+      --brand: #0f4fd8;
+      --brand-2: #0ea5e9;
+      --ok: #12805c;
+      --warn: #b57f00;
+      --danger: #c43f2f;
+      --shadow: 0 10px 24px rgba(14, 42, 92, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Inter", sans-serif;
+      background: radial-gradient(circle at top right, #dff2ff 0%, #f3f7ff 40%, #f7fbff 100%);
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .container { width: min(1220px, calc(100% - 32px)); margin: 0 auto; }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.84);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .navbar-inner {
+      height: 68px;
+      display: grid;
+      grid-template-columns: 220px 1fr 220px;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo { font-weight: 800; letter-spacing: 0.2px; color: #0b3ea8; }
+    .logo small { display: block; font-weight: 600; color: #47608a; font-size: 11px; }
+
+    .nav-links { display: flex; justify-content: center; gap: 10px; }
+    .pill {
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 13px;
+      color: #2b3b57;
+      background: transparent;
+    }
+    .pill.active {
+      background: linear-gradient(120deg, var(--brand) 0%, var(--brand-2) 100%);
+      color: white;
+      box-shadow: 0 8px 18px rgba(15, 79, 216, 0.28);
+    }
+
+    .nav-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      background: white;
+    }
+    .login-btn {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      background: white;
+    }
+
+    .page { padding: 24px 0 40px; display: grid; gap: 18px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      padding: 20px;
+    }
+
+    .hero h1 { margin: 0 0 8px; font-size: 38px; line-height: 1.1; }
+    .hero p { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+
+    .search {
+      width: 100%;
+      border: 1px solid #bfd6fa;
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 14px;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(14, 165, 233, 0.04), 0 0 0 0 rgba(14, 165, 233, 0.2);
+    }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip {
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #eef4ff;
+      border: 1px solid #d5e5ff;
+      color: #2a4678;
+    }
+
+    .hero-right {
+      border-radius: 14px;
+      background: linear-gradient(140deg, #0f2047 0%, #123a84 45%, #0ea5e9 100%);
+      color: white;
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .badge { display: inline-block; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .ok { background: #e6f8f0; color: var(--ok); }
+    .warn { background: #fff8e3; color: var(--warn); }
+    .danger { background: #fdebec; color: var(--danger); }
+
+    .section {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .section-head { display: flex; justify-content: space-between; align-items: center; }
+    .section-head h2 { margin: 0; font-size: 24px; }
+    .section-head p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .filters { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 10px; }
+    .input {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #30466d;
+      background: #fcfdff;
+    }
+
+    .admission-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .uni-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+    .uni-card {
+      border: 1px solid #dae4f6;
+      border-radius: 14px;
+      padding: 12px;
+      background: #ffffff;
+      display: grid;
+      gap: 10px;
+      box-shadow: 0 5px 14px rgba(15, 79, 216, 0.08);
+    }
+
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .meta { color: var(--muted); font-size: 12px; }
+    .title { font-size: 16px; font-weight: 700; }
+
+    .seat-badges { display: flex; flex-wrap: wrap; gap: 7px; }
+    .seat { border: 1px solid #d7e3fb; background: #eff5ff; color: #2f4f87; border-radius: 999px; padding: 4px 8px; font-size: 11px; }
+
+    .progress { height: 7px; border-radius: 999px; background: #dbe6f8; overflow: hidden; }
+    .progress > span { display: block; height: 100%; width: 64%; background: linear-gradient(90deg, #00b386, #35d8c1); }
+
+    .actions { display: flex; gap: 8px; }
+    .btn {
+      border-radius: 10px;
+      border: 1px solid #c8d9fb;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #13428f;
+      background: #f3f8ff;
+    }
+    .btn.primary { background: linear-gradient(120deg, var(--brand), var(--brand-2)); color: #fff; border-color: transparent; }
+
+    .side-widget { border: 1px solid #d8e5f7; border-radius: 14px; padding: 12px; display: grid; gap: 12px; background: #fbfdff; }
+    .list { display: grid; gap: 8px; }
+    .list-item { border: 1px solid #e3ecfb; border-radius: 10px; padding: 8px; background: white; }
+
+    .three-col { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .news-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+
+    .small-card {
+      border: 1px solid #dbe7fb;
+      border-radius: 12px;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      background: #fff;
+    }
+
+    .thumb {
+      height: 96px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, #d7ecff, #b9ddff);
+      border: 1px solid #c6ddf9;
+    }
+
+    .mini-dashboard {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid #d8e5fb;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 9999px;
+      background: linear-gradient(140deg, #3c6eff, #21b3ff);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .social-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .social-item {
+      border: 1px solid #d8e5f8;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .footer {
+      border-top: 1px solid var(--line);
+      margin-top: 6px;
+      padding-top: 16px;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 12px;
+      color: #30466d;
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .navbar-inner { grid-template-columns: 1fr auto; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; }
+      .admission-grid { grid-template-columns: 1fr; }
+      .uni-grid { grid-template-columns: 1fr; }
+      .three-col { grid-template-columns: 1fr; }
+      .news-row { grid-template-columns: 1fr 1fr; }
+      .social-strip { grid-template-columns: 1fr 1fr; }
+      .footer { grid-template-columns: 1fr; }
+      .filters { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <div class="logo">CampusWay <small>Admission Gateway</small></div>
+      <nav class="nav-links">
+        <span class="pill active">Home</span>
+        <span class="pill">Universities</span>
+        <span class="pill">Exams</span>
+        <span class="pill">News</span>
+        <span class="pill">Services</span>
+        <span class="pill">Resources</span>
+        <span class="pill">Contact</span>
+      </nav>
+      <div class="nav-actions">
+        <span class="icon-btn">☀</span>
+        <span class="icon-btn">EN</span>
+        <span class="login-btn">Login</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container page">
+    <section class="card hero">
+      <div>
+        <h1>All University Admissions in One Dashboard</h1>
+        <p>Track deadlines, exam slots, seat breakdowns, and verified admission updates in one clean CampusWay ecosystem view.</p>
+        <input class="search" value="Search university, exam, news..." />
+        <div class="chip-row">
+          <span class="chip">General University</span>
+          <span class="chip">GST</span>
+          <span class="chip">Engineering</span>
+          <span class="chip">Medical</span>
+          <span class="chip">Agri</span>
+        </div>
+      </div>
+      <div class="hero-right">
+        <span class="badge" style="background: rgba(255,255,255,0.18); color:#fff;">Next Big Deadline</span>
+        <div style="font-size: 26px; font-weight: 800;">GST A Unit closes in 04d : 12h : 30m</div>
+        <div style="font-size:13px; opacity:0.88;">Applications end on 12 Mar 2026, 11:59 PM</div>
+        <div class="progress" style="background: rgba(255,255,255,0.25);"><span style="width: 73%; background: #8ff2d5;"></span></div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head">
+        <div>
+          <h2>Live University Admission Dashboard</h2>
+          <p>Deadlines, exam dates, seats - all in one place.</p>
+        </div>
+        <span class="badge ok">Live: 82 Universities</span>
+      </div>
+      <div class="filters">
+        <div class="input">Category: GST / Medical / Engineering</div>
+        <div class="input">Division: Dhaka</div>
+        <div class="input">Search by university name or short form</div>
+      </div>
+
+      <div class="admission-grid">
+        <div class="uni-grid">
+          <article class="uni-card">
+            <div class="row"><span class="title">Dhaka University</span><span class="badge ok">GST</span></div>
+            <div class="meta">DU | Est. 1921 | Shahbag, Dhaka</div>
+            <div class="seat-badges"><span class="seat">Science 1850</span><span class="seat">Arts 1400</span><span class="seat">Business 980</span></div>
+            <div class="meta">Apply: 02 Mar - 12 Mar | 6 days left</div>
+            <div class="progress"><span></span></div>
+            <div class="meta">Science Unit: 21 Mar | Arts: 28 Mar | Commerce: 04 Apr</div>
+            <div class="actions"><span class="btn primary">View Details</span><span class="btn">Official Website</span><span class="btn">Fav</span></div>
+          </article>
+
+          <article class="uni-card">
+            <div class="row"><span class="title">CUET</span><span class="badge warn">Engineering</span></div>
+            <div class="meta">CUET | Est. 1968 | Chattogram</div>
+            <div class="seat-badges"><span class="seat">Science 910</span><span class="seat">Arts N/A</span><span class="seat">Business N/A</span></div>
+            <div class="meta">Apply: 06 Mar - 11 Mar | Closing soon</div>
+            <div class="progress"><span style="width:35%; background: linear-gradient(90deg,#f6b00a,#ffd76d);"></span></div>
+            <div class="meta">Unit A: 22 Mar | Unit B: 23 Mar | Centers: Dhaka, CTG</div>
+            <div class="actions"><span class="btn primary">View Details</span><span class="btn">Official Website</span><span class="btn">Fav</span></div>
+          </article>
+        </div>
+
+        <aside class="side-widget">
+          <div>
+            <div class="row"><strong>Closing Soon</strong><span class="badge danger">Top 5</span></div>
+            <div class="list">
+              <div class="list-item">BUET - A Unit <div class="meta">Today 11:59 PM</div></div>
+              <div class="list-item">SUST - A Unit <div class="meta">Tomorrow</div></div>
+              <div class="list-item">RU - B Unit <div class="meta">In 3 days</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="row"><strong>Exams This Week</strong><span class="badge ok">Top 5</span></div>
+            <div class="list">
+              <div class="list-item">GST A Unit <div class="meta">Thu, 09:00 AM</div></div>
+              <div class="list-item">Medical Mock #12 <div class="meta">Fri, 08:00 PM</div></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head"><h2>Practice Online Exams with CampusWay</h2><span class="btn primary">Go to Exam Dashboard</span></div>
+      <div class="three-col">
+        <div class="small-card"><strong>GST A Unit Full Mock</strong><div class="meta">Duration: 60m | Marks: 100</div><span class="badge ok">Anytime Practice</span></div>
+        <div class="small-card"><strong>Engineering Rapid Quiz</strong><div class="meta">Duration: 30m | Marks: 50</div><span class="badge warn">Starts in 2 days</span></div>
+        <div class="small-card"><strong>Medical Bio Sprint</strong><div class="meta">Duration: 45m | Marks: 80</div><span class="badge ok">Live at 8:00 PM</span></div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head"><h2>Latest Admission News & Updates</h2><span class="btn">View all news</span></div>
+      <div class="news-row">
+        <article class="small-card"><div class="thumb"></div><strong>GST 2026 circular published</strong><div class="meta">Source: EduBoard | 2h ago</div><span class="badge ok">Circular</span></article>
+        <article class="small-card"><div class="thumb"></div><strong>Medical exam date revised</strong><div class="meta">Source: DGHS | 5h ago</div><span class="badge warn">Update</span></article>
+        <article class="small-card"><div class="thumb"></div><strong>DU payment gateway open</strong><div class="meta">Source: DU | 8h ago</div><span class="badge ok">Notice</span></article>
+        <article class="small-card"><div class="thumb"></div><strong>CUET admit card release</strong><div class="meta">Source: CUET | 1d ago</div><span class="badge">Result</span></article>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head"><h2>Our Services for Admission Candidates</h2><span class="meta">Featured services</span></div>
+      <div class="three-col">
+        <div class="small-card"><strong>Application Checklist</strong><div class="meta">One-to-one support for application flow</div><span class="badge ok">Free</span></div>
+        <div class="small-card"><strong>Exam Booster Package</strong><div class="meta">Mocks, analytics, and practice dashboard</div><span class="badge">Tk 500</span></div>
+        <div class="small-card"><strong>Premium Mentoring</strong><div class="meta">Personalized prep with progress tracking</div><span class="badge">From Tk 1500</span></div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head"><h2>Free Resources for You</h2><span class="meta">PDF + Video + Links</span></div>
+      <div class="three-col">
+        <div class="small-card"><strong>GST Formula Sheet</strong><div class="meta">Type: PDF</div></div>
+        <div class="small-card"><strong>Admission Site Tracker</strong><div class="meta">Type: Website</div></div>
+        <div class="small-card"><strong>Biology Quick Revision</strong><div class="meta">Type: Video</div></div>
+      </div>
+    </section>
+
+    <section class="mini-dashboard">
+      <div class="avatar">MS</div>
+      <div style="display:grid; gap:7px;">
+        <strong>My Status</strong>
+        <div class="meta">Profile completion: 72% (Need 70%+ for exam participation)</div>
+        <div class="progress"><span style="width:72%;"></span></div>
+        <div class="meta">Payment: Up to date | Next exam: GST A Unit on 9 Mar 2026</div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head"><h2>Join our community</h2><span class="meta">Social & Contact Strip</span></div>
+      <div class="social-strip">
+        <div class="social-item"><strong>Facebook Page</strong><div class="meta">Daily updates</div></div>
+        <div class="social-item"><strong>WhatsApp Channel</strong><div class="meta">Instant alerts</div></div>
+        <div class="social-item"><strong>Telegram Channel</strong><div class="meta">Notices and links</div></div>
+        <div class="social-item"><strong>Messenger Community</strong><div class="meta">Student support</div></div>
+        <div class="social-item"><strong>Instagram</strong><div class="meta">Tips and reels</div></div>
+      </div>
+
+      <footer class="footer">
+        <div><strong>CampusWay</strong><div class="meta">From updates to upskilling for admission candidates.</div></div>
+        <div><strong>Quick Links</strong><div class="meta">Home | Exams | News | Services | Contact</div></div>
+        <div><strong>Legal & Contact</strong><div class="meta">Terms | Privacy | +8801XXXXXXXXX | support@campusway.io</div></div>
+      </footer>
+    </section>
+  </main>
+
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</body>
+</html>

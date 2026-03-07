@@ -1,0 +1,29 @@
+React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ HomeModernPage 1. useState                   useState
+2. useState                   useState
+3. useState                   useState
+4. useState                   useState
+5. useState                   useState
+6. useState                   useState
+7. useContext                 useContext
+8. useContext                 useContext
+9. useContext                 useContext
+10. useEffect                 useEffect
+11. useState                  useState
+12. useCallback               useCallback
+13. useSyncExternalStore      useSyncExternalStore
+14. useEffect                 useEffect
+15. useEffect                 useEffect
+16. useContext                useContext
+17. useContext                useContext
+18. useContext                useContext
+19. useEffect                 useEffect
+20. useState                  useState
+21. useCallback               useCallback
+22. useSyncExternalStore      useSyncExternalStore
+23. useEffect                 useEffect
+24. undefined                 useEffect

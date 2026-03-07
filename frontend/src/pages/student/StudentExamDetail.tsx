@@ -1,12 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2, CreditCard, PlayCircle } from 'lucide-react';
-import { getStudentMeExamById } from '../../services/api';
+import { getStudentMeExamById, startExam } from '../../services/api';
 
 export default function StudentExamDetail() {
     const { examId = '' } = useParams();
     const navigate = useNavigate();
+    const [starting, setStarting] = useState(false);
 
     const detailQuery = useQuery({
         queryKey: ['student-hub', 'exam-detail', examId],
@@ -30,6 +31,24 @@ export default function StudentExamDetail() {
     }
 
     const exam = detailQuery.data.exam;
+
+    const handleStartExam = async () => {
+        if (!exam?._id || starting) return;
+        setStarting(true);
+        try {
+            const response = await startExam(String(exam._id));
+            const payload = response.data || {};
+            if (payload.redirect && payload.externalExamUrl) {
+                window.location.href = payload.externalExamUrl;
+                return;
+            }
+            navigate(`/exam/${exam._id}`);
+        } catch {
+            navigate(`/exam/${exam._id}`);
+        } finally {
+            setStarting(false);
+        }
+    };
 
     return (
         <div className="space-y-5">
@@ -78,10 +97,11 @@ export default function StudentExamDetail() {
                 <div className="mt-4 flex flex-wrap gap-2">
                     {canStart ? (
                         <button
-                            onClick={() => navigate(`/exam/take/${exam._id}`)}
+                            onClick={() => void handleStartExam()}
+                            disabled={starting}
                             className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
                         >
-                            <PlayCircle className="w-4 h-4" /> Start Exam
+                            <PlayCircle className="w-4 h-4" /> {starting ? 'Starting...' : 'Start Exam'}
                         </button>
                     ) : (
                         <button

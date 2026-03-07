@@ -9,6 +9,16 @@ type BucketState = {
 
 const buckets = new Map<string, BucketState>();
 
+function shouldBypassRateLimit(req: Request): boolean {
+    if (process.env.DISABLE_SECURITY_RATE_LIMIT === 'true' || process.env.E2E_DISABLE_RATE_LIMIT === 'true') {
+        return true;
+    }
+
+    if (process.env.NODE_ENV === 'production') return false;
+    const ip = getClientIp(req);
+    return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+}
+
 function consume(bucketKey: string, max: number, windowMs: number): { allowed: boolean; retryAfterSec: number } {
     const now = Date.now();
     const existing = buckets.get(bucketKey);
@@ -37,6 +47,10 @@ function limiterResponse(res: Response, message: string, retryAfterSec: number):
 
 export async function loginRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
         const security = await getSecuritySettingsSnapshot(false);
         const key = `login:${getClientIp(req)}:${String(req.body?.identifier || req.body?.email || req.body?.username || '')}`;
         const result = consume(key, security.rateLimit.loginMax, security.rateLimit.loginWindowMs);
@@ -50,8 +64,34 @@ export async function loginRateLimiter(req: Request, res: Response, next: NextFu
     }
 }
 
+export async function adminLoginRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
+        const security = await getSecuritySettingsSnapshot(false);
+        const identifier = String(req.body?.identifier || req.body?.email || req.body?.username || '');
+        const key = `admin_login:${getClientIp(req)}:${identifier}`;
+        const max = Math.max(3, Math.min(Number(security.rateLimit.adminMax || 20), 20));
+        const windowMs = Math.max(60_000, Number(security.rateLimit.adminWindowMs || 15 * 60 * 1000));
+        const result = consume(key, max, windowMs);
+        if (!result.allowed) {
+            limiterResponse(res, 'Too many admin login attempts. Please wait before retrying.', result.retryAfterSec);
+            return;
+        }
+        next();
+    } catch {
+        next();
+    }
+}
+
 export async function examSubmitRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
         const security = await getSecuritySettingsSnapshot(false);
         const userScope = (req as { user?: { _id?: string } }).user?._id || getClientIp(req);
         const key = `exam_submit:${String(userScope)}:${String(req.params.id || req.params.examId || '')}`;
@@ -68,6 +108,10 @@ export async function examSubmitRateLimiter(req: Request, res: Response, next: N
 
 export async function examStartRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
         const security = await getSecuritySettingsSnapshot(false);
         const userScope = (req as { user?: { _id?: string } }).user?._id || getClientIp(req);
         const key = `exam_start:${String(userScope)}:${String(req.params.id || req.params.examId || '')}`;
@@ -84,6 +128,10 @@ export async function examStartRateLimiter(req: Request, res: Response, next: Ne
 
 export async function adminRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
         const security = await getSecuritySettingsSnapshot(false);
         const key = `admin:${getClientIp(req)}:${String((req as { user?: { _id?: string } }).user?._id || '')}`;
         const result = consume(key, security.rateLimit.adminMax, security.rateLimit.adminWindowMs);
@@ -99,11 +147,53 @@ export async function adminRateLimiter(req: Request, res: Response, next: NextFu
 
 export async function uploadRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
         const security = await getSecuritySettingsSnapshot(false);
         const key = `upload:${getClientIp(req)}:${String((req as { user?: { _id?: string } }).user?._id || '')}`;
         const result = consume(key, security.rateLimit.uploadMax, security.rateLimit.uploadWindowMs);
         if (!result.allowed) {
             limiterResponse(res, 'Too many upload requests. Please wait and retry.', result.retryAfterSec);
+            return;
+        }
+        next();
+    } catch {
+        next();
+    }
+}
+
+export async function contactRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
+        // Strict limit for contact form to prevent spam
+        const key = `contact:${getClientIp(req)}`;
+        const result = consume(key, 5, 60 * 60 * 1000); // 5 messages per hour per IP
+        if (!result.allowed) {
+            limiterResponse(res, 'Too many contact messages. Please try again after an hour.', result.retryAfterSec);
+            return;
+        }
+        next();
+    } catch {
+        next();
+    }
+}
+
+export async function subscriptionActionRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
+        const userScope = (req as { user?: { _id?: string } }).user?._id || getClientIp(req);
+        const key = `subscription_action:${String(userScope)}:${req.path}`;
+        const result = consume(key, 20, 60 * 60 * 1000); // 20 actions per hour
+        if (!result.allowed) {
+            limiterResponse(res, 'Too many subscription actions. Please try again later.', result.retryAfterSec);
             return;
         }
         next();

@@ -1,0 +1,459 @@
+{
+  "runId": "20260306194732",
+  "startedAt": "2026-03-06T19:47:32.054Z",
+  "endedAt": "2026-03-06T19:56:13.971Z",
+  "baseUrl": "http://127.0.0.1:5273",
+  "summary": {
+    "total": 20,
+    "passed": 19,
+    "warned": 1,
+    "failed": 0
+  },
+  "results": [
+    {
+      "menuLabel": "Dashboard (initial)",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/dashboard",
+      "heading": "Dashboard",
+      "emptySignals": [],
+      "createLike": [
+        "Open News"
+      ],
+      "counts": {
+        "cards": 10,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 16,
+        "inputs": 0
+      },
+      "screenshot": "screenshots/01-dashboard-initial.png"
+    },
+    {
+      "menuLabel": "Dashboard",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/dashboard",
+      "heading": "Dashboard",
+      "emptySignals": [],
+      "createLike": [
+        "Open News"
+      ],
+      "counts": {
+        "cards": 10,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 16,
+        "inputs": 0
+      },
+      "screenshot": "screenshots/02-dashboard.png"
+    },
+    {
+      "menuLabel": "Home Control",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/settings/home-control",
+      "heading": "Home Control",
+      "emptySignals": [],
+      "createLike": [
+        "Save",
+        "Add",
+        "Add",
+        "Add Link",
+        "Add Link"
+      ],
+      "counts": {
+        "cards": 0,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 49,
+        "inputs": 106
+      },
+      "screenshot": "screenshots/03-home-control.png"
+    },
+    {
+      "menuLabel": "University Settings",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/settings/university-settings",
+      "heading": "University Settings",
+      "emptySignals": [],
+      "createLike": [
+        "Save Changes",
+        "Add Selected",
+        "Add",
+        "Save Settings"
+      ],
+      "counts": {
+        "cards": 20,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 58,
+        "inputs": 6
+      },
+      "screenshot": "screenshots/04-university-settings.png"
+    },
+    {
+      "menuLabel": "Site Settings",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/settings/site-settings",
+      "heading": "Site Settings",
+      "emptySignals": [],
+      "createLike": [
+        "Save",
+        "Add Link",
+        "Delete",
+        "Delete",
+        "Delete"
+      ],
+      "counts": {
+        "cards": 3,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 17,
+        "inputs": 38
+      },
+      "screenshot": "screenshots/05-site-settings.png"
+    },
+    {
+      "menuLabel": "Banner Manager",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/settings/banner-manager",
+      "heading": "Banner Manager",
+      "emptySignals": [],
+      "createLike": [
+        "Create Banner",
+        "Unpublish",
+        "Unpublish",
+        "Unpublish",
+        "Unpublish",
+        "Save Defaults"
+      ],
+      "counts": {
+        "cards": 5,
+        "forms": 1,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 22,
+        "inputs": 6
+      },
+      "screenshot": "screenshots/06-banner-manager.png"
+    },
+    {
+      "menuLabel": "Universities",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/universities",
+      "heading": "Universities",
+      "emptySignals": [],
+      "createLike": [
+        "Add University",
+        "Save",
+        "Address",
+        "Updated",
+        "Delete",
+        "Delete",
+        "Delete",
+        "Delete",
+        "Delete",
+        "Delete"
+      ],
+      "counts": {
+        "cards": 6,
+        "forms": 0,
+        "tables": 1,
+        "tableRows": 6,
+        "buttons": 94,
+        "inputs": 4
+      },
+      "screenshot": "screenshots/07-universities.png"
+    },
+    {
+      "menuLabel": "News Area",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/news/dashboard",
+      "heading": "News Dashboard",
+      "emptySignals": [],
+      "createLike": [],
+      "counts": {
+        "cards": 2,
+        "forms": 0,
+        "tables": 1,
+        "tableRows": 2,
+        "buttons": 8,
+        "inputs": 0
+      },
+      "screenshot": "screenshots/08-news-area.png"
+    },
+    {
+      "menuLabel": "Exams",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/exams",
+      "heading": "Exam Management",
+      "emptySignals": [],
+      "createLike": [
+        "News Management",
+        "Data Export",
+        "Create Exam",
+        "Export",
+        "Delete",
+        "Export",
+        "Delete",
+        "Export",
+        "Delete"
+      ],
+      "counts": {
+        "cards": 9,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 52,
+        "inputs": 4
+      },
+      "screenshot": "screenshots/09-exams.png"
+    },
+    {
+      "menuLabel": "Question Bank",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/question-bank",
+      "heading": "Question Bank",
+      "emptySignals": [],
+      "createLike": [],
+      "counts": {
+        "cards": 10,
+        "forms": 0,
+        "tables": 1,
+        "tableRows": 10,
+        "buttons": 72,
+        "inputs": 8
+      },
+      "screenshot": "screenshots/10-question-bank.png"
+    },
+    {
+      "menuLabel": "Students",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/students",
+      "heading": "Students",
+      "emptySignals": [],
+      "createLike": [
+        "Export",
+        "Add Student"
+      ],
+      "counts": {
+        "cards": 0,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 33,
+        "inputs": 12
+      },
+      "screenshot": "screenshots/11-students.png"
+    },
+    {
+      "menuLabel": "Student Groups",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/student-groups",
+      "heading": "Student Groups",
+      "emptySignals": [],
+      "createLike": [
+        "Export",
+        "New Group"
+      ],
+      "counts": {
+        "cards": 0,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 12,
+        "inputs": 2
+      },
+      "screenshot": "screenshots/12-student-groups.png"
+    },
+    {
+      "menuLabel": "Subscription Plans",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/subscription-plans",
+      "heading": "Subscription Plans",
+      "emptySignals": [],
+      "createLike": [
+        "Save Order",
+        "Delete",
+        "Delete",
+        "Delete"
+      ],
+      "counts": {
+        "cards": 14,
+        "forms": 2,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 22,
+        "inputs": 8
+      },
+      "screenshot": "screenshots/13-subscription-plans.png"
+    },
+    {
+      "menuLabel": "Payments",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/payments",
+      "heading": "Payments",
+      "emptySignals": [],
+      "createLike": [
+        "Save Payment",
+        "Save Expense"
+      ],
+      "counts": {
+        "cards": 0,
+        "forms": 2,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 10,
+        "inputs": 10
+      },
+      "screenshot": "screenshots/14-payments.png"
+    },
+    {
+      "menuLabel": "Resources",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/resources",
+      "heading": "Resources",
+      "emptySignals": [],
+      "createLike": [
+        "Add",
+        "Delete",
+        "Delete",
+        "Delete",
+        "Delete"
+      ],
+      "counts": {
+        "cards": 4,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 20,
+        "inputs": 1
+      },
+      "screenshot": "screenshots/15-resources.png"
+    },
+    {
+      "menuLabel": "Support Center",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/support-center",
+      "heading": "Support Center",
+      "emptySignals": [],
+      "createLike": [],
+      "counts": {
+        "cards": 0,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 9,
+        "inputs": 0
+      },
+      "screenshot": "screenshots/16-support-center.png"
+    },
+    {
+      "menuLabel": "Reports",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/reports",
+      "heading": "Reports",
+      "emptySignals": [],
+      "createLike": [
+        "Export CSV",
+        "Export XLSX",
+        "Export CSV",
+        "Export XLSX"
+      ],
+      "counts": {
+        "cards": 9,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 12,
+        "inputs": 3
+      },
+      "screenshot": "screenshots/17-reports.png"
+    },
+    {
+      "menuLabel": "Security Center",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/settings/security-center",
+      "heading": "Security Center",
+      "emptySignals": [],
+      "createLike": [
+        "Save changes",
+        "Save Runtime"
+      ],
+      "counts": {
+        "cards": 0,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 13,
+        "inputs": 46
+      },
+      "screenshot": "screenshots/18-security-center.png"
+    },
+    {
+      "menuLabel": "System Logs",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/__cw_admin__/settings/system-logs",
+      "heading": "System Logs",
+      "emptySignals": [],
+      "createLike": [],
+      "counts": {
+        "cards": 0,
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 7,
+        "inputs": 4
+      },
+      "screenshot": "screenshots/19-system-logs.png"
+    },
+    {
+      "menuLabel": "Admin Profile",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/__cw_admin__/settings/admin-profile",
+      "heading": "Admin Profile",
+      "emptySignals": [
+        "No action history found."
+      ],
+      "createLike": [
+        "Save Changes",
+        "Update Password"
+      ],
+      "counts": {
+        "cards": 0,
+        "forms": 2,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 8,
+        "inputs": 5
+      },
+      "screenshot": "screenshots/20-admin-profile.png"
+    }
+  ],
+  "warnings": [
+    "Database drop skipped (mongosh unavailable or failed)"
+  ]
+}

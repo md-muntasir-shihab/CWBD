@@ -8,6 +8,7 @@ import {
     adminNewsV2GetSources,
     adminNewsV2ReorderSources,
     adminNewsV2TestSource,
+    adminNewsV2UploadMedia,
     adminNewsV2UpdateSource,
 } from '../../../services/api';
 
@@ -20,6 +21,7 @@ const EMPTY_SOURCE: Partial<ApiNewsV2Source> = {
     categoryDefault: 'General',
     tagsDefault: [],
     isActive: true,
+    enabled: true,
     order: 0,
     language: 'en',
 };
@@ -29,9 +31,10 @@ export default function AdminNewsSourcesSection() {
     const [form, setForm] = useState<Partial<ApiNewsV2Source>>(EMPTY_SOURCE);
     const [tagsInput, setTagsInput] = useState('');
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [uploadingIcon, setUploadingIcon] = useState(false);
 
     const sourcesQuery = useQuery({
-        queryKey: ['newsv2.sources'],
+        queryKey: ['adminRssSources'],
         queryFn: async () => (await adminNewsV2GetSources()).data,
     });
 
@@ -49,16 +52,19 @@ export default function AdminNewsSourcesSection() {
             setForm(EMPTY_SOURCE);
             setTagsInput('');
             setEditingId(null);
-            queryClient.invalidateQueries({ queryKey: ['newsv2.sources'] });
+            queryClient.invalidateQueries({ queryKey: ['adminRssSources'] });
+            queryClient.invalidateQueries({ queryKey: ['newsSources'] });
+            queryClient.invalidateQueries({ queryKey: ['newsList'] });
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || 'Source save failed'),
     });
 
     const actionMutation = useMutation({
-        mutationFn: async (payload: { type: 'test' | 'delete' | 'reorder'; id?: string; ids?: string[] }) => {
+        mutationFn: async (payload: { type: 'test' | 'delete' | 'reorder' | 'toggle'; id?: string; ids?: string[]; enabled?: boolean }) => {
             if (payload.type === 'test' && payload.id) return (await adminNewsV2TestSource(payload.id)).data;
             if (payload.type === 'delete' && payload.id) return (await adminNewsV2DeleteSource(payload.id)).data;
             if (payload.type === 'reorder' && payload.ids) return (await adminNewsV2ReorderSources(payload.ids)).data;
+            if (payload.type === 'toggle' && payload.id) return (await adminNewsV2UpdateSource(payload.id, { enabled: payload.enabled })).data;
             throw new Error('Unsupported action');
         },
         onSuccess: (data: any, payload) => {
@@ -67,7 +73,9 @@ export default function AdminNewsSourcesSection() {
             } else {
                 toast.success('Done');
             }
-            queryClient.invalidateQueries({ queryKey: ['newsv2.sources'] });
+            queryClient.invalidateQueries({ queryKey: ['adminRssSources'] });
+            queryClient.invalidateQueries({ queryKey: ['newsSources'] });
+            queryClient.invalidateQueries({ queryKey: ['newsList'] });
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || 'Source action failed'),
     });
@@ -77,6 +85,34 @@ export default function AdminNewsSourcesSection() {
         saveMutation.mutate();
     }
 
+    async function onUploadIcon(file?: File | null) {
+        if (!file) return;
+        setUploadingIcon(true);
+        try {
+            const result = await adminNewsV2UploadMedia(file, { altText: 'source-icon' });
+            const mediaUrl = result.data?.item?.url || '';
+            if (!mediaUrl) throw new Error('Upload failed');
+            setForm((prev) => ({ ...prev, iconUrl: mediaUrl, iconType: 'upload' }));
+            toast.success('Icon uploaded');
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || 'Icon upload failed');
+        } finally {
+            setUploadingIcon(false);
+        }
+    }
+
+    function reorderSource(sourceId: string, direction: 'up' | 'down') {
+        const current = (sourcesQuery.data?.items || []).map((item) => String(item._id));
+        const index = current.findIndex((id) => id === sourceId);
+        if (index < 0) return;
+        const target = direction === 'up' ? index - 1 : index + 1;
+        if (target < 0 || target >= current.length) return;
+        const next = [...current];
+        const [moved] = next.splice(index, 1);
+        next.splice(target, 0, moved);
+        actionMutation.mutate({ type: 'reorder', ids: next });
+    }
+
     return (
         <div className="space-y-4">
             <form onSubmit={onSubmit} className="card-flat border border-cyan-500/20 p-4">
@@ -84,11 +120,48 @@ export default function AdminNewsSourcesSection() {
                 <div className="grid gap-3 md:grid-cols-2">
                     <input className="input-field" placeholder="Source Name" value={form.name || ''} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
                     <input className="input-field" placeholder="Feed URL" value={form.feedUrl || ''} onChange={(e) => setForm((prev) => ({ ...prev, feedUrl: e.target.value }))} required />
-                    <input className="input-field" placeholder="Icon URL" value={form.iconUrl || ''} onChange={(e) => setForm((prev) => ({ ...prev, iconUrl: e.target.value }))} />
+                    <div className="space-y-2 md:col-span-2">
+                        <input
+                            className="input-field"
+                            placeholder="Icon URL"
+                            value={form.iconUrl || ''}
+                            onChange={(e) => setForm((prev) => ({ ...prev, iconUrl: e.target.value, iconType: 'url' }))}
+                        />
+                        <div className="flex items-center gap-2">
+                            <label className="inline-flex cursor-pointer items-center rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-700 transition hover:border-cyan-500/60 dark:border-slate-700 dark:text-slate-200">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(event) => {
+                                        const file = event.target.files?.[0];
+                                        onUploadIcon(file);
+                                        event.currentTarget.value = '';
+                                    }}
+                                />
+                                {uploadingIcon ? 'Uploading...' : 'Upload Icon'}
+                            </label>
+                            {form.iconUrl ? <img src={form.iconUrl} alt="source icon" className="h-9 w-9 rounded-md border border-slate-300/70 object-cover dark:border-slate-700/70" /> : null}
+                        </div>
+                    </div>
+                    <input className="input-field" placeholder="Source Site URL (optional)" value={form.siteUrl || ''} onChange={(e) => setForm((prev) => ({ ...prev, siteUrl: e.target.value }))} />
                     <input className="input-field" placeholder="Default Category" value={form.categoryDefault || ''} onChange={(e) => setForm((prev) => ({ ...prev, categoryDefault: e.target.value }))} />
-                    <input className="input-field" type="number" min={5} max={1440} placeholder="Fetch interval minutes" value={form.fetchIntervalMin || 30} onChange={(e) => setForm((prev) => ({ ...prev, fetchIntervalMin: Number(e.target.value) }))} />
+                    <select className="input-field" value={form.fetchIntervalMin || 30} onChange={(e) => setForm((prev) => ({ ...prev, fetchIntervalMin: Number(e.target.value) }))}>
+                        <option value={15}>15 min</option>
+                        <option value={30}>30 min</option>
+                        <option value={60}>60 min</option>
+                        <option value={360}>360 min</option>
+                    </select>
                     <input className="input-field" type="number" min={1} max={100} placeholder="Max items per fetch" value={form.maxItemsPerFetch || 20} onChange={(e) => setForm((prev) => ({ ...prev, maxItemsPerFetch: Number(e.target.value) }))} />
                     <input className="input-field md:col-span-2" placeholder="Default tags (comma separated)" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} />
+                    <label className="md:col-span-2 inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:text-slate-300">
+                        <input
+                            type="checkbox"
+                            checked={Boolean(form.isActive)}
+                            onChange={(e) => setForm((prev) => ({ ...prev, isActive: e.target.checked, enabled: e.target.checked }))}
+                        />
+                        Source enabled
+                    </label>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                     <button type="submit" className="btn-primary" disabled={saveMutation.isPending}>{saveMutation.isPending ? 'Saving...' : 'Save Source'}</button>
@@ -110,15 +183,24 @@ export default function AdminNewsSourcesSection() {
                         </thead>
                         <tbody>
                             {(sourcesQuery.data?.items || []).map((source) => (
-                                <tr key={source._id} className="border-b border-slate-800/60">
+                                <tr key={source._id} className="border-b border-slate-200 dark:border-slate-800/60">
                                     <td className="py-2 pr-3">{source.name}</td>
-                                    <td className="py-2 pr-3 text-xs text-slate-300">{source.feedUrl}</td>
+                                    <td className="py-2 pr-3 text-xs text-slate-600 dark:text-slate-300">{source.feedUrl}</td>
                                     <td className="py-2 pr-3">{source.fetchIntervalMin}m</td>
                                     <td className="py-2 pr-3">{source.isActive ? 'Active' : 'Disabled'}</td>
                                     <td className="py-2 pr-3">
                                         <div className="flex flex-wrap gap-1">
-                                            <button className="rounded border border-slate-600 px-2 py-1 text-xs" onClick={() => { setEditingId(source._id); setForm(source); setTagsInput((source.tagsDefault || []).join(', ')); }}>Edit</button>
+                                            <button className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 dark:border-slate-600 dark:text-slate-200" onClick={() => { setEditingId(source._id); setForm(source); setTagsInput((source.tagsDefault || []).join(', ')); }}>Edit</button>
                                             <button className="rounded border border-cyan-600/60 px-2 py-1 text-xs text-cyan-200" onClick={() => actionMutation.mutate({ type: 'test', id: source._id })}>Test</button>
+                                            <button className="rounded border border-indigo-600/60 px-2 py-1 text-xs text-indigo-200" onClick={() => actionMutation.mutate({ type: 'toggle', id: source._id, enabled: !source.isActive })}>
+                                                {source.isActive ? 'Disable' : 'Enable'}
+                                            </button>
+                                            <button className="rounded border border-slate-500/60 px-2 py-1 text-xs text-slate-200" onClick={() => reorderSource(source._id, 'up')}>
+                                                Up
+                                            </button>
+                                            <button className="rounded border border-slate-500/60 px-2 py-1 text-xs text-slate-200" onClick={() => reorderSource(source._id, 'down')}>
+                                                Down
+                                            </button>
                                             <button className="rounded border border-rose-600/60 px-2 py-1 text-xs text-rose-200" onClick={() => actionMutation.mutate({ type: 'delete', id: source._id })}>Delete</button>
                                         </div>
                                     </td>
@@ -126,7 +208,7 @@ export default function AdminNewsSourcesSection() {
                             ))}
                             {!sourcesQuery.data?.items?.length && (
                                 <tr>
-                                    <td colSpan={5} className="py-4 text-center text-slate-400">No sources yet.</td>
+                                    <td colSpan={5} className="py-4 text-center text-slate-500 dark:text-slate-400">No sources yet.</td>
                                 </tr>
                             )}
                         </tbody>
@@ -136,4 +218,3 @@ export default function AdminNewsSourcesSection() {
         </div>
     );
 }
-

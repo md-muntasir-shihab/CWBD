@@ -10,11 +10,14 @@ import News from '../models/News';
 import Service from '../models/Service';
 import HomeConfig from '../models/HomeConfig';
 import Banner from '../models/Banner';
+import SiteSettings from '../models/Settings';
 import { addHomeStreamClient, broadcastHomeStreamEvent } from '../realtime/homeStream';
+import { getAggregatedHomeData as getStrictAggregatedHomeData } from './homeAggregateController';
 
 const DEFAULT_SOCIAL_LINKS = {
     facebook: '',
     whatsapp: '',
+    messenger: '',
     telegram: '',
     twitter: '',
     youtube: '',
@@ -36,7 +39,7 @@ const DEFAULT_SOCIAL_UI = {
     clusterEnabled: true,
     buttonVariant: 'squircle',
     showLabels: false,
-    platformOrder: ['facebook', 'whatsapp', 'telegram', 'twitter', 'youtube', 'instagram'],
+    platformOrder: ['facebook', 'whatsapp', 'messenger', 'telegram', 'twitter', 'youtube', 'instagram'],
 };
 
 const DEFAULT_PRICING_UI = {
@@ -83,77 +86,7 @@ function toTime(value: unknown): number {
 }
 
 export const getAggregatedHomeData = async (req: Request, res: Response) => {
-    try {
-        const { settings, home } = await ensureConfigs();
-        const homeConfig = await HomeConfig.findOne().select('selectedUniversityCategories').lean();
-
-        // Fetch previews if enabled
-        const newsPreview = home.featuredSectionSettings.showNews
-            ? await News.find().sort({ createdAt: -1 }).limit(3).lean() : [];
-
-        const servicesPreviewRaw = home.featuredSectionSettings.showServices
-            ? await Service.find({ status: 'active' }).limit(4).lean() : [];
-
-        const servicesPreview = servicesPreviewRaw.map((s: any) => ({
-            ...s,
-            title: s.service_title,
-            description: s.short_description || s.full_description,
-        }));
-
-        const featuredExams = home.featuredSectionSettings.showExams
-            ? await Exam.find({ isPublished: true, status: { $in: ['live', 'scheduled'] } })
-                .sort({ startDate: 1 }).limit(4).lean() : [];
-
-        const activeUniversities = await University.find({ isActive: true, isArchived: { $ne: true } })
-            .select('totalSeats scienceExamDate artsExamDate businessExamDate applicationEndDate updatedAt')
-            .lean();
-
-        const totalUniversities = activeUniversities.length;
-        const totalSeats = activeUniversities.reduce((sum, item) => sum + parseSeatValue(item.totalSeats), 0);
-        const upcomingExams = activeUniversities.reduce((sum, item) => (
-            sum
-            + countUpcomingDateStrings([item.scienceExamDate, item.artsExamDate, item.businessExamDate], 30)
-        ), 0);
-        const upcomingDeadlines = countUpcomingDateStrings(activeUniversities.map((item) => item.applicationEndDate), 30);
-
-        const [latestUniversity, latestCluster, latestBanner, latestNews, latestHomeConfig] = await Promise.all([
-            University.findOne().sort({ updatedAt: -1 }).select('updatedAt').lean(),
-            UniversityCluster.findOne().sort({ updatedAt: -1 }).select('updatedAt').lean(),
-            Banner.findOne().sort({ updatedAt: -1 }).select('updatedAt').lean(),
-            News.findOne().sort({ updatedAt: -1 }).select('updatedAt').lean(),
-            HomeConfig.findOne().sort({ updatedAt: -1 }).select('updatedAt').lean(),
-        ]);
-
-        const revision = Math.max(
-            toTime((home as unknown as { updatedAt?: Date; createdAt?: Date }).updatedAt)
-            || toTime((home as unknown as { updatedAt?: Date; createdAt?: Date }).createdAt)
-            || Date.now(),
-            toTime(latestUniversity?.updatedAt),
-            toTime(latestCluster?.updatedAt),
-            toTime(latestBanner?.updatedAt),
-            toTime(latestNews?.updatedAt),
-            toTime((latestHomeConfig as unknown as { updatedAt?: Date } | null)?.updatedAt),
-        );
-
-        res.json({
-            settings,
-            home,
-            selectedUniversityCategories: homeConfig?.selectedUniversityCategories || [],
-            newsPreview,
-            featuredExams,
-            servicesPreview,
-            liveStats: {
-                totalUniversities,
-                totalSeats,
-                upcomingExams,
-                upcomingDeadlines,
-            },
-            revision,
-        });
-    } catch (error) {
-        console.error('Error fetching home data:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    await getStrictAggregatedHomeData(req as any, res);
 };
 
 export const getHomeStream = async (_req: Request, res: Response): Promise<void> => {
@@ -163,7 +96,45 @@ export const getHomeStream = async (_req: Request, res: Response): Promise<void>
 export const getSettings = async (req: Request, res: Response) => {
     try {
         const { settings } = await ensureConfigs();
-        res.json(settings);
+        const siteSettings = await SiteSettings.findOne().lean();
+
+        const socialLinksList = Array.isArray(siteSettings?.socialLinks)
+            ? siteSettings.socialLinks
+                .filter((item: any) => item?.enabled !== false && item?.url)
+                .map((item: any) => ({
+                    id: String(item?._id || ''),
+                    platformName: String(item?.platform || ''),
+                    targetUrl: String(item?.url || ''),
+                    iconUploadOrUrl: String(item?.icon || ''),
+                    description: String(item?.description || ''),
+                    enabled: item?.enabled !== false,
+                    placements: Array.isArray(item?.placements) ? item.placements : ['header', 'footer', 'home', 'news', 'contact'],
+                }))
+            : [];
+
+        const socialLinksFromList = socialLinksList.reduce<Record<string, string>>((acc, item) => {
+            const key = String(item.platformName || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+            if (!key || !item.targetUrl) return acc;
+            if (['facebook', 'whatsapp', 'messenger', 'telegram', 'twitter', 'youtube', 'instagram'].includes(key)) {
+                acc[key] = item.targetUrl;
+            } else if (key === 'x') {
+                acc.twitter = item.targetUrl;
+            }
+            return acc;
+        }, {});
+
+        const base = settings.toObject();
+        res.json({
+            ...base,
+            siteName: String(base.websiteName || ''),
+            logoUrl: String(base.logo || ''),
+            socialLinks: {
+                ...DEFAULT_SOCIAL_LINKS,
+                ...(base.socialLinks || {}),
+                ...socialLinksFromList,
+            },
+            socialLinksList,
+        });
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -229,6 +200,7 @@ export const updateSettings = async (req: Request, res: Response) => {
         );
 
         console.log('Settings updated in DB:', settings);
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'website-settings' } });
 
         res.json({ message: 'Settings updated successfully', settings });
     } catch (error) {

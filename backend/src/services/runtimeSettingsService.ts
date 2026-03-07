@@ -20,6 +20,8 @@ export interface RuntimeFeatureFlags {
     backupS3MirrorEnabled: boolean;
     nextAdminEnabled: boolean;
     nextStudentEnabled: boolean;
+    trainingMode: boolean;
+    requireDeleteKeywordConfirm: boolean;
 }
 
 export interface RuntimeSettingsSnapshot {
@@ -54,6 +56,8 @@ const DEFAULT_FEATURE_FLAGS: RuntimeFeatureFlags = {
     backupS3MirrorEnabled: false,
     nextAdminEnabled: false,
     nextStudentEnabled: false,
+    trainingMode: false,
+    requireDeleteKeywordConfirm: true,
 };
 
 function asBoolean(value: unknown, fallback: boolean): boolean {
@@ -89,6 +93,11 @@ function normalizeFeatureFlags(
         backupS3MirrorEnabled: asBoolean(raw.backupS3MirrorEnabled, DEFAULT_FEATURE_FLAGS.backupS3MirrorEnabled),
         nextAdminEnabled: asBoolean(raw.nextAdminEnabled, DEFAULT_FEATURE_FLAGS.nextAdminEnabled),
         nextStudentEnabled: asBoolean(raw.nextStudentEnabled, DEFAULT_FEATURE_FLAGS.nextStudentEnabled),
+        trainingMode: asBoolean(raw.trainingMode, DEFAULT_FEATURE_FLAGS.trainingMode),
+        requireDeleteKeywordConfirm: asBoolean(
+            raw.requireDeleteKeywordConfirm,
+            DEFAULT_FEATURE_FLAGS.requireDeleteKeywordConfirm,
+        ),
     };
 }
 
@@ -127,7 +136,9 @@ export async function getRuntimeSettingsSnapshot(forceRefreshSecurity = true): P
         settings.featureFlags?.emailReminderEnabled === undefined ||
         settings.featureFlags?.backupS3MirrorEnabled === undefined ||
         settings.featureFlags?.nextAdminEnabled === undefined ||
-        settings.featureFlags?.nextStudentEnabled === undefined;
+        settings.featureFlags?.nextStudentEnabled === undefined ||
+        settings.featureFlags?.trainingMode === undefined ||
+        settings.featureFlags?.requireDeleteKeywordConfirm === undefined;
 
     if (needsPatch) {
         await SiteSettings.updateOne(

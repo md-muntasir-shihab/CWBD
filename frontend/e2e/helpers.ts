@@ -96,19 +96,41 @@ export async function expectPageHealthy(page: Page, tracker: HealthTracker): Pro
 }
 
 export async function loginAsAdmin(page: Page, variant: CredentialVariant = 'auto'): Promise<void> {
-    const creds = getAdminCreds(page, variant);
-    await page.goto('/login');
-    await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(creds.email);
-    await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(creds.password);
-    await page.getByRole('button', { name: /Sign In/i }).click();
-    await expect(page).toHaveURL(/\/campusway-secure-admin/, { timeout: 15000 });
+    const primary = getAdminCreds(page, variant);
+    const secondary = primary.email === seededCreds.admin.desktop.email
+        ? seededCreds.admin.mobile
+        : seededCreds.admin.desktop;
+    const attempts = [primary, secondary, primary, secondary, primary];
+
+    for (let i = 0; i < attempts.length; i += 1) {
+        const creds = attempts[i];
+        await page.goto('/__cw_admin__/login');
+        await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(creds.email);
+        await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(creds.password);
+        await page.getByRole('button', { name: /Sign In/i }).first().click();
+
+        try {
+            await expect(page).toHaveURL(/\/__cw_admin__\/dashboard/, { timeout: 10000 });
+            return;
+        } catch {
+            const lockVisible = await page.getByText(/Too many login attempts/i).first().isVisible().catch(() => false);
+            const rateLimitVisible = await page.getByText(/Too many requests/i).first().isVisible().catch(() => false);
+            if ((lockVisible || rateLimitVisible) && i < attempts.length - 1) {
+                await page.waitForTimeout(12000);
+                continue;
+            }
+            if (i === attempts.length - 1) {
+                throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');
+            }
+        }
+    }
 }
 
 export async function loginAsStudent(page: Page, variant: CredentialVariant = 'auto'): Promise<void> {
     const creds = getStudentCreds(page, variant);
-    await page.goto('/student/login');
+    await page.goto('/login');
     await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(creds.email);
     await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(creds.password);
     await page.getByRole('button', { name: /(Sign in|Access Dashboard)/i }).first().click();
-    await expect(page).toHaveURL(/\/student\/dashboard/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 }

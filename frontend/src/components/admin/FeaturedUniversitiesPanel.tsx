@@ -2,11 +2,17 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { Star, GripVertical, Save, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import api from '../../services/api';
-import { ApiUniversity } from '../../services/api';
+import { ApiUniversity, adminGetUniversitySettings, adminUpdateUniversitySettings } from '../../services/api';
+
+const ADMIN_API_PATH = (
+    String(import.meta.env.VITE_ADMIN_PATH || 'campusway-secure-admin').trim().replace(/^\/+|\/+$/g, '')
+    || 'campusway-secure-admin'
+);
 
 export default function FeaturedUniversitiesPanel() {
     const [universities, setUniversities] = useState<ApiUniversity[]>([]);
     const [featured, setFeatured] = useState<ApiUniversity[]>([]);
+    const [featuredSlugs, setFeaturedSlugs] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [search, setSearch] = useState('');
@@ -17,13 +23,39 @@ export default function FeaturedUniversitiesPanel() {
     const fetchUniversities = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await api.get('/campusway-secure-admin/universities', { params: { limit: 1000 } });
+            const [universitiesResponse, settingsResponse] = await Promise.all([
+                api.get(`/${ADMIN_API_PATH}/universities`, { params: { limit: 1000 } }),
+                adminGetUniversitySettings(),
+            ]);
             // Extract the universities array from the response object
-            const uniArray = Array.isArray(res.data) ? res.data : (res.data.universities || []);
+            const uniArray = Array.isArray(universitiesResponse.data)
+                ? universitiesResponse.data
+                : (universitiesResponse.data.universities || []);
             setUniversities(uniArray);
 
-            const feat = uniArray.filter((u: ApiUniversity) => u.featured).sort((a: ApiUniversity, b: ApiUniversity) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
-            setFeatured(feat);
+            const configuredSlugs = (settingsResponse.data?.data?.featuredUniversitySlugs || [])
+                .map((slug) => String(slug || '').trim().toLowerCase())
+                .filter(Boolean);
+            setFeaturedSlugs(configuredSlugs);
+
+            const bySlug = new Map(
+                (uniArray as ApiUniversity[])
+                    .map((item) => [String(item.slug || '').trim().toLowerCase(), item] as const)
+                    .filter(([slug]) => Boolean(slug)),
+            );
+
+            const configuredFeatured = configuredSlugs
+                .map((slug) => bySlug.get(slug) || null)
+                .filter((item): item is ApiUniversity => item !== null);
+
+            if (configuredFeatured.length > 0) {
+                setFeatured(configuredFeatured);
+            } else {
+                const legacyFeatured = (uniArray as ApiUniversity[])
+                    .filter((u) => u.featured)
+                    .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
+                setFeatured(legacyFeatured);
+            }
         } catch (err: any) {
             console.error('Failed to fetch universities:', err);
             toast.error(err.message || 'Failed to fetch universities');
@@ -67,18 +99,30 @@ export default function FeaturedUniversitiesPanel() {
             const removed = originalFeaturedConfigs.filter(id => !newFeaturedConfigs.includes(id));
 
             for (const id of added) {
-                await api.put(`/campusway-secure-admin/universities/${id}`, { featured: true });
+                await api.put(`/${ADMIN_API_PATH}/universities/${id}`, { featured: true });
             }
             for (const id of removed) {
-                await api.put(`/campusway-secure-admin/universities/${id}`, { featured: false, featuredOrder: 0 });
+                await api.put(`/${ADMIN_API_PATH}/universities/${id}`, { featured: false, featuredOrder: 0 });
             }
 
             const orderPayload = featured.map((u, index) => ({ id: u._id, featuredOrder: index + 1 }));
             if (orderPayload.length > 0) {
-                await api.put('/campusway-secure-admin/universities/reorder-featured', { order: orderPayload });
+                await api.put(`/${ADMIN_API_PATH}/universities/reorder-featured`, { order: orderPayload });
             }
 
-            toast.success('Successfully added to featured list');
+            const nextFeaturedSlugs = featured
+                .map((u) => String(u.slug || '').trim().toLowerCase())
+                .filter(Boolean);
+            const hasSlugDiff =
+                nextFeaturedSlugs.length !== featuredSlugs.length
+                || nextFeaturedSlugs.some((slug, index) => slug !== featuredSlugs[index]);
+
+            if (hasSlugDiff) {
+                await adminUpdateUniversitySettings({ featuredUniversitySlugs: nextFeaturedSlugs });
+                setFeaturedSlugs(nextFeaturedSlugs);
+            }
+
+            toast.success('Featured universities saved successfully.');
             fetchUniversities();
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error saving featured universities');

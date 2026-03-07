@@ -1,0 +1,1056 @@
+{
+  "runId": "20260303092059",
+  "baseUrl": "http://127.0.0.1:5263",
+  "startedAt": "2026-03-03T09:20:59.344Z",
+  "endedAt": "2026-03-03T09:34:11.896Z",
+  "summary": {
+    "total": 55,
+    "passed": 36,
+    "failed": 19,
+    "critical": 17,
+    "major": 2,
+    "minor": 36
+  },
+  "checks": [
+    {
+      "id": "check-001",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/",
+      "action": "open-home",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-001-public-desktop-open-home.png"
+    },
+    {
+      "id": "check-002",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/universities",
+      "action": "navbar-universities",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-002-public-desktop-navbar-universities.png"
+    },
+    {
+      "id": "check-003",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/exam-portal",
+      "action": "navbar-exams",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-003-public-desktop-navbar-exams.png"
+    },
+    {
+      "id": "check-004",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/news",
+      "action": "navbar-news",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-004-public-desktop-navbar-news.png"
+    },
+    {
+      "id": "check-005",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/resources",
+      "action": "navbar-resources",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-005-public-desktop-navbar-resources.png"
+    },
+    {
+      "id": "check-006",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/contact",
+      "action": "navbar-contact",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-006-public-desktop-navbar-contact.png"
+    },
+    {
+      "id": "check-007",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/subscription-plans",
+      "action": "navbar-plans",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-007-public-desktop-navbar-plans.png"
+    },
+    {
+      "id": "check-008",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/login",
+      "action": "navbar-login",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/public/check-008-public-desktop-navbar-login.png"
+    },
+    {
+      "id": "check-009",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/universities",
+      "action": "university-detail",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-009-public-desktop-university-detail.png"
+    },
+    {
+      "id": "check-010",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/services",
+      "action": "service-detail",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-010-public-desktop-service-detail.png"
+    },
+    {
+      "id": "check-011",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/news",
+      "action": "news-detail",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-011-public-desktop-news-detail.png"
+    },
+    {
+      "id": "check-012",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/resources",
+      "action": "open-resources",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-012-public-desktop-open-resources.png"
+    },
+    {
+      "id": "check-013",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/contact",
+      "action": "open-contact",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-013-public-desktop-open-contact.png"
+    },
+    {
+      "id": "check-014",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/subscription-plans",
+      "action": "open-subscription-plans",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-014-public-desktop-open-subscription-plans.png"
+    },
+    {
+      "id": "check-015",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/about",
+      "action": "open-about",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-015-public-desktop-open-about.png"
+    },
+    {
+      "id": "check-016",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/terms",
+      "action": "open-terms",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-016-public-desktop-open-terms.png"
+    },
+    {
+      "id": "check-017",
+      "phase": "public",
+      "viewport": "desktop",
+      "route": "/privacy",
+      "action": "open-privacy",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/public/check-017-public-desktop-open-privacy.png"
+    },
+    {
+      "id": "check-018",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/dashboard",
+      "action": "open-dashboard",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-018-student-desktop-open-dashboard.png"
+    },
+    {
+      "id": "check-019",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/exams",
+      "action": "open-exams",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-019-student-desktop-open-exams.png"
+    },
+    {
+      "id": "check-020",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/results",
+      "action": "open-results",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-020-student-desktop-open-results.png"
+    },
+    {
+      "id": "check-021",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/payments",
+      "action": "open-payments",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-021-student-desktop-open-payments.png"
+    },
+    {
+      "id": "check-022",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/notifications",
+      "action": "open-notifications",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-022-student-desktop-open-notifications.png"
+    },
+    {
+      "id": "check-023",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/profile",
+      "action": "open-profile",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-023-student-desktop-open-profile.png"
+    },
+    {
+      "id": "check-024",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/student/resources",
+      "action": "open-student-resources",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-024-student-desktop-open-student-resources.png"
+    },
+    {
+      "id": "check-025",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/support",
+      "action": "open-support",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-025-student-desktop-open-support.png"
+    },
+    {
+      "id": "check-026",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/exams/:id",
+      "action": "exam-detail",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-026-student-desktop-exam-detail.png"
+    },
+    {
+      "id": "check-027",
+      "phase": "student",
+      "viewport": "desktop",
+      "route": "/results/:id",
+      "action": "result-detail",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/student/check-027-student-desktop-result-detail.png"
+    },
+    {
+      "id": "check-028",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=dashboard",
+      "action": "tab-dashboard",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-028-admin-desktop-tab-dashboard.png"
+    },
+    {
+      "id": "check-029",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=universities",
+      "action": "tab-universities",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-029-admin-desktop-tab-universities.png"
+    },
+    {
+      "id": "check-030",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=exams",
+      "action": "tab-exams",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-030-admin-desktop-tab-exams.png"
+    },
+    {
+      "id": "check-031",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=question-bank",
+      "action": "tab-question-bank",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-031-admin-desktop-tab-question-bank.png"
+    },
+    {
+      "id": "check-032",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=student-management",
+      "action": "tab-student-management",
+      "status": "fail",
+      "severity": "major",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [
+          "Each child in a list should have a unique \"key\" prop.%s%s See https://react.dev/link/warning-keys for more information. \n\nCheck the render method of `StudentManagementPanel`. "
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-032-admin-desktop-tab-student-management.png"
+    },
+    {
+      "id": "check-033",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=subscription-plans",
+      "action": "tab-subscription-plans",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-033-admin-desktop-tab-subscription-plans.png"
+    },
+    {
+      "id": "check-034",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=finance",
+      "action": "tab-finance",
+      "status": "fail",
+      "severity": "major",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [
+          "Each child in a list should have a unique \"key\" prop.%s%s See https://react.dev/link/warning-keys for more information. \n\nCheck the render method of `select`.  It was passed a child from FinancePanel."
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-034-admin-desktop-tab-finance.png"
+    },
+    {
+      "id": "check-035",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=resources",
+      "action": "tab-resources",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-035-admin-desktop-tab-resources.png"
+    },
+    {
+      "id": "check-036",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=support-tickets",
+      "action": "tab-support-tickets",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-036-admin-desktop-tab-support-tickets.png"
+    },
+    {
+      "id": "check-037",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=security",
+      "action": "tab-security",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-037-admin-desktop-tab-security.png"
+    },
+    {
+      "id": "check-038",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=logs",
+      "action": "tab-logs",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-038-admin-desktop-tab-logs.png"
+    },
+    {
+      "id": "check-039",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings",
+      "action": "open-admin-settings",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-039-admin-desktop-open-admin-settings.png"
+    },
+    {
+      "id": "check-040",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings/home",
+      "action": "open-admin-settings-home",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-040-admin-desktop-open-admin-settings-home.png"
+    },
+    {
+      "id": "check-041",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings/reports",
+      "action": "open-admin-settings-reports",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-041-admin-desktop-open-admin-settings-reports.png"
+    },
+    {
+      "id": "check-042",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings/banners",
+      "action": "open-admin-settings-banners",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-042-admin-desktop-open-admin-settings-banners.png"
+    },
+    {
+      "id": "check-043",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings/security",
+      "action": "open-admin-settings-security",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-043-admin-desktop-open-admin-settings-security.png"
+    },
+    {
+      "id": "check-044",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings/logs",
+      "action": "open-admin-settings-logs",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-044-admin-desktop-open-admin-settings-logs.png"
+    },
+    {
+      "id": "check-045",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings/site",
+      "action": "open-admin-settings-site",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-045-admin-desktop-open-admin-settings-site.png"
+    },
+    {
+      "id": "check-046",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/admin/settings/profile",
+      "action": "open-admin-settings-profile",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-046-admin-desktop-open-admin-settings-profile.png"
+    },
+    {
+      "id": "check-047",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=universities",
+      "action": "crud-university",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-047-admin-desktop-crud-university.png"
+    },
+    {
+      "id": "check-048",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=resources",
+      "action": "crud-resource",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [
+          "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-048-admin-desktop-crud-resource.png"
+    },
+    {
+      "id": "check-049",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=exams",
+      "action": "crud-exam",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "react_dom_1.default.findDOMNode is not a function",
+          "react_dom_1.default.findDOMNode is not a function"
+        ],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/admin/check-049-admin-desktop-crud-exam.png"
+    },
+    {
+      "id": "check-050",
+      "phase": "admin",
+      "viewport": "desktop",
+      "route": "/campusway-secure-admin?tab=question-bank",
+      "action": "crud-question-bank",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/admin/check-050-admin-desktop-crud-question-bank.png"
+    },
+    {
+      "id": "check-051",
+      "phase": "public",
+      "viewport": "mobile",
+      "route": "/",
+      "action": "home-menu",
+      "status": "fail",
+      "severity": "critical",
+      "issues": {
+        "pageErrors": [
+          "Rendered more hooks than during the previous render."
+        ],
+        "api5xx": [],
+        "consoleErrors": [
+          "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n HomeModernPage 1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. useState                   useState\n5. useState                   useState\n6. useState                   useState\n7. useContext                 useContext\n8. useContext                 useContext\n9. useContext                 useContext\n10. useEffect                 useEffect\n11. useState                  useState\n12. useCallback               useCallback\n13. useSyncExternalStore      useSyncExternalStore\n14. useEffect                 useEffect\n15. useEffect                 useEffect\n16. useContext                useContext\n17. useContext                useContext\n18. useContext                useContext\n19. useEffect                 useEffect\n20. useState                  useState\n21. useCallback               useCallback\n22. useSyncExternalStore      useSyncExternalStore\n23. useEffect                 useEffect\n24. undefined                 useEffect\n"
+        ],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": true
+      },
+      "screenshot": "screenshots/mobile/check-051-public-mobile-home-menu.png"
+    },
+    {
+      "id": "check-052",
+      "phase": "public",
+      "viewport": "mobile",
+      "route": "/news",
+      "action": "news",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/mobile/check-052-public-mobile-news.png"
+    },
+    {
+      "id": "check-053",
+      "phase": "public",
+      "viewport": "mobile",
+      "route": "/exam-portal",
+      "action": "exam-portal",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/mobile/check-053-public-mobile-exam-portal.png"
+    },
+    {
+      "id": "check-054",
+      "phase": "student",
+      "viewport": "mobile",
+      "route": "/student/dashboard",
+      "action": "student-dashboard",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/mobile/check-054-student-mobile-student-dashboard.png"
+    },
+    {
+      "id": "check-055",
+      "phase": "admin",
+      "viewport": "mobile",
+      "route": "/campusway-secure-admin",
+      "action": "admin-menu",
+      "status": "pass",
+      "severity": "minor",
+      "issues": {
+        "pageErrors": [],
+        "api5xx": [],
+        "consoleErrors": [],
+        "darkModeMismatch": false,
+        "horizontalOverflow": false,
+        "blankScreen": false
+      },
+      "screenshot": "screenshots/mobile/check-055-admin-mobile-admin-menu.png"
+    }
+  ],
+  "warnings": [
+    "e2e:prepare failed, using seed:default-users fallback",
+    "\n> campusway-backend@1.0.0 e2e:prepare\n> tsx src/scripts/e2e_prepare.ts\n\n[db] MongoDB connected successfully\n[db] All critical indexes ensured\n[e2e_prepare] failed MongoServerError: Plan executor error during findAndModify :: caused by :: E11000 duplicate key error collection: campusway_playwright_mcp_20260303092059.studentprofiles index: phone_number_1 dup key: { phone_number: \"01700000000\" }\n    at Connection.sendCommand (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\cmap\\connection.ts:559:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Connection.command (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\cmap\\connection.ts:633:22)\n    at async Server.command (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\sdam\\server.ts:350:21)\n    at async tryOperation (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\operations\\execute_operation.ts:289:24)\n    at async executeOperation (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\operations\\execute_operation.ts:119:12)\n    at async Collection.findOneAndUpdate (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\collection.ts:1041:12)\n    at async model.Query._findOneAndUpdate (F:\\CampusWay\\backend\\node_modules\\mongoose\\lib\\query.js:3536:13)\n    at async model.Query.exec (F:\\CampusWay\\backend\\node_modules\\mongoose\\lib\\query.js:4627:63)\n    at async upsertSeedUser (F:\\CampusWay\\backend\\src\\scripts\\e2e_prepare.ts:116:9) {\n  errorLabelSet: Set(0) {},\n  errorResponse: {\n    ok: 0,\n    errmsg: 'Plan executor error during findAndModify :: caused by :: E11000 duplicate key error collection: campusway_playwright_mcp_20260303092059.studentprofiles index: phone_number_1 dup key: { phone_number: \"01700000000\" }',\n    code: 11000,\n    codeName: 'DuplicateKey',\n    keyPattern: { phone_number: 1 },\n    keyValue: { phone_number: '01700000000' }\n  },\n  ok: 0,\n  code: 11000,\n  codeName: 'DuplicateKey',\n  keyPattern: { phone_number: 1 },\n  keyValue: { phone_number: '01700000000' }\n}\n[db] MongoDB disconnected\n",
+    "Database drop skipped (mongosh unavailable or failed)"
+  ]
+}

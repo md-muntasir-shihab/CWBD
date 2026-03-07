@@ -1,0 +1,582 @@
+{
+  "runId": "20260306193643",
+  "startedAt": "2026-03-06T19:36:43.235Z",
+  "endedAt": "2026-03-06T19:41:27.600Z",
+  "baseUrl": "http://127.0.0.1:5274",
+  "summary": {
+    "total": 19,
+    "passed": 13,
+    "warned": 6,
+    "failed": 0
+  },
+  "findings": [
+    {
+      "id": "01",
+      "kind": "public",
+      "label": "Home",
+      "route": "/",
+      "status": "warn",
+      "note": "Missing expected content: Resource item links",
+      "currentUrl": "/",
+      "heading": "Bangladesh University Admission Hub",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Featured university links",
+          "selector": "main a[href*=\"/university/\"], main a[href*=\"/universities/\"]:not([href=\"/universities\"])",
+          "min": 1,
+          "count": 5,
+          "ok": true
+        },
+        {
+          "label": "News detail links",
+          "selector": "main a[href^=\"/news/\"]:not([href=\"/news\"])",
+          "min": 1,
+          "count": 5,
+          "ok": true
+        },
+        {
+          "label": "Resource item links",
+          "selector": "main a[href^=\"/resources\"]:not([href=\"/resources\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 16,
+        "links": 61,
+        "inputs": 1
+      },
+      "missingChecks": [
+        {
+          "label": "Resource item links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/01-public-home.png"
+    },
+    {
+      "id": "02",
+      "kind": "public",
+      "label": "Universities",
+      "route": "/universities",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/universities",
+      "heading": "Universities",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "University detail links",
+          "selector": "main a[href*=\"/university/\"], main a[href*=\"/universities/\"]:not([href=\"/universities\"])",
+          "min": 1,
+          "count": 6,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 8,
+        "links": 39,
+        "inputs": 3
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/02-public-universities.png"
+    },
+    {
+      "id": "03",
+      "kind": "public",
+      "label": "Exam Portal",
+      "route": "/exam-portal",
+      "status": "warn",
+      "note": "Missing expected content: Exam detail links",
+      "currentUrl": "/exams",
+      "heading": "",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Exam detail links",
+          "selector": "main a[href^=\"/exam/\"], main a[href^=\"/exams/\"]:not([href=\"/exams\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 8,
+        "links": 25,
+        "inputs": 2
+      },
+      "missingChecks": [
+        {
+          "label": "Exam detail links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/03-public-exam-portal.png"
+    },
+    {
+      "id": "04",
+      "kind": "public",
+      "label": "News",
+      "route": "/news",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/news",
+      "heading": "Admission News & Updates",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "News cards/links",
+          "selector": "main a[href^=\"/news/\"]:not([href=\"/news\"])",
+          "min": 1,
+          "count": 4,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 54,
+        "links": 27,
+        "inputs": 2
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/04-public-news.png"
+    },
+    {
+      "id": "05",
+      "kind": "public",
+      "label": "Resources",
+      "route": "/resources",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/resources",
+      "heading": "Student Resources",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Resource rows/cards",
+          "selector": "main article, main [class*=\"resource\"], main a[href*=\"/resources/\"]:not([href=\"/resources\"])",
+          "min": 1,
+          "count": 6,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 23,
+        "links": 27,
+        "inputs": 4
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/05-public-resources.png"
+    },
+    {
+      "id": "06",
+      "kind": "public",
+      "label": "Contact",
+      "route": "/contact",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/contact",
+      "heading": "We are here to help you",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Contact form fields",
+          "selector": "form input, form textarea",
+          "min": 2,
+          "count": 10,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 1,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 3,
+        "links": 33,
+        "inputs": 10
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/06-public-contact.png"
+    },
+    {
+      "id": "07",
+      "kind": "public",
+      "label": "Subscription Plans",
+      "route": "/subscription-plans",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/subscription-plans",
+      "heading": "Subscription Plans",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Plan cards/links",
+          "selector": "main article, main [class*=\"plan\"], main a[href^=\"/subscription-plans/\"]:not([href=\"/subscription-plans\"])",
+          "min": 1,
+          "count": 9,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 8,
+        "links": 30,
+        "inputs": 2
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/07-public-subscription-plans.png"
+    },
+    {
+      "id": "08",
+      "kind": "public",
+      "label": "About",
+      "route": "/about",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/about",
+      "heading": "Empowering Students Across Bangladesh",
+      "emptySignals": [],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 22,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/08-public-about.png"
+    },
+    {
+      "id": "09",
+      "kind": "public",
+      "label": "Terms",
+      "route": "/terms",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/terms",
+      "heading": "Terms & Conditions",
+      "emptySignals": [],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/09-public-terms.png"
+    },
+    {
+      "id": "10",
+      "kind": "public",
+      "label": "Privacy",
+      "route": "/privacy",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/privacy",
+      "heading": "Privacy Policy",
+      "emptySignals": [],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/10-public-privacy.png"
+    },
+    {
+      "id": "11",
+      "kind": "public",
+      "label": "Login",
+      "route": "/login",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/login",
+      "heading": "Student Login",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Login fields",
+          "selector": "input[type=\"email\"], input[type=\"text\"], input[type=\"password\"]",
+          "min": 2,
+          "count": 2,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 1,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 3,
+        "links": 2,
+        "inputs": 2
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/11-public-login.png"
+    },
+    {
+      "id": "12",
+      "kind": "student",
+      "label": "Student Dashboard",
+      "route": "/dashboard",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/dashboard",
+      "heading": "E2E Student Desktop",
+      "emptySignals": [
+        "No chart data yet. Complete exams to build your trend line.",
+        "No badges yet.",
+        "No exam history yet."
+      ],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 10,
+        "links": 30,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/12-student-student-dashboard.png"
+    },
+    {
+      "id": "13",
+      "kind": "student",
+      "label": "Student Exams",
+      "route": "/exams",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/exams",
+      "heading": "",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Exam detail links",
+          "selector": "main a[href^=\"/exam/\"], main a[href^=\"/exams/\"]:not([href=\"/exams\"])",
+          "min": 1,
+          "count": 1,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 10,
+        "links": 23,
+        "inputs": 2
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/13-student-student-exams.png"
+    },
+    {
+      "id": "14",
+      "kind": "student",
+      "label": "Student Results",
+      "route": "/results",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/results",
+      "heading": "Results & Ranking",
+      "emptySignals": [
+        "No results available yet."
+      ],
+      "checkResults": [
+        {
+          "label": "Result detail links/rows",
+          "selector": "main a[href^=\"/results/\"]:not([href=\"/results\"]), main button, main .rounded-xl.border",
+          "min": 1,
+          "count": 1,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 4,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/14-student-student-results.png"
+    },
+    {
+      "id": "15",
+      "kind": "student",
+      "label": "Student Payments",
+      "route": "/payments",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/payments",
+      "heading": "Payments",
+      "emptySignals": [
+        "No payment entries available."
+      ],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 4,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/15-student-student-payments.png"
+    },
+    {
+      "id": "16",
+      "kind": "student",
+      "label": "Student Notifications",
+      "route": "/notifications",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/notifications",
+      "heading": "Notifications",
+      "emptySignals": [],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 9,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/16-student-student-notifications.png"
+    },
+    {
+      "id": "17",
+      "kind": "student",
+      "label": "Student Profile",
+      "route": "/profile",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/profile",
+      "heading": "Profile & Documents",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Profile form fields",
+          "selector": "main input, main select, main textarea",
+          "min": 1,
+          "count": 16,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 2,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 6,
+        "links": 23,
+        "inputs": 16
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/17-student-student-profile.png"
+    },
+    {
+      "id": "18",
+      "kind": "student",
+      "label": "Student Resources",
+      "route": "/student/resources",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/student/resources",
+      "heading": "Resources",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Resource cards/rows",
+          "selector": "main article, main [class*=\"resource\"], main a[href*=\"/resources/\"]",
+          "min": 1,
+          "count": 8,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 4,
+        "links": 39,
+        "inputs": 2
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/18-student-student-resources.png"
+    },
+    {
+      "id": "19",
+      "kind": "student",
+      "label": "Student Support",
+      "route": "/support",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/support",
+      "heading": "Support & Help",
+      "emptySignals": [
+        "No support tickets yet."
+      ],
+      "checkResults": [
+        {
+          "label": "Support form",
+          "selector": "main form input, main form textarea, main form button[type=\"submit\"]",
+          "min": 2,
+          "count": 3,
+          "ok": true
+        },
+        {
+          "label": "Notice/ticket cards",
+          "selector": "main .rounded-lg.border, main .rounded-xl.border",
+          "min": 2,
+          "count": 4,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 1,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 5,
+        "links": 23,
+        "inputs": 3
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/19-student-student-support.png"
+    }
+  ],
+  "warnings": [
+    "Database drop skipped (mongosh unavailable or failed)"
+  ]
+}

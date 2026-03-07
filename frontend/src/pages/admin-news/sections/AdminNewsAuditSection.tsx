@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminNewsV2GetAuditLogs } from '../../../services/api';
+import { adminGetNewsAuditLogs } from '../../../services/api';
 
 export default function AdminNewsAuditSection() {
     const [action, setAction] = useState('');
@@ -11,7 +11,7 @@ export default function AdminNewsAuditSection() {
         queryKey: ['newsv2.audit', action, entityType, page],
         queryFn: async () =>
             (
-                await adminNewsV2GetAuditLogs({
+                await adminGetNewsAuditLogs({
                     action,
                     entityType,
                     page,
@@ -24,7 +24,7 @@ export default function AdminNewsAuditSection() {
         <div className="space-y-4">
             <div className="card-flat border border-cyan-500/20 p-4">
                 <h2 className="text-xl font-semibold">Audit Logs</h2>
-                <p className="text-sm text-slate-400">Immutable timeline of News V2 admin actions.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Immutable timeline of News V2 admin actions.</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
                     <input
                         className="input-field"
@@ -64,7 +64,7 @@ export default function AdminNewsAuditSection() {
                         </thead>
                         <tbody>
                             {(logsQuery.data?.items || []).map((item) => (
-                                <tr key={item._id} className="border-b border-slate-800/60">
+                                <tr key={item._id} className="border-b border-slate-200 dark:border-slate-800/60">
                                     <td className="py-2 pr-3">{item.createdAt ? new Date(item.createdAt).toLocaleString() : '-'}</td>
                                     <td className="py-2 pr-3">
                                         {typeof item.actorId === 'object'
@@ -78,7 +78,7 @@ export default function AdminNewsAuditSection() {
                             ))}
                             {!logsQuery.data?.items?.length && (
                                 <tr>
-                                    <td className="py-6 text-center text-slate-400" colSpan={5}>
+                                    <td className="py-6 text-center text-slate-500 dark:text-slate-400" colSpan={5}>
                                         No audit events found.
                                     </td>
                                 </tr>
@@ -90,7 +90,7 @@ export default function AdminNewsAuditSection() {
                     <button className="btn-outline" disabled={page <= 1} onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
                         Previous
                     </button>
-                    <span className="text-sm text-slate-400">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
                         Page {logsQuery.data?.page || page} / {logsQuery.data?.pages || 1}
                     </span>
                     <button className="btn-outline" disabled={page >= (logsQuery.data?.pages || 1)} onClick={() => setPage((prev) => prev + 1)}>

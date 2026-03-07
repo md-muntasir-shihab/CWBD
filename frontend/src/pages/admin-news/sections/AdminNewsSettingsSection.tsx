@@ -36,10 +36,9 @@ function toStringValue(value: unknown, fallback = ''): string {
 export default function AdminNewsSettingsSection({ mode }: Props) {
     const queryClient = useQueryClient();
     const [form, setForm] = useState<FormState>({});
-    const [providersJson, setProvidersJson] = useState('');
 
     const settingsQuery = useQuery({
-        queryKey: ['newsv2.settings', mode],
+        queryKey: ['adminNewsSettings', mode],
         queryFn: async () => {
             if (mode === 'appearance') {
                 const response = await adminNewsV2GetAppearance();
@@ -57,10 +56,6 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
     useEffect(() => {
         if (!settingsQuery.data) return;
         setForm(settingsQuery.data as unknown as FormState);
-        if (mode === 'ai') {
-            const providers = (settingsQuery.data as ApiNewsV2Settings['ai'])?.providers || [];
-            setProvidersJson(JSON.stringify(providers, null, 2));
-        }
     }, [settingsQuery.data, mode]);
 
     const mutation = useMutation({
@@ -75,9 +70,10 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
         },
         onSuccess: () => {
             toast.success('Settings updated');
-            queryClient.invalidateQueries({ queryKey: ['newsv2.settings'] });
-            queryClient.invalidateQueries({ queryKey: ['news-v2-appearance'] });
-            queryClient.invalidateQueries({ queryKey: ['news-v2-widgets'] });
+            queryClient.invalidateQueries({ queryKey: ['adminNewsSettings'] });
+            queryClient.invalidateQueries({ queryKey: ['newsSettings'] });
+            queryClient.invalidateQueries({ queryKey: ['newsList'] });
+            queryClient.invalidateQueries({ queryKey: ['newsDetail'] });
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || 'Settings update failed'),
     });
@@ -91,14 +87,6 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
     function onSubmit(event: FormEvent) {
         event.preventDefault();
         const payload: FormState = { ...form };
-        if (mode === 'ai') {
-            try {
-                payload.providers = JSON.parse(providersJson || '[]');
-            } catch {
-                toast.error('Providers JSON is invalid');
-                return;
-            }
-        }
         if (mode === 'share') {
             const raw = toStringValue(payload.enabledChannels, '');
             payload.enabledChannels = raw
@@ -113,13 +101,13 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
         <form onSubmit={onSubmit} className="card-flat space-y-4 border border-cyan-500/20 p-4">
             <div>
                 <h2 className="text-xl font-semibold">{title}</h2>
-                <p className="text-sm text-slate-400">All fields are admin-controlled and applied live after save.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">All fields are admin-controlled and applied live after save.</p>
             </div>
 
             {mode === 'appearance' && (
                 <div className="grid gap-3 md:grid-cols-2">
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Layout Mode</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Layout Mode</span>
                         <select
                             className="input-field"
                             value={toStringValue(form.layoutMode, 'rss_reader')}
@@ -131,19 +119,19 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         </select>
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Animation Level</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Animation Level</span>
                         <select
                             className="input-field"
-                            value={toStringValue(form.animationLevel, 'subtle')}
+                            value={toStringValue(form.animationLevel, 'minimal')}
                             onChange={(e) => setForm((prev) => ({ ...prev, animationLevel: e.target.value }))}
                         >
-                            <option value="none">None</option>
-                            <option value="subtle">Subtle</option>
-                            <option value="rich">Rich</option>
+                            <option value="off">Off</option>
+                            <option value="minimal">Minimal</option>
+                            <option value="normal">Normal</option>
                         </select>
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Card Density</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Card Density</span>
                         <select
                             className="input-field"
                             value={toStringValue(form.cardDensity, 'comfortable')}
@@ -154,7 +142,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         </select>
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Thumbnail Fallback URL</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Thumbnail Fallback URL</span>
                         <input
                             className="input-field"
                             value={toStringValue(form.thumbnailFallbackUrl, '')}
@@ -186,88 +174,98 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
             )}
 
             {mode === 'ai' && (
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                     <ToggleField
-                        label="AI Enabled"
+                        label="AI Service Enabled"
                         checked={toBoolean(form.enabled)}
                         onChange={(value) => setForm((prev) => ({ ...prev, enabled: value }))}
                     />
                     <ToggleField
-                        label="No Hallucination Mode"
-                        checked={toBoolean(form.noHallucinationMode)}
-                        onChange={(value) => setForm((prev) => ({ ...prev, noHallucinationMode: value }))}
+                        label="Strict No Hallucination"
+                        checked={toBoolean(form.strictNoHallucination)}
+                        onChange={(value) => setForm((prev) => ({ ...prev, strictNoHallucination: value }))}
                     />
-                    <ToggleField
-                        label="Require Source Link"
-                        checked={toBoolean(form.requireSourceLink)}
-                        onChange={(value) => setForm((prev) => ({ ...prev, requireSourceLink: value }))}
-                    />
-                    <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Fallback Mode</span>
-                        <select
-                            className="input-field"
-                            value={toStringValue(form.fallbackMode, 'manual_only')}
-                            onChange={(e) => setForm((prev) => ({ ...prev, fallbackMode: e.target.value }))}
-                        >
-                            <option value="manual_only">Manual Only</option>
-                        </select>
-                    </label>
-                    <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Default Provider</span>
+
+                    <label className="space-y-1 md:col-span-2">
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">API Provider URL</span>
                         <input
+                            type="text"
                             className="input-field"
-                            value={toStringValue(form.defaultProvider, 'openai')}
-                            onChange={(e) => setForm((prev) => ({ ...prev, defaultProvider: e.target.value }))}
-                            placeholder="openai"
+                            value={toStringValue(form.apiProviderUrl, '')}
+                            onChange={(e) => setForm((prev) => ({ ...prev, apiProviderUrl: e.target.value }))}
+                            placeholder="e.g. https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
                         />
                     </label>
-                    <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Language</span>
+
+                    <label className="space-y-1 md:col-span-2">
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">API Key</span>
                         <input
+                            type="password"
+                            className="input-field"
+                            value={toStringValue(form.apiKey, '')}
+                            onChange={(e) => setForm((prev) => ({ ...prev, apiKey: e.target.value }))}
+                            placeholder="Enter API Key"
+                        />
+                    </label>
+
+                    <label className="space-y-1 md:col-span-2">
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Custom Prompt</span>
+                        <textarea
+                            className="input-field min-h-[140px]"
+                            value={toStringValue(form.customPrompt, '')}
+                            onChange={(e) => setForm((prev) => ({ ...prev, customPrompt: e.target.value }))}
+                            placeholder="Override default AI prompt here... (Leave empty for default)"
+                        />
+                    </label>
+
+                    <label className="space-y-1">
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Language</span>
+                        <select
                             className="input-field"
                             value={toStringValue(form.language, 'en')}
                             onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
-                            placeholder="en"
-                        />
+                        >
+                            <option value="bn">Bengali</option>
+                            <option value="en">English</option>
+                            <option value="mixed">Mixed</option>
+                        </select>
                     </label>
+
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Style</span>
-                        <input
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Style Preset</span>
+                        <select
                             className="input-field"
-                            value={toStringValue(form.style, 'journalistic')}
-                            onChange={(e) => setForm((prev) => ({ ...prev, style: e.target.value }))}
-                            placeholder="journalistic"
-                        />
+                            value={toStringValue(form.stylePreset, 'standard')}
+                            onChange={(e) => setForm((prev) => ({ ...prev, stylePreset: e.target.value }))}
+                        >
+                            <option value="short">Short</option>
+                            <option value="standard">Standard</option>
+                            <option value="detailed">Detailed</option>
+                        </select>
                     </label>
+
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Max Tokens</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Duplicate Sensitivity</span>
+                        <select
+                            className="input-field"
+                            value={toStringValue(form.duplicateSensitivity, 'medium')}
+                            onChange={(e) => setForm((prev) => ({ ...prev, duplicateSensitivity: e.target.value }))}
+                        >
+                            <option value="strict">Strict</option>
+                            <option value="medium">Medium</option>
+                            <option value="loose">Loose</option>
+                        </select>
+                    </label>
+
+                    <label className="space-y-1">
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Max Length</span>
                         <input
                             type="number"
                             min={100}
-                            max={8000}
+                            max={5000}
                             className="input-field"
-                            value={toNumber(form.maxTokens, 1200)}
-                            onChange={(e) => setForm((prev) => ({ ...prev, maxTokens: Number(e.target.value) }))}
-                        />
-                    </label>
-                    <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Temperature</span>
-                        <input
-                            type="number"
-                            min={0}
-                            max={2}
-                            step={0.1}
-                            className="input-field"
-                            value={toNumber(form.temperature, 0.2)}
-                            onChange={(e) => setForm((prev) => ({ ...prev, temperature: Number(e.target.value) }))}
-                        />
-                    </label>
-                    <label className="space-y-1 md:col-span-2">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Providers JSON</span>
-                        <textarea
-                            className="input-field min-h-[220px] font-mono text-xs"
-                            value={providersJson}
-                            onChange={(e) => setProvidersJson(e.target.value)}
+                            value={toNumber(form.maxLength, 1200)}
+                            onChange={(e) => setForm((prev) => ({ ...prev, maxLength: Number(e.target.value) }))}
                         />
                     </label>
                 </div>
@@ -276,7 +274,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
             {mode === 'share' && (
                 <div className="grid gap-3 md:grid-cols-2">
                     <label className="space-y-1 md:col-span-2">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Enabled Channels (comma separated)</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Enabled Channels (comma separated)</span>
                         <input
                             className="input-field"
                             value={Array.isArray(form.enabledChannels) ? (form.enabledChannels as string[]).join(', ') : toStringValue(form.enabledChannels, 'facebook,x,linkedin,whatsapp,copy')}
@@ -284,7 +282,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         />
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Default Template</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Default Template</span>
                         <input
                             className="input-field"
                             value={toStringValue((form.templates as Record<string, string> | undefined)?.default, '')}
@@ -292,7 +290,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         />
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">Facebook Template</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Facebook Template</span>
                         <input
                             className="input-field"
                             value={toStringValue((form.templates as Record<string, string> | undefined)?.facebook, '')}
@@ -300,7 +298,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         />
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">WhatsApp Template</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">WhatsApp Template</span>
                         <input
                             className="input-field"
                             value={toStringValue((form.templates as Record<string, string> | undefined)?.whatsapp, '')}
@@ -313,7 +311,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         onChange={(value) => setForm((prev) => ({ ...prev, utm: { ...(prev.utm as Record<string, unknown> || {}), enabled: value } }))}
                     />
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">UTM Source</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">UTM Source</span>
                         <input
                             className="input-field"
                             value={toStringValue((form.utm as Record<string, unknown> | undefined)?.source, '')}
@@ -321,7 +319,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         />
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">UTM Medium</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">UTM Medium</span>
                         <input
                             className="input-field"
                             value={toStringValue((form.utm as Record<string, unknown> | undefined)?.medium, '')}
@@ -329,7 +327,7 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
                         />
                     </label>
                     <label className="space-y-1">
-                        <span className="text-xs uppercase tracking-wide text-slate-400">UTM Campaign</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">UTM Campaign</span>
                         <input
                             className="input-field"
                             value={toStringValue((form.utm as Record<string, unknown> | undefined)?.campaign, '')}
@@ -357,8 +355,8 @@ export default function AdminNewsSettingsSection({ mode }: Props) {
 
 function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (next: boolean) => void }) {
     return (
-        <label className="flex items-center justify-between rounded-xl border border-cyan-500/20 bg-slate-950/45 px-3 py-2">
-            <span className="text-sm text-slate-200">{label}</span>
+        <label className="flex items-center justify-between rounded-xl border border-cyan-500/20 bg-slate-100/70 px-3 py-2 dark:bg-slate-950/45">
+            <span className="text-sm text-slate-700 dark:text-slate-200">{label}</span>
             <input
                 type="checkbox"
                 checked={checked}

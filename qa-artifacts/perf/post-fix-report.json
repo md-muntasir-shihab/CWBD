@@ -1,0 +1,14 @@
+﻿{
+  "generatedAt": "2026-02-28T16:15:30+06:00",
+  "scope": "exam-console",
+  "delta": {
+    "backendBuild": "pass",
+    "frontendBuild": "pass",
+    "playwrightCriticalList": "pass",
+    "playwrightCriticalExecution": "partial"
+  },
+  "notes": [
+    "Critical test definitions include start/autosave/stale-revision/anti-cheat/submit and admin live action flow.",
+    "Full E2E execution requires live backend/frontend runtime and seeded users."
+  ]
+}

@@ -9,7 +9,7 @@ export interface IBanner extends Document {
     altText?: string;
     isActive: boolean;
     status: 'draft' | 'published';
-    slot: 'top' | 'middle' | 'footer';
+    slot: 'top' | 'middle' | 'footer' | 'home_ads';
     priority: number;
     order: number;
     /* ── Scheduled visibility ── */
@@ -29,7 +29,7 @@ const BannerSchema = new Schema<IBanner>({
     altText: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
     status: { type: String, enum: ['draft', 'published'], default: 'draft' },
-    slot: { type: String, enum: ['top', 'middle', 'footer'], default: 'top' },
+    slot: { type: String, enum: ['top', 'middle', 'footer', 'home_ads'], default: 'top' },
     priority: { type: Number, default: 0 },
     order: { type: Number, default: 0 },
     startDate: Date,

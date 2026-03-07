@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+﻿import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISiteSettings extends Document {
     siteName: string;
@@ -11,7 +11,14 @@ export interface ISiteSettings extends Document {
     contactEmail: string;
     contactPhone: string;
     contactAddress: string;
-    socialLinks: { platform: string; url: string; icon?: string }[];
+    socialLinks: {
+        platform: string;
+        url: string;
+        icon?: string;
+        description?: string;
+        enabled?: boolean;
+        placements?: Array<'header' | 'footer' | 'home' | 'news' | 'contact'>;
+    }[];
     maintenanceMode: boolean;
     security: {
         singleBrowserLogin: boolean;
@@ -47,6 +54,41 @@ export interface ISiteSettings extends Document {
         backupS3MirrorEnabled: boolean;
         nextAdminEnabled: boolean;
         nextStudentEnabled: boolean;
+        trainingMode: boolean;
+        requireDeleteKeywordConfirm: boolean;
+    };
+    notificationAutomation: {
+        examStartsSoon: { enabled: boolean; hoursBefore: number[] };
+        applicationClosingSoon: { enabled: boolean; hoursBefore: number[] };
+        paymentPendingReminder: { enabled: boolean; hoursBefore: number[] };
+        resultPublished: { enabled: boolean; hoursBefore: number[] };
+        profileScoreGate: { enabled: boolean; hoursBefore: number[]; minScore: number };
+        templates: {
+            languageMode: 'bn' | 'en' | 'mixed';
+            examStartsSoon: string;
+            applicationClosingSoon: string;
+            paymentPendingReminder: string;
+            resultPublished: string;
+            profileScoreGate: string;
+        };
+    };
+    analyticsSettings: {
+        enabled: boolean;
+        trackAnonymous: boolean;
+        retentionDays: number;
+        eventToggles: {
+            universityApplyClick: boolean;
+            universityOfficialClick: boolean;
+            newsView: boolean;
+            newsShare: boolean;
+            resourceDownload: boolean;
+            examViewed: boolean;
+            examStarted: boolean;
+            examSubmitted: boolean;
+            subscriptionPlanView: boolean;
+            subscriptionPlanClick: boolean;
+            supportTicketCreated: boolean;
+        };
     };
     runtimeVersion: number;
     updatedBy: mongoose.Types.ObjectId;
@@ -61,7 +103,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>({
     metaDescription: { type: String, default: 'Compare admission details, seat counts, exam dates for every university in Bangladesh.' },
     logoUrl: { type: String, default: '' },
     faviconUrl: { type: String, default: '' },
-    footerText: { type: String, default: '� CampusWay. All rights reserved.' },
+    footerText: { type: String, default: '© CampusWay. All rights reserved.' },
     contactEmail: { type: String, default: '' },
     contactPhone: { type: String, default: '' },
     contactAddress: { type: String, default: '' },
@@ -69,6 +111,12 @@ const SiteSettingsSchema = new Schema<ISiteSettings>({
         platform: String,
         url: String,
         icon: String,
+        description: { type: String, default: '' },
+        enabled: { type: Boolean, default: true },
+        placements: {
+            type: [String],
+            default: ['header', 'footer', 'home', 'news', 'contact'],
+        },
     }],
     maintenanceMode: { type: Boolean, default: false },
     security: {
@@ -84,7 +132,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>({
         allowLegacyTokens: { type: Boolean, default: true },
         strictExamTabLock: { type: Boolean, default: false },
         strictTokenHashValidation: { type: Boolean, default: false },
-        allowTestOtp: { type: Boolean, default: true }, // Enabled by default for testing
+        allowTestOtp: { type: Boolean, default: true },
         testOtpCode: { type: String, default: '123456' },
     },
     featureFlags: {
@@ -105,10 +153,60 @@ const SiteSettingsSchema = new Schema<ISiteSettings>({
         backupS3MirrorEnabled: { type: Boolean, default: false },
         nextAdminEnabled: { type: Boolean, default: false },
         nextStudentEnabled: { type: Boolean, default: false },
+        trainingMode: { type: Boolean, default: false },
+        requireDeleteKeywordConfirm: { type: Boolean, default: true },
+    },
+    notificationAutomation: {
+        examStartsSoon: {
+            enabled: { type: Boolean, default: true },
+            hoursBefore: { type: [Number], default: [24, 3] },
+        },
+        applicationClosingSoon: {
+            enabled: { type: Boolean, default: true },
+            hoursBefore: { type: [Number], default: [72, 24] },
+        },
+        paymentPendingReminder: {
+            enabled: { type: Boolean, default: true },
+            hoursBefore: { type: [Number], default: [24] },
+        },
+        resultPublished: {
+            enabled: { type: Boolean, default: true },
+            hoursBefore: { type: [Number], default: [0] },
+        },
+        profileScoreGate: {
+            enabled: { type: Boolean, default: true },
+            hoursBefore: { type: [Number], default: [48, 12] },
+            minScore: { type: Number, default: 70 },
+        },
+        templates: {
+            languageMode: { type: String, enum: ['bn', 'en', 'mixed'], default: 'mixed' },
+            examStartsSoon: { type: String, default: 'Exam starts soon. Stay prepared.' },
+            applicationClosingSoon: { type: String, default: 'Application window is closing soon.' },
+            paymentPendingReminder: { type: String, default: 'Your payment is pending. Submit proof to unlock access.' },
+            resultPublished: { type: String, default: 'Your result is now published.' },
+            profileScoreGate: { type: String, default: 'Complete your profile to reach the minimum score before exam.' },
+        },
+    },
+    analyticsSettings: {
+        enabled: { type: Boolean, default: true },
+        trackAnonymous: { type: Boolean, default: true },
+        retentionDays: { type: Number, default: 90 },
+        eventToggles: {
+            universityApplyClick: { type: Boolean, default: true },
+            universityOfficialClick: { type: Boolean, default: true },
+            newsView: { type: Boolean, default: true },
+            newsShare: { type: Boolean, default: true },
+            resourceDownload: { type: Boolean, default: true },
+            examViewed: { type: Boolean, default: true },
+            examStarted: { type: Boolean, default: true },
+            examSubmitted: { type: Boolean, default: true },
+            subscriptionPlanView: { type: Boolean, default: true },
+            subscriptionPlanClick: { type: Boolean, default: true },
+            supportTicketCreated: { type: Boolean, default: true },
+        },
     },
     runtimeVersion: { type: Number, default: 1 },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 
 export default mongoose.model<ISiteSettings>('SiteSettings', SiteSettingsSchema);
-

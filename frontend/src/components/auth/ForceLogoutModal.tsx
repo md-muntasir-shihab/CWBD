@@ -10,7 +10,12 @@ export default function ForceLogoutModal() {
 
     const handleDismiss = () => {
         setForceLogoutAlert(false);
-        const loginPath = window.location.pathname.startsWith('/student') ? '/student/login' : '/login';
+        const currentPath = window.location.pathname;
+        const loginPath = currentPath.startsWith('/__cw_admin__') || currentPath.startsWith('/admin')
+            ? '/__cw_admin__/login'
+            : currentPath.startsWith('/chairman')
+                ? '/chairman/login'
+                : '/login';
         navigate(loginPath);
         window.location.href = loginPath;
     };

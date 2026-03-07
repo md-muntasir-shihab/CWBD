@@ -55,6 +55,23 @@ function buildLegacyCompatibilityPayload(normalized: ReturnType<typeof normalize
     };
 }
 
+function buildLocalizedCompatibilityPayload(normalized: ReturnType<typeof normalizeQuestionPayload>['normalized']) {
+    const optionsLocalized = Array.isArray(normalized.optionsLocalized) && normalized.optionsLocalized.length > 0
+        ? normalized.optionsLocalized
+        : normalized.options.map((option) => ({
+            key: option.key,
+            text: { en: option.text, bn: '' },
+            media_id: option.media_id || null,
+        }));
+
+    return {
+        questionText: normalized.questionText || { en: normalized.question_text || normalized.question, bn: '' },
+        optionsLocalized,
+        explanationText: normalized.explanationText || { en: normalized.explanation_text || normalized.explanation, bn: '' },
+        languageMode: normalized.languageMode || 'EN',
+    };
+}
+
 function questionPermissionFromToken(req: AuthRequest, action: QBankAction): boolean {
     const role = String(req.user?.role || '').toLowerCase();
     if (role === 'superadmin') return true;
@@ -196,7 +213,13 @@ function buildFilter(query: Record<string, unknown>): Record<string, unknown> {
 
     const hasExplanation = boolFromQuery(query.has_explanation);
     if (hasExplanation === true) {
-        filter.$or = [...((filter.$or as Record<string, unknown>[]) || []), { explanation_text: { $exists: true, $ne: '' } }, { explanation: { $exists: true, $ne: '' } }];
+        filter.$or = [
+            ...((filter.$or as Record<string, unknown>[]) || []),
+            { explanation_text: { $exists: true, $ne: '' } },
+            { explanation: { $exists: true, $ne: '' } },
+            { 'explanationText.en': { $exists: true, $ne: '' } },
+            { 'explanationText.bn': { $exists: true, $ne: '' } },
+        ];
     }
     if (hasExplanation === false) {
         filter.$and = [
@@ -222,6 +245,12 @@ function buildFilter(query: Record<string, unknown>): Record<string, unknown> {
             ...((filter.$or as Record<string, unknown>[]) || []),
             { question: { $regex: search, $options: 'i' } },
             { question_text: { $regex: search, $options: 'i' } },
+            { 'questionText.en': { $regex: search, $options: 'i' } },
+            { 'questionText.bn': { $regex: search, $options: 'i' } },
+            { 'optionsLocalized.text.en': { $regex: search, $options: 'i' } },
+            { 'optionsLocalized.text.bn': { $regex: search, $options: 'i' } },
+            { 'explanationText.en': { $regex: search, $options: 'i' } },
+            { 'explanationText.bn': { $regex: search, $options: 'i' } },
             { subject: { $regex: search, $options: 'i' } },
             { chapter: { $regex: search, $options: 'i' } },
             { tags: { $elemMatch: { $regex: search, $options: 'i' } } },
@@ -416,6 +445,7 @@ export async function createQuestion(req: AuthRequest, res: Response): Promise<v
 
         const questionData = {
             ...buildLegacyCompatibilityPayload(normalized),
+            ...buildLocalizedCompatibilityPayload(normalized),
             quality_score: quality.score,
             quality_flags: quality.flags,
             flagged_duplicate: flaggedDuplicate,
@@ -508,6 +538,7 @@ export async function updateQuestion(req: AuthRequest, res: Response): Promise<v
 
         existing.set({
             ...buildLegacyCompatibilityPayload(normalized),
+            ...buildLocalizedCompatibilityPayload(normalized),
             quality_score: quality.score,
             quality_flags: quality.flags,
             flagged_duplicate: flaggedDuplicate,

@@ -92,7 +92,7 @@ export default function AdminNewsMediaSection() {
                             value={altText}
                             onChange={(e) => setAltText(e.target.value)}
                         />
-                        <label className="flex items-center gap-2 text-sm text-slate-300">
+                        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                             <input
                                 type="checkbox"
                                 checked={isDefaultBanner}
@@ -147,7 +147,7 @@ export default function AdminNewsMediaSection() {
                     ))}
                 </div>
                 {!mediaQuery.data?.items?.length && (
-                    <p className="py-8 text-center text-sm text-slate-400">No media assets found.</p>
+                    <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">No media assets found.</p>
                 )}
                 <div className="mt-4 flex items-center justify-end gap-2">
                     <button
@@ -157,7 +157,7 @@ export default function AdminNewsMediaSection() {
                     >
                         Previous
                     </button>
-                    <span className="text-sm text-slate-400">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
                         Page {mediaQuery.data?.page || page} / {mediaQuery.data?.pages || 1}
                     </span>
                     <button
@@ -175,16 +175,16 @@ export default function AdminNewsMediaSection() {
 
 function MediaCard({ item, onDelete, deleting }: { item: ApiNewsV2Media; onDelete: () => void; deleting: boolean }) {
     return (
-        <div className="overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-950/50">
-            <div className="aspect-[4/3] overflow-hidden bg-slate-900">
+        <div className="overflow-hidden rounded-2xl border border-slate-300/60 bg-slate-100/70 dark:border-slate-700/60 dark:bg-slate-950/50">
+            <div className="aspect-[4/3] overflow-hidden bg-slate-200 dark:bg-slate-900">
                 <img src={item.url} alt={item.altText || 'news media'} className="h-full w-full object-cover" loading="lazy" />
             </div>
             <div className="space-y-2 p-3">
-                <p className="line-clamp-2 text-xs text-slate-200">{item.altText || 'No alt text'}</p>
-                <p className="truncate text-[11px] text-slate-400">{item.sourceType}</p>
+                <p className="line-clamp-2 text-xs text-slate-700 dark:text-slate-200">{item.altText || 'No alt text'}</p>
+                <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">{item.sourceType}</p>
                 <div className="flex flex-wrap gap-2">
                     <button
-                        className="rounded border border-slate-600 px-2 py-1 text-xs text-slate-200"
+                        className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 dark:border-slate-600 dark:text-slate-200"
                         onClick={() => navigator.clipboard.writeText(item.url)}
                         type="button"
                     >

@@ -6,10 +6,14 @@ import SecuritySettings, {
     ISecuritySettings,
     LoggingSettings,
     LoginProtectionSettings,
+    PanicSettings,
     PasswordPolicy,
     RateLimitSettings,
+    RetentionSettings,
+    RiskyActionKey,
     SessionSecuritySettings,
     SiteAccessSettings,
+    TwoPersonApprovalSettings,
 } from '../models/SecuritySettings';
 
 export type SecuritySettingsSnapshot = {
@@ -21,6 +25,9 @@ export type SecuritySettingsSnapshot = {
     examProtection: ExamProtectionSettings;
     logging: LoggingSettings;
     rateLimit: RateLimitSettings;
+    twoPersonApproval: TwoPersonApprovalSettings;
+    retention: RetentionSettings;
+    panic: PanicSettings;
     updatedBy?: string | null;
     updatedAt?: Date | null;
 };
@@ -34,6 +41,9 @@ export type SecuritySettingsUpdateInput = Partial<{
     examProtection: Partial<ExamProtectionSettings>;
     logging: Partial<LoggingSettings>;
     rateLimit: Partial<RateLimitSettings>;
+    twoPersonApproval: Partial<TwoPersonApprovalSettings>;
+    retention: Partial<RetentionSettings>;
+    panic: Partial<PanicSettings>;
 }>;
 
 export type PublicSecurityConfig = {
@@ -82,6 +92,30 @@ const DEFAULT_SECURITY_SETTINGS: SecuritySettingsSnapshot = {
         logLoginFailures: true,
         logAdminActions: true,
     },
+    twoPersonApproval: {
+        enabled: false,
+        riskyActions: [
+            'students.bulk_delete',
+            'universities.bulk_delete',
+            'news.bulk_delete',
+            'exams.publish_result',
+            'news.publish_breaking',
+            'payments.mark_refunded',
+        ],
+        approvalExpiryMinutes: 120,
+    },
+    retention: {
+        enabled: false,
+        examSessionsDays: 30,
+        auditLogsDays: 180,
+        eventLogsDays: 90,
+    },
+    panic: {
+        readOnlyMode: false,
+        disableStudentLogins: false,
+        disablePaymentWebhooks: false,
+        disableExamStarts: false,
+    },
     rateLimit: {
         loginWindowMs: 15 * 60 * 1000,
         loginMax: 10,
@@ -119,6 +153,24 @@ function asLogLevel(value: unknown, fallback: LoggingSettings['logLevel']): Logg
     return fallback;
 }
 
+const RISKY_ACTION_KEYS: RiskyActionKey[] = [
+    'students.bulk_delete',
+    'universities.bulk_delete',
+    'news.bulk_delete',
+    'exams.publish_result',
+    'news.publish_breaking',
+    'payments.mark_refunded',
+];
+
+function normalizeRiskyActions(value: unknown, fallback: RiskyActionKey[]): RiskyActionKey[] {
+    if (!Array.isArray(value)) return fallback;
+    const filtered = value
+        .map((item) => String(item || '').trim())
+        .filter((item): item is RiskyActionKey => RISKY_ACTION_KEYS.includes(item as RiskyActionKey));
+    const deduped = Array.from(new Set(filtered));
+    return deduped.length > 0 ? deduped : fallback;
+}
+
 function normalizeIpList(value: unknown, fallback: string[]): string[] {
     if (!Array.isArray(value)) return fallback;
     return value
@@ -138,6 +190,9 @@ function normalizeFromDocument(doc: ISecuritySettings | null): SecuritySettingsS
     const siteAccess = (payload.siteAccess || {}) as Record<string, unknown>;
     const examProtection = (payload.examProtection || {}) as Record<string, unknown>;
     const logging = (payload.logging || {}) as Record<string, unknown>;
+    const twoPersonApproval = (payload.twoPersonApproval || {}) as Record<string, unknown>;
+    const retention = (payload.retention || {}) as Record<string, unknown>;
+    const panic = (payload.panic || {}) as Record<string, unknown>;
     const rateLimit = (payload.rateLimit || {}) as Record<string, unknown>;
 
     return {
@@ -176,6 +231,31 @@ function normalizeFromDocument(doc: ISecuritySettings | null): SecuritySettingsS
             logLevel: asLogLevel(logging.logLevel, DEFAULT_SECURITY_SETTINGS.logging.logLevel),
             logLoginFailures: asBoolean(logging.logLoginFailures, DEFAULT_SECURITY_SETTINGS.logging.logLoginFailures),
             logAdminActions: asBoolean(logging.logAdminActions, DEFAULT_SECURITY_SETTINGS.logging.logAdminActions),
+        },
+        twoPersonApproval: {
+            enabled: asBoolean(twoPersonApproval.enabled, DEFAULT_SECURITY_SETTINGS.twoPersonApproval.enabled),
+            riskyActions: normalizeRiskyActions(
+                twoPersonApproval.riskyActions,
+                DEFAULT_SECURITY_SETTINGS.twoPersonApproval.riskyActions,
+            ),
+            approvalExpiryMinutes: asInt(
+                twoPersonApproval.approvalExpiryMinutes,
+                DEFAULT_SECURITY_SETTINGS.twoPersonApproval.approvalExpiryMinutes,
+                5,
+                1440,
+            ),
+        },
+        retention: {
+            enabled: asBoolean(retention.enabled, DEFAULT_SECURITY_SETTINGS.retention.enabled),
+            examSessionsDays: asInt(retention.examSessionsDays, DEFAULT_SECURITY_SETTINGS.retention.examSessionsDays, 7, 3650),
+            auditLogsDays: asInt(retention.auditLogsDays, DEFAULT_SECURITY_SETTINGS.retention.auditLogsDays, 30, 3650),
+            eventLogsDays: asInt(retention.eventLogsDays, DEFAULT_SECURITY_SETTINGS.retention.eventLogsDays, 30, 3650),
+        },
+        panic: {
+            readOnlyMode: asBoolean(panic.readOnlyMode, DEFAULT_SECURITY_SETTINGS.panic.readOnlyMode),
+            disableStudentLogins: asBoolean(panic.disableStudentLogins, DEFAULT_SECURITY_SETTINGS.panic.disableStudentLogins),
+            disablePaymentWebhooks: asBoolean(panic.disablePaymentWebhooks, DEFAULT_SECURITY_SETTINGS.panic.disablePaymentWebhooks),
+            disableExamStarts: asBoolean(panic.disableExamStarts, DEFAULT_SECURITY_SETTINGS.panic.disableExamStarts),
         },
         rateLimit: {
             loginWindowMs: asInt(rateLimit.loginWindowMs, DEFAULT_SECURITY_SETTINGS.rateLimit.loginWindowMs, 10_000, 24 * 60 * 60 * 1000),
@@ -225,6 +305,21 @@ function mergeSettings(
         logging: {
             ...current.logging,
             ...(input.logging || {}),
+        },
+        twoPersonApproval: {
+            ...current.twoPersonApproval,
+            ...(input.twoPersonApproval || {}),
+            ...(input.twoPersonApproval?.riskyActions
+                ? { riskyActions: normalizeRiskyActions(input.twoPersonApproval.riskyActions, current.twoPersonApproval.riskyActions) }
+                : {}),
+        },
+        retention: {
+            ...current.retention,
+            ...(input.retention || {}),
+        },
+        panic: {
+            ...current.panic,
+            ...(input.panic || {}),
         },
         rateLimit: {
             ...current.rateLimit,
@@ -289,6 +384,12 @@ export async function updateSecuritySettingsSnapshot(
         siteAccess: merged.siteAccess,
         examProtection: merged.examProtection,
         logging: merged.logging,
+        twoPersonApproval: {
+            ...merged.twoPersonApproval,
+            riskyActions: normalizeRiskyActions(merged.twoPersonApproval.riskyActions, DEFAULT_SECURITY_SETTINGS.twoPersonApproval.riskyActions),
+        },
+        retention: merged.retention,
+        panic: merged.panic,
         rateLimit: merged.rateLimit,
     };
 
@@ -318,6 +419,9 @@ export async function resetSecuritySettingsToDefault(updatedBy?: string): Promis
             siteAccess: { ...DEFAULT_SECURITY_SETTINGS.siteAccess },
             examProtection: { ...DEFAULT_SECURITY_SETTINGS.examProtection },
             logging: { ...DEFAULT_SECURITY_SETTINGS.logging },
+            twoPersonApproval: { ...DEFAULT_SECURITY_SETTINGS.twoPersonApproval },
+            retention: { ...DEFAULT_SECURITY_SETTINGS.retention },
+            panic: { ...DEFAULT_SECURITY_SETTINGS.panic },
             rateLimit: { ...DEFAULT_SECURITY_SETTINGS.rateLimit },
         },
         updatedBy
@@ -336,6 +440,21 @@ export async function getPublicSecurityConfig(forceRefresh = false): Promise<Pub
         requireProfileScoreForExam: settings.examProtection.requireProfileScoreForExam,
         profileScoreThreshold: settings.examProtection.profileScoreThreshold,
     };
+}
+
+export async function getPanicSettings(forceRefresh = false): Promise<PanicSettings> {
+    const settings = await getSecuritySettingsSnapshot(forceRefresh);
+    return settings.panic;
+}
+
+export async function getRetentionSettings(forceRefresh = false): Promise<RetentionSettings> {
+    const settings = await getSecuritySettingsSnapshot(forceRefresh);
+    return settings.retention;
+}
+
+export async function isTwoPersonApprovalRequired(action: RiskyActionKey, forceRefresh = false): Promise<boolean> {
+    const settings = await getSecuritySettingsSnapshot(forceRefresh);
+    return settings.twoPersonApproval.enabled && settings.twoPersonApproval.riskyActions.includes(action);
 }
 
 export function getDefaultSecuritySettings(): SecuritySettingsSnapshot {

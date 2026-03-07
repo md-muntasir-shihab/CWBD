@@ -1,21 +1,42 @@
 import { Request, Response } from 'express';
 import Resource from '../models/Resource';
 
+function isAllToken(value: unknown): boolean {
+    const normalized = String(value || '').trim().toLowerCase();
+    return normalized === 'all' || normalized === 'all resources';
+}
+
+function escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export async function getPublicResources(req: Request, res: Response): Promise<void> {
     try {
         const { type, category, q, sort = 'publishDate', limit = '50', page = '1' } = req.query;
 
         const now = new Date();
-        const filter: Record<string, unknown> = {
-            isPublic: true,
-            $or: [{ expiryDate: { $exists: false } }, { expiryDate: null }, { expiryDate: { $gt: now } }],
-        };
+        const andFilters: Record<string, unknown>[] = [
+            { isPublic: true },
+            { $or: [{ expiryDate: { $exists: false } }, { expiryDate: null }, { expiryDate: { $gt: now } }] },
+        ];
 
-        if (type && type !== 'all') filter.type = type;
-        if (category && category !== 'All') filter.category = category;
-        if (q) {
-            filter.$text = { $search: q as string };
+        if (type && !isAllToken(type)) andFilters.push({ type });
+        if (category && !isAllToken(category)) andFilters.push({ category });
+
+        const queryText = String(q || '').trim();
+        if (queryText) {
+            const regexSafe = escapeRegex(queryText);
+            andFilters.push({
+                $or: [
+                    { title: { $regex: regexSafe, $options: 'i' } },
+                    { description: { $regex: regexSafe, $options: 'i' } },
+                    { category: { $regex: regexSafe, $options: 'i' } },
+                    { tags: { $regex: regexSafe, $options: 'i' } },
+                ],
+            });
         }
+
+        const filter: Record<string, unknown> = andFilters.length === 1 ? andFilters[0] : { $and: andFilters };
 
         const sortObj: Record<string, 1 | -1> =
             sort === 'downloads' ? { downloads: -1 } :

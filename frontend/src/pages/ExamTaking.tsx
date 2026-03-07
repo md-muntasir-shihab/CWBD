@@ -1,4 +1,5 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { AxiosError } from 'axios';
@@ -12,6 +13,7 @@ import {
     logExamAttemptEvent,
     startExam,
     submitExamAttempt,
+    trackAnalyticsEvent,
     uploadWrittenAnswer,
     getStudentExamDetails,
 } from '../services/api';
@@ -56,6 +58,8 @@ export default function ExamTakingPage() {
     const [showSubmitModal, setShowSubmitModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [attemptRevision, setAttemptRevision] = useState(0);
+    const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+    const [showMobilePalette, setShowMobilePalette] = useState(false);
 
     const [isLandingMode, setIsLandingMode] = useState(true);
     const [rulesAgreed, setRulesAgreed] = useState(false);
@@ -110,6 +114,12 @@ export default function ExamTakingPage() {
             if (data.session) {
                 hydrateSessionAnswers(data.session);
             }
+            void trackAnalyticsEvent({
+                eventName: 'exam_started',
+                module: 'exams',
+                source: 'student',
+                meta: { examId, attemptId: data.session?.sessionId || '', entry: 'exam_take' },
+            }).catch(() => undefined);
             setIsLandingMode(false);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to start exam.');
@@ -120,44 +130,44 @@ export default function ExamTakingPage() {
         }
     }, [examId, navigate, hydrateSessionAnswers]);
 
+    const { data: examDetailsData } = useQuery({
+        queryKey: ['examDetails', examId],
+        queryFn: async () => {
+            const { data } = await getStudentExamDetails(examId!);
+            return data;
+        },
+        enabled: !!examId && isLandingMode,
+        staleTime: 0,
+    });
+
     useEffect(() => {
-        if (!examId) return;
+        if (!examDetailsData) return;
+        const data = examDetailsData;
+        setExam(data.exam);
+        if (data.eligibility) {
+            setEligibility({
+                eligible: Boolean(data.eligibility.eligible),
+                reasons: data.eligibility.reasons || [],
+            });
+        } else {
+            setEligibility(null);
+        }
+        const autosaveSec = Number((data as any).exam?.autosave_interval_sec || (data as any).exam?.autosaveIntervalSec || 5);
+        if (Number.isFinite(autosaveSec) && autosaveSec >= 3) {
+            setAutosaveIntervalMs(Math.floor(autosaveSec * 1000));
+        }
+        if ((data as any).serverNow) {
+            const offset = new Date(String((data as any).serverNow)).getTime() - Date.now();
+            if (Number.isFinite(offset)) setServerOffsetMs(offset);
+        }
 
-        const loadExamDetails = async () => {
-            try {
-                const { data } = await getStudentExamDetails(examId);
-                setExam(data.exam);
-                if (data.eligibility) {
-                    setEligibility({
-                        eligible: Boolean(data.eligibility.eligible),
-                        reasons: data.eligibility.reasons || [],
-                    });
-                } else {
-                    setEligibility(null);
-                }
-                const autosaveSec = Number((data as any).exam?.autosave_interval_sec || (data as any).exam?.autosaveIntervalSec || 5);
-                if (Number.isFinite(autosaveSec) && autosaveSec >= 3) {
-                    setAutosaveIntervalMs(Math.floor(autosaveSec * 1000));
-                }
-                if ((data as any).serverNow) {
-                    const offset = new Date(String((data as any).serverNow)).getTime() - Date.now();
-                    if (Number.isFinite(offset)) setServerOffsetMs(offset);
-                }
-
-                const canAutoStart = data.eligibility ? Boolean(data.eligibility.eligible) : true;
-                if (canAutoStart && (data.hasActiveSession || !data.exam.require_instructions_agreement)) {
-                    await handleStartExam();
-                } else {
-                    setLoading(false);
-                }
-            } catch (error: any) {
-                toast.error(error.response?.data?.message || 'Failed to load exam details.');
-                navigate('/student/dashboard');
-            }
-        };
-
-        loadExamDetails();
-    }, [examId, navigate, handleStartExam]);
+        const canAutoStart = data.eligibility ? Boolean(data.eligibility.eligible) : true;
+        if (canAutoStart && (data.hasActiveSession || !data.exam.require_instructions_agreement)) {
+            handleStartExam().catch(() => undefined);
+        } else {
+            setLoading(false);
+        }
+    }, [examDetailsData, handleStartExam]);
 
     useEffect(() => {
         if (!isLandingMode) return;
@@ -197,7 +207,7 @@ export default function ExamTakingPage() {
         }
     }, [examId, session?.sessionId, hydrateSessionAnswers]);
 
-    const { flushQueue, isSaving, isOffline, latestAttemptRevision } = useAutoSave({
+    const { flushQueue, isSaving, isOffline, latestAttemptRevision, lastSavedAt } = useAutoSave({
         examId: examId || '',
         attemptId: session?.sessionId,
         answers,
@@ -245,6 +255,12 @@ export default function ExamTakingPage() {
             }
 
             toast.success(data.message || 'Exam submitted successfully.');
+            void trackAnalyticsEvent({
+                eventName: 'exam_submitted',
+                module: 'exams',
+                source: 'student',
+                meta: { examId, attemptId: session.sessionId, reason },
+            }).catch(() => undefined);
             const resultPath = `/exam/result/${examId}`;
             setShowSubmitModal(false);
             setIsSubmitting(false);
@@ -359,6 +375,11 @@ export default function ExamTakingPage() {
         };
     }, [examId, session?.sessionId, isLandingMode, navigate]);
 
+    useEffect(() => {
+        if (questions.length === 0) return;
+        setActiveQuestionIndex((prev) => Math.min(prev, questions.length - 1));
+    }, [questions.length]);
+
     const onAntiCheatLog = useCallback(async (event: {
         eventType: 'tab_switch' | 'fullscreen_exit' | 'copy_attempt' | 'error';
         metadata?: Record<string, unknown>;
@@ -433,11 +454,23 @@ export default function ExamTakingPage() {
         });
     };
 
-    const scrollToQuestion = (questionId: string) => {
-        const element = document.getElementById(`question-${questionId}`);
+    const goToQuestionIndex = useCallback((nextIndex: number) => {
+        const bounded = Math.max(0, Math.min(questions.length - 1, nextIndex));
+        setActiveQuestionIndex(bounded);
+        void flushQueue();
+        const qId = questions[bounded]?._id;
+        if (!qId) return;
+        const element = document.getElementById(`question-${qId}`);
         if (!element) return;
         const y = element.getBoundingClientRect().top + window.scrollY - 100;
         window.scrollTo({ top: y, behavior: 'smooth' });
+    }, [flushQueue, questions]);
+
+    const scrollToQuestion = (questionId: string) => {
+        const targetIndex = questionIds.indexOf(questionId);
+        if (targetIndex === -1) return;
+        setShowMobilePalette(false);
+        goToQuestionIndex(targetIndex);
     };
 
     const answeredKeys = useMemo(
@@ -664,6 +697,7 @@ export default function ExamTakingPage() {
                     isOffline={isOffline}
                     answeredCount={answeredKeys.size}
                     totalQuestions={exam.totalQuestions}
+                    lastSavedAt={lastSavedAt}
                 />
 
                 {session?.sessionLocked && (
@@ -677,19 +711,24 @@ export default function ExamTakingPage() {
 
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
                     <div className="flex flex-col lg:flex-row gap-8">
-                        <div className="flex-1 space-y-8 pb-36 lg:pb-10">
+                        <div className="flex-1 space-y-4 pb-40 lg:pb-10">
                             {questions.map((question, index) => (
-                                <QuestionCard
+                                <div
                                     key={question._id}
-                                    question={question}
-                                    questionNumber={index + 1}
-                                    selectedOption={answers[question._id]?.selectedAnswer}
-                                    isMarkedForReview={markedForReview.has(question._id)}
-                                    onSelectOption={(opt) => handleSelectOption(question._id, opt)}
-                                    onToggleReview={() => handleToggleReview(question._id)}
-                                    onWrittenUpload={(file) => handleWrittenUpload(question._id, file)}
-                                    writtenUploadUrl={answers[question._id]?.writtenAnswerUrl}
-                                />
+                                    id={`question-${question._id}`}
+                                    className="block mb-8 scroll-mt-24"
+                                >
+                                    <QuestionCard
+                                        question={question}
+                                        questionNumber={index + 1}
+                                        selectedOption={answers[question._id]?.selectedAnswer}
+                                        isMarkedForReview={markedForReview.has(question._id)}
+                                        onSelectOption={(opt) => handleSelectOption(question._id, opt)}
+                                        onToggleReview={() => handleToggleReview(question._id)}
+                                        onWrittenUpload={(file) => handleWrittenUpload(question._id, file)}
+                                        writtenUploadUrl={answers[question._id]?.writtenAnswerUrl}
+                                    />
+                                </div>
                             ))}
                         </div>
 
@@ -714,32 +753,62 @@ export default function ExamTakingPage() {
                             </p>
                             <button
                                 type="button"
+                                onClick={() => setShowMobilePalette(true)}
+                                className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700"
+                            >
+                                Palette
+                            </button>
+                            <button
+                                type="button"
                                 onClick={() => setShowSubmitModal(true)}
                                 className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white"
                             >
                                 Finish Exam
                             </button>
                         </div>
-                        <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
-                            {questionIds.map((qId, idx) => {
-                                const isAnswered = answeredKeys.has(qId);
-                                const isReview = markedForReview.has(qId);
-                                const baseColor = isAnswered
-                                    ? 'bg-emerald-500 text-white border-emerald-600'
-                                    : isReview
-                                        ? 'bg-amber-400 text-amber-900 border-amber-500'
-                                        : 'bg-slate-50 text-slate-700 border-slate-300';
-                                return (
-                                    <button
-                                        key={`mobile-q-${qId}`}
-                                        type="button"
-                                        onClick={() => scrollToQuestion(qId)}
-                                        className={`h-8 min-w-8 rounded-md border text-xs font-semibold ${baseColor}`}
-                                    >
-                                        {idx + 1}
-                                    </button>
-                                );
-                            })}
+                    </div>
+                )}
+
+                {showMobilePalette && (
+                    <div className="lg:hidden fixed inset-0 z-50 bg-black/45" onClick={() => setShowMobilePalette(false)}>
+                        <div
+                            className="absolute bottom-0 left-0 right-0 max-h-[72vh] overflow-y-auto rounded-t-3xl bg-white p-4"
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <div className="mb-3 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-slate-900">Question Palette</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMobilePalette(false)}
+                                    className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-6 gap-2">
+                                {questionIds.map((qId, idx) => {
+                                    const isAnswered = answeredKeys.has(qId);
+                                    const isReview = markedForReview.has(qId);
+                                    const isActive = idx === activeQuestionIndex;
+                                    const baseColor = isActive
+                                        ? 'bg-indigo-600 text-white border-indigo-700'
+                                        : isAnswered
+                                            ? 'bg-emerald-500 text-white border-emerald-600'
+                                            : isReview
+                                                ? 'bg-amber-400 text-amber-900 border-amber-500'
+                                                : 'bg-slate-50 text-slate-700 border-slate-300';
+                                    return (
+                                        <button
+                                            key={`mobile-q-${qId}`}
+                                            type="button"
+                                            onClick={() => scrollToQuestion(qId)}
+                                            className={`h-11 min-w-11 rounded-lg border text-sm font-semibold ${baseColor}`}
+                                        >
+                                            {idx + 1}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 )}

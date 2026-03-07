@@ -1,0 +1,664 @@
+{
+  "runId": "20260306180226",
+  "startedAt": "2026-03-06T18:02:26.769Z",
+  "endedAt": "2026-03-06T18:07:07.413Z",
+  "baseUrl": "http://127.0.0.1:5274",
+  "summary": {
+    "total": 19,
+    "passed": 5,
+    "warned": 14,
+    "failed": 0
+  },
+  "findings": [
+    {
+      "id": "01",
+      "kind": "public",
+      "label": "Home",
+      "route": "/",
+      "status": "warn",
+      "note": "Missing expected content: Featured university links, News detail links, Resource item links",
+      "currentUrl": "/",
+      "heading": "Master Your Admission Journey",
+      "emptySignals": [
+        "No active campaign banners.",
+        "No featured universities for this filter.",
+        "No universities match the current deadline filter.",
+        "No upcoming exam universities match this filter.",
+        "No online exams available.",
+        "No news items available.",
+        "No resources available."
+      ],
+      "checkResults": [
+        {
+          "label": "Featured university links",
+          "selector": "main a[href*=\"/university/\"], main a[href*=\"/universities/\"]:not([href=\"/universities\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        },
+        {
+          "label": "News detail links",
+          "selector": "main a[href^=\"/news/\"]:not([href=\"/news\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        },
+        {
+          "label": "Resource item links",
+          "selector": "main a[href^=\"/resources/\"]:not([href=\"/resources\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 3,
+        "links": 21,
+        "inputs": 1
+      },
+      "missingChecks": [
+        {
+          "label": "Featured university links",
+          "expectedMin": 1,
+          "actual": 0
+        },
+        {
+          "label": "News detail links",
+          "expectedMin": 1,
+          "actual": 0
+        },
+        {
+          "label": "Resource item links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/01-public-home.png"
+    },
+    {
+      "id": "02",
+      "kind": "public",
+      "label": "Universities",
+      "route": "/universities",
+      "status": "warn",
+      "note": "Missing expected content: University detail links",
+      "currentUrl": "/universities",
+      "heading": "Universities",
+      "emptySignals": [
+        "No universities in this category."
+      ],
+      "checkResults": [
+        {
+          "label": "University detail links",
+          "selector": "main a[href*=\"/university/\"], main a[href*=\"/universities/\"]:not([href=\"/universities\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 17,
+        "inputs": 3
+      },
+      "missingChecks": [
+        {
+          "label": "University detail links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/02-public-universities.png"
+    },
+    {
+      "id": "03",
+      "kind": "public",
+      "label": "Exam Portal",
+      "route": "/exam-portal",
+      "status": "warn",
+      "note": "Missing expected content: Exam detail links",
+      "currentUrl": "/exams",
+      "heading": "",
+      "emptySignals": [
+        "No exams matched your current filters."
+      ],
+      "checkResults": [
+        {
+          "label": "Exam detail links",
+          "selector": "main a[href^=\"/exams/\"]:not([href=\"/exams\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 8,
+        "links": 17,
+        "inputs": 2
+      },
+      "missingChecks": [
+        {
+          "label": "Exam detail links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/03-public-exam-portal.png"
+    },
+    {
+      "id": "04",
+      "kind": "public",
+      "label": "News",
+      "route": "/news",
+      "status": "warn",
+      "note": "Missing expected content: News cards/links",
+      "currentUrl": "/news",
+      "heading": "Admission News & Updates",
+      "emptySignals": [
+        "No news found for this filter."
+      ],
+      "checkResults": [
+        {
+          "label": "News cards/links",
+          "selector": "main a[href^=\"/news/\"]:not([href=\"/news\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 10,
+        "links": 17,
+        "inputs": 2
+      },
+      "missingChecks": [
+        {
+          "label": "News cards/links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/04-public-news.png"
+    },
+    {
+      "id": "05",
+      "kind": "public",
+      "label": "Resources",
+      "route": "/resources",
+      "status": "warn",
+      "note": "Missing expected content: Resource rows/cards",
+      "currentUrl": "/resources",
+      "heading": "Student Resources",
+      "emptySignals": [
+        "No resources found"
+      ],
+      "checkResults": [
+        {
+          "label": "Resource rows/cards",
+          "selector": "main article, main [class*=\"resource\"], main a[href*=\"/resources/\"]:not([href=\"/resources\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 18,
+        "links": 17,
+        "inputs": 4
+      },
+      "missingChecks": [
+        {
+          "label": "Resource rows/cards",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/05-public-resources.png"
+    },
+    {
+      "id": "06",
+      "kind": "public",
+      "label": "Contact",
+      "route": "/contact",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/contact",
+      "heading": "We are here to help you",
+      "emptySignals": [
+        "Not Available"
+      ],
+      "checkResults": [
+        {
+          "label": "Contact form fields",
+          "selector": "form input, form textarea",
+          "min": 2,
+          "count": 10,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 1,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 3,
+        "links": 22,
+        "inputs": 10
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/06-public-contact.png"
+    },
+    {
+      "id": "07",
+      "kind": "public",
+      "label": "Subscription Plans",
+      "route": "/subscription-plans",
+      "status": "warn",
+      "note": "Missing expected content: Plan cards/links",
+      "currentUrl": "/subscription-plans",
+      "heading": "Subscription Plans",
+      "emptySignals": [
+        "No plans found for current filters."
+      ],
+      "checkResults": [
+        {
+          "label": "Plan cards/links",
+          "selector": "main article, main [class*=\"plan\"], main a[href^=\"/subscription-plans/\"]:not([href=\"/subscription-plans\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 17,
+        "inputs": 2
+      },
+      "missingChecks": [
+        {
+          "label": "Plan cards/links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/07-public-subscription-plans.png"
+    },
+    {
+      "id": "08",
+      "kind": "public",
+      "label": "About",
+      "route": "/about",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/about",
+      "heading": "Empowering Students Across Bangladesh",
+      "emptySignals": [],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 18,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/08-public-about.png"
+    },
+    {
+      "id": "09",
+      "kind": "public",
+      "label": "Terms",
+      "route": "/terms",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/terms",
+      "heading": "Terms & Conditions",
+      "emptySignals": [],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 19,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/09-public-terms.png"
+    },
+    {
+      "id": "10",
+      "kind": "public",
+      "label": "Privacy",
+      "route": "/privacy",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/privacy",
+      "heading": "Privacy Policy",
+      "emptySignals": [],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 2,
+        "links": 19,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/10-public-privacy.png"
+    },
+    {
+      "id": "11",
+      "kind": "public",
+      "label": "Login",
+      "route": "/login",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/login",
+      "heading": "Student Login",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Login fields",
+          "selector": "input[type=\"email\"], input[type=\"text\"], input[type=\"password\"]",
+          "min": 2,
+          "count": 2,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 1,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 3,
+        "links": 2,
+        "inputs": 2
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/11-public-login.png"
+    },
+    {
+      "id": "12",
+      "kind": "student",
+      "label": "Student Dashboard",
+      "route": "/dashboard",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/dashboard",
+      "heading": "E2E Student Desktop",
+      "emptySignals": [
+        "No internal upcoming exams right now.",
+        "No featured universities configured.",
+        "No live alerts at this moment.",
+        "No active announcements.",
+        "No chart data yet. Complete exams to build your trend line.",
+        "No badges yet.",
+        "No exam history yet."
+      ],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 4,
+        "links": 25,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/12-student-student-dashboard.png"
+    },
+    {
+      "id": "13",
+      "kind": "student",
+      "label": "Student Exams",
+      "route": "/exams",
+      "status": "warn",
+      "note": "Missing expected content: Exam detail links",
+      "currentUrl": "/exams",
+      "heading": "",
+      "emptySignals": [
+        "No exams matched your current filters."
+      ],
+      "checkResults": [
+        {
+          "label": "Exam detail links",
+          "selector": "main a[href^=\"/exams/\"]:not([href=\"/exams\"])",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 9,
+        "links": 18,
+        "inputs": 2
+      },
+      "missingChecks": [
+        {
+          "label": "Exam detail links",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/13-student-student-exams.png"
+    },
+    {
+      "id": "14",
+      "kind": "student",
+      "label": "Student Results",
+      "route": "/results",
+      "status": "warn",
+      "note": "Missing expected content: Result detail links/rows",
+      "currentUrl": "/results",
+      "heading": "Results & Ranking",
+      "emptySignals": [
+        "No results available yet."
+      ],
+      "checkResults": [
+        {
+          "label": "Result detail links/rows",
+          "selector": "main a[href^=\"/results/\"]:not([href=\"/results\"]), main table tbody tr",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 4,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [
+        {
+          "label": "Result detail links/rows",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/14-student-student-results.png"
+    },
+    {
+      "id": "15",
+      "kind": "student",
+      "label": "Student Payments",
+      "route": "/payments",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/payments",
+      "heading": "Payments",
+      "emptySignals": [
+        "No payment entries available."
+      ],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 4,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/15-student-student-payments.png"
+    },
+    {
+      "id": "16",
+      "kind": "student",
+      "label": "Student Notifications",
+      "route": "/notifications",
+      "status": "warn",
+      "note": "Empty-state text found",
+      "currentUrl": "/notifications",
+      "heading": "Notifications",
+      "emptySignals": [
+        "No notifications found."
+      ],
+      "checkResults": [],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 9,
+        "links": 23,
+        "inputs": 0
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/16-student-student-notifications.png"
+    },
+    {
+      "id": "17",
+      "kind": "student",
+      "label": "Student Profile",
+      "route": "/profile",
+      "status": "pass",
+      "note": "OK",
+      "currentUrl": "/profile",
+      "heading": "Profile & Documents",
+      "emptySignals": [],
+      "checkResults": [
+        {
+          "label": "Profile form fields",
+          "selector": "main input, main select, main textarea",
+          "min": 1,
+          "count": 16,
+          "ok": true
+        }
+      ],
+      "counts": {
+        "forms": 2,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 6,
+        "links": 23,
+        "inputs": 16
+      },
+      "missingChecks": [],
+      "screenshot": "screenshots/17-student-student-profile.png"
+    },
+    {
+      "id": "18",
+      "kind": "student",
+      "label": "Student Resources",
+      "route": "/student/resources",
+      "status": "warn",
+      "note": "Missing expected content: Resource cards/rows",
+      "currentUrl": "/student/resources",
+      "heading": "Resources",
+      "emptySignals": [
+        "No resources found."
+      ],
+      "checkResults": [
+        {
+          "label": "Resource cards/rows",
+          "selector": "main article, main [class*=\"resource\"], main a[href*=\"/resources/\"]",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 0,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 4,
+        "links": 31,
+        "inputs": 2
+      },
+      "missingChecks": [
+        {
+          "label": "Resource cards/rows",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/18-student-student-resources.png"
+    },
+    {
+      "id": "19",
+      "kind": "student",
+      "label": "Student Support",
+      "route": "/support",
+      "status": "warn",
+      "note": "Missing expected content: Ticket table/cards",
+      "currentUrl": "/support",
+      "heading": "Support & Help",
+      "emptySignals": [
+        "No notices available.",
+        "No support tickets yet."
+      ],
+      "checkResults": [
+        {
+          "label": "Ticket table/cards",
+          "selector": "main table tbody tr, main article, main [class*=\"ticket\"]",
+          "min": 1,
+          "count": 0,
+          "ok": false
+        }
+      ],
+      "counts": {
+        "forms": 1,
+        "tables": 0,
+        "tableRows": 0,
+        "buttons": 5,
+        "links": 23,
+        "inputs": 3
+      },
+      "missingChecks": [
+        {
+          "label": "Ticket table/cards",
+          "expectedMin": 1,
+          "actual": 0
+        }
+      ],
+      "screenshot": "screenshots/19-student-student-support.png"
+    }
+  ],
+  "warnings": [
+    "Database drop skipped (mongosh unavailable or failed)"
+  ]
+}

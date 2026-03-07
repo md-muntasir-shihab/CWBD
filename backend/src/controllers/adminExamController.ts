@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import * as XLSX from 'xlsx';
 import ExcelJS from 'exceljs';
+import PDFDocument from 'pdfkit';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import { AuthRequest } from '../middlewares/auth';
@@ -11,6 +12,9 @@ import ExamSession from '../models/ExamSession';
 import ExamEvent from '../models/ExamEvent';
 import User from '../models/User';
 import StudentGroup from '../models/StudentGroup';
+import StudentProfile from '../models/StudentProfile';
+import AnnouncementNotice from '../models/AnnouncementNotice';
+import Notification from '../models/Notification';
 import { broadcastStudentDashboardEvent } from '../realtime/studentDashboardStream';
 import { submitExamAsSystem } from './examController';
 import { broadcastExamAttemptEventByMeta } from '../realtime/examAttemptStream';
@@ -20,6 +24,10 @@ import { getExamCardMetrics } from '../services/examCardMetricsService';
 
 interface PopulatedStudent { username: string; fullName: string; email: string; }
 function asStudent(s: unknown): PopulatedStudent { return s as PopulatedStudent; }
+function asRecordObject(value: unknown): Record<string, unknown> | null {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    return value as Record<string, unknown>;
+}
 
 function asStringArray(input: unknown): string[] {
     if (Array.isArray(input)) return input.map((x) => String(x).trim()).filter(Boolean);
@@ -106,6 +114,146 @@ function normalizeExamPayload(body: Record<string, unknown>): Record<string, unk
     }
     normalizeDeliveryMode(payload);
     return payload;
+}
+
+function asObjectId(value: unknown): mongoose.Types.ObjectId | null {
+    const raw = String(value || '').trim();
+    if (!raw || !mongoose.Types.ObjectId.isValid(raw)) return null;
+    return new mongoose.Types.ObjectId(raw);
+}
+
+function toObjectIdList(values: string[]): mongoose.Types.ObjectId[] {
+    const dedup = new Set<string>();
+    const items: mongoose.Types.ObjectId[] = [];
+    for (const value of values) {
+        const parsed = asObjectId(value);
+        if (!parsed) continue;
+        const key = String(parsed);
+        if (dedup.has(key)) continue;
+        dedup.add(key);
+        items.push(parsed);
+    }
+    return items;
+}
+
+function parseLooseDate(value: unknown): Date | null {
+    if (!value) return null;
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return null;
+    return date;
+}
+
+function parseNumeric(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeImportKey(value: unknown): string {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[\s\-]+/g, '_');
+}
+
+function escapeCsvCell(value: unknown): string {
+    const text = String(value ?? '');
+    return `"${text.replace(/"/g, '""')}"`;
+}
+
+function detectFileFormat(filename: string): 'xlsx' | 'csv' {
+    const lower = filename.trim().toLowerCase();
+    if (lower.endsWith('.csv')) return 'csv';
+    return 'xlsx';
+}
+
+function readImportRowsFromBuffer(buffer: Buffer, filename: string): Array<Record<string, unknown>> {
+    const format = detectFileFormat(filename);
+    if (format === 'csv') {
+        const wb = XLSX.read(buffer, { type: 'buffer', codepage: 65001 });
+        const firstSheet = wb.SheetNames[0];
+        if (!firstSheet) return [];
+        return XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[firstSheet], { defval: '' });
+    }
+
+    const wb = XLSX.read(buffer, { type: 'buffer' });
+    const firstSheet = wb.SheetNames[0];
+    if (!firstSheet) return [];
+    return XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[firstSheet], { defval: '' });
+}
+
+async function recomputeGlobalExamRanks(examId: string): Promise<void> {
+    const rows = await ExamResult.find({ exam: examId })
+        .sort({ obtainedMarks: -1, timeTaken: 1, submittedAt: 1 })
+        .select('_id')
+        .lean();
+    if (!rows.length) return;
+    const ops = rows.map((row, idx) => ({
+        updateOne: {
+            filter: { _id: row._id },
+            update: { $set: { rank: idx + 1 } },
+        },
+    }));
+    await ExamResult.bulkWrite(ops, { ordered: false });
+}
+
+async function createExamAudienceNotice(examDoc: Record<string, unknown>, actorId: mongoose.Types.ObjectId, action: 'published' | 'updated'): Promise<void> {
+    const examId = String(examDoc._id || '');
+    if (!mongoose.Types.ObjectId.isValid(examId)) return;
+
+    const title = String(examDoc.title || 'Exam').trim() || 'Exam';
+    const startDate = examDoc.startDate ? new Date(String(examDoc.startDate)) : null;
+    const startLabel = startDate && !Number.isNaN(startDate.getTime()) ? startDate.toLocaleString() : 'soon';
+    const actionLabel = action === 'published' ? 'published' : 'updated';
+    const noticeTitle = `Exam ${actionLabel}: ${title}`;
+    const noticeMessage = `Exam "${title}" is ${actionLabel}. Start time: ${startLabel}.`;
+
+    const accessControl = (examDoc.accessControl && typeof examDoc.accessControl === 'object')
+        ? (examDoc.accessControl as Record<string, unknown>)
+        : {};
+    const allowedGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+    const target = allowedGroupIds.length > 0 ? 'groups' : 'all';
+
+    const notice = await AnnouncementNotice.create({
+        title: noticeTitle,
+        message: noticeMessage,
+        target,
+        targetIds: target === 'groups' ? allowedGroupIds : [],
+        startAt: new Date(),
+        endAt: null,
+        isActive: true,
+        createdBy: actorId,
+    });
+
+    let targetUserIds: mongoose.Types.ObjectId[] = [];
+    if (target === 'groups') {
+        const profiles = await StudentProfile.find({ groupIds: { $in: toObjectIdList(allowedGroupIds) } })
+            .select('user_id')
+            .lean();
+        targetUserIds = toObjectIdList(profiles.map((profile) => String(profile.user_id || '')).filter(Boolean));
+    }
+
+    await Notification.updateOne(
+        { reminderKey: `notice:${String(notice._id)}` },
+        {
+            $set: {
+                title: noticeTitle,
+                message: noticeMessage,
+                category: 'exam',
+                publishAt: notice.startAt,
+                expireAt: notice.endAt || null,
+                isActive: true,
+                linkUrl: `/exam/${examId}`,
+                attachmentUrl: '',
+                targetRole: 'student',
+                targetUserIds,
+                createdBy: actorId,
+                updatedBy: actorId,
+            },
+            $setOnInsert: { reminderKey: `notice:${String(notice._id)}` },
+        },
+        { upsert: true },
+    );
 }
 
 async function broadcastExamMetricsSnapshot(examId: string, source: string): Promise<void> {
@@ -324,6 +472,13 @@ export async function adminUpdateExam(req: AuthRequest, res: Response): Promise<
         if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
         broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'update', examId: String(exam._id) } });
         void broadcastExamMetricsSnapshot(String(exam._id), 'exam_update');
+        if (exam.isPublished) {
+            const actorId = asObjectId(req.user?._id);
+            if (actorId) {
+                void createExamAudienceNotice(exam.toObject() as unknown as Record<string, unknown>, actorId, 'updated')
+                    .catch((noticeErr) => console.warn('[adminUpdateExam notice]', noticeErr));
+            }
+        }
         res.json({ exam, message: 'Exam updated successfully.' });
     } catch (err) {
         console.error('[adminUpdateExam]', err);
@@ -354,6 +509,11 @@ export async function adminPublishExam(req: AuthRequest, res: Response): Promise
         const exam = await Exam.findByIdAndUpdate(req.params.id, { isPublished: true }, { new: true });
         if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
         broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'publish', examId: String(exam._id) } });
+        const actorId = asObjectId(req.user?._id);
+        if (actorId) {
+            void createExamAudienceNotice(exam.toObject() as unknown as Record<string, unknown>, actorId, 'published')
+                .catch((noticeErr) => console.warn('[adminPublishExam notice]', noticeErr));
+        }
         res.json({ message: 'Exam published.', exam });
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
@@ -767,9 +927,12 @@ export async function adminExportExamResults(req: AuthRequest, res: Response): P
         const sheet = workbook.addWorksheet('Results');
         sheet.columns = [
             { header: 'Rank', key: 'rank', width: 10 },
+            { header: 'User ID', key: 'userId', width: 28 },
+            { header: 'Name', key: 'name', width: 25 },
             { header: 'Username', key: 'username', width: 20 },
             { header: 'Full Name', key: 'fullName', width: 25 },
             { header: 'Email', key: 'email', width: 30 },
+            { header: 'Marks', key: 'marks', width: 12 },
             { header: 'Obtained Marks', key: 'obtainedMarks', width: 15 },
             { header: 'Total Marks', key: 'totalMarks', width: 15 },
             { header: 'Percentage', key: 'percentage', width: 15 },
@@ -790,11 +953,18 @@ export async function adminExportExamResults(req: AuthRequest, res: Response): P
         sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
 
         results.forEach((r, i) => {
+            const userId = (typeof r.student === 'object' && r.student && '_id' in (r.student as object))
+                ? String((r.student as { _id?: unknown })._id || '')
+                : String(r.student || '');
+            const fullName = asStudent(r.student)?.fullName || '';
             sheet.addRow({
                 rank: r.rank || i + 1,
+                userId,
+                name: fullName || asStudent(r.student)?.username || '',
                 username: asStudent(r.student)?.username || '',
-                fullName: asStudent(r.student)?.fullName || '',
+                fullName,
                 email: asStudent(r.student)?.email || '',
+                marks: r.obtainedMarks,
                 obtainedMarks: r.obtainedMarks,
                 totalMarks: r.totalMarks,
                 percentage: r.percentage + '%',
@@ -834,6 +1004,449 @@ export async function adminExportExamResults(req: AuthRequest, res: Response): P
     } catch (err) {
         console.error('[adminExportExamResults]', err);
         res.status(500).json({ message: 'Server error' });
+    }
+}
+
+type ExamReportExportRow = {
+    serialNo: number;
+    resultId: string;
+    studentId: string;
+    registration_id: string;
+    roll_number: string;
+    username: string;
+    fullName: string;
+    email: string;
+    groupId: string;
+    groupName: string;
+    obtainedMarks: number;
+    totalMarks: number;
+    percentage: number;
+    globalRank: number;
+    groupRank: number | null;
+    submittedAt: string;
+    timeTakenSec: number;
+};
+
+type RankComparableRow = {
+    obtainedMarks?: number;
+    timeTaken?: number;
+    submittedAt?: Date | string;
+};
+
+function compareResultsForRank(a: RankComparableRow, b: RankComparableRow): number {
+    if (Number(b.obtainedMarks || 0) !== Number(a.obtainedMarks || 0)) {
+        return Number(b.obtainedMarks || 0) - Number(a.obtainedMarks || 0);
+    }
+    if (Number(a.timeTaken || 0) !== Number(b.timeTaken || 0)) {
+        return Number(a.timeTaken || 0) - Number(b.timeTaken || 0);
+    }
+    return new Date(String(a.submittedAt || 0)).getTime() - new Date(String(b.submittedAt || 0)).getTime();
+}
+
+function normalizeRegistrationId(value: unknown): string {
+    return String(value || '').trim().toLowerCase();
+}
+
+async function buildExamReportRows(examId: string, groupIdFilter = ''): Promise<{ rows: ExamReportExportRow[]; examTitle: string }> {
+    const exam = await Exam.findById(examId).select('title totalMarks').lean();
+    if (!exam) {
+        throw new Error('Exam not found');
+    }
+
+    const allResults = await ExamResult.find({ exam: examId })
+        .populate('student', 'username full_name fullName email')
+        .lean();
+
+    const studentIds = Array.from(new Set(
+        allResults
+            .map((row) => {
+                const studentObj = asRecordObject(row.student);
+                return String(studentObj?._id || row.student || '');
+            })
+            .filter(Boolean),
+    ));
+    const profiles = studentIds.length > 0
+        ? await StudentProfile.find({ user_id: { $in: studentIds } })
+            .select('user_id registration_id roll_number groupIds')
+            .lean()
+        : [];
+
+    const profileMap = new Map<string, Record<string, unknown>>();
+    const groupIdSet = new Set<string>();
+    for (const profile of profiles as Array<Record<string, unknown>>) {
+        const userId = String(profile.user_id || '');
+        if (!userId) continue;
+        profileMap.set(userId, profile);
+        for (const groupId of normalizeObjectIdArray(profile.groupIds || [])) {
+            groupIdSet.add(groupId);
+        }
+    }
+
+    const groups = groupIdSet.size > 0
+        ? await StudentGroup.find({ _id: { $in: Array.from(groupIdSet) } }).select('name').lean()
+        : [];
+    const groupMap = new Map<string, string>(groups.map((group) => [String(group._id || ''), String(group.name || '')]));
+
+    const globalSorted = [...allResults].sort(compareResultsForRank);
+    const globalRankMap = new Map<string, number>();
+    globalSorted.forEach((row, idx) => {
+        globalRankMap.set(String(row._id || ''), idx + 1);
+    });
+
+    const rowsBase = allResults
+        .map((result) => {
+            const userRecord = asRecordObject(result.student) || {};
+            const studentId = String(userRecord._id || result.student || '');
+            const profile = profileMap.get(studentId) || {};
+            const groupIds = normalizeObjectIdArray(profile.groupIds || []);
+            const primaryGroupId = groupIdFilter
+                ? (groupIds.includes(groupIdFilter) ? groupIdFilter : '')
+                : (groupIds[0] || '');
+
+            return {
+                result,
+                studentId,
+                profile,
+                primaryGroupId,
+            };
+        })
+        .filter((row) => {
+            if (!groupIdFilter) return true;
+            return row.primaryGroupId === groupIdFilter;
+        });
+
+    const bucketMap = new Map<string, Array<{ resultId: string; obtainedMarks: number; timeTaken: number; submittedAt: Date | string }>>();
+    for (const row of rowsBase) {
+        const bucketKey = row.primaryGroupId || '__ungrouped__';
+        if (!bucketMap.has(bucketKey)) bucketMap.set(bucketKey, []);
+        bucketMap.get(bucketKey)!.push({
+            resultId: String(row.result._id || ''),
+            obtainedMarks: Number(row.result.obtainedMarks || 0),
+            timeTaken: Number(row.result.timeTaken || 0),
+            submittedAt: row.result.submittedAt,
+        });
+    }
+
+    const groupRankMap = new Map<string, number>();
+    for (const [, bucketRows] of bucketMap) {
+        bucketRows
+            .sort((a, b) => compareResultsForRank(a, b))
+            .forEach((entry, idx) => {
+                groupRankMap.set(entry.resultId, idx + 1);
+            });
+    }
+
+    const rows = rowsBase
+        .sort((a, b) => compareResultsForRank(a.result, b.result))
+        .map((entry, index) => {
+            const result = entry.result;
+            const userRecord = asRecordObject(result.student) || {};
+            const fullName = String(userRecord.full_name || userRecord.fullName || '');
+            const totalMarks = Number(result.totalMarks || exam.totalMarks || 0);
+            const obtainedMarks = Number(result.obtainedMarks || 0);
+            const percentage = totalMarks > 0 ? Number(((obtainedMarks / totalMarks) * 100).toFixed(2)) : 0;
+            const resultId = String(result._id || '');
+
+            return {
+                serialNo: index + 1,
+                resultId,
+                studentId: entry.studentId,
+                registration_id: String(entry.profile.registration_id || ''),
+                roll_number: String(entry.profile.roll_number || ''),
+                username: String(userRecord.username || ''),
+                fullName,
+                email: String(userRecord.email || ''),
+                groupId: entry.primaryGroupId || '',
+                groupName: entry.primaryGroupId ? String(groupMap.get(entry.primaryGroupId) || '') : '',
+                obtainedMarks,
+                totalMarks,
+                percentage,
+                globalRank: Number(globalRankMap.get(resultId) || 0),
+                groupRank: groupRankMap.has(resultId) ? Number(groupRankMap.get(resultId) || 0) : null,
+                submittedAt: result.submittedAt ? new Date(result.submittedAt).toISOString() : '',
+                timeTakenSec: Number(result.timeTaken || 0),
+            } as ExamReportExportRow;
+        });
+
+    return { rows, examTitle: String(exam.title || 'exam') };
+}
+
+export async function adminDownloadExamResultsImportTemplate(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const format = String(req.query.format || 'xlsx').trim().toLowerCase() === 'csv' ? 'csv' : 'xlsx';
+        const rows = [
+            {
+                registration_id: 'REG-1001',
+                obtained_marks: 78,
+                submitted_at: new Date().toISOString(),
+                time_taken_sec: 3200,
+                remarks: 'manual import',
+            },
+        ];
+
+        if (format === 'csv') {
+            const headers = ['registration_id', 'obtained_marks', 'submitted_at', 'time_taken_sec', 'remarks'];
+            const csv = [
+                headers.join(','),
+                ...rows.map((row) => headers.map((key) => escapeCsvCell((row as Record<string, unknown>)[key])).join(',')),
+            ].join('\n');
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename="exam_results_import_template.csv"');
+            res.send(csv);
+            return;
+        }
+
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'template');
+        const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="exam_results_import_template.xlsx"');
+        res.send(buffer);
+    } catch (err) {
+        console.error('[adminDownloadExamResultsImportTemplate]', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminImportExamResults(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const examId = String(req.params.id || req.params.examId || '').trim();
+        if (!mongoose.Types.ObjectId.isValid(examId)) {
+            res.status(400).json({ message: 'Invalid exam id.' });
+            return;
+        }
+        if (!req.file?.buffer || !req.file?.originalname) {
+            res.status(400).json({ message: 'No file uploaded.' });
+            return;
+        }
+
+        const exam = await Exam.findById(examId).select('title totalMarks').lean();
+        if (!exam) {
+            res.status(404).json({ message: 'Exam not found.' });
+            return;
+        }
+
+        const rawRows = readImportRowsFromBuffer(req.file.buffer, req.file.originalname);
+        if (!rawRows.length) {
+            res.status(400).json({ message: 'No data rows found in the uploaded file.' });
+            return;
+        }
+
+        const normalizedRows = rawRows.map((row, idx) => {
+            const next: Record<string, unknown> = {};
+            Object.entries(row || {}).forEach(([key, value]) => {
+                next[normalizeImportKey(key)] = value;
+            });
+            return { rowNo: idx + 2, data: next };
+        });
+
+        const requestedRegIdsRaw = Array.from(new Set(
+            normalizedRows
+                .map((row) => String(row.data.registration_id || '').trim())
+                .filter(Boolean),
+        ));
+        const profiles = requestedRegIdsRaw.length > 0
+            ? await StudentProfile.find({
+                $or: [
+                    { registration_id: { $in: requestedRegIdsRaw } },
+                    { registration_id: { $in: requestedRegIdsRaw.map((value) => value.toLowerCase()) } },
+                    { registration_id: { $in: requestedRegIdsRaw.map((value) => value.toUpperCase()) } },
+                ],
+            })
+                .select('user_id registration_id')
+                .lean()
+            : [];
+
+        const profileMap = new Map<string, { userId: string; registrationId: string }>();
+        for (const profile of profiles as Array<Record<string, unknown>>) {
+            const normalizedRegId = normalizeRegistrationId(profile.registration_id);
+            const userId = String(profile.user_id || '');
+            if (!normalizedRegId || !mongoose.Types.ObjectId.isValid(userId)) continue;
+            profileMap.set(normalizedRegId, { userId, registrationId: String(profile.registration_id || '') });
+        }
+
+        const errors: Array<{ rowNo: number; registration_id: string; reason: string }> = [];
+        const ops: any[] = [];
+        const totalMarks = Math.max(0, Number(exam.totalMarks || 0));
+
+        for (const row of normalizedRows) {
+            const registrationIdRaw = String(row.data.registration_id || '').trim();
+            const registrationId = normalizeRegistrationId(registrationIdRaw);
+            const obtainedRaw = parseNumeric(row.data.obtained_marks);
+
+            if (!registrationId) {
+                errors.push({ rowNo: row.rowNo, registration_id: '', reason: 'registration_id is required' });
+                continue;
+            }
+            if (obtainedRaw === null) {
+                errors.push({ rowNo: row.rowNo, registration_id: registrationIdRaw, reason: 'obtained_marks is required and must be numeric' });
+                continue;
+            }
+
+            const profile = profileMap.get(registrationId);
+            if (!profile) {
+                errors.push({ rowNo: row.rowNo, registration_id: registrationIdRaw, reason: 'registration_id not found' });
+                continue;
+            }
+
+            const submittedAt = parseLooseDate(row.data.submitted_at) || new Date();
+            const timeTakenSec = Math.max(0, Number(parseNumeric(row.data.time_taken_sec) || 0));
+            const obtainedMarks = Math.min(totalMarks, Math.max(0, Number(obtainedRaw)));
+            const percentage = totalMarks > 0 ? Number(((obtainedMarks / totalMarks) * 100).toFixed(2)) : 0;
+
+            ops.push({
+                updateOne: {
+                    filter: {
+                        exam: new mongoose.Types.ObjectId(examId),
+                        student: new mongoose.Types.ObjectId(profile.userId),
+                        attemptNo: 1,
+                    },
+                    update: {
+                        $set: {
+                            exam: new mongoose.Types.ObjectId(examId),
+                            student: new mongoose.Types.ObjectId(profile.userId),
+                            attemptNo: 1,
+                            answers: [],
+                            totalMarks,
+                            obtainedMarks,
+                            correctCount: 0,
+                            wrongCount: 0,
+                            unansweredCount: 0,
+                            percentage,
+                            pointsEarned: Math.round(percentage),
+                            timeTaken: timeTakenSec,
+                            deviceInfo: 'manual_import',
+                            browserInfo: 'manual_import',
+                            ipAddress: '',
+                            tabSwitchCount: 0,
+                            submittedAt,
+                            isAutoSubmitted: false,
+                            status: 'evaluated',
+                        },
+                    },
+                    upsert: true,
+                },
+            });
+        }
+
+        if (!ops.length) {
+            res.status(400).json({
+                message: 'No valid rows found to import.',
+                imported: 0,
+                errors,
+            });
+            return;
+        }
+
+        const bulkResult = await ExamResult.bulkWrite(ops, { ordered: false });
+        await recomputeGlobalExamRanks(examId);
+
+        res.json({
+            message: 'Exam results imported successfully.',
+            examId,
+            examTitle: exam.title,
+            imported: Number(bulkResult.upsertedCount || 0) + Number(bulkResult.modifiedCount || 0),
+            inserted: Number(bulkResult.upsertedCount || 0),
+            updated: Number(bulkResult.modifiedCount || 0),
+            invalid: errors.length,
+            errors,
+        });
+    } catch (err) {
+        console.error('[adminImportExamResults]', err);
+        res.status(500).json({ message: 'Server error during import.' });
+    }
+}
+
+export async function adminExportExamReport(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const examId = String(req.params.id || req.params.examId || '').trim();
+        if (!mongoose.Types.ObjectId.isValid(examId)) {
+            res.status(400).json({ message: 'Invalid exam id.' });
+            return;
+        }
+
+        const groupId = String(req.query.groupId || '').trim();
+        if (groupId && !mongoose.Types.ObjectId.isValid(groupId)) {
+            res.status(400).json({ message: 'Invalid groupId.' });
+            return;
+        }
+
+        const formatRaw = String(req.query.format || 'xlsx').trim().toLowerCase();
+        const format = formatRaw === 'csv' || formatRaw === 'pdf' ? formatRaw : 'xlsx';
+
+        const { rows, examTitle } = await buildExamReportRows(examId, groupId);
+        const safeTitle = examTitle.replace(/[^a-z0-9]/gi, '_') || `exam_${examId}`;
+
+        if (format === 'csv') {
+            const headers = [
+                'serialNo', 'registration_id', 'roll_number', 'studentId', 'username', 'fullName', 'email',
+                'groupId', 'groupName', 'obtainedMarks', 'totalMarks', 'percentage', 'globalRank', 'groupRank',
+                'submittedAt', 'timeTakenSec',
+            ];
+            const csvRows = [
+                headers.join(','),
+                ...rows.map((row) => headers.map((key) => escapeCsvCell((row as Record<string, unknown>)[key])).join(',')),
+            ];
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}_report.csv"`);
+            res.send(csvRows.join('\n'));
+            return;
+        }
+
+        if (format === 'pdf') {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}_report.pdf"`);
+            const doc = new PDFDocument({ size: 'A4', margin: 40 });
+            doc.pipe(res);
+            doc.fontSize(14).text(`Exam Report: ${examTitle}`, { underline: true });
+            doc.moveDown(0.5);
+            doc.fontSize(10).text(`Total rows: ${rows.length}`);
+            if (groupId) doc.text(`Filtered by groupId: ${groupId}`);
+            doc.text(`Generated at: ${new Date().toISOString()}`);
+            doc.moveDown(0.8);
+            doc.fontSize(9);
+            rows.forEach((row) => {
+                doc.text(
+                    `#${row.serialNo} | ${row.registration_id || '-'} | ${row.fullName || row.username || row.studentId} | ${row.obtainedMarks}/${row.totalMarks} (${row.percentage}%) | GR:${row.globalRank} | Group:${row.groupName || '-'} | G-Rank:${row.groupRank ?? '-'}`
+                );
+            });
+            doc.end();
+            return;
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'CampusWay Admin';
+        const sheet = workbook.addWorksheet('Exam Report');
+        sheet.columns = [
+            { header: 'Serial', key: 'serialNo', width: 10 },
+            { header: 'Registration ID', key: 'registration_id', width: 18 },
+            { header: 'Roll', key: 'roll_number', width: 14 },
+            { header: 'Student ID', key: 'studentId', width: 28 },
+            { header: 'Username', key: 'username', width: 18 },
+            { header: 'Full Name', key: 'fullName', width: 26 },
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Group ID', key: 'groupId', width: 28 },
+            { header: 'Group Name', key: 'groupName', width: 24 },
+            { header: 'Obtained Marks', key: 'obtainedMarks', width: 14 },
+            { header: 'Total Marks', key: 'totalMarks', width: 14 },
+            { header: 'Percentage', key: 'percentage', width: 12 },
+            { header: 'Global Rank', key: 'globalRank', width: 12 },
+            { header: 'Group Rank', key: 'groupRank', width: 12 },
+            { header: 'Submitted At', key: 'submittedAt', width: 26 },
+            { header: 'Time Taken (s)', key: 'timeTakenSec', width: 14 },
+        ];
+        sheet.getRow(1).font = { bold: true };
+        rows.forEach((row) => sheet.addRow(row));
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}_report.xlsx"`);
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error('[adminExportExamReport]', err);
+        const message = err instanceof Error && err.message === 'Exam not found' ? 'Exam not found' : 'Server error';
+        res.status(message === 'Exam not found' ? 404 : 500).json({ message });
     }
 }
 

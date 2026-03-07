@@ -1,0 +1,7 @@
+Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information. 
+
+Check the render method of `StudentManagementPanel`. 
+Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information. 
+
+Check the render method of `select`.  It was passed a child from FinancePanel.
+Failed to load resource: the server responded with a status of 400 (Bad Request)

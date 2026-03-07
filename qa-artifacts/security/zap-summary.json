@@ -1,0 +1,9 @@
+﻿{
+  "generatedAt": "2026-02-28T16:16:00+06:00",
+  "tool": "owasp-zap",
+  "status": "not-run",
+  "notes": [
+    "ZAP baseline scan script not executed in this workspace run.",
+    "Run against staging before release."
+  ]
+}

@@ -63,6 +63,7 @@ export async function uploadMedia(req: AuthRequest, res: Response): Promise<void
             return;
         }
 
+        const origin = `${req.protocol}://${req.get('host')}`;
         const firebaseBucket = getFirebaseStorageBucket();
         if (firebaseBucket) {
             const ext = path.extname(req.file.originalname || '').toLowerCase() || path.extname(req.file.filename || '');
@@ -82,6 +83,7 @@ export async function uploadMedia(req: AuthRequest, res: Response): Promise<void
             res.status(201).json({
                 message: 'File uploaded successfully.',
                 url: publicUrl,
+                absoluteUrl: publicUrl,
                 filename: objectKey,
                 mimetype: req.file.mimetype,
                 size: req.file.size,
@@ -93,10 +95,12 @@ export async function uploadMedia(req: AuthRequest, res: Response): Promise<void
         // Construct the public URL for the uploaded file
         // For development, it will be served from the local Node server e.g. /uploads/filename.ext
         const fileUrl = `/uploads/${req.file.filename}`;
+        const absoluteUrl = `${origin}${fileUrl}`;
 
         res.status(201).json({
             message: 'File uploaded successfully.',
             url: fileUrl,
+            absoluteUrl,
             filename: req.file.filename,
             mimetype: req.file.mimetype,
             size: req.file.size

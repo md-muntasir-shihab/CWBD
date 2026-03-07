@@ -7,9 +7,20 @@ export interface ISolutionContent {
     pdfUrl?: string;
 }
 
+export interface ILocalizedText {
+    en?: string;
+    bn?: string;
+}
+
 export interface IQuestionOption {
     key: string;
     text: string;
+    media_id?: mongoose.Types.ObjectId | null;
+}
+
+export interface ILocalizedQuestionOption {
+    key: string;
+    text: ILocalizedText;
     media_id?: mongoose.Types.ObjectId | null;
 }
 
@@ -34,23 +45,27 @@ export interface IQuestion extends Document {
     // Core question content (legacy + normalized)
     question: string;
     question_text?: string;
+    questionText?: ILocalizedText;
     question_html?: string;
     questionImage?: string;
     questionType: 'mcq' | 'written';
     question_type?: 'MCQ' | 'MULTI' | 'WRITTEN' | 'TF';
     options?: IQuestionOption[];
+    optionsLocalized?: ILocalizedQuestionOption[];
     optionA?: string;
     optionB?: string;
     optionC?: string;
     optionD?: string;
     correctAnswer?: 'A' | 'B' | 'C' | 'D';
     correct_answer?: string[];
+    languageMode?: 'EN' | 'BN' | 'BOTH';
 
     max_attempt_select: number;
     tags: string[];
     assets: string[];
 
     explanation?: string;
+    explanationText?: ILocalizedText;
     solutionImage?: string;
     solution?: ISolutionContent;
     explanation_text?: string;
@@ -128,6 +143,23 @@ const QuestionOptionSchema = new Schema<IQuestionOption>(
     { _id: false },
 );
 
+const LocalizedTextSchema = new Schema<ILocalizedText>(
+    {
+        en: { type: String, default: '' },
+        bn: { type: String, default: '' },
+    },
+    { _id: false },
+);
+
+const LocalizedQuestionOptionSchema = new Schema<ILocalizedQuestionOption>(
+    {
+        key: { type: String, required: true, uppercase: true, trim: true },
+        text: { type: LocalizedTextSchema, default: () => ({ en: '', bn: '' }) },
+        media_id: { type: Schema.Types.ObjectId, ref: 'QuestionMedia', default: null },
+    },
+    { _id: false },
+);
+
 const QuestionSchema = new Schema<IQuestion>(
     {
         exam: { type: Schema.Types.ObjectId, ref: 'Exam' },
@@ -147,23 +179,27 @@ const QuestionSchema = new Schema<IQuestion>(
 
         question: { type: String, required: true, trim: true },
         question_text: { type: String, default: '' },
+        questionText: { type: LocalizedTextSchema, default: () => ({ en: '', bn: '' }) },
         question_html: { type: String, default: '' },
         questionImage: String,
         questionType: { type: String, enum: ['mcq', 'written'], default: 'mcq' },
         question_type: { type: String, enum: ['MCQ', 'MULTI', 'WRITTEN', 'TF'], default: 'MCQ' },
         options: { type: [QuestionOptionSchema], default: [] },
+        optionsLocalized: { type: [LocalizedQuestionOptionSchema], default: [] },
         optionA: { type: String, required: false, default: '' },
         optionB: { type: String, required: false, default: '' },
         optionC: { type: String, required: false, default: '' },
         optionD: { type: String, required: false, default: '' },
         correctAnswer: { type: String, enum: ['A', 'B', 'C', 'D'], required: false },
         correct_answer: { type: [String], default: [] },
+        languageMode: { type: String, enum: ['EN', 'BN', 'BOTH'], default: 'EN' },
 
         max_attempt_select: { type: Number, default: 1 },
         tags: { type: [String], default: [] },
         assets: { type: [String], default: [] },
 
         explanation: String,
+        explanationText: { type: LocalizedTextSchema, default: () => ({ en: '', bn: '' }) },
         solutionImage: String,
         solution: { type: SolutionSchema, default: undefined },
         explanation_text: String,

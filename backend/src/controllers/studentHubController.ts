@@ -60,6 +60,12 @@ function normalizeObjectIdArray(input: unknown): string[] {
         .filter((value) => mongoose.Types.ObjectId.isValid(value));
 }
 
+function hasAnyIntersection(left: string[], right: string[]): boolean {
+    if (!left.length || !right.length) return false;
+    const rightSet = new Set(right);
+    return left.some((item) => rightSet.has(item));
+}
+
 function pickNotificationCategory(raw: unknown): 'exam' | 'payment' | 'system' {
     const category = String(raw || '').trim().toLowerCase();
     if (category === 'exam') return 'exam';
@@ -208,25 +214,62 @@ export async function getStudentMeExamById(req: AuthRequest, res: Response): Pro
         const accessControl = (exam.accessControl && typeof exam.accessControl === 'object')
             ? (exam.accessControl as Record<string, unknown>)
             : {};
+        const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
+        const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
         const requiredPlanCodes = Array.isArray(accessControl.allowedPlanCodes)
             ? (accessControl.allowedPlanCodes as unknown[]).map((item) => String(item || '').toLowerCase()).filter(Boolean)
             : [];
+        const studentGroupIds = normalizeObjectIdArray((profile as Record<string, unknown> | null)?.groupIds || []);
+        const subscriptionRequired = Boolean((exam as Record<string, unknown>).subscriptionRequired) || requiredPlanCodes.length > 0;
         const studentPlanCode = String(
             (user?.subscription as Record<string, unknown> | undefined)?.planCode ||
             (user?.subscription as Record<string, unknown> | undefined)?.plan ||
             ''
         ).toLowerCase();
+        const subscriptionExpiryRaw = (user?.subscription as Record<string, unknown> | undefined)?.expiryDate;
+        const subscriptionExpiryTime = subscriptionExpiryRaw ? new Date(String(subscriptionExpiryRaw)).getTime() : 0;
+        const subscriptionActive = Boolean(
+            (user?.subscription as Record<string, unknown> | undefined)?.isActive &&
+            Number.isFinite(subscriptionExpiryTime) &&
+            subscriptionExpiryTime > Date.now()
+        );
         const planEligible = requiredPlanCodes.length === 0 || requiredPlanCodes.includes(studentPlanCode);
-        const paymentRequired = requiredPlanCodes.length > 0;
+        const subscriptionEligible = !subscriptionRequired || subscriptionActive;
+        const paymentRequired = subscriptionRequired && subscriptionActive;
         const pendingDue = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
         const paymentPaid = !paymentRequired || pendingDue <= 0;
         const examWindowOpen = new Date(exam.startDate).getTime() <= Date.now() && Date.now() <= new Date(exam.endDate).getTime();
         const attemptLimit = Number(exam.attemptLimit || 1);
         const attemptsLeft = Math.max(0, attemptLimit - Number(resultCount || 0));
+        const userEligible = requiredUserIds.length === 0 || requiredUserIds.includes(studentId);
+        const groupEligible = requiredGroupIds.length === 0 || hasAnyIntersection(requiredGroupIds, studentGroupIds);
+        const assignedEligible = String(exam.accessMode || 'all') !== 'specific'
+            || (Array.isArray(exam.allowedUsers) && exam.allowedUsers.some((id) => String(id) === studentId));
+
+        if (!userEligible || !groupEligible || !assignedEligible) {
+            res.status(403).json({
+                message: 'You are not assigned to this exam.',
+                eligibility: {
+                    eligible: false,
+                    checks: {
+                        access: {
+                            userRestricted: requiredUserIds.length > 0,
+                            groupRestricted: requiredGroupIds.length > 0,
+                            passed: false,
+                        },
+                    },
+                },
+            });
+            return;
+        }
 
         const eligible = Boolean(
             scoreResult.eligible &&
+            subscriptionEligible &&
             planEligible &&
+            userEligible &&
+            groupEligible &&
+            assignedEligible &&
             paymentPaid &&
             examWindowOpen &&
             attemptsLeft > 0 &&
@@ -252,10 +295,20 @@ export async function getStudentMeExamById(req: AuthRequest, res: Response): Pro
                         pendingDue,
                         passed: paymentPaid,
                     },
+                    subscription: {
+                        required: subscriptionRequired,
+                        active: subscriptionActive,
+                        passed: subscriptionEligible,
+                    },
                     plan: {
                         requiredPlanCodes,
                         studentPlanCode,
                         passed: planEligible,
+                    },
+                    access: {
+                        userRestricted: requiredUserIds.length > 0,
+                        groupRestricted: requiredGroupIds.length > 0,
+                        passed: userEligible && groupEligible && assignedEligible,
                     },
                     examWindow: {
                         passed: examWindowOpen,
@@ -368,15 +421,19 @@ export async function getStudentMePayments(req: AuthRequest, res: Response): Pro
         const items: StudentPaymentItem[] = payments.map((item) => ({
             _id: String(item._id),
             studentId: String(item.studentId),
-            examId: null,
+            examId: item.examId ? String(item.examId) : null,
             amount: Number(item.amount || 0),
-            currency: 'BDT',
+            currency: String((item as any).currency || 'BDT'),
             method: item.method,
-            status: 'paid',
-            transactionId: String(item.reference || ''),
+            status: ['pending', 'paid', 'failed', 'refunded'].includes(String(item.status || ''))
+                ? (String(item.status || 'pending') as 'pending' | 'paid' | 'failed' | 'refunded')
+                : 'pending',
+            transactionId: String((item as any).transactionId || item.reference || ''),
             reference: String(item.reference || ''),
             createdAt: item.createdAt || new Date(),
-            paidAt: item.date,
+            paidAt: String(item.status || '') === 'paid'
+                ? (((item as any).paidAt as Date | undefined) || item.date)
+                : null,
             notes: String(item.notes || ''),
         }));
 
@@ -398,8 +455,10 @@ export async function getStudentMePayments(req: AuthRequest, res: Response): Pro
             });
         }
 
-        const totalPaid = payments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-        const lastPaid = payments[0] || null;
+        const totalPaid = payments
+            .filter((item) => String(item.status || '') === 'paid')
+            .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        const lastPaid = payments.find((item) => String(item.status || '') === 'paid') || null;
 
         res.json({
             summary: {
@@ -431,6 +490,11 @@ export async function getStudentMeNotifications(req: AuthRequest, res: Response)
         const filter: Record<string, unknown> = {
             isActive: true,
             targetRole: { $in: ['student', 'all'] },
+            $or: [
+                { targetUserIds: { $exists: false } },
+                { targetUserIds: { $size: 0 } },
+                { targetUserIds: new mongoose.Types.ObjectId(studentId) },
+            ],
             $and: [
                 { $or: [{ publishAt: { $exists: false } }, { publishAt: null }, { publishAt: { $lte: now } }] },
                 { $or: [{ expireAt: { $exists: false } }, { expireAt: null }, { expireAt: { $gte: now } }] },
@@ -485,6 +549,11 @@ export async function markStudentNotificationsRead(req: AuthRequest, res: Respon
             const allRows = await Notification.find({
                 isActive: true,
                 targetRole: { $in: ['student', 'all'] },
+                $or: [
+                    { targetUserIds: { $exists: false } },
+                    { targetUserIds: { $size: 0 } },
+                    { targetUserIds: new mongoose.Types.ObjectId(studentId) },
+                ],
                 $and: [
                     { $or: [{ publishAt: { $exists: false } }, { publishAt: null }, { publishAt: { $lte: now } }] },
                     { $or: [{ expireAt: { $exists: false } }, { expireAt: null }, { expireAt: { $gte: now } }] },
@@ -541,6 +610,89 @@ export async function getStudentMeResources(req: AuthRequest, res: Response): Pr
         });
     } catch (error) {
         console.error('getStudentMeResources error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function getLeaderboard(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const { limit = '50', offset = '0' } = req.query;
+        const limitNum = Math.min(100, parseInt(limit as string));
+        const offsetNum = Math.max(0, parseInt(offset as string));
+
+        const topStudents = await StudentProfile.find({})
+            .sort({ points: -1 })
+            .skip(offsetNum)
+            .limit(limitNum)
+            .select('user_id full_name profile_photo_url points rank')
+            .lean();
+
+        const total = await StudentProfile.countDocuments({});
+
+        // Get my rank
+        let myRank = null;
+        if (req.user) {
+            const me = await StudentProfile.findOne({ user_id: req.user._id }).select('rank').lean();
+            myRank = me?.rank || null;
+        }
+
+        res.json({
+            items: topStudents.map((s, idx) => ({
+                id: s.user_id,
+                name: s.full_name,
+                avatar: s.profile_photo_url,
+                points: s.points,
+                rank: s.rank || (offsetNum + idx + 1)
+            })),
+            total,
+            myRank,
+            lastUpdatedAt: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('getLeaderboard error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function studentSubmitPaymentProof(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const studentId = ensureStudent(req, res);
+        if (!studentId) return;
+
+        const { amount, method, reference, notes, proofUrl, entryType, subscriptionPlanId } = req.body;
+
+        if (!amount || Number(amount) <= 0) {
+            res.status(400).json({ message: 'Valid amount is required' });
+            return;
+        }
+
+        const payment = await ManualPayment.create({
+            studentId,
+            examId: req.body?.examId || null,
+            amount: Number(amount),
+            currency: String(req.body?.currency || 'BDT'),
+            method: method || 'manual',
+            status: 'pending',
+            transactionId: String(req.body?.transactionId || '').trim(),
+            reference: reference || '',
+            proofUrl: proofUrl || '',
+            proofFileUrl: proofUrl || '',
+            notes: notes || '',
+            entryType: entryType || 'subscription',
+            subscriptionPlanId: subscriptionPlanId || null,
+            date: new Date(),
+            recordedBy: studentId, // Initially recorded by student
+        });
+
+        // Notify admins
+        // notification logic here (optional but good)
+
+        res.status(201).json({
+            message: 'Payment proof submitted. Waiting for admin approval.',
+            paymentId: payment._id
+        });
+    } catch (error) {
+        console.error('studentSubmitPaymentProof error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }

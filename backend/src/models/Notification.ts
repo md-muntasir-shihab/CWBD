@@ -14,6 +14,7 @@ export interface INotification extends Document {
     attachmentUrl?: string;
     targetRole: NotificationTargetRole;
     reminderKey?: string;
+    targetUserIds?: mongoose.Types.ObjectId[];
     createdBy?: mongoose.Types.ObjectId;
     updatedBy?: mongoose.Types.ObjectId;
     createdAt: Date;
@@ -31,6 +32,7 @@ const NotificationSchema = new Schema<INotification>({
     attachmentUrl: { type: String, default: '' },
     targetRole: { type: String, enum: ['student', 'admin', 'moderator', 'all'], default: 'student' },
     reminderKey: { type: String, default: undefined },
+    targetUserIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });

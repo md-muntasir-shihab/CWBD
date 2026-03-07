@@ -5,6 +5,7 @@ import {
     getFeaturedUniversities,
     getStudentDashboardAggregate,
     getStudentDashboardHeader,
+    getStudentLiveAlerts,
     getStudentNotifications,
     getUpcomingExamCards,
 } from '../services/studentDashboardService';
@@ -62,7 +63,7 @@ export async function getStudentNotificationFeed(req: AuthRequest, res: Response
     try {
         const studentId = ensureStudent(req, res);
         if (!studentId) return;
-        const data = await getStudentNotifications();
+        const data = await getStudentNotifications(studentId);
         res.json(data);
     } catch (err) {
         console.error('getStudentNotificationFeed error:', err);
@@ -90,6 +91,18 @@ export async function getStudentExamHistory(req: AuthRequest, res: Response): Pr
         res.json(data);
     } catch (err) {
         console.error('getStudentExamHistory error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function getStudentLiveAlertsHandler(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const studentId = ensureStudent(req, res);
+        if (!studentId) return;
+        const data = await getStudentLiveAlerts(studentId);
+        res.json(data);
+    } catch (err) {
+        console.error('getStudentLiveAlertsHandler error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 }

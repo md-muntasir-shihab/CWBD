@@ -27,7 +27,7 @@ export default function StudentRegister() {
                 role: 'student',
             });
             toast.success(res.data.message || 'Registration successful! Please check your email.');
-            navigate('/student/login');
+            navigate('/login');
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Registration failed');
         } finally {
@@ -52,7 +52,7 @@ export default function StudentRegister() {
                         <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
                             Already have an account?{' '}
                             <Link
-                                to="/student/login"
+                                to="/login"
                                 className="font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-cyan-300 dark:hover:text-cyan-200"
                             >
                                 Sign in here

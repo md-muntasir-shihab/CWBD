@@ -1,10 +1,21 @@
 ﻿import axios from 'axios';
 
-const ADMIN_PATH = 'campusway-secure-admin';
+const RAW_ADMIN_PATH = String(import.meta.env.VITE_ADMIN_PATH || 'campusway-secure-admin').trim();
+const ADMIN_PATH = RAW_ADMIN_PATH.replace(/^\/+|\/+$/g, '') || 'campusway-secure-admin';
 const BROWSER_FP_KEY = 'campusway-browser-fingerprint';
 const ACCESS_TOKEN_KEY = 'campusway-token';
 const API_BASE_FROM_ENV = String(import.meta.env.VITE_API_BASE_URL || '').trim();
 const API_BASE_URL = API_BASE_FROM_ENV || '/api';
+const API_PROXY_TARGET = String(import.meta.env.VITE_API_PROXY_TARGET || '').trim();
+const IS_PROD_BUILD = Boolean(import.meta.env.PROD);
+
+if (IS_PROD_BUILD && !API_BASE_FROM_ENV) {
+    throw new Error('VITE_API_BASE_URL is required in production builds.');
+}
+
+if (import.meta.env.DEV && !API_BASE_FROM_ENV && !API_PROXY_TARGET) {
+    console.warn('[CampusWay] Neither VITE_API_BASE_URL nor VITE_API_PROXY_TARGET is configured. Falling back to /api.');
+}
 
 function resolveApiUrl(pathAfterApi: string): string {
     const normalizedBase = API_BASE_URL.replace(/\/+$/, '');
@@ -15,6 +26,7 @@ function resolveApiUrl(pathAfterApi: string): string {
 const api = axios.create({
     baseURL: API_BASE_URL,
     timeout: 20000,
+    withCredentials: true,
 });
 
 function ensureBrowserFingerprint(): string {
@@ -37,6 +49,18 @@ function emitForceLogout(reason: string): void {
     window.dispatchEvent(new CustomEvent('campusway:force-logout', { detail: { reason } }));
 }
 
+function writeAccessToken(token: string): void {
+    if (typeof window === 'undefined') return;
+    window.sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
+    window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+function clearAccessToken(): void {
+    if (typeof window === 'undefined') return;
+    window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
 function readAccessToken(): string {
     if (typeof window === 'undefined') return '';
     const fromSession = window.sessionStorage.getItem(ACCESS_TOKEN_KEY);
@@ -44,9 +68,45 @@ function readAccessToken(): string {
     const fromLocal = window.localStorage.getItem(ACCESS_TOKEN_KEY);
     if (fromLocal) {
         window.sessionStorage.setItem(ACCESS_TOKEN_KEY, fromLocal);
-        window.localStorage.removeItem(ACCESS_TOKEN_KEY);
     }
     return fromLocal || '';
+}
+
+function resolveLoginRedirectPath(): string {
+    if (typeof window === 'undefined') return '/login';
+    const path = window.location.pathname;
+    const isAdminContext = path.startsWith('/__cw_admin__') || path.startsWith('/admin') || path.startsWith('/campusway-secure-admin');
+    if (isAdminContext) return '/__cw_admin__/login';
+
+    if (path.startsWith('/chairman')) return '/chairman/login';
+
+    return '/login';
+}
+
+let refreshInFlight: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+    if (refreshInFlight) return refreshInFlight;
+
+    refreshInFlight = axios
+        .post<{ token?: string }>(resolveApiUrl('/auth/refresh'), {}, {
+            timeout: 10000,
+            withCredentials: true,
+            headers: { 'X-Browser-Fingerprint': ensureBrowserFingerprint() },
+        })
+        .then((res) => {
+            const nextToken = String(res.data?.token || '').trim();
+            if (!nextToken) return null;
+            writeAccessToken(nextToken);
+            api.defaults.headers.common.Authorization = `Bearer ${nextToken}`;
+            return nextToken;
+        })
+        .catch(() => null)
+        .finally(() => {
+            refreshInFlight = null;
+        });
+
+    return refreshInFlight;
 }
 
 // Attach JWT token to every request
@@ -63,10 +123,19 @@ api.interceptors.request.use(
 // Handle 401 globally
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
         const status = error.response?.status;
         const code = error.response?.data?.code;
         const hasToken = Boolean(readAccessToken());
+        const originalConfig = error.config || {};
+        const requestUrl = String(originalConfig.url || '');
+        const isAuthRefreshCall = requestUrl.includes('/auth/refresh');
+        const isLoginCall =
+            requestUrl.includes('/auth/login') ||
+            requestUrl.includes('/auth/admin/login') ||
+            requestUrl.includes('/auth/chairman/login');
+        const isVerify2faCall = requestUrl.includes('/auth/verify-2fa');
+        const canRetry = !originalConfig.__isRetryRequest && !isAuthRefreshCall;
 
         if (status === 401 && hasToken) {
             if (code === 'SESSION_INVALIDATED' || code === 'LEGACY_TOKEN_NOT_ALLOWED') {
@@ -74,12 +143,24 @@ api.interceptors.response.use(
                 return Promise.reject(error);
             }
 
-            window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-            window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+            if (canRetry && !isLoginCall && !isVerify2faCall) {
+                const nextToken = await refreshAccessToken();
+                if (nextToken) {
+                    originalConfig.__isRetryRequest = true;
+                    originalConfig.headers = {
+                        ...(originalConfig.headers || {}),
+                        Authorization: `Bearer ${nextToken}`,
+                        'X-Browser-Fingerprint': ensureBrowserFingerprint(),
+                    };
+                    return api(originalConfig);
+                }
+            }
+
+            clearAccessToken();
             const path = window.location.pathname;
-            const isLoginRoute = path.includes('/login') || path === '/student-login';
+            const isLoginRoute = path.includes('/login');
             if (!isLoginRoute) {
-                window.location.href = path.startsWith('/student') || path === '/student-login' ? '/student-login' : '/login';
+                window.location.href = resolveLoginRedirectPath();
             }
         }
         return Promise.reject(error);
@@ -95,16 +176,24 @@ export interface ApiUniversity {
     name: string;
     shortForm: string;
     category: string;
-    established: number;
+    clusterGroup?: string;
+    clusterId?: string | { _id?: string; name?: string } | null;
+    established?: number;
+    establishedYear?: number;
     address: string;
     contactNumber: string;
     email: string;
     website: string;
+    websiteUrl?: string;
     admissionWebsite: string;
+    admissionUrl?: string;
     totalSeats: string;
     scienceSeats: string;
+    seatsScienceEng?: string;
     artsSeats: string;
+    seatsArtsHum?: string;
     businessSeats: string;
+    seatsBusiness?: string;
     description?: string;
     shortDescription?: string;
     logoUrl?: string;
@@ -120,8 +209,11 @@ export interface ApiUniversity {
     applicationStartDate?: string;
     applicationEndDate?: string;
     scienceExamDate?: string;
+    examDateScience?: string;
     artsExamDate?: string;
+    examDateArts?: string;
     businessExamDate?: string;
+    examDateBusiness?: string;
     minGpa?: number;
     requiredBackground?: string;
     requiredDocuments?: string[];
@@ -225,28 +317,75 @@ export interface AdminStudentGroup {
     batchTag?: string;
     description?: string;
     isActive: boolean;
-    studentCount?: number;
+    studentCount: number;
+    type: 'manual' | 'dynamic';
+    rules?: {
+        batches?: string[];
+        sscBatches?: string[];
+        departments?: string[];
+        statuses?: string[];
+        planCodes?: string[];
+        profileScoreRange?: { min?: number; max?: number };
+    };
+    meta?: Record<string, unknown>;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface AdminSubscriptionPlan {
     _id: string;
     code: string;
     name: string;
+    type: 'free' | 'paid';
+    priceBDT: number;
     durationDays: number;
     durationValue: number;
     durationUnit: 'days' | 'months';
     price: number;
+    bannerImageUrl?: string | null;
+    shortDescription?: string;
     description?: string;
     features: string[];
+    tags?: string[];
     includedModules: string[];
+    enabled?: boolean;
     isActive: boolean;
+    isFeatured?: boolean;
+    displayOrder?: number;
     priority: number;
     sortOrder: number;
+    contactCtaLabel?: string;
+    contactCtaUrl?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export type SubscriptionPlanPublic = AdminSubscriptionPlan;
+
+export interface UserSubscriptionStatus {
+    status: 'active' | 'expired' | 'pending' | 'suspended';
+    planName: string;
+    expiresAtUTC: string | null;
+    planId: string | null;
+    isActive: boolean;
+    startAtUTC?: string | null;
+    subscription?: Record<string, unknown>;
+}
+
+export interface SubscriptionAssignmentPayload {
+    userId: string;
+    planId: string;
+    status?: 'active' | 'expired' | 'pending' | 'suspended';
+    startAtUTC?: string;
+    expiresAtUTC?: string;
+    notes?: string;
 }
 
 export interface ApiWebsiteSettings {
     websiteName: string;
+    siteName?: string;
     logo?: string;
+    logoUrl?: string;
     favicon?: string;
     motto?: string;
     metaTitle?: string;
@@ -256,11 +395,13 @@ export interface ApiWebsiteSettings {
     socialLinks?: {
         facebook?: string;
         whatsapp?: string;
+        messenger?: string;
         telegram?: string;
         twitter?: string;
         youtube?: string;
         instagram?: string;
     };
+    socialLinksList?: PublicSocialLinkItem[];
     theme?: {
         modeDefault?: 'light' | 'dark' | 'system';
         allowSystemMode?: boolean;
@@ -272,7 +413,7 @@ export interface ApiWebsiteSettings {
         clusterEnabled?: boolean;
         buttonVariant?: 'default' | 'squircle';
         showLabels?: boolean;
-        platformOrder?: Array<'facebook' | 'whatsapp' | 'telegram' | 'twitter' | 'youtube' | 'instagram'>;
+        platformOrder?: Array<'facebook' | 'whatsapp' | 'messenger' | 'telegram' | 'twitter' | 'youtube' | 'instagram'>;
     };
     pricingUi?: {
         currencyCode?: string;
@@ -280,6 +421,426 @@ export interface ApiWebsiteSettings {
         currencyLocale?: string;
         displayMode?: 'symbol' | 'code';
         thousandSeparator?: boolean;
+    };
+    subscriptionPageTitle?: string;
+    subscriptionPageSubtitle?: string;
+    subscriptionDefaultBannerUrl?: string;
+    subscriptionLoggedOutCtaMode?: 'login' | 'contact';
+}
+
+export interface PublicSocialLinkItem {
+    id: string;
+    platformName: string;
+    targetUrl: string;
+    iconUploadOrUrl: string;
+    description: string;
+    enabled: boolean;
+    placements: Array<'header' | 'footer' | 'home' | 'news' | 'contact'>;
+}
+
+export interface AdminDashboardSummary {
+    universities: { total: number; active: number; featured: number };
+    home: { highlightedCategories: number; featuredUniversities: number; enabledSections: number };
+    news: { pendingReview: number; publishedToday: number };
+    exams: { upcoming: number; live: number };
+    questionBank: { totalQuestions: number };
+    students: { totalActive: number; pendingPayment: number; suspended: number };
+    payments: { pendingApprovals: number; paidToday: number };
+    supportCenter: { unreadMessages: number };
+    systemStatus: { db: 'connected' | 'down'; timeUTC: string };
+}
+
+export type HomeAnimationLevel = 'off' | 'minimal' | 'normal';
+export type HomeLockedExamVisibility = 'show_locked' | 'hide';
+export type UniversityCardDensity = 'compact' | 'comfortable';
+export type UniversityCardSort = 'nearest_deadline' | 'alphabetical';
+
+export interface HomeLinkItem {
+    label: string;
+    url: string;
+}
+
+export interface HomeCta {
+    label: string;
+    url: string;
+}
+
+export interface HomeShortcutChip {
+    label: string;
+    actionType: 'route' | 'search' | 'external';
+    actionValue: string;
+}
+
+export interface HomeAdsSection {
+    enabled: boolean;
+    title: string;
+}
+
+export interface HomeUniversityCardConfig {
+    defaultUniversityLogo: string;
+    showExamCentersPreview: boolean;
+    closingSoonDays: number;
+    showAddress: boolean;
+    showEmail: boolean;
+    showSeats: boolean;
+    showApplicationProgress: boolean;
+    showExamDates: boolean;
+    showExamCenters: boolean;
+    cardDensity: UniversityCardDensity;
+    defaultSort: UniversityCardSort;
+}
+
+export interface HomeSettingsConfig {
+    sectionVisibility: {
+        hero: boolean;
+        subscriptionBanner: boolean;
+        stats: boolean;
+        timeline: boolean;
+        universityDashboard: boolean;
+        closingExamWidget: boolean;
+        examsWidget: boolean;
+        newsPreview: boolean;
+        resourcesPreview: boolean;
+        socialStrip: boolean;
+        adsSection: boolean;
+        footer: boolean;
+    };
+    hero: {
+        pillText: string;
+        title: string;
+        subtitle: string;
+        showSearch: boolean;
+        searchPlaceholder: string;
+        showNextDeadlineCard: boolean;
+        primaryCTA: HomeCta;
+        secondaryCTA: HomeCta;
+        heroImageUrl: string;
+        shortcutChips: HomeShortcutChip[];
+    };
+    universityPreview: {
+        enabled: boolean;
+        useHighlightedCategoriesOnly: boolean;
+        defaultActiveCategory: string;
+        enableClusterFilter: boolean;
+        maxFeaturedItems: number;
+        maxDeadlineItems: number;
+        maxExamItems: number;
+        deadlineWithinDays: number;
+        examWithinDays: number;
+        featuredMode: 'manual' | 'auto';
+    };
+    subscriptionBanner: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        loginMessage: string;
+        noPlanMessage: string;
+        activePlanMessage: string;
+        bannerImageUrl: string;
+        primaryCTA: HomeCta;
+        secondaryCTA: HomeCta;
+        showPlanCards: boolean;
+        planIdsToShow: string[];
+    };
+    topBanner: {
+        enabled: boolean;
+        imageUrl: string;
+        linkUrl: string;
+    };
+    middleBanner: {
+        enabled: boolean;
+        imageUrl: string;
+        linkUrl: string;
+    };
+    bottomBanner: {
+        enabled: boolean;
+        imageUrl: string;
+        linkUrl: string;
+    };
+    adsSection: HomeAdsSection;
+    stats: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        items: Array<{ key: string; label: string; enabled: boolean }>;
+    };
+    timeline: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        closingSoonDays: number;
+        examSoonDays: number;
+        maxClosingItems: number;
+        maxExamItems: number;
+    };
+    universityDashboard: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        showFilters: boolean;
+        defaultCategory: string;
+        showAllCategories?: boolean;
+        showPlaceholderText: boolean;
+        placeholderNote: string;
+    };
+    universityCardConfig: HomeUniversityCardConfig;
+    highlightedCategories: Array<{
+        category: string;
+        order: number;
+        enabled: boolean;
+        badgeText?: string;
+    }>;
+    featuredUniversities: Array<{
+        universityId: string;
+        order: number;
+        badgeText: string;
+        enabled: boolean;
+    }>;
+    closingExamWidget: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        maxClosing: number;
+        maxExamsThisWeek: number;
+    };
+    examsWidget: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        maxLive: number;
+        maxUpcoming: number;
+        showLockedExamsToUnsubscribed: HomeLockedExamVisibility;
+        loginRequiredText: string;
+        subscriptionRequiredText: string;
+    };
+    newsPreview: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        maxItems: number;
+        ctaLabel: string;
+        ctaUrl: string;
+    };
+    resourcesPreview: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        maxItems: number;
+        ctaLabel: string;
+        ctaUrl: string;
+    };
+    socialStrip: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        ctaLabel: string;
+    };
+    footer: {
+        enabled: boolean;
+        aboutText: string;
+        quickLinks: HomeLinkItem[];
+        contactInfo: { email: string; phone: string; address: string };
+        legalLinks: HomeLinkItem[];
+    };
+    ui: {
+        animationLevel: HomeAnimationLevel;
+    };
+}
+
+export interface HomeTimelineItem {
+    id: string;
+    name: string;
+    shortForm: string;
+    slug: string;
+    unit: string;
+    dateIso: string;
+    daysLeft: number;
+    countdownLabel: string;
+    badgeTone: 'danger' | 'warning' | 'info' | 'success';
+    source: 'university' | 'exam';
+    university?: ApiUniversityCardPreview;
+}
+
+export interface HomeExamWidgetItem {
+    id: string;
+    title: string;
+    subject: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+    durationMinutes: number;
+    isLocked: boolean;
+    lockReason: 'none' | 'login_required' | 'subscription_required';
+    canJoin: boolean;
+    joinUrl: string;
+}
+
+export interface ApiUniversityCardPreview {
+    id: string;
+    name: string;
+    shortForm: string;
+    slug: string;
+    category: string;
+    clusterGroup?: string;
+    contactNumber: string;
+    established: number | null;
+    address: string;
+    email: string;
+    website: string;
+    admissionWebsite: string;
+    totalSeats: string;
+    scienceSeats: string;
+    artsSeats: string;
+    businessSeats: string;
+    applicationStart: string;
+    applicationEnd: string;
+    applicationStartDate: string;
+    applicationEndDate: string;
+    scienceExamDate: string;
+    artsExamDate: string;
+    businessExamDate: string;
+    examDateScience: string;
+    examDateArts: string;
+    examDateBusiness: string;
+    examCentersPreview: string[];
+    shortDescription: string;
+    logoUrl: string;
+    badgeText?: string;
+    featured?: boolean;
+}
+
+
+export interface HomeApiResponse {
+    homeSettings: HomeSettingsConfig;
+    globalSettings: {
+        websiteName: string;
+        logoUrl: string;
+        motto: string;
+        contactEmail: string;
+        contactPhone: string;
+        theme: Record<string, unknown>;
+        socialLinks: {
+            facebook?: string;
+            whatsapp?: string;
+            messenger?: string;
+            telegram?: string;
+            twitter?: string;
+            youtube?: string;
+            instagram?: string;
+        };
+    };
+    siteSettings?: {
+        websiteName: string;
+        logoUrl: string;
+        motto?: string;
+        contactEmail?: string;
+        contactPhone?: string;
+        socialLinks: {
+            facebook?: string;
+            whatsapp?: string;
+            messenger?: string;
+            telegram?: string;
+            twitter?: string;
+            youtube?: string;
+            instagram?: string;
+        };
+    };
+    subscriptionPlans: AdminSubscriptionPlan[];
+    subscriptionBannerState: {
+        loggedIn: boolean;
+        hasActivePlan: boolean;
+        expiry: string | null;
+        reason: string;
+    };
+    stats: {
+        values: Record<string, number>;
+        items: Array<{ key: string; label: string; enabled: boolean; value: number }>;
+    };
+    timeline: {
+        serverNow: string;
+        closingSoonItems: HomeTimelineItem[];
+        examSoonItems: HomeTimelineItem[];
+    };
+    universityCategories?: Array<{
+        categoryName: string;
+        count: number;
+        clusterGroups: string[];
+    }>;
+    featuredUniversities?: ApiUniversityCardPreview[];
+    deadlineUniversities?: ApiUniversityCardPreview[];
+    upcomingExamUniversities?: ApiUniversityCardPreview[];
+    uniSettings?: {
+        enableClusterFilterOnHome: boolean;
+        defaultCategory: string;
+    };
+    universityDashboardData: {
+        categories: Array<{ key: string; label: string; count: number; isHighlighted?: boolean; badgeText?: string }>;
+        filtersMeta: {
+            totalItems: number;
+            statuses: Array<{ value: string; label: string; count: number }>;
+            defaultCategory: string;
+            showFilters: boolean;
+            defaultSort?: UniversityCardSort;
+            clusterGroups?: string[];
+        };
+        highlightedCategories?: Array<{ category: string; order: number; badgeText?: string }>;
+        featuredItems?: ApiUniversityCardPreview[];
+        itemsPreview: ApiUniversityCardPreview[];
+    };
+    examsWidget: {
+        liveNow: HomeExamWidgetItem[];
+        upcoming: HomeExamWidgetItem[];
+    };
+    onlineExamsPreview?: {
+        loggedIn: boolean;
+        hasActivePlan: boolean;
+        liveNow: HomeExamWidgetItem[];
+        upcoming: HomeExamWidgetItem[];
+        items: HomeExamWidgetItem[];
+    };
+    newsPreview: ApiNews[];
+    newsPreviewItems?: ApiNews[];
+    resourcesPreview: Array<{
+        _id: string;
+        title: string;
+        description?: string;
+        type?: string;
+        fileUrl?: string;
+        externalUrl?: string;
+        thumbnailUrl?: string;
+        category?: string;
+        isFeatured?: boolean;
+        publishDate?: string;
+    }>;
+    resourcePreviewItems?: Array<{
+        _id: string;
+        title: string;
+        description?: string;
+        type?: string;
+        fileUrl?: string;
+        externalUrl?: string;
+        thumbnailUrl?: string;
+        category?: string;
+        isFeatured?: boolean;
+        publishDate?: string;
+    }>;
+    campaignBannersActive?: Array<{
+        _id: string;
+        title?: string;
+        subtitle?: string;
+        imageUrl: string;
+        mobileImageUrl?: string;
+        linkUrl?: string;
+        altText?: string;
+    }>;
+    socialLinks: {
+        facebook?: string;
+        whatsapp?: string;
+        messenger?: string;
+        telegram?: string;
+        twitter?: string;
+        youtube?: string;
+        instagram?: string;
     };
 }
 
@@ -430,8 +991,99 @@ export interface SecurityCenterSettings {
         uploadWindowMs: number;
         uploadMax: number;
     };
+    twoPersonApproval: {
+        enabled: boolean;
+        riskyActions: Array<
+            | 'students.bulk_delete'
+            | 'universities.bulk_delete'
+            | 'news.bulk_delete'
+            | 'exams.publish_result'
+            | 'news.publish_breaking'
+            | 'payments.mark_refunded'
+        >;
+        approvalExpiryMinutes: number;
+    };
+    retention: {
+        enabled: boolean;
+        examSessionsDays: number;
+        auditLogsDays: number;
+        eventLogsDays: number;
+    };
+    panic: {
+        readOnlyMode: boolean;
+        disableStudentLogins: boolean;
+        disablePaymentWebhooks: boolean;
+        disableExamStarts: boolean;
+    };
     updatedBy?: string | null;
     updatedAt?: string | null;
+}
+
+export interface AdminActionApproval {
+    _id: string;
+    actionKey: string;
+    module: string;
+    action: string;
+    routePath: string;
+    method: string;
+    paramsSnapshot?: Record<string, unknown>;
+    querySnapshot?: Record<string, unknown>;
+    payloadSnapshot?: Record<string, unknown>;
+    initiatedBy?: {
+        _id?: string;
+        username?: string;
+        email?: string;
+        full_name?: string;
+        role?: string;
+    } | string;
+    initiatedByRole: string;
+    initiatedAt: string;
+    expiresAt: string;
+    secondApprover?: {
+        _id?: string;
+        username?: string;
+        email?: string;
+        full_name?: string;
+        role?: string;
+    } | string | null;
+    secondApproverRole?: string | null;
+    status: 'pending_second_approval' | 'approved' | 'rejected' | 'executed' | 'expired';
+    decisionReason?: string | null;
+    decidedAt?: string | null;
+    executedAt?: string | null;
+    executionMeta?: Record<string, unknown>;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface AdminJobRunItem {
+    _id: string;
+    jobName: string;
+    startedAt: string;
+    endedAt?: string | null;
+    durationMs?: number | null;
+    status: 'running' | 'success' | 'failed';
+    summary?: Record<string, unknown>;
+    errorMessage?: string;
+    errorStackSnippet?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface AdminJobHealthSnapshot {
+    hours: number;
+    totals: {
+        success: number;
+        failed: number;
+        running: number;
+    };
+    byJob: Array<{
+        jobName: string;
+        success: number;
+        failed: number;
+        running: number;
+        lastRunAt?: string;
+    }>;
 }
 
 export interface AdminFeatureFlags {
@@ -444,6 +1096,86 @@ export interface AdminFeatureFlags {
     pushNotifications: boolean;
     strictExamTabLock: boolean;
     webNextEnabled: boolean;
+    trainingMode?: boolean;
+    requireDeleteKeywordConfirm?: boolean;
+}
+
+export interface NotificationAutomationSettings {
+    examStartsSoon: { enabled: boolean; hoursBefore: number[] };
+    applicationClosingSoon: { enabled: boolean; hoursBefore: number[] };
+    paymentPendingReminder: { enabled: boolean; hoursBefore: number[] };
+    resultPublished: { enabled: boolean; hoursBefore: number[] };
+    profileScoreGate: { enabled: boolean; hoursBefore: number[]; minScore: number };
+    templates: {
+        languageMode: 'bn' | 'en' | 'mixed';
+        examStartsSoon: string;
+        applicationClosingSoon: string;
+        paymentPendingReminder: string;
+        resultPublished: string;
+        profileScoreGate: string;
+    };
+}
+
+export interface AnalyticsSettings {
+    enabled: boolean;
+    trackAnonymous: boolean;
+    retentionDays: number;
+    eventToggles: {
+        universityApplyClick: boolean;
+        universityOfficialClick: boolean;
+        newsView: boolean;
+        newsShare: boolean;
+        resourceDownload: boolean;
+        examViewed: boolean;
+        examStarted: boolean;
+        examSubmitted: boolean;
+        subscriptionPlanView: boolean;
+        subscriptionPlanClick: boolean;
+        supportTicketCreated: boolean;
+    };
+}
+
+export interface AdminReportsSummary {
+    range: { from: string; to: string };
+    dailyNewStudents: Array<{ date: string; count: number }>;
+    activeSubscriptions: number;
+    payments: { receivedAmount: number; receivedCount: number; pendingCount: number };
+    exams: { attempted: number; submitted: number };
+    topNewsSources: Array<{ source: string; count: number }>;
+    supportTickets: { opened: number; resolved: number };
+    resourceDownloads: { eventCount: number; totalCounter: number };
+}
+
+export interface AnalyticsOverview {
+    range: { from: string; to: string };
+    totals: { totalEvents: number; uniqueSessions: number; uniqueUsers: number };
+    topEvents: Array<{ eventName: string; count: number }>;
+    dailySeries: Array<{ date: string; count: number }>;
+    funnel: { viewed: number; started: number; submitted: number };
+}
+
+export interface ExamInsightsReport {
+    examId: string;
+    totalResults: number;
+    questionWiseAccuracy: Array<{
+        questionId: string;
+        question: string;
+        subject: string;
+        topic: string;
+        attempts: number;
+        correct: number;
+        accuracy: number;
+    }>;
+    topicWeakness: Array<{ topic: string; attempts: number; accuracy: number }>;
+    timeTakenDistribution: Record<string, number>;
+    topScorers: Array<{
+        studentId: string;
+        name: string;
+        percentage: number;
+        obtainedMarks: number;
+        totalMarks: number;
+    }>;
+    suspiciousActivity: Array<{ studentId: string; tabSwitchCount: number; cheatFlags: number }>;
 }
 
 export interface AdminRuntimeSettings {
@@ -569,14 +1301,19 @@ export interface ApiNews {
     _id: string;
     title: string;
     slug: string;
+    shortSummary?: string;
     shortDescription: string;
+    fullContent?: string;
     content: string;
     featuredImage?: string;
     coverImage?: string;
+    coverImageUrl?: string;
+    coverImageSource?: 'rss' | 'admin' | 'default';
+    coverSource?: 'rss' | 'admin' | 'default';
     category: string;
     tags: string[];
     isPublished: boolean;
-    status: 'published' | 'draft' | 'archived' | 'pending_review' | 'approved' | 'rejected' | 'scheduled' | 'fetch_failed';
+    status: 'published' | 'draft' | 'archived' | 'pending_review' | 'duplicate_review' | 'approved' | 'rejected' | 'scheduled' | 'fetch_failed';
     isFeatured: boolean;
     publishDate: string;
     publishedAt?: string;
@@ -586,11 +1323,41 @@ export interface ApiNews {
     sourceName?: string;
     sourceIconUrl?: string;
     sourceUrl?: string;
+    originalArticleUrl?: string;
     originalLink?: string;
+    rssGuid?: string;
+    rssPublishedAt?: string;
+    rssRawTitle?: string;
+    rssRawDescription?: string;
+    rssRawContent?: string;
+    fetchedFullText?: boolean;
+    fetchedFullTextAt?: string;
     thumbnailImage?: string;
     fallbackBanner?: string;
+    aiUsed?: boolean;
+    aiSelected?: boolean;
+    isAiSelected?: boolean;
+    aiModel?: string;
+    aiPromptVersion?: string;
+    aiLanguage?: string;
+    aiGeneratedAt?: string;
+    aiNotes?: string;
+    isManual?: boolean;
+    scheduledAt?: string;
     shareCount?: number;
     shareUrl?: string;
+    shareText?: {
+        whatsapp?: string;
+        facebook?: string;
+        messenger?: string;
+        telegram?: string;
+    };
+    shareLinks?: {
+        whatsapp?: string;
+        facebook?: string;
+        messenger?: string;
+        telegram?: string;
+    };
     aiMeta?: {
         provider?: string;
         model?: string;
@@ -611,6 +1378,11 @@ export interface ApiNews {
         duplicateOfNewsId?: string;
         duplicateFlag?: boolean;
     };
+    duplicateKeyHash?: string;
+    duplicateOfNewsId?: string;
+    duplicateReasons?: string[];
+    createdByAdminId?: string;
+    approvedByAdminId?: string;
     shareMeta?: {
         canonicalUrl?: string;
         shortUrl?: string;
@@ -632,6 +1404,47 @@ export interface ApiNews {
     views: number;
     createdAt?: string;
     updatedAt?: string;
+}
+
+export interface ApiNewsPublicSource {
+    _id: string;
+    name: string;
+    rssUrl: string;
+    siteUrl?: string;
+    iconUrl?: string;
+    count: number;
+    categoryTags: string[];
+    priority: number;
+}
+
+export interface ApiNewsPublicSettings {
+    newsPageTitle?: string;
+    newsPageSubtitle?: string;
+    pageTitle: string;
+    pageSubtitle: string;
+    headerBannerUrl: string;
+    defaultBannerUrl: string;
+    defaultThumbUrl: string;
+    defaultSourceIconUrl: string;
+    appearance: ApiNewsV2Settings['appearance'];
+    shareTemplates: {
+        whatsapp?: string;
+        facebook?: string;
+        messenger?: string;
+        telegram?: string;
+    };
+    shareButtons: {
+        whatsapp?: boolean;
+        facebook?: boolean;
+        messenger?: boolean;
+        telegram?: boolean;
+        copyLink?: boolean;
+        copyText?: boolean;
+    };
+    workflow?: {
+        allowScheduling?: boolean;
+        openOriginalWhenExtractionIncomplete?: boolean;
+    };
 }
 
 export interface ApiExam {
@@ -711,6 +1524,43 @@ export interface AdminExamCard extends ApiExam {
     activeUsers: number;
 }
 
+export type PublicExamLockReason =
+    | 'none'
+    | 'login_required'
+    | 'subscription_required'
+    | 'group_restricted'
+    | 'plan_restricted';
+
+export interface PublicExamListItem {
+    id: string;
+    serialNo: number;
+    title: string;
+    title_bn?: string;
+    subject: string;
+    examCategory: string;
+    bannerImageUrl?: string;
+    startDate: string;
+    endDate: string;
+    durationMinutes: number;
+    status: 'live' | 'upcoming' | 'ended';
+    deliveryMode: 'internal' | 'external_link';
+    isLocked: boolean;
+    lockReason: PublicExamLockReason;
+    canOpenDetails: boolean;
+    canStart: boolean;
+    joinUrl: string | null;
+    contactAdmin: {
+        phone: string;
+        whatsapp: string;
+        messageTemplate: string;
+    };
+    subscriptionRequired: boolean;
+    paymentRequired: boolean;
+    attemptLimit: number;
+    allowReAttempt: boolean;
+    myAttemptStatus?: 'not_started' | 'in_progress' | 'submitted';
+}
+
 export interface StudentUpcomingExam {
     _id: string;
     title: string;
@@ -737,7 +1587,9 @@ export interface StudentUpcomingExam {
     remainingUsers?: number;
     activeUsers?: number;
     statusBadge?: string;
-    accessDeniedReason?: string;
+    subscriptionRequired?: boolean;
+    subscriptionActive?: boolean;
+    accessDeniedReason?: 'access_group_restricted' | 'access_plan_restricted' | 'access_user_restricted' | 'subscription_required' | string;
     status: 'upcoming' | 'live' | 'completed' | 'closed';
     canTakeExam: boolean;
     externalExamUrl: string;
@@ -762,6 +1614,17 @@ export interface StudentNotificationItem {
     expireAt?: string | null;
     linkUrl?: string;
     attachmentUrl?: string;
+}
+
+export interface StudentLiveAlertItem {
+    id: string;
+    type: 'exam_soon' | 'application_closing' | 'payment_pending' | 'result_published';
+    title: string;
+    message: string;
+    dateIso: string;
+    severity: 'info' | 'warning' | 'danger' | 'success';
+    ctaLabel: string;
+    ctaUrl: string;
 }
 
 export interface StudentDashboardProfileSection {
@@ -1057,7 +1920,7 @@ export interface ApiExamSession {
     sessionId: string; // Returned by startExam
     student?: string;
     exam?: string;
-    status?: 'In Progress' | 'Completed' | 'Missed' | 'in_progress' | 'submitted' | 'evaluated';
+    status?: 'In Progress' | 'Completed' | 'Missed' | 'in_progress' | 'submitted' | 'evaluated' | 'expired';
     startedAt: string;
     expiresAt: string;
     attemptNo?: number;
@@ -1074,7 +1937,10 @@ export interface ApiExamSession {
     savedAnswers: Array<{
         questionId: string;
         selectedAnswer?: string;
+        selectedKey?: string;
         writtenAnswerUrl?: string;
+        updatedAtUTC?: string;
+        changeCount?: number;
     }>;
     answers?: Array<{
         question: string;
@@ -1200,8 +2066,27 @@ export interface ApiCertificateVerification {
 }
 
 /* â”€â”€ Public Universities â”€â”€ */
+export interface UniversityCategorySummary {
+    categoryName: string;
+    order: number;
+    count: number;
+    clusterGroups: string[];
+}
+
+export interface UniversityListQuery {
+    category: string;
+    clusterGroup?: string;
+    q?: string;
+    sort?: 'deadline' | 'alphabetical';
+    page?: number;
+    limit?: number;
+}
+
 export const getUniversities = (params: Record<string, string | number> = {}) =>
     api.get<{ universities: ApiUniversity[]; pagination: { total: number; page: number; limit: number; pages: number } }>('/universities', { params });
+
+export const getUniversityCategories = () =>
+    api.get<{ categories: UniversityCategorySummary[] }>('/university-categories');
 
 export const getUniversityBySlug = (slug: string) =>
     api.get<{ university: ApiUniversity }>(`/universities/${slug}`);
@@ -1215,12 +2100,39 @@ export const getResources = (params: Record<string, string | number> = {}) =>
     api.get('/resources', { params });
 
 /* â”€â”€ Public Dynamic Home System & Settings â”€â”€ */
-export const getPublicSettings = () => api.get<ApiWebsiteSettings>('/settings');
-export const getHomeSystem = () => api.get('/home');
+export const getPublicSettings = () => api.get<ApiWebsiteSettings>('/settings/public');
+export const getPublicSocialLinks = () =>
+    api.get<{ items: PublicSocialLinkItem[] }>('/social-links/public');
+export const getPublicHomeSettings = () =>
+    api.get<{ homeSettings: HomeSettingsConfig; updatedAt?: string }>('/home-settings/public');
+export const getHomeSystem = () => api.get<HomeApiResponse>('/home');
+export const getHome = getHomeSystem;
 export const getHomeStats = () => api.get('/stats');
 export const getHomeStreamUrl = () => resolveApiUrl('/home/stream');
 export const getPublicSubscriptionPlans = () =>
-    api.get<{ items: AdminSubscriptionPlan[]; lastUpdatedAt: string }>('/subscription-plans/public');
+    api.get<{ items: SubscriptionPlanPublic[]; lastUpdatedAt: string }>('/subscription-plans');
+export const getPublicSubscriptionPlanById = (id: string) =>
+    api.get<{ item: SubscriptionPlanPublic }>(`/subscription-plans/${id}`);
+export const getMySubscriptionStatus = () =>
+    api.get<UserSubscriptionStatus>('/subscriptions/me');
+export const requestSubscriptionPayment = (
+    planId: string,
+    data: {
+        method?: 'bkash' | 'nagad' | 'rocket' | 'upay' | 'cash' | 'manual' | 'bank' | 'card' | 'sslcommerz';
+        transactionId?: string;
+        proofUrl?: string;
+        notes?: string;
+    } = {},
+) => api.post(`/subscriptions/${planId}/request-payment`, data);
+export const uploadSubscriptionPaymentProof = (
+    planId: string,
+    data: {
+        proofUrl?: string;
+        proofFileUrl?: string;
+        transactionId?: string;
+        method?: 'bkash' | 'nagad' | 'rocket' | 'upay' | 'cash' | 'manual' | 'bank' | 'card' | 'sslcommerz';
+    },
+) => api.post(`/subscriptions/${planId}/upload-proof`, data);
 export const getOauthProviders = () =>
     api.get<{ oauthEnabled: boolean; providers: Array<{ id: 'google' | 'apple' | 'twitter'; label: string; enabled: boolean; configured: boolean }> }>('/auth/oauth/providers');
 export const startOauthProvider = (provider: 'google' | 'apple' | 'twitter') =>
@@ -1244,6 +2156,7 @@ export const getStudentDashboard = () => api.get('/student/dashboard');
 export const getStudentUpcomingExams = () => api.get<{ items: StudentUpcomingExam[]; lastUpdatedAt: string }>('/student/upcoming-exams');
 export const getStudentFeaturedUniversities = () => api.get<{ items: StudentFeaturedUniversity[]; lastUpdatedAt: string }>('/student/featured-universities');
 export const getStudentNotifications = () => api.get<{ items: StudentNotificationItem[]; lastUpdatedAt: string }>('/student/notifications');
+export const getStudentLiveAlerts = () => api.get<{ items: StudentLiveAlertItem[]; lastUpdatedAt: string }>('/student/live-alerts');
 export const getStudentDashboardProfileSection = () => api.get<StudentDashboardProfileSection>('/student/dashboard-profile');
 export const getStudentExamHistory = () => api.get<StudentExamHistoryResponse>('/student/exam-history');
 export const getStudentMe = () => api.get<StudentMeResponse>('/users/me');
@@ -1293,6 +2206,11 @@ export const getAdminLiveStreamUrl = (token?: string) => {
 /* â”€â”€ Exams (auth-required) â”€â”€ */
 export const getStudentExams = () => api.get('/exams');
 export const getExamLanding = (params: Record<string, string | number> = {}) => api.get('/exams/landing', { params });
+export const getPublicExamList = (params: Record<string, string | number | undefined> = {}) =>
+    api.get<{ items: PublicExamListItem[]; total: number; page: number; limit: number; pages: number; serverNow: string }>(
+        '/exams/public-list',
+        { params },
+    );
 export const getActiveStudentAlerts = () => api.get('/alerts/active');
 export const ackStudentAlert = (alertId: string) => api.post(`/alerts/${alertId}/ack`);
 export const getActiveBannersBySlot = (slot?: 'top' | 'middle' | 'footer') =>
@@ -1436,6 +2354,11 @@ export const adminValidateUniversityImport = (
 export const adminCommitUniversityImport = (jobId: string) =>
     api.post(`/${ADMIN_PATH}/universities/import/${jobId}/commit`);
 
+export const adminCommitUniversityImportWithMode = (
+    jobId: string,
+    mode: 'create-only' | 'update-existing' = 'update-existing',
+) => api.post(`/${ADMIN_PATH}/universities/import/${jobId}/commit`, { mode });
+
 export const adminGetUniversityImportJob = (jobId: string) =>
     api.get(`/${ADMIN_PATH}/universities/import/${jobId}`);
 
@@ -1516,9 +2439,16 @@ export interface AdminQBankQuestion {
     topic?: string;
     question?: string;
     question_text?: string;
+    questionText?: { en?: string; bn?: string };
     question_html?: string;
     question_type?: 'MCQ' | 'MULTI' | 'WRITTEN' | 'TF';
     questionType?: 'mcq' | 'written';
+    languageMode?: 'EN' | 'BN' | 'BOTH';
+    optionsLocalized?: Array<{
+        key: string;
+        text: { en?: string; bn?: string };
+        media_id?: string | null;
+    }>;
     optionA?: string;
     optionB?: string;
     optionC?: string;
@@ -1527,6 +2457,7 @@ export interface AdminQBankQuestion {
     correct_answer?: string[];
     explanation?: string;
     explanation_text?: string;
+    explanationText?: { en?: string; bn?: string };
     difficulty?: 'easy' | 'medium' | 'hard';
     tags?: string[];
     estimated_time?: number;
@@ -1604,44 +2535,44 @@ export interface QBankSimilarityMatch {
 }
 
 export const adminGetGlobalQuestions = (params: Record<string, string | number | boolean> = {}) =>
-    api.get<AdminQBankListResponse>(`/${ADMIN_PATH}/qbank`, { params });
+    api.get<AdminQBankListResponse>(`/${ADMIN_PATH}/question-bank`, { params });
 
 export const adminGetGlobalQuestionById = (id: string) =>
-    api.get<{ question: AdminQBankQuestion; revisions: Array<Record<string, unknown>>; capabilities?: Record<string, boolean> }>(`/${ADMIN_PATH}/qbank/${id}`);
+    api.get<{ question: AdminQBankQuestion; revisions: Array<Record<string, unknown>>; capabilities?: Record<string, boolean> }>(`/${ADMIN_PATH}/question-bank/${id}`);
 
 export const adminCreateGlobalQuestion = (data: Record<string, unknown>) =>
-    api.post<{ message: string; warning?: string; question: AdminQBankQuestion; duplicateMatches?: QBankSimilarityMatch[] }>(`/${ADMIN_PATH}/qbank`, data);
+    api.post<{ message: string; warning?: string; question: AdminQBankQuestion; duplicateMatches?: QBankSimilarityMatch[] }>(`/${ADMIN_PATH}/question-bank`, data);
 
 export const adminUpdateGlobalQuestion = (id: string, data: Record<string, unknown>) =>
-    api.put<{ message: string; warning?: string; question: AdminQBankQuestion; duplicateMatches?: QBankSimilarityMatch[] }>(`/${ADMIN_PATH}/qbank/${id}`, data);
+    api.put<{ message: string; warning?: string; question: AdminQBankQuestion; duplicateMatches?: QBankSimilarityMatch[] }>(`/${ADMIN_PATH}/question-bank/${id}`, data);
 
 export const adminDeleteGlobalQuestion = (id: string, hardDelete = false) =>
-    api.delete<{ message: string }>(`/${ADMIN_PATH}/qbank/${id}`, { params: hardDelete ? { hardDelete: 1 } : undefined });
+    api.delete<{ message: string }>(`/${ADMIN_PATH}/question-bank/${id}`, { params: hardDelete ? { hardDelete: 1 } : undefined });
 
 export const adminApproveGlobalQuestion = (id: string, payload?: { action?: 'approve' | 'reject'; reason?: string }) =>
-    api.post<{ message: string; question: AdminQBankQuestion }>(`/${ADMIN_PATH}/qbank/${id}/approve`, payload || {});
+    api.post<{ message: string; question: AdminQBankQuestion }>(`/${ADMIN_PATH}/question-bank/${id}/approve`, payload || {});
 
 export const adminLockGlobalQuestion = (id: string, payload?: { locked?: boolean; force?: boolean; reason?: string }) =>
-    api.post<{ message: string; question: AdminQBankQuestion }>(`/${ADMIN_PATH}/qbank/${id}/lock`, payload || {});
+    api.post<{ message: string; question: AdminQBankQuestion }>(`/${ADMIN_PATH}/question-bank/${id}/lock`, payload || {});
 
 export const adminRevertGlobalQuestionRevision = (id: string, revisionNo: number) =>
-    api.post<{ message: string; question: AdminQBankQuestion; revertedFrom: number }>(`/${ADMIN_PATH}/qbank/${id}/revert/${revisionNo}`);
+    api.post<{ message: string; question: AdminQBankQuestion; revertedFrom: number }>(`/${ADMIN_PATH}/question-bank/${id}/revert/${revisionNo}`);
 
 export const adminSearchSimilarGlobalQuestions = (payload: Record<string, unknown>) =>
-    api.post<{ threshold: number; matches: QBankSimilarityMatch[]; warning?: string }>(`/${ADMIN_PATH}/qbank/search/similar`, payload);
+    api.post<{ threshold: number; matches: QBankSimilarityMatch[]; warning?: string }>(`/${ADMIN_PATH}/question-bank/search/similar`, payload);
 
 export const adminBulkImportGlobalQuestions = (payload: FormData | { questions?: any[]; rows?: any[]; mapping?: Record<string, string>; defaultStatus?: string; duplicateThreshold?: number; sourceFileName?: string }) =>
     api.post<{ message: string; import_job_id: string; summary: AdminQBankImportJobResponse['summary']; rowErrors: AdminQBankImportJobResponse['rowErrors'] }>(
-        `/${ADMIN_PATH}/qbank/bulk-import`,
+        `/${ADMIN_PATH}/question-bank/bulk-import`,
         payload,
         payload instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined,
     );
 
 export const adminGetGlobalQuestionImportJob = (jobId: string) =>
-    api.get<AdminQBankImportJobResponse>(`/${ADMIN_PATH}/qbank/import/${jobId}`);
+    api.get<AdminQBankImportJobResponse>(`/${ADMIN_PATH}/question-bank/import/${jobId}`);
 
 export const adminExportGlobalQuestions = (payload: { filters?: Record<string, unknown>; format?: 'csv' | 'xlsx' } = {}) =>
-    api.post(`/${ADMIN_PATH}/qbank/export`, payload, { responseType: 'blob' });
+    api.post(`/${ADMIN_PATH}/question-bank/export`, payload, { responseType: 'blob' });
 
 export const adminSignQuestionMediaUpload = (filename: string, mimeType: string) =>
     api.post<{
@@ -1652,7 +2583,7 @@ export const adminSignQuestionMediaUpload = (filename: string, mimeType: string)
         headers?: Record<string, string>;
         fields?: Record<string, string>;
         expiresIn: number;
-    }>(`/${ADMIN_PATH}/qbank/media/sign-upload`, { filename, mimeType });
+    }>(`/${ADMIN_PATH}/question-bank/media/sign-upload`, { filename, mimeType });
 
 export const adminCreateQuestionMedia = (payload: {
     sourceType?: 'upload' | 'external_link';
@@ -1662,7 +2593,7 @@ export const adminCreateQuestionMedia = (payload: {
     alt_text_bn?: string;
     approveNow?: boolean;
 }) =>
-    api.post<{ message: string; media: Record<string, unknown> }>(`/${ADMIN_PATH}/qbank/media`, payload);
+    api.post<{ message: string; media: Record<string, unknown> }>(`/${ADMIN_PATH}/question-bank/media`, payload);
 
 export const getQbankPicker = (params: Record<string, string | number | boolean> = {}) =>
     api.get<{ questions: AdminQBankQuestion[]; total: number; filter: Record<string, unknown> }>(`/qbank/picker`, { params });
@@ -1714,6 +2645,44 @@ export const adminBulkUserAction = (payload: { userIds: string[]; action: string
     api.post(`/${ADMIN_PATH}/users/bulk-action`, payload);
 export const adminBulkImportStudents = (data: FormData | { students: any[] }) =>
     api.post(`/${ADMIN_PATH}/users/bulk-import-students`, data);
+
+export const adminDownloadStudentTemplate = () =>
+    api.get(`/${ADMIN_PATH}/students/template`, { responseType: 'blob' });
+
+export const adminInitStudentImport = (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<{
+        message: string;
+        jobId: string;
+        headers: string[];
+        sampleRows: any[];
+    }>(`/${ADMIN_PATH}/students/import/init`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+
+export const adminGetStudentImportJob = (jobId: string) =>
+    api.get<{
+        job: {
+            _id: string;
+            status: string;
+            sourceFileName: string;
+            headers: string[];
+            sampleRows: any[];
+            mapping: Record<string, string>;
+            defaults: Record<string, any>;
+            validationSummary: any;
+            commitSummary: any;
+            error?: string;
+        };
+    }>(`/${ADMIN_PATH}/students/import/${jobId}`);
+
+export const adminValidateStudentImport = (jobId: string, payload: { mapping: Record<string, string>; defaults: Record<string, any> }) =>
+    api.post<{ message: string; summary: any }>(`/${ADMIN_PATH}/students/import/${jobId}/validate`, payload);
+
+export const adminCommitStudentImport = (jobId: string, payload: { dryRun?: boolean; skipExisting?: boolean }) =>
+    api.post<{ message: string; summary: any }>(`/${ADMIN_PATH}/students/import/${jobId}/commit`, payload);
 export const adminGetUserActivity = (id: string) => api.get(`/${ADMIN_PATH}/users/${id}/activity`);
 export const adminGetStudentProfile = (id: string) => api.get(`/${ADMIN_PATH}/users/${id}/student-profile`);
 export const adminUpdateStudentProfile = (id: string, data: any) => api.put(`/${ADMIN_PATH}/users/${id}/student-profile`, data);
@@ -1735,7 +2704,7 @@ export const adminConfirmGuardianOtp = (studentId: string, code: string) =>
     api.post(`/${ADMIN_PATH}/users/${studentId}/guardian-otp/confirm`, { code });
 
 /* Admin - Student Management */
-export const adminGetStudents = (params?: {
+export interface AdminStudentFilter {
     page?: number;
     limit?: number;
     search?: string;
@@ -1745,11 +2714,20 @@ export const adminGetStudents = (params?: {
     group?: string;
     planCode?: string;
     status?: string;
-    daysLeft?: string;
     profileScoreBand?: 'lt70' | 'gte70';
     paymentStatus?: 'pending' | 'paid' | 'clear';
-}) =>
-    api.get<{ items: AdminStudentItem[]; total: number; page: number; pages: number; summary: Record<string, number>; lastUpdatedAt: string }>(`/${ADMIN_PATH}/students`, { params });
+    startDate?: string;
+    endDate?: string;
+}
+
+export const adminGetStudents = (params: AdminStudentFilter) => api.get<{
+    items: AdminStudentItem[];
+    total: number;
+    pages: number;
+    summary: Record<string, number>;
+}>(`/${ADMIN_PATH}/students`, { params });
+
+export const adminExportStudents = (params?: AdminStudentFilter) => api.get<any[]>(`/${ADMIN_PATH}/export-students`, { params });
 
 export const adminCreateStudent = (data: Record<string, unknown>) =>
     api.post(`/${ADMIN_PATH}/students`, data);
@@ -1769,6 +2747,30 @@ export const adminGetStudentExams = (id: string) =>
 export const adminGetStudentGroups = () =>
     api.get<{ items: AdminStudentGroup[]; lastUpdatedAt: string }>(`/${ADMIN_PATH}/student-groups`);
 
+export const adminExportStudentGroups = () =>
+    api.get<Array<{
+        name: string;
+        slug: string;
+        batchTag?: string;
+        description?: string;
+        isActive: boolean;
+        studentCount: number;
+        createdAt?: string;
+        updatedAt?: string;
+    }>>(`/${ADMIN_PATH}/student-groups/export`);
+
+export const adminImportStudentGroups = (formData: FormData) =>
+    api.post<{
+        message: string;
+        created: number;
+        updated: number;
+        skipped: number;
+        totalRows: number;
+        errors: string[];
+    }>(`/${ADMIN_PATH}/student-groups/import`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
 export const adminCreateStudentGroup = (data: Partial<AdminStudentGroup>) =>
     api.post<{ item: AdminStudentGroup }>(`/${ADMIN_PATH}/student-groups`, data);
 
@@ -1778,8 +2780,13 @@ export const adminUpdateStudentGroup = (id: string, data: Partial<AdminStudentGr
 export const adminDeleteStudentGroup = (id: string) =>
     api.delete(`/${ADMIN_PATH}/student-groups/${id}`);
 
+export const adminBulkStudentAction = (data: { studentIds: string[]; action: string; groupId?: string }) =>
+    api.post<{ message: string; action: string; affected: number }>(`/${ADMIN_PATH}/students/bulk-action`, data);
+
 export const adminGetSubscriptionPlans = () =>
     api.get<{ items: AdminSubscriptionPlan[]; lastUpdatedAt: string }>(`/${ADMIN_PATH}/subscription-plans`);
+export const adminGetSubscriptionPlanById = (id: string) =>
+    api.get<{ item: AdminSubscriptionPlan }>(`/${ADMIN_PATH}/subscription-plans/${id}`);
 
 export const adminCreateSubscriptionPlan = (data: Partial<AdminSubscriptionPlan>) =>
     api.post<{ item: AdminSubscriptionPlan }>(`/${ADMIN_PATH}/subscription-plans`, data);
@@ -1787,8 +2794,20 @@ export const adminCreateSubscriptionPlan = (data: Partial<AdminSubscriptionPlan>
 export const adminUpdateSubscriptionPlan = (id: string, data: Partial<AdminSubscriptionPlan>) =>
     api.put<{ item: AdminSubscriptionPlan }>(`/${ADMIN_PATH}/subscription-plans/${id}`, data);
 
+export const adminDeleteSubscriptionPlan = (id: string) =>
+    api.delete<{ message: string }>(`/${ADMIN_PATH}/subscription-plans/${id}`);
+
 export const adminToggleSubscriptionPlan = (id: string) =>
     api.patch<{ item: AdminSubscriptionPlan }>(`/${ADMIN_PATH}/subscription-plans/${id}/toggle`);
+
+export const adminReorderSubscriptionPlans = (order: string[]) =>
+    api.put<{ message: string }>(`/${ADMIN_PATH}/subscription-plans/reorder`, { order });
+
+export const adminAssignSubscriptionPlan = (payload: SubscriptionAssignmentPayload) =>
+    api.post<{ message: string; item: Record<string, unknown> }>(`/${ADMIN_PATH}/subscriptions/assign`, payload);
+
+export const adminSuspendSubscriptionPlan = (payload: { userId: string; notes?: string }) =>
+    api.post<{ message: string; item: Record<string, unknown> }>(`/${ADMIN_PATH}/subscriptions/suspend`, payload);
 
 export interface AdminManualPayment {
     _id: string;
@@ -2057,6 +3076,12 @@ export const adminGetFinanceExpenseBreakdown = (params?: { from?: string; to?: s
 export const adminGetFinanceCashflow = (params?: { from?: string; to?: string; bucket?: 'day' | 'month' }) =>
     api.get<{ bucket: 'day' | 'month'; items: Array<{ period: string; income: number; expense: number; net: number }> }>(`/${ADMIN_PATH}/finance/cashflow`, { params });
 
+export const adminGetFinanceStudentGrowth = (params?: { from?: string; to?: string; bucket?: 'day' | 'month' }) =>
+    api.get<{ bucket: 'day' | 'month'; items: Array<{ period: string; count: number }> }>(`/${ADMIN_PATH}/finance/student-growth`, { params });
+
+export const adminGetFinancePlanDistribution = () =>
+    api.get<{ distribution: Array<{ _id: string; count: number; planName: string }> }>(`/${ADMIN_PATH}/finance/plan-distribution`);
+
 export const adminGetFinanceTestBoard = (params?: { from?: string; to?: string }) =>
     api.get<{
         liveIncome: number;
@@ -2168,6 +3193,21 @@ export const adminSetAdminPanelLockState = (adminPanelEnabled: boolean) =>
         { adminPanelEnabled },
     );
 
+export const adminGetPendingApprovals = (params?: { limit?: number }) =>
+    api.get<{ items: AdminActionApproval[]; total: number }>(`/${ADMIN_PATH}/approvals/pending`, { params });
+
+export const adminApprovePendingAction = (id: string) =>
+    api.post<{ item: AdminActionApproval; message: string }>(`/${ADMIN_PATH}/approvals/${id}/approve`);
+
+export const adminRejectPendingAction = (id: string, reason: string) =>
+    api.post<{ item: AdminActionApproval; message: string }>(`/${ADMIN_PATH}/approvals/${id}/reject`, { reason });
+
+export const adminGetJobRuns = (params?: { limit?: number }) =>
+    api.get<{ items: AdminJobRunItem[]; total: number }>(`/${ADMIN_PATH}/jobs/runs`, { params });
+
+export const adminGetJobHealth = (params?: { hours?: number }) =>
+    api.get<AdminJobHealthSnapshot>(`/${ADMIN_PATH}/jobs/health`, { params });
+
 export const getPublicSecurityConfig = () =>
     api.get<{
         maintenanceMode: boolean;
@@ -2268,11 +3308,18 @@ export const adminToggleNewsPublish = (id: string) =>
 export interface ApiNewsV2Source {
     _id: string;
     name: string;
+    rssUrl?: string;
     feedUrl: string;
+    siteUrl?: string;
+    iconType?: 'upload' | 'url';
     iconUrl?: string;
+    enabled?: boolean;
     isActive: boolean;
+    priority?: number;
     order: number;
+    fetchIntervalMinutes?: number;
     fetchIntervalMin: number;
+    categoryTags?: string[];
     lastFetchedAt?: string;
     lastSuccessAt?: string;
     lastError?: string;
@@ -2314,6 +3361,14 @@ export interface ApiNewsV2AuditLog {
 }
 
 export interface ApiNewsV2Settings {
+    pageTitle?: string;
+    pageSubtitle?: string;
+    headerBannerUrl?: string;
+    defaultBannerUrl?: string;
+    defaultThumbUrl?: string;
+    defaultSourceIconUrl?: string;
+    fetchFullArticleEnabled?: boolean;
+    fullArticleFetchMode?: 'rss_content' | 'readability_scrape' | 'both';
     rss: {
         enabled: boolean;
         defaultFetchIntervalMin: number;
@@ -2323,36 +3378,60 @@ export interface ApiNewsV2Settings {
     };
     ai: {
         enabled: boolean;
-        fallbackMode: 'manual_only';
-        defaultProvider: string;
-        providers: Array<{
-            id: string;
-            type: 'openai' | 'custom';
-            enabled: boolean;
-            baseUrl: string;
-            model: string;
-            apiKeyRef: string;
-            headers?: Record<string, string>;
-        }>;
-        language: string;
-        style: string;
-        noHallucinationMode: boolean;
-        requireSourceLink: boolean;
-        maxTokens: number;
+        language: 'bn' | 'en' | 'mixed';
+        stylePreset: 'short' | 'standard' | 'detailed';
+        apiProviderUrl: string;
+        apiKey: string;
+        customPrompt: string;
+        strictNoHallucination: boolean;
+        maxLength: number;
+        duplicateSensitivity: 'strict' | 'medium' | 'loose';
         temperature: number;
+    };
+    aiSettings?: {
+        enabled: boolean;
+        language: 'bn' | 'en' | 'mixed' | 'BN' | 'EN' | 'MIXED';
+        stylePreset: 'short' | 'very_short' | 'standard' | 'detailed';
+        apiProviderUrl?: string;
+        apiKey?: string;
+        customPrompt?: string;
+        strictNoHallucination?: boolean;
+        strictMode?: boolean;
+        duplicateSensitivity: 'strict' | 'medium' | 'loose';
+        maxLength: number;
+        promptTemplate?: string;
+        autoRemoveDuplicates?: boolean;
     };
     appearance: {
         layoutMode: 'rss_reader' | 'grid' | 'list';
+        density?: 'compact' | 'comfortable';
+        paginationMode?: 'infinite' | 'pages';
+        showWidgets?: {
+            trending: boolean;
+            latest: boolean;
+            sourceSidebar: boolean;
+            tagChips: boolean;
+            previewPanel: boolean;
+            breakingTicker: boolean;
+        };
         showSourceIcons: boolean;
         showTrendingWidget: boolean;
         showCategoryWidget: boolean;
         showShareButtons: boolean;
-        animationLevel: 'none' | 'subtle' | 'rich';
+        animationLevel: 'off' | 'minimal' | 'normal' | 'none' | 'subtle' | 'rich';
         cardDensity: 'compact' | 'comfortable';
         thumbnailFallbackUrl: string;
     };
     share: {
-        enabledChannels: string[];
+        enabledChannels: Array<'whatsapp' | 'facebook' | 'messenger' | 'telegram' | 'copy_link' | 'copy_text'>;
+        shareButtons?: {
+            whatsapp: boolean;
+            facebook: boolean;
+            messenger: boolean;
+            telegram: boolean;
+            copyLink: boolean;
+            copyText: boolean;
+        };
         templates: Record<string, string>;
         utm: {
             enabled: boolean;
@@ -2361,50 +3440,103 @@ export interface ApiNewsV2Settings {
             campaign: string;
         };
     };
+    shareTemplates?: {
+        whatsapp: string;
+        facebook: string;
+        messenger: string;
+        telegram: string;
+    };
     workflow: {
         requireApprovalBeforePublish: boolean;
         allowSchedulePublish: boolean;
         allowAutoPublishFromAi: boolean;
+        autoDraftFromRSS?: boolean;
+        defaultIncomingStatus?: 'pending_review' | 'draft';
+        allowScheduling?: boolean;
+        openOriginalWhenExtractionIncomplete?: boolean;
+        autoExpireDays?: number | null;
     };
 }
 
 export const adminNewsV2GetDashboard = () =>
-    api.get<{ cards: { pending: number; published: number; scheduled: number; fetchFailed: number; activeSources: number }; latestJobs: any[] }>(`/${ADMIN_PATH}/news-v2/dashboard`);
+    api.get<{
+        cards: { pending: number; duplicate: number; published: number; scheduled: number; fetchFailed: number; activeSources: number };
+        latestJobs: any[];
+        latestRssItems: ApiNews[];
+    }>(`/${ADMIN_PATH}/news-v2/dashboard`);
 export const adminNewsV2FetchNow = (sourceIds: string[] = []) =>
-    api.post<{ message: string; stats: { fetchedCount: number; createdCount: number; duplicateCount: number; failedCount: number; errors: Array<{ sourceId?: string; message: string }> } }>(`/${ADMIN_PATH}/news-v2/fetch-now`, { sourceIds });
+    api.post<{ message: string; stats: { fetchedCount: number; createdCount: number; duplicateCount: number; failedCount: number; errors: Array<{ sourceId?: string; message: string }> } }>(`/${ADMIN_PATH}/rss/fetch-now`, { sourceIds });
 export const adminNewsV2GetItems = (params: Record<string, string | number | boolean> = {}) =>
-    api.get<{ items: ApiNews[]; total: number; page: number; pages: number }>(`/${ADMIN_PATH}/news-v2/items`, { params });
+    api.get<{ items: ApiNews[]; total: number; page: number; pages: number }>(`/${ADMIN_PATH}/news`, { params });
 export const adminNewsV2GetItemById = (id: string) =>
-    api.get<{ item: ApiNews }>(`/${ADMIN_PATH}/news-v2/items/${id}`);
+    api.get<{ item: ApiNews }>(`/${ADMIN_PATH}/news/${id}`);
 export const adminNewsV2CreateItem = (data: Partial<ApiNews>) =>
-    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news-v2/items`, data);
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news`, data);
 export const adminNewsV2UpdateItem = (id: string, data: Partial<ApiNews>) =>
-    api.put<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news-v2/items/${id}`, data);
+    api.put<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}`, data);
 export const adminNewsV2SubmitReview = (id: string) =>
-    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news-v2/items/${id}/submit-review`);
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/submit-review`);
 export const adminNewsV2Approve = (id: string) =>
-    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news-v2/items/${id}/approve`);
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/approve`);
+export const adminNewsV2ApprovePublish = (id: string) =>
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/approve-publish`);
 export const adminNewsV2Reject = (id: string, reason = '') =>
-    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news-v2/items/${id}/reject`, { reason });
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/reject`, { reason });
 export const adminNewsV2PublishNow = (id: string) =>
-    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news-v2/items/${id}/publish-now`);
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/publish-now`);
 export const adminNewsV2Schedule = (id: string, scheduleAt: string) =>
-    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news-v2/items/${id}/schedule`, { scheduleAt });
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/schedule`, { scheduleAt });
+export const adminNewsV2MoveToDraft = (id: string) =>
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/move-to-draft`);
+export const adminNewsV2PublishAnyway = (id: string) =>
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/publish-anyway`);
+export const adminNewsV2MergeDuplicate = (
+    id: string,
+    payload: { targetNewsId: string; mergeContent?: boolean; appendSourceLink?: boolean },
+) =>
+    api.post<{ item: ApiNews; message: string }>(`/${ADMIN_PATH}/news/${id}/merge`, payload);
+export const adminNewsV2AiCheckItem = (
+    id: string,
+    payload: { applyToDraft?: boolean; checkOnly?: boolean } = {}
+) =>
+    api.post<{
+        item?: ApiNews;
+        message: string;
+        warning?: string;
+        warnings?: string[];
+        aiEnabled?: boolean;
+        applied?: boolean;
+        preview?: {
+            title?: string;
+            shortSummary?: string;
+            fullContent?: string;
+        };
+    }>(`/${ADMIN_PATH}/news/${id}/ai-check`, payload);
 export const adminNewsV2BulkApprove = (ids: string[]) =>
     api.post<{ modifiedCount: number; message: string }>(`/${ADMIN_PATH}/news-v2/items/bulk-approve`, { ids });
 export const adminNewsV2BulkReject = (ids: string[], reason = '') =>
     api.post<{ modifiedCount: number; message: string }>(`/${ADMIN_PATH}/news-v2/items/bulk-reject`, { ids, reason });
 
 export const adminNewsV2GetSources = () =>
-    api.get<{ items: ApiNewsV2Source[] }>(`/${ADMIN_PATH}/news-v2/sources`);
+    api.get<{ items: ApiNewsV2Source[] }>(`/${ADMIN_PATH}/rss-sources`);
+export const adminGetRssSources = () =>
+    api.get<{ items: ApiNewsV2Source[] }>(`/${ADMIN_PATH}/rss-sources`);
 export const adminNewsV2CreateSource = (data: Partial<ApiNewsV2Source>) =>
-    api.post<{ item: ApiNewsV2Source; message: string }>(`/${ADMIN_PATH}/news-v2/sources`, data);
+    api.post<{ item: ApiNewsV2Source; message: string }>(`/${ADMIN_PATH}/rss-sources`, data);
+export const adminCreateRssSource = (data: Partial<ApiNewsV2Source>) =>
+    api.post<{ item: ApiNewsV2Source; message: string }>(`/${ADMIN_PATH}/rss-sources`, data);
 export const adminNewsV2UpdateSource = (id: string, data: Partial<ApiNewsV2Source>) =>
-    api.put<{ item: ApiNewsV2Source; message: string }>(`/${ADMIN_PATH}/news-v2/sources/${id}`, data);
+    api.put<{ item: ApiNewsV2Source; message: string }>(`/${ADMIN_PATH}/rss-sources/${id}`, data);
+export const adminUpdateRssSource = (id: string, data: Partial<ApiNewsV2Source>) =>
+    api.put<{ item: ApiNewsV2Source; message: string }>(`/${ADMIN_PATH}/rss-sources/${id}`, data);
 export const adminNewsV2DeleteSource = (id: string) =>
-    api.delete<{ message: string }>(`/${ADMIN_PATH}/news-v2/sources/${id}`);
+    api.delete<{ message: string }>(`/${ADMIN_PATH}/rss-sources/${id}`);
+export const adminDeleteRssSource = (id: string) =>
+    api.delete<{ message: string }>(`/${ADMIN_PATH}/rss-sources/${id}`);
 export const adminNewsV2TestSource = (id: string) =>
-    api.post<{ ok: boolean; title?: string; preview?: Array<{ title: string; link: string; pubDate: string }>; message?: string }>(`/${ADMIN_PATH}/news-v2/sources/${id}/test`);
+    api.post<{ ok: boolean; title?: string; preview?: Array<{ title: string; link: string; pubDate: string }>; message?: string }>(`/${ADMIN_PATH}/rss-sources/${id}/test`);
+export const adminTestRssSource = (id: string) =>
+    api.post<{ ok: boolean; title?: string; preview?: Array<{ title: string; link: string; pubDate: string }>; message?: string }>(`/${ADMIN_PATH}/rss-sources/${id}/test`);
 export const adminNewsV2ReorderSources = (ids: string[]) =>
     api.post<{ message: string }>(`/${ADMIN_PATH}/news-v2/sources/reorder`, { ids });
 
@@ -2420,6 +3552,10 @@ export const adminNewsV2GetShareSettings = () =>
     api.get<{ share: ApiNewsV2Settings['share'] }>(`/${ADMIN_PATH}/news-v2/settings/share`);
 export const adminNewsV2UpdateShareSettings = (data: Partial<ApiNewsV2Settings['share']>) =>
     api.put<{ share: ApiNewsV2Settings['share']; message: string }>(`/${ADMIN_PATH}/news-v2/settings/share`, data);
+export const adminGetNewsSettings = () =>
+    api.get<{ settings: ApiNewsV2Settings }>(`/${ADMIN_PATH}/news-settings`);
+export const adminUpdateNewsSettings = (data: Partial<ApiNewsV2Settings>) =>
+    api.put<{ settings: ApiNewsV2Settings; message: string }>(`/${ADMIN_PATH}/news-settings`, data);
 
 export const adminNewsV2GetMedia = (params: Record<string, string | number> = {}) =>
     api.get<{ items: ApiNewsV2Media[]; total: number; page: number; pages: number }>(`/${ADMIN_PATH}/news-v2/media`, { params });
@@ -2432,30 +3568,85 @@ export const adminNewsV2UploadMedia = (file: File, payload?: { altText?: string;
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 };
+export const adminUploadNewsMedia = (file: File, payload?: { altText?: string; isDefaultBanner?: boolean }) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (payload?.altText) formData.append('altText', payload.altText);
+    if (payload?.isDefaultBanner) formData.append('isDefaultBanner', 'true');
+    return api.post(`/${ADMIN_PATH}/media/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
 export const adminNewsV2MediaFromUrl = (url: string, altText = '', isDefaultBanner = false) =>
     api.post<{ item: ApiNewsV2Media; message: string }>(`/${ADMIN_PATH}/news-v2/media/from-url`, { url, altText, isDefaultBanner });
 export const adminNewsV2DeleteMedia = (id: string) =>
     api.delete<{ message: string }>(`/${ADMIN_PATH}/news-v2/media/${id}`);
 
-export const adminNewsV2ExportNews = (format: 'csv' | 'xlsx' = 'xlsx') =>
-    api.get(`/${ADMIN_PATH}/news-v2/exports/news`, { params: { format }, responseType: 'blob' });
+export const adminNewsV2ExportNews = (
+    options: {
+        format?: 'csv' | 'xlsx';
+        status?: string;
+        dateRange?: string;
+        sourceId?: string;
+    } | 'csv' | 'xlsx' = 'xlsx'
+) => {
+    const resolved = typeof options === 'string'
+        ? { format: options }
+        : options;
+    return api.get(`/${ADMIN_PATH}/news/export`, {
+        params: {
+            type: resolved.format || 'xlsx',
+            status: resolved.status || undefined,
+            dateRange: resolved.dateRange || undefined,
+            sourceId: resolved.sourceId || undefined,
+        },
+        responseType: 'blob',
+    });
+};
 export const adminNewsV2ExportSources = (format: 'csv' | 'xlsx' = 'xlsx') =>
-    api.get(`/${ADMIN_PATH}/news-v2/exports/sources`, { params: { format }, responseType: 'blob' });
+    api.get(`/${ADMIN_PATH}/news/rss-sources/export`, { params: { format }, responseType: 'blob' });
 export const adminNewsV2ExportLogs = (format: 'csv' | 'xlsx' = 'xlsx') =>
     api.get(`/${ADMIN_PATH}/news-v2/exports/logs`, { params: { format }, responseType: 'blob' });
+export const adminExportNewsHub = (params: Record<string, string | number> = {}) =>
+    api.get(`/${ADMIN_PATH}/news/export`, { params, responseType: 'blob' });
+export const adminExportRssSources = (format: 'csv' | 'xlsx' = 'xlsx') =>
+    api.get(`/${ADMIN_PATH}/news/rss-sources/export`, { params: { format }, responseType: 'blob' });
 export const adminNewsV2GetAuditLogs = (params: Record<string, string | number> = {}) =>
     api.get<{ items: ApiNewsV2AuditLog[]; total: number; page: number; pages: number }>(`/${ADMIN_PATH}/news-v2/audit-logs`, { params });
+export const adminGetNewsAuditLogs = (params: Record<string, string | number> = {}) =>
+    api.get<{ items: ApiNewsV2AuditLog[]; total: number; page: number; pages: number }>(`/${ADMIN_PATH}/audit-logs`, {
+        params: { ...params, module: 'news' },
+    });
 
 export const getPublicNewsV2List = (params: Record<string, string | number> = {}) =>
-    api.get<{ items: ApiNews[]; total: number; page: number; pages: number }>('/news-v2/list', { params });
+    api.get<{ items: ApiNews[]; total: number; page: number; pages: number }>('/news', { params });
 export const getPublicNewsV2BySlug = (slug: string) =>
-    api.get<{ item: ApiNews }>(`/news-v2/${slug}`);
+    api.get<{ item: ApiNews; related?: ApiNews[] }>(`/news/${slug}`);
 export const getPublicNewsV2Appearance = () =>
     api.get<{ appearance: ApiNewsV2Settings['appearance'] }>('/news-v2/config/appearance');
 export const getPublicNewsV2Widgets = () =>
-    api.get<{ trending: ApiNews[]; categories: Array<{ _id: string; count: number }> }>('/news-v2/widgets');
+    api.get<{ trending: ApiNews[]; categories: Array<{ _id: string; count: number }>; tags: Array<{ _id: string; count: number }> }>('/news-v2/widgets');
+export const getPublicNewsSources = () =>
+    api.get<{ items: ApiNewsPublicSource[] }>('/news/sources');
+export const getPublicNewsSettings = () =>
+    api.get<ApiNewsPublicSettings>('/news/settings').then((response) => {
+        const data = response.data || ({} as ApiNewsPublicSettings);
+        const pageTitle = String(data.pageTitle || data.newsPageTitle || 'Admission News & Updates').trim() || 'Admission News & Updates';
+        const pageSubtitle =
+            String(data.pageSubtitle || data.newsPageSubtitle || 'Live updates from verified CampusWay RSS feeds.').trim()
+            || 'Live updates from verified CampusWay RSS feeds.';
+
+        response.data = {
+            ...data,
+            pageTitle,
+            pageSubtitle,
+            newsPageTitle: data.newsPageTitle || pageTitle,
+            newsPageSubtitle: data.newsPageSubtitle || pageSubtitle,
+        };
+        return response;
+    });
 export const trackPublicNewsV2Share = (slug: string, channel: string) =>
-    api.post<{ ok: boolean; shareCount: number }>('/news-v2/share/track', { slug, channel });
+    api.post<{ ok: boolean; shareCount: number }>('/news/share/track', { slug, channel });
 
 /* â”€â”€ Admin â€” News Category â”€â”€ */
 export const adminGetNewsCategories = () =>
@@ -2532,13 +3723,21 @@ export const adminUpdateSettings = (data: Record<string, unknown>) =>
 
 /* â”€â”€ Admin â€” Data Exports â”€â”€ */
 export const adminExportNews = () =>
-    api.get(`/${ADMIN_PATH}/export/news`);
-export const adminExportServices = () =>
-    api.get(`/${ADMIN_PATH}/export/services`);
+    api.get(`/${ADMIN_PATH}/export-news`);
+export const adminExportSubscriptionPlans = (type: 'csv' | 'xlsx' = 'xlsx') =>
+    api.get(`/${ADMIN_PATH}/subscription-plans/export`, {
+        params: { type },
+        responseType: 'blob',
+    });
+export const adminExportSubscriptionPlansLegacyJson = () =>
+    api.get(`/${ADMIN_PATH}/export-subscription-plans`);
+export const adminExportSubscriptions = (type: 'csv' | 'xlsx' = 'xlsx', status?: UserSubscriptionStatus['status']) =>
+    api.get(`/${ADMIN_PATH}/subscriptions/export`, {
+        params: { type, ...(status ? { status } : {}) },
+        responseType: 'blob',
+    });
 export const adminExportUniversities = () =>
-    api.get(`/${ADMIN_PATH}/export/universities`);
-export const adminExportStudents = () =>
-    api.get(`/${ADMIN_PATH}/export/students`);
+    api.get(`/${ADMIN_PATH}/export-universities`);
 export const adminExportStudentExamHistory = (format: 'csv' | 'xlsx' = 'xlsx') =>
     api.get(`/${ADMIN_PATH}/export/student-exam-history`, { params: { format }, responseType: 'blob' });
 
@@ -2547,18 +3746,61 @@ export const changePassword = (currentPassword: string, newPassword: string) =>
     api.post('/auth/change-password', { currentPassword, newPassword });
 
 /* â”€â”€ Admin â€” Dynamic Home Page System â”€â”€ */
-export const adminGetHomeSystem = () => api.get('/home');
+export const adminGetHomeSystem = () => api.get<HomeApiResponse>('/home');
+export const adminGetHomeSettings = () =>
+    api.get<{ homeSettings: HomeSettingsConfig; updatedAt?: string }>(`/${ADMIN_PATH}/home-settings`);
+export const adminGetHomeSettingsDefaults = () =>
+    api.get<{ defaults: HomeSettingsConfig }>(`/${ADMIN_PATH}/home-settings/defaults`);
+export const adminUpdateHomeSettings = (patch: Partial<HomeSettingsConfig>) =>
+    api.put<{ message: string; homeSettings: HomeSettingsConfig; updatedAt?: string }>(`/${ADMIN_PATH}/home-settings`, patch);
+export const adminResetHomeSettingsSection = (section: keyof HomeSettingsConfig | string) =>
+    api.post<{ message: string; section: string; value: unknown; updatedAt?: string }>(`/${ADMIN_PATH}/home-settings/reset-section`, { section });
+export const adminGetSettingsSite = () => api.get(`/${ADMIN_PATH}/settings/site`);
+export const adminUpdateSettingsSite = (data: FormData) => api.put(`/${ADMIN_PATH}/settings/site`, data);
+export const adminGetDashboardSummary = () => api.get<AdminDashboardSummary>(`/${ADMIN_PATH}/dashboard/summary`);
+export const adminGetSocialLinks = () => api.get<{ items: PublicSocialLinkItem[] }>(`/${ADMIN_PATH}/social-links`);
+export const adminCreateSocialLink = (data: Record<string, unknown>) =>
+    api.post<{ message: string; items: PublicSocialLinkItem[] }>(`/${ADMIN_PATH}/social-links`, data);
+export const adminUpdateSocialLink = (id: string, data: Record<string, unknown>) =>
+    api.put<{ message: string; items: PublicSocialLinkItem[] }>(`/${ADMIN_PATH}/social-links/${id}`, data);
+export const adminDeleteSocialLink = (id: string) => api.delete(`/${ADMIN_PATH}/social-links/${id}`);
+export const adminBulkImportUniversities = (data: FormData) =>
+    api.post(`/${ADMIN_PATH}/universities/import-excel`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+export const adminExportExamResults = (examId: string) =>
+    api.get(`/${ADMIN_PATH}/exams/${examId}/export`, { responseType: 'blob' });
+export const adminDownloadExamResultImportTemplate = (examId: string, format: 'csv' | 'xlsx' = 'xlsx') =>
+    api.get(`/${ADMIN_PATH}/exams/${examId}/results/import-template`, {
+        params: { format },
+        responseType: 'blob',
+    });
+export const adminImportExamResultsFile = (examId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/${ADMIN_PATH}/exams/${examId}/results/import`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+export const adminExportExamReport = (
+    examId: string,
+    options: { format?: 'xlsx' | 'csv' | 'pdf'; groupId?: string } = {},
+) =>
+    api.get(`/${ADMIN_PATH}/exams/${examId}/reports/export`, {
+        params: options,
+        responseType: 'blob',
+    });
 export const adminUpdateWebsiteSettings = (data: FormData) => api.put(`/${ADMIN_PATH}/home/settings`, data);
 export const adminUpdateHomePage = (data: Record<string, unknown>) => api.put(`/${ADMIN_PATH}/home`, data);
 export const adminUpdateHomeHero = (data: FormData) => api.put(`/${ADMIN_PATH}/home/hero`, data);
 export const adminUpdateHomeBanner = (data: FormData) => api.put(`/${ADMIN_PATH}/home/banner`, data);
 export const adminUpdateHomeAnnouncement = (data: Record<string, unknown>) => api.put(`/${ADMIN_PATH}/home/announcement`, data);
 export const adminUpdateHomeStats = (data: Record<string, unknown>) => api.put(`/${ADMIN_PATH}/home/stats`, data);
-export const adminGetAlerts = (params: Record<string, string | number> = {}) => api.get(`/${ADMIN_PATH}/alerts`, { params });
-export const adminCreateAlert = (data: Record<string, unknown>) => api.post(`/${ADMIN_PATH}/alerts`, data);
-export const adminUpdateAlert = (id: string, data: Record<string, unknown>) => api.put(`/${ADMIN_PATH}/alerts/${id}`, data);
-export const adminPublishAlert = (id: string, publish = true) => api.put(`/${ADMIN_PATH}/alerts/${id}/publish`, { publish });
-export const adminDeleteAlert = (id: string) => api.delete(`/${ADMIN_PATH}/alerts/${id}`);
+export const adminGetAlerts = (params: Record<string, string | number> = {}) => api.get(`/${ADMIN_PATH}/home-alerts`, { params });
+export const adminCreateAlert = (data: Record<string, unknown>) => api.post(`/${ADMIN_PATH}/home-alerts`, data);
+export const adminUpdateAlert = (id: string, data: Record<string, unknown>) => api.put(`/${ADMIN_PATH}/home-alerts/${id}`, data);
+export const adminPublishAlert = (id: string, publish = true) => api.put(`/${ADMIN_PATH}/home-alerts/${id}/publish`, { publish });
+export const adminDeleteAlert = (id: string) => api.delete(`/${ADMIN_PATH}/home-alerts/${id}`);
 export const adminGetBanners = () => api.get(`/${ADMIN_PATH}/banners`);
 export const adminCreateBanner = (data: Record<string, unknown>) => api.post(`/${ADMIN_PATH}/banners`, data);
 export const adminUpdateBanner = (id: string, data: Record<string, unknown>) => api.put(`/${ADMIN_PATH}/banners/${id}`, data);
@@ -2675,6 +3917,8 @@ export const adminGetAuditLogs = (params?: {
     actor?: string;
     dateFrom?: string;
     dateTo?: string;
+    scope?: string;
+    module?: string;
 }) => api.get(`/${ADMIN_PATH}/audit-logs`, { params });
 
 /* â”€â”€ Student Portal â”€â”€ */
@@ -2687,3 +3931,64 @@ export const createStudentApplication = (data: { university_id: string, program:
 export const adminGetProfileUpdateRequests = (params: any = {}) => api.get(`/${ADMIN_PATH}/students/profile-requests`, { params });
 export const adminApproveProfileUpdateRequest = (id: string) => api.post(`/${ADMIN_PATH}/students/profile-requests/${id}/approve`);
 export const adminRejectProfileUpdateRequest = (id: string, feedback?: string) => api.post(`/${ADMIN_PATH}/students/profile-requests/${id}/reject`, { feedback });
+
+/* ── Analytics & Notification Automation ── */
+export const getPublicAnalyticsSettings = () =>
+    api.get<{ enabled: boolean; trackAnonymous: boolean; eventToggles: AnalyticsSettings['eventToggles'] }>('/settings/analytics');
+
+export const trackAnalyticsEvent = (payload: {
+    eventName: string;
+    module?: string;
+    source?: 'public' | 'student' | 'admin';
+    sessionId?: string;
+    meta?: Record<string, unknown>;
+}) => api.post<{ accepted: boolean; id?: string; reason?: string }>('/events/track', payload);
+
+export const adminGetNotificationAutomationSettings = () =>
+    api.get<{ settings: NotificationAutomationSettings }>(`/${ADMIN_PATH}/settings/notifications`);
+
+export const adminUpdateNotificationAutomationSettings = (data: Partial<NotificationAutomationSettings>) =>
+    api.put<{ message: string; settings: NotificationAutomationSettings }>(`/${ADMIN_PATH}/settings/notifications`, data);
+
+export const adminGetAnalyticsSettings = () =>
+    api.get<{ settings: AnalyticsSettings }>(`/${ADMIN_PATH}/settings/analytics`);
+
+export const adminUpdateAnalyticsSettings = (data: Partial<AnalyticsSettings>) =>
+    api.put<{ message: string; settings: AnalyticsSettings }>(`/${ADMIN_PATH}/settings/analytics`, data);
+
+export const adminGetReportsSummary = (params?: { from?: string; to?: string }) =>
+    api.get<AdminReportsSummary>(`/${ADMIN_PATH}/reports/summary`, { params });
+
+export const adminExportReportsSummary = (params?: { from?: string; to?: string; format?: 'csv' | 'xlsx' }) =>
+    api.get(`/${ADMIN_PATH}/reports/export`, { params, responseType: 'blob' });
+
+export const adminGetAnalyticsOverview = (params?: { from?: string; to?: string; module?: string }) =>
+    api.get<AnalyticsOverview>(`/${ADMIN_PATH}/reports/analytics`, { params });
+
+export const adminExportEventLogs = (params?: { from?: string; to?: string; module?: string; format?: 'csv' | 'xlsx' }) =>
+    api.get(`/${ADMIN_PATH}/reports/events/export`, { params, responseType: 'blob' });
+
+export const adminGetExamInsightsReport = (examId: string) =>
+    api.get<ExamInsightsReport>(`/${ADMIN_PATH}/reports/exams/${examId}/insights`);
+
+export const adminExportExamInsights = (examId: string, format: 'csv' | 'xlsx' = 'csv') =>
+    api.get(`/${ADMIN_PATH}/reports/exams/${examId}/insights/export`, { params: { format }, responseType: 'blob' });
+
+// ── University Settings ──
+export interface AdminUniversitySettingsData {
+    categoryOrder: string[];
+    highlightedCategories: string[];
+    defaultCategory: string;
+    featuredUniversitySlugs: string[];
+    maxFeaturedItems: number;
+    enableClusterFilterOnHome: boolean;
+    enableClusterFilterOnUniversities: boolean;
+    defaultUniversityLogoUrl: string | null;
+    allowCustomCategories: boolean;
+}
+
+export const adminGetUniversitySettings = () =>
+    api.get<{ ok: boolean; data: AdminUniversitySettingsData }>(`/${ADMIN_PATH}/settings/university`);
+
+export const adminUpdateUniversitySettings = (data: Partial<AdminUniversitySettingsData>) =>
+    api.put<{ ok: boolean; data: AdminUniversitySettingsData }>(`/${ADMIN_PATH}/settings/university`, data);

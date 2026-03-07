@@ -1,0 +1,19 @@
+{
+  "runId": "20260303091955",
+  "baseUrl": "http://127.0.0.1:5263",
+  "startedAt": "2026-03-03T09:19:55.451Z",
+  "endedAt": "2026-03-03T09:20:22.579Z",
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "checks": [],
+  "warnings": [
+    "Runner error: e2e:prepare failed\n\n> campusway-backend@1.0.0 e2e:prepare\n> tsx src/scripts/e2e_prepare.ts\n\n[db] MongoDB connected successfully\n[db] All critical indexes ensured\n[e2e_prepare] failed MongoServerError: Plan executor error during findAndModify :: caused by :: E11000 duplicate key error collection: campusway_playwright_mcp_20260303091955.studentprofiles index: phone_number_1 dup key: { phone_number: \"01700000000\" }\n    at Connection.sendCommand (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\cmap\\connection.ts:559:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Connection.command (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\cmap\\connection.ts:633:22)\n    at async Server.command (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\sdam\\server.ts:350:21)\n    at async tryOperation (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\operations\\execute_operation.ts:289:24)\n    at async executeOperation (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\operations\\execute_operation.ts:119:12)\n    at async Collection.findOneAndUpdate (F:\\CampusWay\\backend\\node_modules\\mongodb\\src\\collection.ts:1041:12)\n    at async model.Query._findOneAndUpdate (F:\\CampusWay\\backend\\node_modules\\mongoose\\lib\\query.js:3536:13)\n    at async model.Query.exec (F:\\CampusWay\\backend\\node_modules\\mongoose\\lib\\query.js:4627:63)\n    at async upsertSeedUser (F:\\CampusWay\\backend\\src\\scripts\\e2e_prepare.ts:116:9) {\n  errorLabelSet: Set(0) {},\n  errorResponse: {\n    ok: 0,\n    errmsg: 'Plan executor error during findAndModify :: caused by :: E11000 duplicate key error collection: campusway_playwright_mcp_20260303091955.studentprofiles index: phone_number_1 dup key: { phone_number: \"01700000000\" }',\n    code: 11000,\n    codeName: 'DuplicateKey',\n    keyPattern: { phone_number: 1 },\n    keyValue: { phone_number: '01700000000' }\n  },\n  ok: 0,\n  code: 11000,\n  codeName: 'DuplicateKey',\n  keyPattern: { phone_number: 1 },\n  keyValue: { phone_number: '01700000000' }\n}\n[db] MongoDB disconnected\n",
+    "Database drop skipped (mongosh unavailable or failed)"
+  ]
+}

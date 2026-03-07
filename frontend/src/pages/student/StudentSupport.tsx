@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createStudentSupportTicket, getStudentNotices, getStudentSupportTickets } from '../../services/api';
+import { createStudentSupportTicket, getStudentNotices, getStudentSupportTickets, trackAnalyticsEvent } from '../../services/api';
 
 export default function StudentSupport() {
     const queryClient = useQueryClient();
@@ -20,6 +20,12 @@ export default function StudentSupport() {
     const createTicketMutation = useMutation({
         mutationFn: async () => (await createStudentSupportTicket({ subject, message, priority })).data,
         onSuccess: async () => {
+            void trackAnalyticsEvent({
+                eventName: 'support_ticket_created',
+                module: 'support',
+                source: 'student',
+                meta: { priority, subjectLength: subject.trim().length },
+            }).catch(() => undefined);
             setSubject('');
             setMessage('');
             setPriority('medium');

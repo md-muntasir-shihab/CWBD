@@ -179,7 +179,7 @@ export async function getPublicNews(req: Request, res: Response): Promise<void> 
         const { page = '1', limit = '10', category, search } = req.query;
         const pageNum = parseInt(page as string, 10);
         const limitNum = parseInt(limit as string, 10);
-        const filter: Record<string, unknown> = { status: 'published' };
+        const filter: Record<string, unknown> = { status: 'published', isPublished: true };
 
         if (category && category !== 'All') filter.category = category;
         if (search) filter.$or = [
@@ -207,7 +207,7 @@ export async function getPublicFeaturedNews(req: Request, res: Response): Promis
         const { limit = '3' } = req.query;
         const limitNum = parseInt(limit as string, 10);
 
-        let news = await News.find({ status: 'published', isFeatured: true })
+        let news = await News.find({ status: 'published', isPublished: true, isFeatured: true })
             .sort({ publishDate: -1 })
             .limit(limitNum)
             .select('-content')
@@ -215,7 +215,7 @@ export async function getPublicFeaturedNews(req: Request, res: Response): Promis
 
         // If no featured news found, fallback to latest published news
         if (news.length === 0) {
-            news = await News.find({ status: 'published' })
+            news = await News.find({ status: 'published', isPublished: true })
                 .sort({ publishDate: -1 })
                 .limit(limitNum)
                 .select('-content')
@@ -232,7 +232,7 @@ export async function getPublicFeaturedNews(req: Request, res: Response): Promis
 export async function getPublicNewsBySlug(req: Request, res: Response): Promise<void> {
     try {
         const news = await News.findOneAndUpdate(
-            { slug: req.params.slug, status: 'published' },
+            { slug: req.params.slug, status: 'published', isPublished: true },
             { $inc: { views: 1 } },
             { new: true }
         ).populate('createdBy', 'fullName').lean();
@@ -251,7 +251,7 @@ export async function getTrendingNews(req: Request, res: Response): Promise<void
         const { limit = '5' } = req.query;
         const limitNum = parseInt(limit as string, 10);
 
-        const news = await News.find({ status: 'published' })
+        const news = await News.find({ status: 'published', isPublished: true })
             .sort({ views: -1, publishDate: -1 })
             .limit(limitNum)
             .select('title slug featuredImage thumbnail publishDate views category')
@@ -460,6 +460,7 @@ export async function adminCreateResource(req: Request, res: Response): Promise<
         const data = req.body;
         if (!data.title || !data.type) { res.status(400).json({ message: 'Title and type are required' }); return; }
         const resource = await Resource.create(data);
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'resources', action: 'create', resourceId: String(resource._id) } });
         res.status(201).json({ resource, message: 'Resource created' });
     } catch (err) {
         console.error('adminCreateResource error:', err);
@@ -471,6 +472,7 @@ export async function adminUpdateResource(req: Request, res: Response): Promise<
     try {
         const resource = await Resource.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!resource) { res.status(404).json({ message: 'Resource not found' }); return; }
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'resources', action: 'update', resourceId: String(resource._id) } });
         res.json({ resource, message: 'Resource updated' });
     } catch (err) {
         console.error('adminUpdateResource error:', err);
@@ -482,6 +484,7 @@ export async function adminDeleteResource(req: Request, res: Response): Promise<
     try {
         const resource = await Resource.findByIdAndDelete(req.params.id);
         if (!resource) { res.status(404).json({ message: 'Resource not found' }); return; }
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'resources', action: 'delete', resourceId: String(resource._id) } });
         res.json({ message: 'Resource deleted' });
     } catch (err) {
         console.error('adminDeleteResource error:', err);
@@ -602,7 +605,7 @@ export async function adminUpdateUserRole(req: AuthRequest, res: Response): Prom
     try {
         const { userId } = req.params;
         const { role } = req.body;
-        const validRoles = ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'student'];
+        const validRoles = ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent', 'student', 'chairman'];
         if (!validRoles.includes(role)) {
             res.status(400).json({ message: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
             return;
@@ -681,14 +684,14 @@ export async function adminExportNews(_req: Request, res: Response): Promise<voi
     }
 }
 
-export async function adminExportServices(_req: Request, res: Response): Promise<void> {
+export async function adminExportSubscriptionPlans(_req: Request, res: Response): Promise<void> {
     try {
         const services = await Service.find().lean();
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', 'attachment; filename=services_export.json');
+        res.setHeader('Content-Disposition', 'attachment; filename=subscription_plans_export.json');
         res.json(services);
     } catch (err) {
-        console.error('adminExportServices error:', err);
+        console.error('adminExportSubscriptionPlans error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 }

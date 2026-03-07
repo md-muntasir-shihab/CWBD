@@ -1,0 +1,92 @@
+[
+  {
+    "route": "/",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/services",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/news",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/exams",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/resources",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/contact",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/login",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/student/login",
+    "kind": "public",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/student/dashboard",
+    "kind": "student",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/student/profile",
+    "kind": "student",
+    "status": "pass",
+    "note": "OK",
+    "pageErrors": [],
+    "criticalApiFailures": []
+  },
+  {
+    "route": "/campusway-secure-admin",
+    "kind": "admin",
+    "status": "fail",
+    "note": "pageErrors=1, api500=0",
+    "pageErrors": [
+      "Rendered more hooks than during the previous render."
+    ],
+    "criticalApiFailures": []
+  }
+]

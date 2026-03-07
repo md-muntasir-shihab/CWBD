@@ -1,0 +1,33 @@
+import { Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
+export declare function getStudentExams(req: AuthRequest, res: Response): Promise<void>;
+export declare function getPublicExamList(req: AuthRequest, res: Response): Promise<void>;
+export declare function getExamLanding(req: AuthRequest, res: Response): Promise<void>;
+export declare function getStudentExamDetails(req: AuthRequest, res: Response): Promise<void>;
+export declare function getStudentExamById(req: AuthRequest, res: Response): Promise<void>;
+export declare function startExam(req: AuthRequest, res: Response): Promise<void>;
+export declare function autosaveExam(req: AuthRequest, res: Response): Promise<void>;
+export declare function submitExam(req: AuthRequest, res: Response): Promise<void>;
+type SystemSubmitInput = {
+    examId: string;
+    studentId: string;
+    attemptId?: string;
+    sourceReq?: AuthRequest;
+    reason?: string;
+    submissionType?: 'manual' | 'auto_timeout' | 'auto_expired' | 'forced';
+};
+export declare function submitExamAsSystem(input: SystemSubmitInput): Promise<{
+    statusCode: number;
+    body: unknown;
+}>;
+export declare function getExamAttemptState(req: AuthRequest, res: Response): Promise<void>;
+export declare function saveExamAttemptAnswer(req: AuthRequest, res: Response): Promise<void>;
+export declare function submitExamAttempt(req: AuthRequest, res: Response): Promise<void>;
+export declare function logExamAttemptEvent(req: AuthRequest, res: Response): Promise<void>;
+export declare function getExamResult(req: AuthRequest, res: Response): Promise<void>;
+export declare function getStudentExamQuestions(req: AuthRequest, res: Response): Promise<void>;
+export declare function streamExamAttempt(req: AuthRequest, res: Response): Promise<void>;
+export declare function getExamCertificate(req: AuthRequest, res: Response): Promise<void>;
+export declare function verifyExamCertificate(req: AuthRequest, res: Response): Promise<void>;
+export {};
+//# sourceMappingURL=examController.d.ts.map

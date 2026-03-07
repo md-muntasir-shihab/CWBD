@@ -3,8 +3,12 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface INews extends Document {
     title: string;
     slug: string;
+    shortSummary?: string;
     shortDescription: string;
+    fullContent?: string;
     content: string;
+    coverImageUrl?: string;
+    coverImageSource?: 'rss' | 'admin' | 'default';
     featuredImage?: string;
     coverImage?: string;
     category: string;
@@ -15,6 +19,7 @@ export interface INews extends Document {
     | 'draft'
     | 'archived'
     | 'pending_review'
+    | 'duplicate_review'
     | 'approved'
     | 'rejected'
     | 'scheduled'
@@ -24,9 +29,24 @@ export interface INews extends Document {
     sourceName?: string;
     sourceIconUrl?: string;
     sourceUrl?: string;
+    originalArticleUrl?: string;
     originalLink?: string;
+    rssGuid?: string;
+    rssPublishedAt?: Date;
+    rssRawTitle?: string;
+    rssRawDescription?: string;
+    rssRawContent?: string;
+    fetchedFullText?: boolean;
+    fetchedFullTextAt?: Date;
     thumbnailImage?: string;
     fallbackBanner?: string;
+    aiUsed?: boolean;
+    aiSelected?: boolean;
+    aiModel?: string;
+    aiPromptVersion?: string;
+    aiLanguage?: string;
+    aiGeneratedAt?: Date;
+    aiNotes?: string;
     aiMeta?: {
         provider?: string;
         model?: string;
@@ -41,6 +61,8 @@ export interface INews extends Document {
         reviewedAt?: Date;
         rejectReason?: string;
     };
+    isManual?: boolean;
+    scheduledAt?: Date;
     scheduleAt?: Date;
     publishedAt?: Date;
     dedupe?: {
@@ -49,6 +71,11 @@ export interface INews extends Document {
         duplicateOfNewsId?: mongoose.Types.ObjectId;
         duplicateFlag?: boolean;
     };
+    duplicateKeyHash?: string;
+    duplicateOfNewsId?: mongoose.Types.ObjectId;
+    duplicateReasons?: string[];
+    createdByAdminId?: mongoose.Types.ObjectId;
+    approvedByAdminId?: mongoose.Types.ObjectId;
     shareMeta?: {
         canonicalUrl?: string;
         shortUrl?: string;
@@ -76,8 +103,12 @@ export interface INews extends Document {
 const NewsSchema = new Schema<INews>({
     title: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true },
+    shortSummary: { type: String, default: '' },
     shortDescription: { type: String, required: true },
+    fullContent: { type: String, default: '' },
     content: { type: String, required: true },
+    coverImageUrl: { type: String, default: '' },
+    coverImageSource: { type: String, enum: ['rss', 'admin', 'default'], default: 'default' },
     featuredImage: { type: String },
     coverImage: { type: String },
     category: { type: String, required: true },
@@ -85,7 +116,7 @@ const NewsSchema = new Schema<INews>({
     isPublished: { type: Boolean, default: false },
     status: {
         type: String,
-        enum: ['published', 'draft', 'archived', 'pending_review', 'approved', 'rejected', 'scheduled', 'fetch_failed'],
+        enum: ['published', 'draft', 'archived', 'pending_review', 'duplicate_review', 'approved', 'rejected', 'scheduled', 'fetch_failed'],
         default: 'draft'
     },
     sourceType: {
@@ -97,9 +128,24 @@ const NewsSchema = new Schema<INews>({
     sourceName: { type: String, default: '' },
     sourceIconUrl: { type: String, default: '' },
     sourceUrl: { type: String, default: '' },
+    originalArticleUrl: { type: String, default: '' },
     originalLink: { type: String, default: '' },
+    rssGuid: { type: String, default: '' },
+    rssPublishedAt: { type: Date },
+    rssRawTitle: { type: String, default: '' },
+    rssRawDescription: { type: String, default: '' },
+    rssRawContent: { type: String, default: '' },
+    fetchedFullText: { type: Boolean, default: false },
+    fetchedFullTextAt: { type: Date },
     thumbnailImage: { type: String, default: '' },
     fallbackBanner: { type: String, default: '' },
+    aiUsed: { type: Boolean, default: false },
+    aiSelected: { type: Boolean, default: false },
+    aiModel: { type: String, default: '' },
+    aiPromptVersion: { type: String, default: '' },
+    aiLanguage: { type: String, default: '' },
+    aiGeneratedAt: { type: Date },
+    aiNotes: { type: String, default: '' },
     aiMeta: {
         provider: { type: String, default: '' },
         model: { type: String, default: '' },
@@ -114,6 +160,8 @@ const NewsSchema = new Schema<INews>({
         reviewedAt: { type: Date },
         rejectReason: { type: String, default: '' },
     },
+    isManual: { type: Boolean, default: true },
+    scheduledAt: { type: Date },
     scheduleAt: { type: Date },
     publishedAt: { type: Date },
     dedupe: {
@@ -122,6 +170,11 @@ const NewsSchema = new Schema<INews>({
         duplicateOfNewsId: { type: Schema.Types.ObjectId, ref: 'News' },
         duplicateFlag: { type: Boolean, default: false },
     },
+    duplicateKeyHash: { type: String, default: '' },
+    duplicateOfNewsId: { type: Schema.Types.ObjectId, ref: 'News' },
+    duplicateReasons: [{ type: String }],
+    createdByAdminId: { type: Schema.Types.ObjectId, ref: 'User' },
+    approvedByAdminId: { type: Schema.Types.ObjectId, ref: 'User' },
     shareMeta: {
         canonicalUrl: { type: String, default: '' },
         shortUrl: { type: String, default: '' },
@@ -149,5 +202,73 @@ NewsSchema.index({ category: 1, isPublished: 1 });
 NewsSchema.index({ status: 1, publishDate: -1, category: 1 });
 NewsSchema.index({ sourceId: 1, createdAt: -1 });
 NewsSchema.index({ 'dedupe.hash': 1 });
+NewsSchema.index({ duplicateKeyHash: 1 });
+NewsSchema.index({ duplicateOfNewsId: 1 });
+NewsSchema.index({ tags: 1, publishDate: -1 });
+NewsSchema.index({ rssGuid: 1 });
+NewsSchema.index({ aiSelected: 1, status: 1, createdAt: -1 });
+
+NewsSchema.pre('validate', function syncSpecCompat(next) {
+    const doc = this as INews;
+    const summary = String(doc.shortSummary || doc.shortDescription || '').trim();
+    doc.shortSummary = summary;
+    doc.shortDescription = summary || String(doc.shortDescription || '').trim();
+
+    const richContent = String(doc.fullContent || doc.content || '').trim();
+    doc.fullContent = richContent;
+    doc.content = richContent || String(doc.content || '').trim();
+
+    const coverUrl = String(doc.coverImageUrl || doc.coverImage || doc.featuredImage || '').trim();
+    doc.coverImageUrl = coverUrl;
+    doc.coverImage = coverUrl;
+
+    const original = String(doc.originalArticleUrl || doc.originalLink || '').trim();
+    doc.originalArticleUrl = original;
+    doc.originalLink = original;
+
+    if (doc.scheduledAt && !doc.scheduleAt) doc.scheduleAt = doc.scheduledAt;
+    if (doc.scheduleAt && !doc.scheduledAt) doc.scheduledAt = doc.scheduleAt;
+
+    if (doc.aiMeta?.model && !doc.aiModel) doc.aiModel = String(doc.aiMeta.model);
+    if (doc.aiMeta?.promptVersion && !doc.aiPromptVersion) doc.aiPromptVersion = String(doc.aiMeta.promptVersion);
+    if (doc.aiMeta?.provider && !doc.aiUsed) doc.aiUsed = true;
+
+    if (doc.sourceType === 'manual') {
+        doc.isManual = true;
+        if (!doc.coverImageSource) doc.coverImageSource = 'admin';
+        if (doc.aiSelected === undefined || doc.aiSelected === null) {
+            doc.aiSelected = false;
+        }
+    } else if (!doc.coverImageSource) {
+        doc.coverImageSource = doc.coverImageUrl ? 'rss' : 'default';
+        doc.isManual = false;
+    }
+
+    if (doc.sourceType === 'ai_assisted' && (doc.aiSelected === undefined || doc.aiSelected === null)) {
+        doc.aiSelected = true;
+    }
+
+    if (!Array.isArray(doc.tags)) doc.tags = [];
+
+    const duplicateKeyHash = String(doc.duplicateKeyHash || doc.dedupe?.hash || '').trim();
+    doc.duplicateKeyHash = duplicateKeyHash;
+    if (duplicateKeyHash && doc.dedupe) {
+        doc.dedupe.hash = duplicateKeyHash;
+    } else if (doc.dedupe?.hash && !duplicateKeyHash) {
+        doc.duplicateKeyHash = String(doc.dedupe.hash).trim();
+    }
+
+    if (doc.duplicateOfNewsId && doc.dedupe) {
+        doc.dedupe.duplicateOfNewsId = doc.duplicateOfNewsId;
+        doc.dedupe.duplicateFlag = true;
+    } else if (doc.dedupe?.duplicateOfNewsId && !doc.duplicateOfNewsId) {
+        doc.duplicateOfNewsId = doc.dedupe.duplicateOfNewsId;
+    }
+
+    if (!Array.isArray(doc.duplicateReasons)) {
+        doc.duplicateReasons = [];
+    }
+    next();
+});
 
 export default mongoose.model<INews>('News', NewsSchema);

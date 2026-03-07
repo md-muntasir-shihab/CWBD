@@ -14,6 +14,7 @@
         "e2e:prepare": "npm --prefix ../backend run e2e:prepare",
         "e2e:restore": "npm --prefix ../backend run e2e:restore",
         "mcp:smoke": "node ./scripts/mcp-smoke.mjs",
+        "mcp:full-sweep": "node ./scripts/playwright-full-sweep.mjs",
         "perf:autosave": "node ./scripts/perf-autosave.mjs",
         "perf:lighthouse:landing": "node ./scripts/lighthouse-exam-landing.mjs"
     },

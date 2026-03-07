@@ -1,167 +1,226 @@
-
+import { useMemo, type ComponentType } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
-    GraduationCap, BookOpen, Users, TrendingUp, Calendar,
-    Activity, Clock, CheckCircle, Server,
+    BookOpen,
+    Clock3,
+    CreditCard,
+    GraduationCap,
+    HelpCircle,
+    Home,
+    RefreshCw,
+    Server,
+    ShieldCheck,
+    UserSquare2,
+    Users,
 } from 'lucide-react';
+import { adminGetDashboardSummary, type AdminDashboardSummary } from '../../services/api';
 
 interface DashboardHomeProps {
-    universities: Array<Record<string, any>>;
-    exams: Array<Record<string, any>>;
-    users: Array<Record<string, any>>;
+    universities: any[];
+    exams: any[];
+    users: any[];
     onTabChange: (tab: string) => void;
 }
 
+type SummaryCard = {
+    key: string;
+    title: string;
+    description: string;
+    value: string;
+    icon: ComponentType<{ className?: string }>;
+    actionLabel: string;
+    actionTab: string;
+};
+
+function valueText(value: number): string {
+    if (!Number.isFinite(value)) return '0';
+    return new Intl.NumberFormat('en-US').format(value);
+}
+
 export default function DashboardHome({ universities, exams, users, onTabChange }: DashboardHomeProps) {
-    const upcomingExams = exams.filter(e => !e.isPublished).length;
-    const activeStudents = users.filter(u => String(u.role) === 'student' && u.isActive).length;
+    const summaryQuery = useQuery({
+        queryKey: ['admin-dashboard-summary'],
+        queryFn: async () => (await adminGetDashboardSummary()).data as AdminDashboardSummary,
+        refetchInterval: 60_000,
+        refetchOnWindowFocus: false,
+    });
 
-    const stats = [
-        { label: 'Total Universities', value: universities.length, icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600', bg: 'bg-blue-500/10' },
-        { label: 'Total Exams', value: exams.length, icon: BookOpen, gradient: 'from-emerald-500 to-teal-600', bg: 'bg-emerald-500/10' },
-        { label: 'Total Students', value: activeStudents, icon: Users, gradient: 'from-purple-500 to-fuchsia-600', bg: 'bg-purple-500/10' },
-        { label: 'Upcoming Exams', value: upcomingExams, icon: Calendar, gradient: 'from-amber-500 to-orange-600', bg: 'bg-amber-500/10' },
-    ];
+    const fallbackSummary: AdminDashboardSummary = {
+        universities: {
+            total: universities.length,
+            active: universities.length,
+            featured: universities.filter((item) => Boolean((item as { featured?: boolean }).featured)).length,
+        },
+        home: {
+            highlightedCategories: 0,
+            featuredUniversities: 0,
+            enabledSections: 0,
+        },
+        news: {
+            pendingReview: 0,
+            publishedToday: 0,
+        },
+        exams: {
+            upcoming: exams.filter((exam) => String((exam as { status?: string }).status || '').toLowerCase() === 'scheduled').length,
+            live: exams.filter((exam) => String((exam as { status?: string }).status || '').toLowerCase() === 'live').length,
+        },
+        questionBank: {
+            totalQuestions: 0,
+        },
+        students: {
+            totalActive: users.filter((user) => String((user as { role?: string }).role || '') === 'student').length,
+            pendingPayment: 0,
+            suspended: 0,
+        },
+        payments: {
+            pendingApprovals: 0,
+            paidToday: 0,
+        },
+        supportCenter: {
+            unreadMessages: 0,
+        },
+        systemStatus: {
+            db: 'down',
+            timeUTC: new Date().toISOString(),
+        },
+    };
 
-    /* Simple bar chart data */
-    const chartData = [
-        { label: 'Mon', value: Math.floor(Math.random() * 50) + 10 },
-        { label: 'Tue', value: Math.floor(Math.random() * 50) + 10 },
-        { label: 'Wed', value: Math.floor(Math.random() * 50) + 10 },
-        { label: 'Thu', value: Math.floor(Math.random() * 50) + 10 },
-        { label: 'Fri', value: Math.floor(Math.random() * 50) + 10 },
-        { label: 'Sat', value: Math.floor(Math.random() * 50) + 10 },
-        { label: 'Sun', value: Math.floor(Math.random() * 50) + 10 },
-    ];
-    const maxVal = Math.max(...chartData.map(d => d.value));
+    const summary = summaryQuery.data || fallbackSummary;
 
-    const recentActivities = [
-        { text: 'New university added', time: '2 min ago', type: 'success' },
-        { text: 'Exam "Physics MCQ" published', time: '15 min ago', type: 'info' },
-        { text: 'Student registered', time: '1 hour ago', type: 'default' },
-        { text: 'System backup completed', time: '3 hours ago', type: 'success' },
-        { text: 'Failed login attempt detected', time: '5 hours ago', type: 'warning' },
-    ];
+    const cards = useMemo<SummaryCard[]>(() => {
+        return [
+            {
+                key: 'universities',
+                title: 'Universities',
+                description: `${valueText(summary.universities.active)} active, ${valueText(summary.universities.featured)} featured`,
+                value: valueText(summary.universities.total),
+                icon: GraduationCap,
+                actionLabel: 'Open Universities',
+                actionTab: 'universities',
+            },
+            {
+                key: 'home',
+                title: 'Home Highlights',
+                description: `${valueText(summary.home.highlightedCategories)} highlighted categories`,
+                value: valueText(summary.home.featuredUniversities),
+                icon: Home,
+                actionLabel: 'Open Home Control',
+                actionTab: 'home-control',
+            },
+            {
+                key: 'news',
+                title: 'News',
+                description: `${valueText(summary.news.pendingReview)} pending review`,
+                value: valueText(summary.news.publishedToday),
+                icon: BookOpen,
+                actionLabel: 'Open News',
+                actionTab: 'news',
+            },
+            {
+                key: 'exams',
+                title: 'Exams',
+                description: `${valueText(summary.exams.upcoming)} upcoming`,
+                value: valueText(summary.exams.live),
+                icon: Clock3,
+                actionLabel: 'Open Exams',
+                actionTab: 'exams',
+            },
+            {
+                key: 'question-bank',
+                title: 'Question Bank',
+                description: 'Total questions',
+                value: valueText(summary.questionBank.totalQuestions),
+                icon: UserSquare2,
+                actionLabel: 'Open Question Bank',
+                actionTab: 'question-bank',
+            },
+            {
+                key: 'students',
+                title: 'Students',
+                description: `${valueText(summary.students.pendingPayment)} pending payment, ${valueText(summary.students.suspended)} suspended`,
+                value: valueText(summary.students.totalActive),
+                icon: Users,
+                actionLabel: 'Open Student Management',
+                actionTab: 'student-management',
+            },
+            {
+                key: 'payments',
+                title: 'Payments',
+                description: `${valueText(summary.payments.pendingApprovals)} pending approvals`,
+                value: valueText(summary.payments.paidToday),
+                icon: CreditCard,
+                actionLabel: 'Open Finance',
+                actionTab: 'finance',
+            },
+            {
+                key: 'support',
+                title: 'Support Center',
+                description: 'Unread/in-progress tickets',
+                value: valueText(summary.supportCenter.unreadMessages),
+                icon: HelpCircle,
+                actionLabel: 'Open Support',
+                actionTab: 'support-tickets',
+            },
+            {
+                key: 'system',
+                title: 'System Status',
+                description: summary.systemStatus.db === 'connected' ? 'Database connected' : 'Database unavailable',
+                value: summary.systemStatus.db === 'connected' ? 'OK' : 'DOWN',
+                icon: Server,
+                actionLabel: 'Open Security Center',
+                actionTab: 'security',
+            },
+        ];
+    }, [summary]);
 
     return (
-        <div className="space-y-6">
-            {/* ── Stat Cards ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                {stats.map(s => (
-                    <div
-                        key={s.label}
-                        className="group relative bg-slate-900/60 backdrop-blur-sm rounded-2xl p-5 border border-indigo-500/10 hover:border-indigo-500/25 transition-all duration-300 overflow-hidden"
-                    >
-                        {/* Glow effect */}
-                        <div className={`absolute -top-6 -right-6 w-20 h-20 bg-gradient-to-br ${s.gradient} rounded-full opacity-10 group-hover:opacity-20 blur-xl transition-opacity`} />
-                        <div className="flex items-center justify-between mb-3 relative">
-                            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-lg`}>
-                                <s.icon className="w-5 h-5 text-white" />
+        <div className="space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 className="text-lg font-bold text-white">Admin Summary</h2>
+                    <p className="text-xs text-slate-400">Live snapshot of core modules with quick navigation links.</p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => summaryQuery.refetch()}
+                    className="inline-flex items-center gap-2 rounded-xl border border-indigo-500/30 px-3 py-2 text-xs text-indigo-200 hover:bg-indigo-500/20"
+                >
+                    <RefreshCw className={`h-3.5 w-3.5 ${summaryQuery.isFetching ? 'animate-spin' : ''}`} />
+                    Refresh Summary
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {cards.map((card) => (
+                    <article key={card.key} className="rounded-2xl border border-indigo-500/15 bg-slate-900/60 p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                            <div>
+                                <p className="text-xs uppercase tracking-wider text-slate-400">{card.title}</p>
+                                <p className="mt-1 text-2xl font-bold text-white">{card.value}</p>
                             </div>
-                            <TrendingUp className="w-4 h-4 text-emerald-400" />
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/15 text-indigo-200">
+                                <card.icon className="h-5 w-5" />
+                            </span>
                         </div>
-                        <p className="text-3xl font-bold text-white relative">{s.value}</p>
-                        <p className="text-sm text-slate-400 mt-0.5">{s.label}</p>
-                    </div>
+                        <p className="mt-2 min-h-[2.2rem] text-xs text-slate-400">{card.description}</p>
+                        <button
+                            type="button"
+                            onClick={() => onTabChange(card.actionTab)}
+                            className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-700 px-2.5 py-1.5 text-xs text-slate-200 hover:border-indigo-400 hover:text-indigo-200"
+                        >
+                            {card.actionLabel}
+                        </button>
+                    </article>
                 ))}
             </div>
 
-            {/* ── Charts + Activity ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Exam Participation Chart */}
-                <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-sm rounded-2xl p-5 border border-indigo-500/10">
-                    <h3 className="font-bold text-white flex items-center gap-2 mb-4">
-                        <Activity className="w-4 h-4 text-cyan-400" />
-                        Exam Participation (This Week)
-                    </h3>
-                    <div className="flex items-end gap-3 h-40">
-                        {chartData.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                <span className="text-[10px] text-slate-500">{d.value}</span>
-                                <div
-                                    className="w-full bg-gradient-to-t from-indigo-600 to-cyan-500 rounded-t-lg transition-all duration-500 hover:opacity-80"
-                                    style={{ height: `${(d.value / maxVal) * 100}%`, minHeight: '8px' }}
-                                />
-                                <span className="text-[10px] text-slate-400">{d.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Recent Activities */}
-                <div className="bg-slate-900/60 backdrop-blur-sm rounded-2xl p-5 border border-indigo-500/10">
-                    <h3 className="font-bold text-white flex items-center gap-2 mb-4">
-                        <Clock className="w-4 h-4 text-cyan-400" />
-                        Recent Activity
-                    </h3>
-                    <div className="space-y-3">
-                        {recentActivities.map((a, i) => (
-                            <div key={i} className="flex items-start gap-3">
-                                <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${a.type === 'success' ? 'bg-emerald-400' :
-                                    a.type === 'warning' ? 'bg-amber-400' :
-                                        a.type === 'info' ? 'bg-cyan-400' : 'bg-slate-500'
-                                    }`} />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-white">{a.text}</p>
-                                    <p className="text-[10px] text-slate-500">{a.time}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* ── System Health + Quick Links ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* System Health */}
-                <div className="bg-slate-900/60 backdrop-blur-sm rounded-2xl p-5 border border-indigo-500/10">
-                    <h3 className="font-bold text-white flex items-center gap-2 mb-4">
-                        <Server className="w-4 h-4 text-cyan-400" />
-                        System Health
-                    </h3>
-                    <div className="space-y-3">
-                        {[
-                            { label: 'API Server', status: 'online', icon: CheckCircle },
-                            { label: 'Database (MongoDB)', status: 'online', icon: CheckCircle },
-                            { label: 'File Storage', status: 'online', icon: CheckCircle },
-                        ].map(s => (
-                            <div key={s.label} className="flex items-center justify-between bg-slate-950/65 rounded-xl px-4 py-3">
-                                <div className="flex items-center gap-3">
-                                    <s.icon className="w-4 h-4 text-emerald-400" />
-                                    <span className="text-sm text-white">{s.label}</span>
-                                </div>
-                                <span className="text-[10px] uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-semibold">
-                                    {s.status}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Quick Navigation */}
-                <div className="bg-slate-900/60 backdrop-blur-sm rounded-2xl p-5 border border-indigo-500/10">
-                    <h3 className="font-bold text-white flex items-center gap-2 mb-4">
-                        <TrendingUp className="w-4 h-4 text-cyan-400" />
-                        Quick Actions
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        {[
-                            { label: 'Universities', count: universities.length, tab: 'universities', gradient: 'from-blue-500 to-indigo-600' },
-                            { label: 'Exams', count: exams.length, tab: 'exams', gradient: 'from-emerald-500 to-teal-600' },
-                            { label: 'Users', count: users.length, tab: 'users', gradient: 'from-purple-500 to-fuchsia-600' },
-                            { label: 'Banners', count: '—', tab: 'banners', gradient: 'from-amber-500 to-orange-600' },
-                        ].map(q => (
-                            <button
-                                key={q.tab}
-                                onClick={() => onTabChange(q.tab)}
-                                className="bg-slate-950/65 hover:bg-white/5 rounded-xl p-4 text-left transition-colors group border border-transparent hover:border-indigo-500/15"
-                            >
-                                <p className="text-2xl font-bold text-white">{q.count}</p>
-                                <p className="text-xs text-slate-400 group-hover:text-indigo-300 transition-colors">{q.label} →</p>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-xs text-emerald-100">
+                <p className="inline-flex items-center gap-2 font-semibold"><ShieldCheck className="h-4 w-4" /> System check</p>
+                <p className="mt-1">
+                    DB: <span className="font-semibold">{summary.systemStatus.db}</span> - Last check: {new Date(summary.systemStatus.timeUTC).toLocaleString()}
+                </p>
             </div>
         </div>
     );
 }
+

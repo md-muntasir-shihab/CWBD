@@ -12,6 +12,7 @@ import {
     getStudentDashboardProfile,
     getStudentExamHistory,
     getStudentFeaturedUniversities,
+    getStudentLiveAlertsHandler,
     getStudentNotificationFeed,
     getStudentUpcomingExams,
     getStudentDashboardStream,
@@ -27,6 +28,8 @@ import {
     getStudentMeResultByExam,
     getStudentMeResults,
     markStudentNotificationsRead,
+    getLeaderboard,
+    studentSubmitPaymentProof,
 } from '../controllers/studentHubController';
 
 const router = Router();
@@ -44,6 +47,7 @@ router.get('/dashboard', getStudentDashboardAggregateHandler);
 router.get('/upcoming-exams', getStudentUpcomingExams);
 router.get('/featured-universities', getStudentFeaturedUniversities);
 router.get('/notifications', getStudentNotificationFeed);
+router.get('/live-alerts', getStudentLiveAlertsHandler);
 router.get('/exam-history', getStudentExamHistory);
 router.get('/dashboard-profile', getStudentDashboardProfile);
 router.get('/dashboard/stream', getStudentDashboardStream);
@@ -56,6 +60,7 @@ router.get('/me/exams/:examId', getStudentMeExamById);
 router.get('/me/results', getStudentMeResults);
 router.get('/me/results/:examId', getStudentMeResultByExam);
 router.get('/me/payments', getStudentMePayments);
+router.post('/me/payments/proof', studentSubmitPaymentProof);
 router.get('/me/notifications', getStudentMeNotifications);
 router.post('/me/notifications/mark-read', markStudentNotificationsRead);
 router.get('/me/resources', getStudentMeResources);
@@ -63,6 +68,7 @@ router.get('/payments', getStudentMePayments);
 router.get('/notifications/feed', getStudentMeNotifications);
 router.post('/notifications/mark-read', markStudentNotificationsRead);
 router.get('/resources', getStudentMeResources);
+router.get('/leaderboard', getLeaderboard);
 
 // Application Routes
 router.get('/applications', getStudentApplications);

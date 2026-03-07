@@ -6,15 +6,13 @@ import {
     CreditCard,
     Home,
     LifeBuoy,
-    LogOut,
     MenuSquare,
     NotebookText,
     UserRound,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../hooks/useTheme';
-import ThemeSwitchPro from '../../components/ui/ThemeSwitchPro';
 import GlobalAlertGate from '../../components/student/GlobalAlertGate';
+import ThemeSwitchPro from '../../components/ui/ThemeSwitchPro';
 
 type NavItem = {
     label: string;
@@ -54,8 +52,7 @@ function isActivePath(currentPath: string, targetPath: string): boolean {
 }
 
 export default function StudentLayout() {
-    const { isAuthenticated, isLoading, logout, user } = useAuth();
-    const { darkMode, toggleDarkMode } = useTheme();
+    const { isAuthenticated, isLoading, user } = useAuth();
     const location = useLocation();
 
     if (isLoading) {
@@ -67,69 +64,24 @@ export default function StudentLayout() {
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/student/login" state={{ from: location }} replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (user && user.role !== 'student') {
-        return <Navigate to="/campusway-secure-admin" replace />;
+        if (user.role === 'chairman') return <Navigate to="/chairman/dashboard" replace />;
+        return <Navigate to="/__cw_admin__/dashboard" replace />;
     }
 
     const mobileNavItems = NAV_ITEMS.filter((item) => item.mobile);
+    const activeItem = NAV_ITEMS.find((item) => isActivePath(location.pathname, item.path));
+    const displayName = user?.fullName || user?.username || 'Student';
 
     return (
         <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
             <GlobalAlertGate />
-            <header className="sticky top-0 z-40 border-b border-slate-200/70 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur">
-                <div className="mx-auto max-w-7xl px-4 md:px-6 py-3 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <Link to="/dashboard" className="inline-flex items-center gap-2">
-                            <img src="/logo.png" alt="CampusWay" className="w-8 h-8 rounded-lg object-cover" />
-                            <div className="leading-tight">
-                                <p className="font-bold text-sm">CampusWay</p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Student Hub</p>
-                            </div>
-                        </Link>
-                    </div>
-
-                    <nav className="hidden lg:flex items-center gap-1.5">
-                        {NAV_ITEMS.slice(0, 6).map((item) => {
-                            const active = isActivePath(location.pathname, item.path);
-                            return (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition ${active
-                                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200'
-                                        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                                        }`}
-                                >
-                                    {item.icon}
-                                    {item.label}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-
-                    <div className="flex items-center gap-2">
-                        <ThemeSwitchPro checked={darkMode} onToggle={toggleDarkMode} />
-                        <div className="hidden sm:flex flex-col text-right leading-tight">
-                            <span className="text-xs font-semibold truncate max-w-[180px]">{user?.fullName || user?.username}</span>
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]">{user?.email}</span>
-                        </div>
-                        <button
-                            onClick={logout}
-                            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-500/10 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20"
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Sign out</span>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
             <div className="mx-auto max-w-7xl px-4 md:px-6 py-5 md:py-6 flex gap-6">
                 <aside className="hidden xl:block w-64 shrink-0">
-                    <div className="sticky top-24 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 space-y-1">
+                    <div className="sticky top-[88px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 space-y-1">
                         {NAV_ITEMS.map((item) => {
                             const active = isActivePath(location.pathname, item.path);
                             return (
@@ -150,6 +102,33 @@ export default function StudentLayout() {
                 </aside>
 
                 <main className="flex-1 min-w-0 pb-20 md:pb-6">
+                    <header className="sticky top-[76px] z-20 mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+                        <div className="min-w-0">
+                            <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Student Portal</p>
+                            <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                {activeItem?.label || 'Dashboard'}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <ThemeSwitchPro />
+                            <Link
+                                to="/profile"
+                                className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
+                                aria-label="Open profile"
+                                title={displayName}
+                            >
+                                {user?.profile_photo ? (
+                                    <img
+                                        src={user.profile_photo}
+                                        alt={displayName}
+                                        className="h-full w-full rounded-full aspect-square object-cover"
+                                    />
+                                ) : (
+                                    <UserRound className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                                )}
+                            </Link>
+                        </div>
+                    </header>
                     <Outlet />
                 </main>
             </div>

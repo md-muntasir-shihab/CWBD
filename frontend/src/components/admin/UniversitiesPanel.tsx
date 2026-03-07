@@ -1,14 +1,15 @@
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Activity, CheckSquare, ChevronDown, ChevronUp, Download, Edit, Loader2, Plus, RefreshCw, Save, Search, Square, Trash2, Upload, X } from 'lucide-react';
-import api, {
+import {
   AdminUniversityCluster,
   AdminUniversityCategoryItem,
   AdminUniversityImportInitResponse,
   ApiUniversity,
   adminBulkDeleteUniversities,
   adminBulkUpdateUniversities,
-  adminCommitUniversityImport,
+  adminCommitUniversityImportWithMode,
   adminCreateUniversityCategory,
   adminCreateUniversity,
   adminCreateUniversityCluster,
@@ -23,18 +24,19 @@ import api, {
   adminGetUniversityCategories,
   adminGetUniversityClusterById,
   adminGetUniversityClusters,
+  adminGetHomeSettings,
   adminGetUniversityImportJob,
   adminInitUniversityImport,
   adminResolveUniversityClusterMembers,
   adminSyncUniversityClusterDates,
   adminToggleUniversityCategory,
+  adminUpdateHomeSettings,
   adminUpdateUniversity,
   adminUpdateUniversityCategory,
   adminUpdateUniversityCluster,
   adminValidateUniversityImport,
 } from '../../services/api';
-
-const ADMIN_PATH = import.meta.env.VITE_ADMIN_PATH || 'campusway-secure-admin';
+import { useAdminRuntimeFlags } from '../../hooks/useAdminRuntimeFlags';
 
 type Tab = 'universities' | 'categories' | 'clusters' | 'import';
 type StatusFilter = 'all' | 'active' | 'inactive' | 'archived';
@@ -104,31 +106,34 @@ const DEFAULT_CATEGORY_FORM: CategoryForm = {
 };
 
 const IMPORT_FIELDS = [
-  'name', 'shortForm', 'category', 'applicationStartDate', 'applicationEndDate', 'scienceExamDate', 'businessExamDate', 'artsExamDate',
-  'contactNumber', 'address', 'email', 'website', 'admissionWebsite', 'established', 'totalSeats', 'scienceSeats', 'artsSeats', 'businessSeats',
-  'shortDescription', 'description',
+  'category', 'clusterGroup', 'name', 'shortForm', 'establishedYear', 'address', 'contactNumber', 'email', 'websiteUrl', 'admissionUrl',
+  'totalSeats', 'seatsScienceEng', 'seatsArtsHum', 'seatsBusiness',
+  'applicationStartDate', 'applicationEndDate', 'examDateScience', 'examDateArts', 'examDateBusiness',
+  'examCenters', 'logoUrl',
 ];
 
 const COLUMN_MAP: Record<string, string> = {
+  category: 'Category',
+  clusterGroup: 'Cluster',
   name: 'Name',
   shortForm: 'Short Form',
-  category: 'Category',
+  establishedYear: 'Established',
   applicationStartDate: 'App Start',
   applicationEndDate: 'App End',
-  scienceExamDate: 'Science Exam',
-  businessExamDate: 'Commerce Exam',
-  artsExamDate: 'Arts Exam',
-  established: 'Established',
+  examDateScience: 'Science Exam',
+  examDateArts: 'Arts Exam',
+  examDateBusiness: 'Business Exam',
   totalSeats: 'Total Seats',
-  scienceSeats: 'Science Seats',
-  artsSeats: 'Arts Seats',
-  businessSeats: 'Business Seats',
+  seatsScienceEng: 'Science Seats',
+  seatsArtsHum: 'Arts Seats',
+  seatsBusiness: 'Business Seats',
   contactNumber: 'Contact',
   address: 'Address',
   email: 'Email',
-  website: 'Website',
-  admissionWebsite: 'Admission Site',
-  description: 'Description',
+  websiteUrl: 'Website',
+  admissionUrl: 'Admission Site',
+  examCenters: 'Exam Centers',
+  logoUrl: 'Logo',
   updatedAt: 'Updated',
 };
 
@@ -138,22 +143,24 @@ const COLUMN_VISIBILITY: Record<string, string> = {
   name: "table-cell",
   shortForm: "table-cell",
   category: "table-cell",
+  clusterGroup: "hidden xl:table-cell",
   applicationStartDate: "hidden xl:table-cell",
   applicationEndDate: "hidden xl:table-cell",
-  scienceExamDate: "hidden 2xl:table-cell",
-  businessExamDate: "hidden 2xl:table-cell",
-  artsExamDate: "hidden 2xl:table-cell",
-  established: "hidden 2xl:table-cell",
+  examDateScience: "hidden 2xl:table-cell",
+  examDateBusiness: "hidden 2xl:table-cell",
+  examDateArts: "hidden 2xl:table-cell",
+  establishedYear: "hidden 2xl:table-cell",
   totalSeats: "hidden lg:table-cell",
-  scienceSeats: "hidden 2xl:table-cell",
-  artsSeats: "hidden 2xl:table-cell",
-  businessSeats: "hidden 2xl:table-cell",
+  seatsScienceEng: "hidden 2xl:table-cell",
+  seatsArtsHum: "hidden 2xl:table-cell",
+  seatsBusiness: "hidden 2xl:table-cell",
   contactNumber: "hidden 2xl:table-cell",
   address: "hidden 2xl:table-cell",
   email: "hidden 2xl:table-cell",
-  website: "hidden 2xl:table-cell",
-  admissionWebsite: "hidden 2xl:table-cell",
-  description: "hidden 2xl:table-cell",
+  websiteUrl: "hidden 2xl:table-cell",
+  admissionUrl: "hidden 2xl:table-cell",
+  examCenters: "hidden 2xl:table-cell",
+  logoUrl: "hidden 2xl:table-cell",
   updatedAt: "hidden md:table-cell",
 };
 
@@ -185,6 +192,8 @@ function AdminDateField({
 }
 
 export default function UniversitiesPanel() {
+  const queryClient = useQueryClient();
+  const runtimeFlags = useAdminRuntimeFlags();
   const [tab, setTab] = useState<Tab>('universities');
   const [universities, setUniversities] = useState<ApiUniversity[]>([]);
   const [allCandidates, setAllCandidates] = useState<ApiUniversity[]>([]);
@@ -231,6 +240,7 @@ export default function UniversitiesPanel() {
   const [importDefaults, setImportDefaults] = useState<Record<string, unknown>>({});
   const [importValidation, setImportValidation] = useState<Record<string, unknown> | null>(null);
   const [importCommit, setImportCommit] = useState<Record<string, unknown> | null>(null);
+  const [importMode, setImportMode] = useState<'create-only' | 'update-existing'>('update-existing');
   const [initializingImport, setInitializingImport] = useState(false);
   const [validatingImport, setValidatingImport] = useState(false);
   const [committingImport, setCommittingImport] = useState(false);
@@ -249,23 +259,64 @@ export default function UniversitiesPanel() {
     [categoryFacets],
   );
   const homeCategoryOptions = useMemo(() => {
-    if (categoryMaster.length > 0) {
-      return categoryMaster.map((item) => ({
-        name: item.name,
-        label: item.labelBn || item.name,
+    const source = categoryMaster.length > 0
+      ? categoryMaster.map((item, index) => ({
+        name: String(item.name || '').trim(),
+        label: String(item.labelBn || item.name || '').trim(),
         count: categoryCountMap.get(item.name) || 0,
+        order: index,
+      }))
+      : categoryFacets.map((item, index) => ({
+        name: String(item.name || '').trim(),
+        label: String(item.name || '').trim(),
+        count: Number(item.count || 0),
+        order: index,
       }));
-    }
-    return categoryFacets.map((item) => ({
-      name: item.name,
-      label: item.name,
-      count: Number(item.count || 0),
-    }));
+
+    const merged = new Map<string, { key: string; name: string; label: string; count: number; order: number }>();
+    source.forEach((item) => {
+      if (!item.name) return;
+      const key = item.name.toLowerCase();
+      const existing = merged.get(key);
+      if (!existing) {
+        merged.set(key, {
+          key,
+          name: item.name,
+          label: item.label || item.name,
+          count: item.count,
+          order: item.order,
+        });
+        return;
+      }
+      existing.count += item.count;
+      if (!existing.label && item.label) existing.label = item.label;
+      existing.order = Math.min(existing.order, item.order);
+    });
+
+    return Array.from(merged.values()).sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return a.name.localeCompare(b.name);
+    });
   }, [categoryMaster, categoryFacets, categoryCountMap]);
-  const categorySelectOptions = useMemo(
-    () => Array.from(new Set([...homeCategoryOptions.map((item) => item.name), String(form.category || '')])).filter(Boolean),
-    [homeCategoryOptions, form.category],
-  );
+  const categorySelectOptions = useMemo(() => {
+    const pool = [...homeCategoryOptions.map((item) => item.name), String(form.category || '').trim()];
+    const merged = new Map<string, string>();
+    pool.forEach((name) => {
+      if (!name) return;
+      const normalized = name.toLowerCase();
+      if (!merged.has(normalized)) merged.set(normalized, name);
+    });
+    return Array.from(merged.values());
+  }, [homeCategoryOptions, form.category]);
+
+  const invalidateUniversityQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['universities'] }),
+      queryClient.invalidateQueries({ queryKey: ['home'] }),
+      queryClient.invalidateQueries({ queryKey: ['home-settings'] }),
+      queryClient.invalidateQueries({ queryKey: ['home_settings'] }),
+    ]);
+  };
 
   const loadUniversities = async () => {
     setLoading(true);
@@ -297,7 +348,19 @@ export default function UniversitiesPanel() {
 
   const loadClusters = async () => { try { const r = await adminGetUniversityClusters(); setClusters(r.data.clusters || []); } catch { setClusters([]); } };
   const loadCandidates = async () => { try { const r = await adminGetUniversities({ page: 1, limit: 500, status: 'all', sortBy: 'name', sortOrder: 'asc' }); setAllCandidates(r.data.universities || []); } catch { setAllCandidates([]); } };
-  const loadHomeSelection = async () => { try { const r = await api.get<{ selectedUniversityCategories?: string[] }>(`/${ADMIN_PATH}/home-config`); setSelectedHomeCategories(r.data.selectedUniversityCategories || []); } catch { setSelectedHomeCategories([]); } };
+  const loadHomeSelection = async () => {
+    try {
+      const response = await adminGetHomeSettings();
+      const highlighted = response.data?.homeSettings?.highlightedCategories || [];
+      const categories = highlighted
+        .filter((item) => item?.enabled !== false && item?.category)
+        .sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
+        .map((item) => String(item.category));
+      setSelectedHomeCategories(categories);
+    } catch {
+      setSelectedHomeCategories([]);
+    }
+  };
 
   useEffect(() => { loadUniversities(); setSelectedIds([]); }, [page, query, categoryFilter, statusFilter, clusterFilter, sortBy, sortOrder]);
   useEffect(() => { loadFacets(); }, [statusFilter]);
@@ -354,6 +417,7 @@ export default function UniversitiesPanel() {
       };
       if (modalUniversity === 'create') { await adminCreateUniversity(payload); toast.success('University created'); }
       else if (modalUniversity && typeof modalUniversity === 'object') { await adminUpdateUniversity(modalUniversity._id, payload); toast.success('University updated'); }
+      await invalidateUniversityQueries();
       setModalUniversity(null); await loadUniversities(); await loadFacets(); await loadCandidates();
     } catch (e: unknown) {
       const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Save failed';
@@ -363,7 +427,7 @@ export default function UniversitiesPanel() {
 
   const deleteOne = async (id: string) => {
     if (!window.confirm('Delete this university?')) return;
-    try { await adminDeleteUniversity(id); toast.success('Deleted'); await loadUniversities(); await loadFacets(); await loadCandidates(); }
+    try { await adminDeleteUniversity(id); toast.success('Deleted'); await invalidateUniversityQueries(); await loadUniversities(); await loadFacets(); await loadCandidates(); }
     catch { toast.error('Delete failed'); }
   };
 
@@ -374,7 +438,17 @@ export default function UniversitiesPanel() {
     try {
       if (bulkAction === 'softDelete' || bulkAction === 'hardDelete') {
         const mode = bulkAction === 'softDelete' ? 'soft' : 'hard';
-        if (mode === 'hard' && !window.confirm('Permanently delete selected items?')) return;
+        if (mode === 'hard') {
+          if (runtimeFlags.requireDeleteKeywordConfirm) {
+            const typed = window.prompt(`Type DELETE to permanently remove ${selectedIds.length} universities.`);
+            if (typed !== 'DELETE') {
+              toast.error('Bulk delete cancelled');
+              return;
+            }
+          } else if (!window.confirm('Permanently delete selected items?')) {
+            return;
+          }
+        }
         await adminBulkDeleteUniversities(selectedIds, mode);
         toast.success(`Bulk ${mode} delete successful`);
       } else if (bulkAction === 'setCluster') {
@@ -386,6 +460,7 @@ export default function UniversitiesPanel() {
       setSelectedIds([]);
       setBulkAction('');
       setTargetClusterId('');
+      await invalidateUniversityQueries();
       await loadUniversities();
       await loadFacets();
       await loadCandidates();
@@ -409,8 +484,26 @@ export default function UniversitiesPanel() {
 
   const saveHomeCategories = async () => {
     setSavingHomeSelection(true);
-    try { await api.put(`/${ADMIN_PATH}/home-config`, { selectedUniversityCategories: selectedHomeCategories }); toast.success('Home categories saved'); }
-    catch { toast.error('Home categories save failed'); }
+    try {
+      await adminUpdateHomeSettings({
+        highlightedCategories: selectedHomeCategories.map((category, index) => ({
+          category,
+          order: index + 1,
+          enabled: true,
+          badgeText: 'Highlight',
+        })),
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['home-settings'] }),
+        queryClient.invalidateQueries({ queryKey: ['home_settings'] }),
+        queryClient.invalidateQueries({ queryKey: ['home'] }),
+        queryClient.invalidateQueries({ queryKey: ['universities'] }),
+      ]);
+      toast.success('Home categories saved');
+    }
+    catch {
+      toast.error('Home categories save failed');
+    }
     finally { setSavingHomeSelection(false); }
   };
 
@@ -458,14 +551,47 @@ export default function UniversitiesPanel() {
       };
       if (clusterModal === 'create') await adminCreateUniversityCluster(payload);
       else if (clusterModal && typeof clusterModal === 'object') await adminUpdateUniversityCluster(clusterModal._id, payload);
-      toast.success('Cluster saved'); setClusterModal(null); await loadClusters(); await loadUniversities(); await loadCandidates(); await loadCategoryMaster();
+      toast.success('Cluster saved');
+      await invalidateUniversityQueries();
+      setClusterModal(null);
+      await loadClusters();
+      await loadUniversities();
+      await loadCandidates();
+      await loadCategoryMaster();
     } catch { toast.error('Cluster save failed'); }
     finally { setSavingCluster(false); }
   };
 
-  const resolveCluster = async (id: string) => { try { await adminResolveUniversityClusterMembers(id); toast.success('Resolved'); await loadClusters(); await loadUniversities(); await loadCandidates(); } catch (e) { toast.error('Resolve failed'); } };
-  const syncCluster = async (id: string, dates?: ClusterForm['dates']) => { try { const p = dates ? { applicationStartDate: dates.applicationStartDate || null, applicationEndDate: dates.applicationEndDate || null, scienceExamDate: dates.scienceExamDate || '', businessExamDate: dates.commerceExamDate || '', artsExamDate: dates.artsExamDate || '' } : undefined; await adminSyncUniversityClusterDates(id, p); toast.success('Date synced'); await loadUniversities(); } catch (e) { toast.error('Date sync failed'); } };
-  const deactivateCluster = async (id: string) => { if (!window.confirm('Deactivate cluster?')) return; try { await adminDeleteUniversityCluster(id); toast.success('Cluster deactivated'); await loadClusters(); await loadUniversities(); await loadCandidates(); } catch (e) { toast.error('Deactivate failed'); } };
+  const resolveCluster = async (id: string) => {
+    try {
+      await adminResolveUniversityClusterMembers(id);
+      toast.success('Resolved');
+      await invalidateUniversityQueries();
+      await loadClusters();
+      await loadUniversities();
+      await loadCandidates();
+    } catch (e) { toast.error('Resolve failed'); }
+  };
+  const syncCluster = async (id: string, dates?: ClusterForm['dates']) => {
+    try {
+      const p = dates ? { applicationStartDate: dates.applicationStartDate || null, applicationEndDate: dates.applicationEndDate || null, scienceExamDate: dates.scienceExamDate || '', commerceExamDate: dates.commerceExamDate || '', artsExamDate: dates.artsExamDate || '' } : undefined;
+      await adminSyncUniversityClusterDates(id, p);
+      toast.success('Date synced');
+      await invalidateUniversityQueries();
+      await loadUniversities();
+    } catch (e) { toast.error('Date sync failed'); }
+  };
+  const deactivateCluster = async (id: string) => {
+    if (!window.confirm('Deactivate cluster?')) return;
+    try {
+      await adminDeleteUniversityCluster(id);
+      toast.success('Cluster deactivated');
+      await invalidateUniversityQueries();
+      await loadClusters();
+      await loadUniversities();
+      await loadCandidates();
+    } catch (e) { toast.error('Deactivate failed'); }
+  };
 
   const initImport = async () => {
     if (!importFile) { toast.error('Please choose a CSV/XLSX file'); return; }
@@ -481,7 +607,7 @@ export default function UniversitiesPanel() {
   };
 
   const validateImport = async () => { if (!importJobId) { toast.error('Job id missing'); return; } setValidatingImport(true); try { const r = await adminValidateUniversityImport(importJobId, importMapping, importDefaults); setImportValidation(r.data as Record<string, unknown>); setImportCommit(null); toast.success('Validated'); } catch (e) { toast.error('Validation failed'); } finally { setValidatingImport(false); } };
-  const commitImport = async () => { if (!importJobId) { toast.error('Job id missing'); return; } setCommittingImport(true); try { const r = await adminCommitUniversityImport(importJobId); setImportCommit(r.data as Record<string, unknown>); toast.success('Commit complete'); await loadUniversities(); await loadFacets(); await loadCandidates(); await loadCategoryMaster(); } catch (e) { toast.error('Commit failed'); } finally { setCommittingImport(false); } };
+  const commitImport = async () => { if (!importJobId) { toast.error('Job id missing'); return; } setCommittingImport(true); try { const r = await adminCommitUniversityImportWithMode(importJobId, importMode); setImportCommit(r.data as Record<string, unknown>); toast.success('Commit complete'); await invalidateUniversityQueries(); await loadUniversities(); await loadFacets(); await loadCandidates(); await loadCategoryMaster(); } catch (e) { toast.error('Commit failed'); } finally { setCommittingImport(false); } };
   const refreshImport = async () => { if (!importJobId) { toast.error('Job id missing'); return; } setRefreshingImportStatus(true); try { const r = await adminGetUniversityImportJob(importJobId); setImportValidation(r.data as Record<string, unknown>); if ((r.data as { commitSummary?: unknown }).commitSummary) setImportCommit(r.data as Record<string, unknown>); } catch (e) { toast.error('Refresh failed'); } finally { setRefreshingImportStatus(false); } };
   const downloadErrors = async () => { if (!importJobId) return; try { const r = await adminDownloadUniversityImportErrors(importJobId); downloadBlob(r.data, `university_import_errors_${importJobId}.csv`, 'text/csv;charset=utf-8'); } catch (e) { toast.error('Download failed'); } };
   const downloadTemplate = async (format: 'csv' | 'xlsx') => {
@@ -520,6 +646,7 @@ export default function UniversitiesPanel() {
       if (categoryModal === 'create') await adminCreateUniversityCategory(payload);
       else if (categoryModal && typeof categoryModal === 'object') await adminUpdateUniversityCategory(categoryModal._id, payload);
       toast.success('Category saved');
+      await invalidateUniversityQueries();
       setCategoryModal(null);
       await loadCategoryMaster();
       await loadFacets();
@@ -533,6 +660,7 @@ export default function UniversitiesPanel() {
   const toggleCategory = async (id: string) => {
     try {
       await adminToggleUniversityCategory(id);
+      await invalidateUniversityQueries();
       await loadCategoryMaster();
       await loadFacets();
       toast.success('Category status updated');
@@ -545,6 +673,7 @@ export default function UniversitiesPanel() {
     if (!window.confirm('Archive this category?')) return;
     try {
       await adminDeleteUniversityCategory(id);
+      await invalidateUniversityQueries();
       await loadCategoryMaster();
       await loadFacets();
       toast.success('Category archived');
@@ -586,7 +715,7 @@ export default function UniversitiesPanel() {
               </label>
               <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="rounded-xl border border-indigo-500/10 bg-slate-950/65 px-3 py-2 text-sm text-white focus:border-indigo-500/50 outline-none transition-all">
                 <option value="">All categories</option>
-                {homeCategoryOptions.map((cat) => <option key={cat.name} value={cat.name}>{cat.label} ({cat.count})</option>)}
+                {homeCategoryOptions.map((cat) => <option key={cat.key} value={cat.name}>{cat.label} ({cat.count})</option>)}
               </select>
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className="rounded-xl border border-indigo-500/10 bg-slate-950/65 px-3 py-2 text-sm text-white focus:border-indigo-500/50 outline-none transition-all">
                 <option value="all">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="archived">Archived</option>
@@ -612,7 +741,7 @@ export default function UniversitiesPanel() {
             <div className="mt-3 flex flex-wrap gap-2">
               {homeCategoryOptions.map((cat) => {
                 const active = selectedHomeCategories.includes(cat.name);
-                return <button key={cat.name} type="button" onClick={() => setSelectedHomeCategories((prev) => prev.includes(cat.name) ? prev.filter((x) => x !== cat.name) : [...prev, cat.name])} className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${active ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-500/20' : 'border border-indigo-500/10 bg-slate-950/65 text-slate-400 hover:text-white hover:border-indigo-500/30'}`}>{cat.label} ({cat.count})</button>;
+                return <button key={cat.key} type="button" onClick={() => setSelectedHomeCategories((prev) => prev.includes(cat.name) ? prev.filter((x) => x !== cat.name) : [...prev, cat.name])} className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${active ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-500/20' : 'border border-indigo-500/10 bg-slate-950/65 text-slate-400 hover:text-white hover:border-indigo-500/30'}`}>{cat.label} ({cat.count})</button>;
               })}
             </div>
           </div>
@@ -693,7 +822,7 @@ export default function UniversitiesPanel() {
                         <td className="px-3 py-2.5 sticky right-0 bg-slate-900/90 backdrop-blur-md shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.3)] z-10">
                           <div className="flex items-center gap-2">
                             <button type="button" onClick={() => openEdit(u)} className="rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-400 hover:bg-indigo-500/20 transition-all">Edit</button>
-                            <button type="button" onClick={() => void adminUpdateUniversity(u._id, { isActive: !u.isActive }).then(loadUniversities)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${u.isActive ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'}`}>{u.isActive ? 'Disable' : 'Enable'}</button>
+                            <button type="button" onClick={() => void adminUpdateUniversity(u._id, { isActive: !u.isActive }).then(async () => { await invalidateUniversityQueries(); await loadUniversities(); })} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${u.isActive ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'}`}>{u.isActive ? 'Disable' : 'Enable'}</button>
                             <button type="button" onClick={() => void deleteOne(u._id)} className="rounded-lg bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/20 transition-all">Delete</button>
                           </div>
                         </td>
@@ -727,7 +856,7 @@ export default function UniversitiesPanel() {
                         <button type="button" onClick={() => void deleteOne(u._id)} className="rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/40 rounded-xl p-3 border border-indigo-500/5">
+                    <div className="grid grid-cols-1 gap-2 rounded-xl border border-indigo-500/5 bg-slate-950/40 p-3 text-[11px] sm:grid-cols-2">
                       <div className="space-y-1">
                         <p className="text-slate-500">App Start</p><p className="text-emerald-400 font-bold">{dateText(u.applicationStartDate)}</p>
                       </div>
@@ -783,11 +912,11 @@ export default function UniversitiesPanel() {
                     {item.isActive ? 'ACTIVE' : 'INACTIVE'}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/40 rounded-xl p-3 border border-indigo-500/5">
+                <div className="grid grid-cols-1 gap-2 rounded-xl border border-indigo-500/5 bg-slate-950/40 p-3 text-[11px] sm:grid-cols-2">
                   <p className="text-slate-500 font-medium">Universities</p><p className="text-indigo-300 font-bold">{item.count || 0}</p>
                   <p className="text-slate-500 font-medium">Home</p><p className="text-slate-300 font-bold">{item.homeHighlight ? `Highlighted (#${item.homeOrder || 0})` : 'Normal'}</p>
                 </div>
-                <div className="grid grid-cols-3 gap-2 mt-auto">
+                <div className="mt-auto grid grid-cols-1 gap-2 sm:grid-cols-3">
                   <button type="button" onClick={() => openCategoryEdit(item)} className="rounded-lg bg-indigo-500/10 px-2 py-1.5 text-[11px] font-bold text-indigo-400 hover:bg-indigo-500/20 transition-all">Edit</button>
                   <button type="button" onClick={() => void toggleCategory(item._id)} className="rounded-lg bg-emerald-500/10 px-2 py-1.5 text-[11px] font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all">{item.isActive ? 'Disable' : 'Enable'}</button>
                   <button type="button" onClick={() => void archiveCategory(item._id)} className="rounded-lg bg-red-500/10 px-2 py-1.5 text-[11px] font-bold text-red-400 hover:bg-red-500/20 transition-all">Archive</button>
@@ -814,11 +943,11 @@ export default function UniversitiesPanel() {
                   </div>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider ${c.isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>{c.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/40 rounded-xl p-3 border border-indigo-500/5">
+                <div className="grid grid-cols-1 gap-2 rounded-xl border border-indigo-500/5 bg-slate-950/40 p-3 text-[11px] sm:grid-cols-2">
                   <p className="text-slate-500 font-medium">Members</p><p className="text-indigo-300 font-bold">{c.memberUniversityIds?.length || 0}</p>
                   <p className="text-slate-500 font-medium">Home Feed</p><p className="text-slate-300 font-bold">{c.homeVisible ? `Visible (#${c.homeOrder})` : 'Hidden'}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-auto">
+                <div className="mt-auto grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button type="button" onClick={() => void openClusterEdit(c)} className="rounded-lg bg-indigo-500/10 px-2 py-1.5 text-[11px] font-bold text-indigo-400 hover:bg-indigo-500/20 transition-all">Edit</button>
                   <button type="button" onClick={() => void syncCluster(c._id)} className="rounded-lg bg-emerald-500/10 px-2 py-1.5 text-[11px] font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all">Sync</button>
                   <button type="button" onClick={() => void resolveCluster(c._id)} className="rounded-lg bg-indigo-500/5 px-2 py-1.5 text-[11px] font-bold text-indigo-300 hover:bg-indigo-500/10 transition-all">Resolve</button>
@@ -883,6 +1012,14 @@ export default function UniversitiesPanel() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input value={String(importDefaults.category || '')} onChange={(e) => setImportDefaults((prev) => ({ ...prev, category: e.target.value }))} placeholder="Default category" className="rounded-xl border border-indigo-500/10 bg-slate-950/65 px-4 py-2.5 text-sm text-white focus:border-indigo-500/50 outline-none transition-all" />
+                <select
+                  value={importMode}
+                  onChange={(e) => setImportMode(e.target.value as 'create-only' | 'update-existing')}
+                  className="rounded-xl border border-indigo-500/10 bg-slate-950/65 px-4 py-2.5 text-sm text-white focus:border-indigo-500/50 outline-none transition-all"
+                >
+                  <option value="update-existing">Mode: Create or Update Existing</option>
+                  <option value="create-only">Mode: Create Only (Skip Duplicates)</option>
+                </select>
               </div>
               <div className="flex flex-wrap gap-2 pt-2">
                 <button type="button" disabled={validatingImport} onClick={() => void validateImport()} className="inline-flex items-center gap-2 rounded-xl border border-indigo-400/20 bg-indigo-500/10 px-4 py-2 text-xs font-bold text-indigo-400 hover:bg-indigo-500/20 transition-all">{validatingImport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Validate Mapping</button>

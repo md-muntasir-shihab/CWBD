@@ -1,6 +1,7 @@
 
 import { Response } from 'express';
 import mongoose from 'mongoose';
+import ExcelJS from 'exceljs';
 import AuditLog from '../models/AuditLog';
 import ExpenseEntry from '../models/ExpenseEntry';
 import ManualPayment from '../models/ManualPayment';
@@ -8,6 +9,7 @@ import StaffPayout from '../models/StaffPayout';
 import StudentDueLedger from '../models/StudentDueLedger';
 import StudentProfile from '../models/StudentProfile';
 import User from '../models/User';
+import SubscriptionPlan from '../models/SubscriptionPlan';
 import { AuthRequest } from '../middlewares/auth';
 import { addFinanceStreamClient, broadcastFinanceEvent } from '../realtime/financeStream';
 import { getRuntimeSettingsSnapshot } from '../services/runtimeSettingsService';
@@ -53,6 +55,116 @@ function parsePage(query: Record<string, unknown>): { page: number; limit: numbe
     const limit = Math.max(1, Math.min(200, Math.floor(numeric(query.limit, 20))));
     const skip = (page - 1) * limit;
     return { page, limit, skip };
+}
+
+function paymentMethods(): string[] {
+    return ['bkash', 'nagad', 'rocket', 'upay', 'cash', 'manual', 'bank', 'sslcommerz', 'card'];
+}
+
+function paymentEntryTypes(): string[] {
+    return ['subscription', 'due_settlement', 'exam_fee', 'other_income'];
+}
+
+function toCanonicalPayment(item: any): Record<string, unknown> {
+    const student = item?.studentId;
+    return {
+        ...item,
+        userId: String(item?.studentId?._id || item?.studentId || ''),
+        examId: item?.examId ? String(item.examId?._id || item.examId) : null,
+        amount: Number(item?.amount || 0),
+        currency: String(item?.currency || 'BDT'),
+        method: String(item?.method || 'manual'),
+        status: String(item?.status || 'pending'),
+        transactionId: String(item?.transactionId || item?.reference || ''),
+        reference: String(item?.reference || ''),
+        proofFileUrl: String(item?.proofFileUrl || item?.proofUrl || ''),
+        verifiedByAdminId: item?.verifiedByAdminId || item?.approvedBy || null,
+        createdAt: item?.createdAt || item?.date || new Date(),
+        paidAt: item?.paidAt || (item?.status === 'paid' ? item?.date : null),
+        studentProfileLink: String(item?.studentId?._id || item?.studentId || ''),
+        student: {
+            _id: String(student?._id || item?.studentId || ''),
+            username: String(student?.username || ''),
+            email: String(student?.email || ''),
+            full_name: String(student?.full_name || student?.fullName || ''),
+        },
+    };
+}
+
+function buildPaymentFilter(query: Record<string, unknown>): Record<string, unknown> {
+    const range = parseDateRange(query);
+    const dateMatch = buildDateMatch('date', range);
+    const filter: Record<string, unknown> = { ...dateMatch };
+
+    const studentId = asObjectId(query.studentId || query.userId || query.user);
+    if (studentId) filter.studentId = studentId;
+
+    const examId = asObjectId(query.examId);
+    if (examId) filter.examId = examId;
+
+    const method = String(query.method || '').trim();
+    if (method && paymentMethods().includes(method)) filter.method = method;
+
+    const status = String(query.status || '').trim();
+    if (status) filter.status = status;
+
+    const entryType = String(query.entryType || '').trim();
+    if (entryType) filter.entryType = entryType;
+
+    const q = String(query.q || '').trim();
+    if (q) {
+        filter.$or = [
+            { reference: { $regex: q, $options: 'i' } },
+            { transactionId: { $regex: q, $options: 'i' } },
+            { notes: { $regex: q, $options: 'i' } },
+        ];
+    }
+    return filter;
+}
+
+async function settleSuccessfulPayment(
+    payment: any,
+    actorId: mongoose.Types.ObjectId | null,
+): Promise<void> {
+    if (payment.entryType === 'subscription' && payment.subscriptionPlanId) {
+        const plan = await SubscriptionPlan.findById(payment.subscriptionPlanId);
+        if (plan) {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + plan.durationDays);
+
+            await User.findByIdAndUpdate(payment.studentId, {
+                $set: {
+                    subscription: {
+                        plan: String(plan._id),
+                        planCode: plan.code,
+                        planName: plan.name,
+                        isActive: true,
+                        startDate: new Date(),
+                        expiryDate,
+                        assignedBy: actorId || payment.recordedBy || null,
+                        assignedAt: new Date(),
+                    },
+                },
+            });
+        }
+    }
+
+    if (payment.entryType === 'due_settlement' || payment.entryType === 'subscription' || payment.entryType === 'exam_fee') {
+        await StudentDueLedger.findOneAndUpdate(
+            { studentId: payment.studentId },
+            {
+                $inc: {
+                    computedDue: -Number(payment.amount || 0),
+                    netDue: -Number(payment.amount || 0),
+                },
+                $set: {
+                    updatedBy: actorId || payment.recordedBy || payment.studentId,
+                    lastComputedAt: new Date(),
+                },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+    }
 }
 
 function periodKey(date: Date, bucket: 'day' | 'month'): string {
@@ -116,34 +228,137 @@ export async function adminGetPayments(req: AuthRequest, res: Response): Promise
     try {
         const query = req.query as Record<string, unknown>;
         const { page, limit, skip } = parsePage(query);
-        const range = parseDateRange(query);
-        const dateMatch = buildDateMatch('date', range);
-
-        const filter: Record<string, unknown> = { ...dateMatch };
-        const studentId = asObjectId(query.studentId);
-        if (studentId) filter.studentId = studentId;
-
-        const method = String(query.method || '').trim();
-        if (method) filter.method = method;
-
-        const entryType = String(query.entryType || '').trim();
-        if (entryType) filter.entryType = entryType;
+        const filter = buildPaymentFilter(query);
 
         const [items, total] = await Promise.all([
             ManualPayment.find(filter)
                 .populate('studentId', 'username email full_name')
                 .populate('subscriptionPlanId', 'name code')
+                .populate('examId', 'title subject')
                 .populate('recordedBy', 'username full_name role')
-                .sort({ date: -1, createdAt: -1 })
+                .populate('approvedBy', 'username full_name role')
+                .sort({ paidAt: -1, date: -1, createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
             ManualPayment.countDocuments(filter),
         ]);
 
-        res.json({ items, total, page, pages: Math.max(1, Math.ceil(total / limit)) });
+        res.json({
+            items: items.map((item) => toCanonicalPayment(item)),
+            total,
+            page,
+            pages: Math.max(1, Math.ceil(total / limit)),
+        });
     } catch (error) {
         console.error('adminGetPayments error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminExportPayments(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const query = req.query as Record<string, unknown>;
+        const format = String(query.format || 'xlsx').toLowerCase();
+        const filter = buildPaymentFilter(query);
+
+        const rowsRaw = await ManualPayment.find(filter)
+            .populate('studentId', 'username email full_name')
+            .populate('examId', 'title subject')
+            .sort({ paidAt: -1, date: -1, createdAt: -1 })
+            .lean();
+        const rows = rowsRaw.map((item) => toCanonicalPayment(item));
+
+        if (format === 'csv') {
+            const header = [
+                'paymentId',
+                'userId',
+                'name',
+                'examId',
+                'amount',
+                'currency',
+                'method',
+                'status',
+                'transactionId',
+                'reference',
+                'proofFileUrl',
+                'verifiedByAdminId',
+                'createdAt',
+                'paidAt',
+            ];
+            const lines = [header.join(',')];
+            for (const row of rows) {
+                const student = (row.student as Record<string, unknown>) || {};
+                const values = [
+                    String((row as any)._id || ''),
+                    String(row.userId || ''),
+                    String(student.full_name || student.username || '').replace(/,/g, ' '),
+                    String(row.examId || ''),
+                    Number(row.amount || 0),
+                    String(row.currency || 'BDT'),
+                    String(row.method || ''),
+                    String(row.status || ''),
+                    String(row.transactionId || ''),
+                    String(row.reference || ''),
+                    String(row.proofFileUrl || ''),
+                    String(row.verifiedByAdminId || ''),
+                    row.createdAt ? new Date(String(row.createdAt)).toISOString() : '',
+                    row.paidAt ? new Date(String(row.paidAt)).toISOString() : '',
+                ];
+                lines.push(values.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
+            }
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename="payments_export_${Date.now()}.csv"`);
+            res.send(lines.join('\n'));
+            return;
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Payments');
+        sheet.columns = [
+            { header: 'Payment ID', key: 'paymentId', width: 28 },
+            { header: 'User ID', key: 'userId', width: 28 },
+            { header: 'Name', key: 'name', width: 24 },
+            { header: 'Exam ID', key: 'examId', width: 28 },
+            { header: 'Amount', key: 'amount', width: 12 },
+            { header: 'Currency', key: 'currency', width: 12 },
+            { header: 'Method', key: 'method', width: 14 },
+            { header: 'Status', key: 'status', width: 14 },
+            { header: 'Transaction ID', key: 'transactionId', width: 24 },
+            { header: 'Reference', key: 'reference', width: 24 },
+            { header: 'Proof File URL', key: 'proofFileUrl', width: 36 },
+            { header: 'Verified By', key: 'verifiedByAdminId', width: 28 },
+            { header: 'Created At', key: 'createdAt', width: 24 },
+            { header: 'Paid At', key: 'paidAt', width: 24 },
+        ];
+        sheet.getRow(1).font = { bold: true };
+
+        rows.forEach((row) => {
+            const student = (row.student as Record<string, unknown>) || {};
+            sheet.addRow({
+                paymentId: String((row as any)._id || ''),
+                userId: String(row.userId || ''),
+                name: String(student.full_name || student.username || ''),
+                examId: String(row.examId || ''),
+                amount: Number(row.amount || 0),
+                currency: String(row.currency || 'BDT'),
+                method: String(row.method || ''),
+                status: String(row.status || ''),
+                transactionId: String(row.transactionId || ''),
+                reference: String(row.reference || ''),
+                proofFileUrl: String(row.proofFileUrl || ''),
+                verifiedByAdminId: String(row.verifiedByAdminId || ''),
+                createdAt: row.createdAt ? new Date(String(row.createdAt)).toISOString() : '',
+                paidAt: row.paidAt ? new Date(String(row.paidAt)).toISOString() : '',
+            });
+        });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="payments_export_${Date.now()}.xlsx"`);
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error('adminExportPayments error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }
@@ -182,23 +397,33 @@ export async function adminCreatePayment(req: AuthRequest, res: Response): Promi
 
         const date = parseDate(body.date) || new Date();
         const methodRaw = String(body.method || 'manual').trim();
-        const allowedMethods = ['bkash', 'cash', 'manual', 'bank'];
-        const method = allowedMethods.includes(methodRaw) ? methodRaw : 'manual';
+        const method = paymentMethods().includes(methodRaw) ? methodRaw : 'manual';
 
         const entryTypeRaw = String(body.entryType || 'subscription').trim();
-        const allowedEntryTypes = ['subscription', 'due_settlement', 'other_income'];
-        const entryType = allowedEntryTypes.includes(entryTypeRaw) ? entryTypeRaw : 'subscription';
+        const entryType = paymentEntryTypes().includes(entryTypeRaw) ? entryTypeRaw : 'subscription';
 
         const subscriptionPlanId = asObjectId(body.subscriptionPlanId);
+        const examId = asObjectId(body.examId);
+        const status = ['pending', 'paid', 'failed', 'refunded', 'rejected'].includes(String(body.status || ''))
+            ? String(body.status || 'pending')
+            : 'pending';
+        const paidAt = status === 'paid' ? (parseDate(body.paidAt) || date) : null;
 
         const created = await ManualPayment.create({
             studentId,
             ...(subscriptionPlanId ? { subscriptionPlanId } : {}),
+            ...(examId ? { examId } : {}),
             amount,
+            currency: String(body.currency || 'BDT'),
             method,
             date,
+            paidAt,
+            status,
+            transactionId: String(body.transactionId || '').trim(),
             entryType,
             reference: String(body.reference || '').trim(),
+            proofFileUrl: String(body.proofFileUrl || body.proofUrl || '').trim(),
+            proofUrl: String(body.proofUrl || body.proofFileUrl || '').trim(),
             notes: String(body.notes || '').trim(),
             recordedBy,
         });
@@ -211,14 +436,21 @@ export async function adminCreatePayment(req: AuthRequest, res: Response): Promi
             entryType,
         });
 
-        broadcastFinanceEvent('payment-recorded', {
+        broadcastFinanceEvent(status === 'paid' ? 'payment-updated' : 'payment-recorded', {
             paymentId: String(created._id),
             studentId: String(studentId),
             amount,
+            status,
         });
+
+        // Sync with StudentDueLedger for relevant types
+        if (status === 'paid') {
+            await settleSuccessfulPayment(created, recordedBy);
+        }
+
         await broadcastSummary({});
 
-        res.status(201).json({ item: created, message: 'Payment recorded successfully' });
+        res.status(201).json({ item: toCanonicalPayment(created.toObject()), message: 'Payment recorded successfully' });
     } catch (error) {
         console.error('adminCreatePayment error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -227,6 +459,12 @@ export async function adminCreatePayment(req: AuthRequest, res: Response): Promi
 
 export async function adminUpdatePayment(req: AuthRequest, res: Response): Promise<void> {
     try {
+        const existing = await ManualPayment.findById(req.params.id);
+        if (!existing) {
+            res.status(404).json({ message: 'Payment entry not found' });
+            return;
+        }
+
         const body = req.body as Record<string, unknown>;
         const update: Record<string, unknown> = {};
 
@@ -250,8 +488,7 @@ export async function adminUpdatePayment(req: AuthRequest, res: Response): Promi
 
         if (body.method !== undefined) {
             const methodRaw = String(body.method || '').trim();
-            const allowedMethods = ['bkash', 'cash', 'manual', 'bank'];
-            if (!allowedMethods.includes(methodRaw)) {
+            if (!paymentMethods().includes(methodRaw)) {
                 res.status(400).json({ message: 'Invalid payment method' });
                 return;
             }
@@ -260,8 +497,7 @@ export async function adminUpdatePayment(req: AuthRequest, res: Response): Promi
 
         if (body.entryType !== undefined) {
             const entryTypeRaw = String(body.entryType || '').trim();
-            const allowedEntryTypes = ['subscription', 'due_settlement', 'other_income'];
-            if (!allowedEntryTypes.includes(entryTypeRaw)) {
+            if (!paymentEntryTypes().includes(entryTypeRaw)) {
                 res.status(400).json({ message: 'Invalid entry type' });
                 return;
             }
@@ -272,6 +508,28 @@ export async function adminUpdatePayment(req: AuthRequest, res: Response): Promi
             const planId = asObjectId(body.subscriptionPlanId);
             update.subscriptionPlanId = planId;
         }
+        if (body.examId !== undefined) {
+            update.examId = asObjectId(body.examId);
+        }
+        if (body.status !== undefined) {
+            const nextStatus = String(body.status || '').trim();
+            if (!['pending', 'paid', 'failed', 'refunded', 'rejected'].includes(nextStatus)) {
+                res.status(400).json({ message: 'Invalid payment status' });
+                return;
+            }
+            update.status = nextStatus;
+            if (nextStatus === 'paid') {
+                const paidAt = parseDate(body.paidAt);
+                update.paidAt = paidAt || new Date();
+                update.verifiedByAdminId = asObjectId(req.user?._id || '') || existing.verifiedByAdminId || null;
+            } else if (['pending', 'failed', 'refunded', 'rejected'].includes(nextStatus)) {
+                update.paidAt = null;
+            }
+        }
+        if (body.currency !== undefined) update.currency = String(body.currency || 'BDT').trim() || 'BDT';
+        if (body.transactionId !== undefined) update.transactionId = String(body.transactionId || '').trim();
+        if (body.proofFileUrl !== undefined) update.proofFileUrl = String(body.proofFileUrl || '').trim();
+        if (body.proofUrl !== undefined) update.proofUrl = String(body.proofUrl || '').trim();
 
         if (body.reference !== undefined) update.reference = String(body.reference || '').trim();
         if (body.notes !== undefined) update.notes = String(body.notes || '').trim();
@@ -282,20 +540,85 @@ export async function adminUpdatePayment(req: AuthRequest, res: Response): Promi
             return;
         }
 
+        const transitionedToPaid = String(existing.status || '') !== 'paid' && String(item.status || '') === 'paid';
+        if (transitionedToPaid) {
+            await settleSuccessfulPayment(item, asObjectId(req.user?._id || ''));
+        }
+
         await createAudit(req, 'manual_payment_updated', {
             paymentId: String(item._id),
             updatedFields: Object.keys(update),
         });
 
-        broadcastFinanceEvent('payment-recorded', {
+        broadcastFinanceEvent('payment-updated', {
             paymentId: String(item._id),
             updated: true,
+            status: item.status,
+            studentId: String(item.studentId || ''),
         });
         await broadcastSummary({});
 
-        res.json({ item, message: 'Payment updated successfully' });
+        res.json({ item: toCanonicalPayment(item.toObject()), message: 'Payment updated successfully' });
     } catch (error) {
         console.error('adminUpdatePayment error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminApprovePayment(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const paymentId = req.params.id;
+        const { status, remarks } = req.body;
+
+        if (!['paid', 'rejected'].includes(status)) {
+            res.status(400).json({ message: 'Invalid status. Use paid or rejected.' });
+            return;
+        }
+
+        const payment = await ManualPayment.findById(paymentId);
+        if (!payment) {
+            res.status(404).json({ message: 'Payment not found' });
+            return;
+        }
+
+        if (payment.status !== 'pending') {
+            res.status(400).json({ message: `Payment is already ${payment.status}` });
+            return;
+        }
+
+        payment.status = status;
+        payment.notes = remarks || payment.notes;
+        payment.approvedBy = req.user!._id as any;
+        payment.approvedAt = new Date();
+        payment.verifiedByAdminId = req.user!._id as any;
+        if (status === 'paid') {
+            payment.paidAt = new Date();
+            payment.date = payment.paidAt;
+        }
+        await payment.save();
+
+        if (status === 'paid') {
+            await settleSuccessfulPayment(payment, asObjectId(req.user!._id));
+        }
+
+        await createAudit(req, `payment_${status}`, {
+            paymentId: String(payment._id),
+            studentId: String(payment.studentId),
+            amount: payment.amount,
+            remarks
+        });
+
+        broadcastFinanceEvent('payment-updated', {
+            paymentId: String(payment._id),
+            status: payment.status,
+            studentId: String(payment.studentId)
+        });
+
+        await broadcastSummary({});
+
+        res.json({ message: `Payment ${status} successfully`, item: toCanonicalPayment(payment.toObject()) });
+    } catch (error) {
+        console.error('adminApprovePayment error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }
@@ -310,13 +633,18 @@ export async function adminGetStudentPayments(req: AuthRequest, res: Response): 
 
         const items = await ManualPayment.find({ studentId })
             .populate('subscriptionPlanId', 'name code')
+            .populate('examId', 'title subject')
+            .populate('studentId', 'username email full_name')
             .populate('recordedBy', 'username full_name role')
+            .populate('approvedBy', 'username full_name role')
             .sort({ date: -1, createdAt: -1 })
             .lean();
 
-        const totalPaid = items.reduce((sum, item) => sum + numeric((item as { amount?: number }).amount, 0), 0);
+        const totalPaid = items
+            .filter((item) => String((item as { status?: string }).status || '') === 'paid')
+            .reduce((sum, item) => sum + numeric((item as { amount?: number }).amount, 0), 0);
 
-        res.json({ items, totalPaid });
+        res.json({ items: items.map((item) => toCanonicalPayment(item)), totalPaid });
     } catch (error) {
         console.error('adminGetStudentPayments error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -713,6 +1041,57 @@ export async function adminGetFinanceCashflow(req: AuthRequest, res: Response): 
         res.json({ bucket, items });
     } catch (error) {
         console.error('adminGetFinanceCashflow error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminGetFinanceStudentGrowth(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const query = req.query as Record<string, unknown>;
+        const range = parseDateRange(query);
+        const bucket: 'day' | 'month' = String(query.bucket || 'month').trim() === 'day' ? 'day' : 'month';
+
+        const rows = await User.find({
+            role: 'student',
+            ...buildDateMatch('createdAt', range)
+        }).select('createdAt').lean();
+
+        const timeline = new Map<string, number>();
+
+        for (const row of rows) {
+            const date = new Date(String(row.createdAt || new Date()));
+            const key = periodKey(date, bucket);
+            timeline.set(key, (timeline.get(key) || 0) + 1);
+        }
+
+        const items = Array.from(timeline.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([period, count]) => ({ period, count }));
+
+        res.json({ bucket, items });
+    } catch (error) {
+        console.error('adminGetFinanceStudentGrowth error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminGetFinancePlanDistribution(_req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const distribution = await User.aggregate([
+            { $match: { role: 'student', 'subscription.planCode': { $exists: true, $ne: null } } },
+            {
+                $group: {
+                    _id: '$subscription.planCode',
+                    count: { $sum: 1 },
+                    planName: { $first: '$subscription.planName' }
+                }
+            },
+            { $sort: { count: -1 } }
+        ]);
+
+        res.json({ distribution });
+    } catch (error) {
+        console.error('adminGetFinancePlanDistribution error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }

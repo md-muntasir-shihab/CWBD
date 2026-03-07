@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import api, { getAuthSessionStreamUrl } from '../services/api';
 
 interface User {
     _id: string;
     username: string;
     email: string;
-    role: 'superadmin' | 'admin' | 'moderator' | 'editor' | 'viewer' | 'student';
+    role: 'superadmin' | 'admin' | 'moderator' | 'editor' | 'viewer' | 'support_agent' | 'finance_agent' | 'student' | 'chairman';
     fullName: string;
     status?: string;
     permissions?: {
@@ -51,7 +52,11 @@ interface AuthContextType {
     setPending2FA: (data: Pending2FA | null) => void;
     forceLogoutAlert: boolean;
     setForceLogoutAlert: (val: boolean) => void;
-    login: (identifier: string, password: string) => Promise<any>;
+    login: (
+        identifier: string,
+        password: string,
+        options?: { portal?: 'student' | 'admin' | 'chairman' }
+    ) => Promise<any>;
     completeLogin: (token: string, user: User) => void;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
@@ -83,7 +88,6 @@ function readStoredToken(): string | null {
     const fromLocal = window.localStorage.getItem(ACCESS_TOKEN_KEY);
     if (fromLocal) {
         window.sessionStorage.setItem(ACCESS_TOKEN_KEY, fromLocal);
-        window.localStorage.removeItem(ACCESS_TOKEN_KEY);
     }
     return fromLocal;
 }
@@ -91,7 +95,7 @@ function readStoredToken(): string | null {
 function writeStoredToken(token: string): void {
     if (typeof window === 'undefined') return;
     window.sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
-    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+    window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
 }
 
 function clearStoredToken(): void {
@@ -101,6 +105,7 @@ function clearStoredToken(): void {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(() => readStoredToken());
     const [isLoading, setIsLoading] = useState(true);
@@ -113,12 +118,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPending2FA(null);
         clearStoredToken();
         delete api.defaults.headers.common.Authorization;
-    }, []);
+        queryClient.invalidateQueries({ queryKey: ['home'] }).catch(() => undefined);
+        queryClient.invalidateQueries({ queryKey: ['home-settings'] }).catch(() => undefined);
+    }, [queryClient]);
 
     const triggerForcedLogout = useCallback((_reason?: string) => {
+        const shouldShowAlert = Boolean(user);
         clearAuthState();
-        setForceLogoutAlert(true);
-    }, [clearAuthState]);
+        if (shouldShowAlert) {
+            setForceLogoutAlert(true);
+        }
+    }, [clearAuthState, user]);
 
     const refreshUser = useCallback(async () => {
         try {
@@ -208,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (stopped) return;
             closeSource();
 
-            source = new EventSource(getAuthSessionStreamUrl(token));
+            source = new EventSource(getAuthSessionStreamUrl());
 
             source.addEventListener('session-connected', () => {
                 reconnectAttempt = 0;
@@ -249,10 +259,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPending2FA(null);
         writeStoredToken(newToken);
         api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-    }, []);
+        queryClient.invalidateQueries({ queryKey: ['home'] }).catch(() => undefined);
+        queryClient.invalidateQueries({ queryKey: ['home-settings'] }).catch(() => undefined);
+    }, [queryClient]);
 
-    const login = useCallback(async (identifier: string, password: string) => {
-        const res = await api.post('/auth/login', { identifier, password });
+    const login = useCallback(async (
+        identifier: string,
+        password: string,
+        options?: { portal?: 'student' | 'admin' | 'chairman' }
+    ) => {
+        const portal = options?.portal;
+        const endpoint = portal === 'admin'
+            ? '/auth/admin/login'
+            : portal === 'chairman'
+                ? '/auth/chairman/login'
+                : '/auth/login';
+        const payload: Record<string, unknown> = { identifier, password };
+        if (portal && endpoint === '/auth/login') {
+            payload.portal = portal;
+        }
+        const res = await api.post(endpoint, payload);
         if (res.data.requires2fa) {
             setPending2FA({
                 tempToken: res.data.tempToken,

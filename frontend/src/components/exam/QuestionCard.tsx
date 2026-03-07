@@ -118,7 +118,7 @@ export default function QuestionCard({
                             <button
                                 key={opt.id}
                                 onClick={() => onSelectOption(opt.id)}
-                                className={`w-full flex items-center p-4 rounded-xl border text-left transition-all duration-200 ${isSelected
+                                className={`w-full min-h-[56px] flex items-center p-4 rounded-xl border text-left transition-all duration-200 ${isSelected
                                     ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500 text-indigo-900 shadow-sm'
                                     : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-700'
                                     }`}

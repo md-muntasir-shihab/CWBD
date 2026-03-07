@@ -12,6 +12,9 @@ import StudentDashboardConfig from '../models/StudentDashboardConfig';
 import ExamEvent from '../models/ExamEvent';
 import ExamCertificate from '../models/ExamCertificate';
 import StudentDueLedger from '../models/StudentDueLedger';
+import ManualPayment from '../models/ManualPayment';
+import SiteSettings from '../models/Settings';
+import ExternalExamJoinLog from '../models/ExternalExamJoinLog';
 import {
     addExamAttemptStreamClient,
     broadcastExamAttemptEvent,
@@ -20,6 +23,7 @@ import {
 import { broadcastAdminLiveEvent } from '../realtime/adminLiveStream';
 import { getExamCardMetrics } from '../services/examCardMetricsService';
 import { getSecurityConfig } from '../services/securityConfigService';
+import { finalizeExamSession } from '../services/examFinalizationService';
 
 /** Verify user subscription — returns true if user has ANY subscription plan (active or demo) */
 type SubscriptionGateResult = {
@@ -55,28 +59,10 @@ async function verifySubscription(userId: string): Promise<SubscriptionGateResul
 
     const sub = user.subscription || {};
     const hasAnyPlanIdentity = Boolean(sub.plan || sub.planCode || sub.planName);
-    const needsLegacyBackfill = (
-        !hasAnyPlanIdentity ||
-        (!sub.startDate && !sub.expiryDate) ||
-        (hasAnyPlanIdentity && typeof sub.isActive !== 'boolean')
-    );
 
-    if (needsLegacyBackfill) {
-        const now = new Date();
-        const expiryDate = sub.expiryDate ? new Date(sub.expiryDate) : getLegacyExpiryFromNow();
-        const normalizedPlanCode = String(sub.planCode || sub.plan || LEGACY_PLAN_CODE);
-        const normalizedPlanName = String(sub.planName || sub.plan || LEGACY_PLAN_NAME);
-        user.subscription = {
-            ...sub,
-            plan: String(sub.plan || normalizedPlanCode),
-            planCode: normalizedPlanCode,
-            planName: normalizedPlanName,
-            isActive: sub.isActive ?? true,
-            startDate: sub.startDate || now,
-            expiryDate,
-            assignedAt: sub.assignedAt || now,
-        };
-        await user.save();
+    // Check if subscription is missing or incomplete
+    if (!hasAnyPlanIdentity || !sub.expiryDate || typeof sub.isActive !== 'boolean') {
+        return { allowed: false, reason: 'missing' };
     }
 
     const current = user.subscription || {};
@@ -130,21 +116,8 @@ async function broadcastExamMetricsUpdate(examId: string, source: string): Promi
 export async function getStudentExams(req: AuthRequest, res: Response): Promise<void> {
     try {
         const studentId = req.user!._id;
-
-        // Subscription gate
         const subscriptionState = await verifySubscription(studentId);
-        if (!subscriptionState.allowed) {
-            const expiryLabel = subscriptionState.expiryDate ? new Date(subscriptionState.expiryDate).toISOString() : null;
-            res.status(403).json({
-                subscriptionRequired: true,
-                reason: subscriptionState.reason || 'inactive',
-                expiryDate: expiryLabel,
-                message: subscriptionState.reason === 'expired'
-                    ? `Your subscription has expired${expiryLabel ? ` on ${expiryLabel}` : ''}. Contact admin to renew.`
-                    : 'Active subscription required to access exams.',
-            });
-            return;
-        }
+        const hasActiveSubscription = subscriptionState.allowed;
 
         const now = new Date();
         const exams = await Exam.find({ isPublished: true }).sort({ startDate: 1 }).lean();
@@ -172,7 +145,12 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
         }
 
         // Fetch active session if any
-        const activeSessions = await ExamSession.find({ student: studentId, isActive: true }).lean();
+        const activeSessions = await ExamSession.find({
+            student: studentId,
+            isActive: true,
+            status: 'in_progress',
+            expiresAt: { $gt: new Date() },
+        }).lean();
         const activeSessionMap = new Set(activeSessions.map(s => s.exam.toString()));
 
         const enriched = exams
@@ -186,20 +164,29 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
                 const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
                 const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
                 const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
-                const accessControlDenied = (
-                    (requiredUserIds.length > 0 && !requiredUserIds.includes(studentId)) ||
-                    (requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds)) ||
-                    (requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode))
+                const subscriptionRequired = Boolean((e as Record<string, unknown>).subscriptionRequired) || requiredPlanCodes.length > 0;
+                const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
+                const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
+                const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
+                const subscriptionDenied = subscriptionRequired && !hasActiveSubscription;
+                const specificModeDenied = (
+                    e.accessMode === 'specific' &&
+                    !e.allowedUsers.some((uid: mongoose.Types.ObjectId) => uid.toString() === studentId)
                 );
-                const paymentPendingForExam = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
+                // Keep strict identity/group restrictions hidden from list responses.
+                if (specificModeDenied || userDenied || groupDenied) {
+                    return null;
+                }
+                const accessDeniedReason = planDenied
+                    ? 'access_plan_restricted'
+                    : subscriptionDenied
+                        ? 'subscription_required'
+                        : '';
+                const paymentPendingForExam = subscriptionRequired && hasActiveSubscription && pendingDueAmount > 0;
                 let status: string;
                 if (result) {
                     status = 'completed';
-                } else if (
-                    (e.accessMode === 'specific' && !e.allowedUsers.some((uid: mongoose.Types.ObjectId) => uid.toString() === studentId)) ||
-                    accessControlDenied ||
-                    paymentPendingForExam
-                ) {
+                } else if (paymentPendingForExam || Boolean(accessDeniedReason)) {
                     status = 'locked';
                 } else if (now < new Date(e.startDate)) {
                     status = 'upcoming';
@@ -214,6 +201,10 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
                     attemptsUsed: attempts,
                     attemptsLeft: Math.max(0, e.attemptLimit - attempts),
                     paymentPending: paymentPendingForExam,
+                    subscriptionRequired,
+                    subscriptionActive: hasActiveSubscription,
+                    accessDeniedReason: accessDeniedReason || undefined,
+                    canTakeExam: !paymentPendingForExam && !accessDeniedReason,
                     myResult: result ? {
                         obtainedMarks: Number(result.obtainedMarks || 0),
                         percentage: Number(result.percentage || 0),
@@ -222,11 +213,274 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
                     resultPublishMode: getResultPublishMode(e as Record<string, unknown>),
                     resultPublished: isExamResultPublished(e as Record<string, unknown>, now),
                 };
-            });
+            })
+            .filter((exam) => exam !== null);
 
-        res.json({ exams: enriched, subscriptionActive: true });
+        res.json({ exams: enriched, subscriptionActive: hasActiveSubscription });
     } catch (err) {
         console.error('getStudentExams error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+type PublicExamLockReason = 'none' | 'login_required' | 'subscription_required' | 'group_restricted' | 'plan_restricted';
+
+type PublicExamListItem = {
+    id: string;
+    serialNo: number;
+    title: string;
+    title_bn?: string;
+    subject: string;
+    examCategory: string;
+    bannerImageUrl: string;
+    startDate: string;
+    endDate: string;
+    durationMinutes: number;
+    status: 'live' | 'upcoming' | 'ended';
+    deliveryMode: 'internal' | 'external_link';
+    isLocked: boolean;
+    lockReason: PublicExamLockReason;
+    canOpenDetails: boolean;
+    canStart: boolean;
+    joinUrl: string | null;
+    contactAdmin: {
+        phone: string;
+        whatsapp: string;
+        messageTemplate: string;
+    };
+    subscriptionRequired: boolean;
+    paymentRequired: boolean;
+    attemptLimit: number;
+    allowReAttempt: boolean;
+    myAttemptStatus?: 'not_started' | 'in_progress' | 'submitted';
+};
+
+function getExamTimeStatus(exam: Record<string, unknown>, now = new Date()): 'live' | 'upcoming' | 'ended' {
+    const startDate = new Date(String(exam.startDate || ''));
+    const endDate = new Date(String(exam.endDate || ''));
+    if (!Number.isNaN(startDate.getTime()) && now < startDate) return 'upcoming';
+    if (!Number.isNaN(endDate.getTime()) && now > endDate) return 'ended';
+    return 'live';
+}
+
+function normalizePublicListStatusFilter(value: unknown): '' | 'live' | 'upcoming' | 'ended' {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized === 'live' || normalized === 'upcoming' || normalized === 'ended') return normalized;
+    return '';
+}
+
+function isAllExamCategoryToken(value: unknown): boolean {
+    const normalized = String(value || '').trim().toLowerCase();
+    return normalized === 'all' || normalized === 'all exams';
+}
+
+function findWhatsappUrl(socialLinks: unknown): string {
+    if (!Array.isArray(socialLinks)) return '';
+    for (const row of socialLinks) {
+        const entry = row as Record<string, unknown>;
+        if (entry.enabled === false) continue;
+        const platform = String(entry.platform || '').trim().toLowerCase();
+        if (platform === 'whatsapp') {
+            return String(entry.url || '').trim();
+        }
+    }
+    return '';
+}
+
+export async function getPublicExamList(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const now = new Date();
+        const page = Math.max(1, Number(req.query.page || 1));
+        const limit = Math.max(1, Math.min(100, Number(req.query.limit || 24)));
+        const skip = (page - 1) * limit;
+        const statusFilter = normalizePublicListStatusFilter(req.query.status);
+        const paidFilter = String(req.query.paid || '').trim().toLowerCase();
+        const categoryFilter = String(req.query.category || '').trim();
+        const queryText = String(req.query.q || '').trim();
+
+        const examQuery: Record<string, unknown> = { isPublished: true };
+        if (categoryFilter && !isAllExamCategoryToken(categoryFilter)) {
+            examQuery.group_category = categoryFilter;
+        }
+        if (queryText) {
+            examQuery.$or = [
+                { title: { $regex: queryText, $options: 'i' } },
+                { title_bn: { $regex: queryText, $options: 'i' } },
+                { subject: { $regex: queryText, $options: 'i' } },
+                { subjectBn: { $regex: queryText, $options: 'i' } },
+                { group_category: { $regex: queryText, $options: 'i' } },
+            ];
+        }
+
+        const [exams, siteSettings] = await Promise.all([
+            Exam.find(examQuery)
+                .sort({ startDate: 1, createdAt: -1 })
+                .select('title title_bn subject subjectBn bannerImageUrl startDate endDate duration deliveryMode externalExamUrl group_category accessMode allowedUsers accessControl attemptLimit subscriptionRequired isPublished')
+                .lean(),
+            SiteSettings.findOne().select('contactPhone socialLinks').lean(),
+        ]);
+
+        const examIds = exams.map((exam) => String(exam._id || '')).filter(Boolean);
+        const contactPhone = String((siteSettings as Record<string, unknown> | null)?.contactPhone || '').trim();
+        const whatsapp = findWhatsappUrl((siteSettings as Record<string, unknown> | null)?.socialLinks);
+
+        let studentId = '';
+        let isStudent = false;
+        let studentGroupIds: string[] = [];
+        let hasActiveSubscription = false;
+        let studentPlanCode = '';
+        let pendingDueAmount = 0;
+        let attemptsMap = new Map<string, number>();
+        let activeSessionMap = new Set<string>();
+
+        if (req.user && req.user.role === 'student' && mongoose.Types.ObjectId.isValid(String(req.user._id || ''))) {
+            studentId = String(req.user._id);
+            isStudent = true;
+
+            const [profile, user, dueLedger, resultRows, activeSessions] = await Promise.all([
+                StudentProfile.findOne({ user_id: studentId }).select('groupIds').lean(),
+                User.findById(studentId).select('subscription').lean(),
+                StudentDueLedger.findOne({ studentId }).select('netDue').lean(),
+                ExamResult.find({ student: studentId, exam: { $in: examIds } }).select('exam').lean(),
+                ExamSession.find({
+                    student: studentId,
+                    exam: { $in: examIds },
+                    isActive: true,
+                    status: 'in_progress',
+                    expiresAt: { $gt: now },
+                }).select('exam').lean(),
+            ]);
+
+            studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
+            pendingDueAmount = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
+            studentPlanCode = String(
+                (user?.subscription as Record<string, unknown> | undefined)?.planCode ||
+                (user?.subscription as Record<string, unknown> | undefined)?.plan ||
+                ''
+            ).toLowerCase();
+
+            const subscriptionExpiryRaw = (user?.subscription as Record<string, unknown> | undefined)?.expiryDate;
+            const subscriptionExpiry = subscriptionExpiryRaw ? new Date(String(subscriptionExpiryRaw)).getTime() : 0;
+            hasActiveSubscription = Boolean(
+                (user?.subscription as Record<string, unknown> | undefined)?.isActive &&
+                Number.isFinite(subscriptionExpiry) &&
+                subscriptionExpiry > Date.now()
+            );
+
+            attemptsMap = resultRows.reduce((map, row) => {
+                const examId = String(row.exam || '');
+                map.set(examId, (map.get(examId) || 0) + 1);
+                return map;
+            }, new Map<string, number>());
+
+            activeSessionMap = new Set(activeSessions.map((row) => String(row.exam || '')).filter(Boolean));
+        }
+
+        const cards: PublicExamListItem[] = exams
+            .map((exam, index) => {
+                const examRecord = exam as Record<string, unknown>;
+                const examId = String(exam._id || '');
+                const timeStatus = getExamTimeStatus(examRecord, now);
+                const accessControl = (exam.accessControl && typeof exam.accessControl === 'object')
+                    ? (exam.accessControl as Record<string, unknown>)
+                    : {};
+                const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
+                const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
+                const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
+                const subscriptionRequired = Boolean((exam as Record<string, unknown>).subscriptionRequired) || requiredPlanCodes.length > 0;
+                const paymentRequired = subscriptionRequired;
+                const attemptsUsed = Number(attemptsMap.get(examId) || 0);
+                const attemptLimit = Math.max(1, Number(exam.attemptLimit || 1));
+                const attemptsLeft = Math.max(0, attemptLimit - attemptsUsed);
+                const specificModeDenied = (
+                    String(exam.accessMode || 'all') === 'specific' &&
+                    Array.isArray(exam.allowedUsers) &&
+                    !exam.allowedUsers.some((id: unknown) => String(id) === studentId)
+                );
+
+                let lockReason: PublicExamLockReason = 'none';
+                if (!isStudent) {
+                    lockReason = 'login_required';
+                } else {
+                    const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
+                    const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
+                    const groupRestricted = userDenied || groupDenied || specificModeDenied;
+                    const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
+                    const subscriptionDenied = subscriptionRequired && !hasActiveSubscription && !planDenied;
+                    const paymentPending = paymentRequired && hasActiveSubscription && pendingDueAmount > 0;
+
+                    if (groupRestricted) lockReason = 'group_restricted';
+                    else if (planDenied) lockReason = 'plan_restricted';
+                    else if (subscriptionDenied || paymentPending) lockReason = 'subscription_required';
+                }
+
+                const canOpenDetails = lockReason === 'none';
+                const canStart = canOpenDetails && timeStatus === 'live' && attemptsLeft > 0;
+                const messageTemplate = `I want to access exam "${String(exam.title || 'Exam')}".`;
+                const inProgress = activeSessionMap.has(examId);
+                const deliveryMode: PublicExamListItem['deliveryMode'] = String(exam.deliveryMode || 'internal') === 'external_link'
+                    ? 'external_link'
+                    : 'internal';
+                const myAttemptStatus: PublicExamListItem['myAttemptStatus'] = !isStudent
+                    ? undefined
+                    : attemptsUsed > 0
+                        ? 'submitted'
+                        : inProgress
+                            ? 'in_progress'
+                            : 'not_started';
+
+                return {
+                    id: examId,
+                    serialNo: index + 1,
+                    title: String(exam.title || ''),
+                    title_bn: String((exam as Record<string, unknown>).title_bn || ''),
+                    subject: String(exam.subject || ''),
+                    examCategory: String((exam as Record<string, unknown>).group_category || 'General'),
+                    bannerImageUrl: String(exam.bannerImageUrl || ''),
+                    startDate: new Date(String(exam.startDate || now.toISOString())).toISOString(),
+                    endDate: new Date(String(exam.endDate || now.toISOString())).toISOString(),
+                    durationMinutes: Number(exam.duration || 0),
+                    status: timeStatus,
+                    deliveryMode,
+                    isLocked: lockReason !== 'none',
+                    lockReason,
+                    canOpenDetails,
+                    canStart,
+                    joinUrl: canOpenDetails ? `/exam/${examId}` : null,
+                    contactAdmin: {
+                        phone: contactPhone,
+                        whatsapp,
+                        messageTemplate,
+                    },
+                    subscriptionRequired,
+                    paymentRequired,
+                    attemptLimit,
+                    allowReAttempt: attemptLimit > 1,
+                    myAttemptStatus,
+                };
+            })
+            .filter((card) => {
+                if (statusFilter && card.status !== statusFilter) return false;
+                if (paidFilter === 'paid' && !card.paymentRequired) return false;
+                if (paidFilter === 'free' && card.paymentRequired) return false;
+                return true;
+            });
+
+        const items = cards.slice(skip, skip + limit).map((item, idx) => ({
+            ...item,
+            serialNo: skip + idx + 1,
+        }));
+
+        res.json({
+            items,
+            page,
+            limit,
+            total: cards.length,
+            pages: Math.max(1, Math.ceil(cards.length / limit)),
+            serverNow: now.toISOString(),
+        });
+    } catch (err) {
+        console.error('getPublicExamList error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 }
@@ -265,6 +519,7 @@ type ExamLandingCard = {
     resultPublished: boolean;
     resultPublishMode: 'immediate' | 'manual' | 'scheduled';
     featured: boolean;
+    paymentPending: boolean;
 };
 
 function getExamLandingStatusBadge(status: ExamLandingCardStatus, timeBucket: 'upcoming' | 'live' | 'past'): 'Upcoming' | 'Live' | 'Completed' | 'Locked' | 'In Progress' {
@@ -364,9 +619,13 @@ export async function getExamLanding(req: AuthRequest, res: Response): Promise<v
                 const userAllowed = requiredUserIds.length === 0 || requiredUserIds.includes(studentId);
                 const groupAllowed = requiredGroupIds.length === 0 || hasAnyIntersection(requiredGroupIds, studentGroupIds);
                 const planAllowed = requiredPlanCodes.length === 0 || requiredPlanCodes.includes(studentPlanCode);
-                const paymentPending = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
+                const isPaymentPending = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
                 const assignedAllowed = canAccessExamSync(examRecord, studentId);
-                const accessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed || paymentPending;
+                const strictAccessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed;
+                if (strictAccessDenied) {
+                    return null;
+                }
+                const accessDenied = isPaymentPending;
 
                 const attemptsUsed = Number(attemptCountByExam.get(examId) || 0);
                 const attemptLimit = Number(exam.attemptLimit || 1);
@@ -429,41 +688,45 @@ export async function getExamLanding(req: AuthRequest, res: Response): Promise<v
                     resultPublished: isExamResultPublished(examRecord, now),
                     resultPublishMode: getResultPublishMode(examRecord),
                     featured: Boolean((exam as Record<string, unknown>).isFeatured),
-                    paymentPending,
-                };
+                    paymentPending: isPaymentPending,
+                } as ExamLandingCard;
             })
-            .filter((card) => {
-                if (tagFilter && !card.tags.some((tag) => tag.includes(tagFilter))) return false;
-                if (!statusFilter || statusFilter === 'all') return true;
-                if (statusFilter === 'upcoming' || statusFilter === 'live' || statusFilter === 'past') {
-                    return card.timeBucket === statusFilter;
-                }
-                return card.status === statusFilter;
-            });
+            .filter((card): card is ExamLandingCard => card !== null);
+
+        const filteredCards = cards.filter((card) => {
+            if (tagFilter && !card.tags.some((tag) => tag.includes(tagFilter))) return false;
+            if (!statusFilter || statusFilter === 'all') return true;
+            if (statusFilter === 'upcoming' || statusFilter === 'live' || statusFilter === 'past') {
+                return card.timeBucket === statusFilter;
+            }
+            return card.status === statusFilter;
+        });
+
+        const cardsToUse = filteredCards;
 
         const groupedByTime = {
-            upcoming: cards.filter((card) => card.timeBucket === 'upcoming'),
-            live: cards.filter((card) => card.timeBucket === 'live'),
-            past: cards.filter((card) => card.timeBucket === 'past'),
+            upcoming: cardsToUse.filter((card) => card.timeBucket === 'upcoming'),
+            live: cardsToUse.filter((card) => card.timeBucket === 'live'),
+            past: cardsToUse.filter((card) => card.timeBucket === 'past'),
         };
 
-        const groupedByCategory = cards.reduce<Record<string, ExamLandingCard[]>>((acc, card) => {
+        const groupedByCategory = cardsToUse.reduce<Record<string, ExamLandingCard[]>>((acc, card) => {
             const key = card.group_category || 'Custom';
             if (!acc[key]) acc[key] = [];
             acc[key].push(card);
             return acc;
         }, {});
 
-        const items = cards.slice(skip, skip + limit);
-        const featured = cards.filter((card) => card.featured).slice(0, 10);
+        const items = cardsToUse.slice(skip, skip + limit);
+        const featured = cardsToUse.filter((card) => card.featured).slice(0, 10);
 
         res.json({
             items,
             exams: items,
-            total: cards.length,
+            total: cardsToUse.length,
             page,
             limit,
-            pages: Math.ceil(cards.length / limit),
+            pages: Math.ceil(cardsToUse.length / limit),
             featured,
             grouped: {
                 byTime: groupedByTime,
@@ -491,6 +754,7 @@ type EligibilitySummary = {
     profileComplete: boolean;
     requiredProfileCompletion: number;
     currentProfileCompletion: number;
+    subscriptionRequired: boolean;
     subscriptionActive: boolean;
     paymentRequired: boolean;
     paymentCleared: boolean;
@@ -499,16 +763,49 @@ type EligibilitySummary = {
     attemptsLeft: number;
     windowOpen: boolean;
     accessAllowed: boolean;
+    accessDeniedReason?: string;
 };
 
+async function ensurePendingExamPaymentRecord(examId: string, studentId: string, pendingDueAmount: number): Promise<void> {
+    if (!mongoose.Types.ObjectId.isValid(examId) || !mongoose.Types.ObjectId.isValid(studentId)) return;
+    const existing = await ManualPayment.findOne({
+        studentId,
+        examId,
+        entryType: 'exam_fee',
+        status: { $in: ['pending', 'paid'] },
+    }).lean();
+    if (existing) return;
+
+    await ManualPayment.create({
+        studentId,
+        examId,
+        amount: Math.max(0, Number(pendingDueAmount || 0)),
+        currency: 'BDT',
+        method: 'manual',
+        status: 'pending',
+        transactionId: '',
+        reference: '',
+        proofFileUrl: '',
+        proofUrl: '',
+        notes: 'Auto-created pending exam payment record',
+        entryType: 'exam_fee',
+        date: new Date(),
+        recordedBy: new mongoose.Types.ObjectId(studentId),
+    });
+}
+
 async function getEligibilitySummary(exam: Record<string, unknown>, studentId: string): Promise<EligibilitySummary> {
-    const [subscriptionState, profile, threshold, attemptsUsed, user, dueLedger] = await Promise.all([
+    const examId = String(exam._id || '');
+    const [subscriptionState, profile, threshold, attemptsUsed, user, dueLedger, examPayment] = await Promise.all([
         verifySubscription(studentId),
         StudentProfile.findOne({ user_id: studentId }).select('profile_completion_percentage groupIds').lean(),
         getProfileCompletionThreshold(),
-        ExamResult.countDocuments({ exam: String(exam._id || ''), student: studentId }),
+        ExamResult.countDocuments({ exam: examId, student: studentId }),
         User.findById(studentId).select('subscription').lean(),
         StudentDueLedger.findOne({ studentId }).select('netDue').lean(),
+        mongoose.Types.ObjectId.isValid(examId)
+            ? ManualPayment.findOne({ studentId, examId, entryType: 'exam_fee' }).sort({ createdAt: -1 }).lean()
+            : Promise.resolve(null),
     ]);
 
     const reasons: string[] = [];
@@ -516,10 +813,6 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
     const profileComplete = currentProfileCompletion >= threshold;
     if (!profileComplete) {
         reasons.push('profile_incomplete');
-    }
-
-    if (!subscriptionState.allowed) {
-        reasons.push(`subscription_${subscriptionState.reason || 'inactive'}`);
     }
 
     const attemptLimit = Number(exam.attemptLimit || 1);
@@ -550,6 +843,7 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
     const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
     const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
     const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
+    const subscriptionRequired = Boolean(exam.subscriptionRequired) || requiredPlanCodes.length > 0;
     const studentGroupIds = normalizeObjectIdArray(profile?.groupIds || []);
     const studentPlanCode = String(
         (user?.subscription as Record<string, unknown> | undefined)?.planCode ||
@@ -557,22 +851,34 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
         ''
     ).toLowerCase();
 
+    let accessDeniedReason = '';
     if (requiredUserIds.length > 0 && !requiredUserIds.includes(studentId)) {
         accessAllowed = false;
         reasons.push('access_user_restricted');
+        accessDeniedReason = 'access_user_restricted';
     }
     if (requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds)) {
         accessAllowed = false;
         reasons.push('access_group_restricted');
+        if (!accessDeniedReason) accessDeniedReason = 'access_group_restricted';
     }
     if (requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode)) {
         accessAllowed = false;
         reasons.push('access_plan_restricted');
+        if (!accessDeniedReason) accessDeniedReason = 'access_plan_restricted';
+    } else if (subscriptionRequired && !subscriptionState.allowed) {
+        accessAllowed = false;
+        reasons.push(`subscription_${subscriptionState.reason || 'inactive'}`);
+        if (!accessDeniedReason) accessDeniedReason = 'subscription_required';
     }
 
-    const paymentRequired = requiredPlanCodes.length > 0;
+    const paymentRequired = subscriptionRequired && subscriptionState.allowed;
     const pendingDueAmount = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
-    const paymentCleared = !paymentRequired || pendingDueAmount <= 0;
+    const examPaymentStatus = String((examPayment as { status?: string } | null)?.status || '').trim().toLowerCase();
+    const paymentCleared = !paymentRequired || examPaymentStatus === 'paid' || pendingDueAmount <= 0;
+    if (paymentRequired && !paymentCleared) {
+        await ensurePendingExamPaymentRecord(examId, studentId, pendingDueAmount);
+    }
     if (!paymentCleared) {
         reasons.push('payment_pending');
     }
@@ -584,6 +890,7 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
         profileComplete,
         requiredProfileCompletion: threshold,
         currentProfileCompletion,
+        subscriptionRequired,
         subscriptionActive: subscriptionState.allowed,
         paymentRequired,
         paymentCleared,
@@ -592,6 +899,7 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
         attemptsLeft,
         windowOpen,
         accessAllowed,
+        accessDeniedReason: accessDeniedReason || undefined,
     };
 }
 
@@ -634,6 +942,7 @@ type NormalizedIncomingAnswer = {
     questionId: string;
     selectedAnswer?: string;
     writtenAnswerUrl?: string;
+    updatedAtUTC?: Date;
 };
 
 type NormalizedCheatFlag = {
@@ -747,15 +1056,50 @@ function getRequestIp(req: AuthRequest): string {
     return fromForwarded || fromSocket || '';
 }
 
+function mapExamSessionForClient(session: any, examId: string, studentId: string): Record<string, unknown> {
+    return {
+        sessionId: String(session._id),
+        examId: String(session.exam || examId),
+        userId: String(session.student || studentId),
+        startedAt: session.startedAt,
+        startedAtUTC: session.startedAt,
+        expiresAt: session.expiresAt,
+        expiresAtUTC: session.expiresAt,
+        status: session.status,
+        savedAnswers: session.answers || [],
+        answers: (session.answers || []).map((answer: any) => ({
+            questionId: String(answer.questionId || ''),
+            selectedKey: String(answer.selectedAnswer || ''),
+            selectedAnswer: String(answer.selectedAnswer || ''),
+            updatedAtUTC: answer.savedAt || null,
+            changeCount: Number(answer.changeCount || 0),
+            writtenAnswerUrl: String(answer.writtenAnswerUrl || ''),
+        })),
+        attemptNo: Number(session.attemptNo || 1),
+        attemptRevision: Number(session.attemptRevision || 0),
+        sessionLocked: Boolean(session.sessionLocked),
+        lockReason: String(session.lockReason || ''),
+        violationsCount: Number(session.violationsCount || 0),
+        tabSwitchCount: Number(session.tabSwitchCount || 0),
+        deviceInfo: String(session.deviceInfo || ''),
+        ip: String(session.ipAddress || ''),
+        userAgent: String(session.userAgent || ''),
+        serverNow: new Date().toISOString(),
+    };
+}
+
 function normalizeIncomingAnswers(input: unknown): NormalizedIncomingAnswer[] {
     if (Array.isArray(input)) {
         return input
             .map((item) => {
                 const row = item as Record<string, unknown>;
+                const updatedAtRaw = String(row.updatedAtUTC || row.savedAt || '').trim();
+                const updatedAt = updatedAtRaw ? new Date(updatedAtRaw) : undefined;
                 return {
                     questionId: String(row.questionId || '').trim(),
                     selectedAnswer: row.selectedAnswer !== undefined ? String(row.selectedAnswer || '') : undefined,
                     writtenAnswerUrl: row.writtenAnswerUrl !== undefined ? String(row.writtenAnswerUrl || '') : undefined,
+                    updatedAtUTC: updatedAt && !Number.isNaN(updatedAt.getTime()) ? updatedAt : undefined,
                 };
             })
             .filter((row) => row.questionId);
@@ -769,10 +1113,13 @@ function normalizeIncomingAnswers(input: unknown): NormalizedIncomingAnswer[] {
                     return { questionId, selectedAnswer: value };
                 }
                 const item = (value || {}) as Record<string, unknown>;
+                const updatedAtRaw = String(item.updatedAtUTC || item.savedAt || '').trim();
+                const updatedAt = updatedAtRaw ? new Date(updatedAtRaw) : undefined;
                 return {
                     questionId,
                     selectedAnswer: item.selectedAnswer !== undefined ? String(item.selectedAnswer || '') : undefined,
                     writtenAnswerUrl: item.writtenAnswerUrl !== undefined ? String(item.writtenAnswerUrl || '') : undefined,
+                    updatedAtUTC: updatedAt && !Number.isNaN(updatedAt.getTime()) ? updatedAt : undefined,
                 };
             })
             .filter((row) => row.questionId);
@@ -857,6 +1204,13 @@ function mergeAnswersWithConstraints({
             answerHistory: [],
             changeCount: 0,
         };
+        const incomingUpdatedAt = incoming.updatedAtUTC && !Number.isNaN(incoming.updatedAtUTC.getTime())
+            ? incoming.updatedAtUTC
+            : now;
+        const currentSavedAt = current.savedAt ? new Date(String(current.savedAt)) : now;
+        if (incomingUpdatedAt.getTime() < currentSavedAt.getTime()) {
+            continue;
+        }
 
         const prevSelected = String(current.selectedAnswer || '');
         const nextSelected = incoming.selectedAnswer !== undefined ? String(incoming.selectedAnswer || '') : prevSelected;
@@ -893,7 +1247,7 @@ function mergeAnswersWithConstraints({
         }
 
         const nextHistory = selectedChanged
-            ? [...(Array.isArray(current.answerHistory) ? current.answerHistory : []), { value: nextSelected, timestamp: now }]
+            ? [...(Array.isArray(current.answerHistory) ? current.answerHistory : []), { value: nextSelected, timestamp: incomingUpdatedAt }]
             : (Array.isArray(current.answerHistory) ? current.answerHistory : []);
 
         answerMap.set(questionId, {
@@ -901,7 +1255,7 @@ function mergeAnswersWithConstraints({
             questionId,
             selectedAnswer: nextSelected,
             writtenAnswerUrl: nextWritten,
-            savedAt: now,
+            savedAt: incomingUpdatedAt,
             answerHistory: nextHistory,
             changeCount: nextChangeCount,
         });
@@ -945,12 +1299,20 @@ export async function getStudentExamDetails(req: AuthRequest, res: Response): Pr
 
         const [eligibility, activeSession] = await Promise.all([
             getEligibilitySummary(exam as unknown as Record<string, unknown>, studentId),
-            ExamSession.findOne({ exam: examId, student: studentId, isActive: true }).lean(),
+            ExamSession.findOne({
+                exam: examId,
+                student: studentId,
+                isActive: true,
+                status: 'in_progress',
+                expiresAt: { $gt: new Date() },
+            }).lean(),
         ]);
 
-        if (!eligibility.accessAllowed) {
+        const detailLockedForAudience = !eligibility.accessAllowed
+            || (eligibility.paymentRequired && !eligibility.paymentCleared);
+        if (detailLockedForAudience) {
             res.status(403).json({
-                message: 'You are not assigned to this exam',
+                message: 'You are not allowed to view this exam.',
                 eligibility,
             });
             return;
@@ -1002,6 +1364,15 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
         const user = await User.findById(studentId).lean();
         if (!user) { res.status(404).json({ message: 'User not found.' }); return; }
 
+        const security = await getSecurityConfig(false);
+        if (user.role === 'student' && security.panic.disableExamStarts) {
+            res.status(423).json({
+                code: 'EXAM_STARTS_DISABLED',
+                message: 'Exam starts are temporarily disabled by administrator policy.',
+            });
+            return;
+        }
+
         if (user.role === 'student') {
             const [profile, threshold] = await Promise.all([
                 StudentProfile.findOne({ user_id: studentId }).select('profile_completion_percentage').lean(),
@@ -1019,20 +1390,6 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
             }
         }
 
-        const subscriptionState = await verifySubscription(studentId);
-        if (!subscriptionState.allowed) {
-            const expiryLabel = subscriptionState.expiryDate ? new Date(subscriptionState.expiryDate).toISOString() : null;
-            res.status(403).json({
-                subscriptionRequired: true,
-                reason: subscriptionState.reason || 'inactive',
-                expiryDate: expiryLabel,
-                message: subscriptionState.reason === 'expired'
-                    ? `Your subscription has expired${expiryLabel ? ` on ${expiryLabel}` : ''}.`
-                    : 'Subscription required.',
-            });
-            return;
-        }
-
         const exam = mongoose.Types.ObjectId.isValid(examRef)
             ? await Exam.findById(examRef)
             : await Exam.findOne({ share_link: examRef });
@@ -1043,6 +1400,30 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
         const examId = String(exam._id || '');
 
         const eligibility = await getEligibilitySummary(exam.toObject() as unknown as Record<string, unknown>, studentId);
+        if (!eligibility.eligible) {
+            if (eligibility.accessDeniedReason === 'subscription_required') {
+                const subscriptionState = await verifySubscription(studentId);
+                const expiryLabel = subscriptionState.expiryDate ? new Date(subscriptionState.expiryDate).toISOString() : null;
+                res.status(403).json({
+                    subscriptionRequired: true,
+                    reason: subscriptionState.reason || 'inactive',
+                    expiryDate: expiryLabel,
+                    message: subscriptionState.reason === 'expired'
+                        ? `Your subscription has expired${expiryLabel ? ` on ${expiryLabel}` : ''}.`
+                        : 'Subscription required.',
+                    eligibility,
+                });
+                return;
+            }
+
+            if (eligibility.reasons.includes('outside_exam_window')) {
+                res.status(400).json({
+                    message: 'This exam is currently unavailable.',
+                    eligibility,
+                });
+                return;
+            }
+        }
         if (!eligibility.accessAllowed) {
             res.status(403).json({
                 message: 'You are not allowed to take this exam.',
@@ -1070,6 +1451,27 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
 
         /* ── External exam redirect ── */
         if (exam.externalExamUrl) {
+            try {
+                const profileSnapshot = await StudentProfile.findOne({ user_id: studentId })
+                    .select('registration_id groupIds')
+                    .lean();
+                const forwardedFor = req.headers['x-forwarded-for'];
+                const ipAddress = (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor)?.split(',')[0] || req.socket.remoteAddress || '';
+                const sourcePanel = String((req.body as Record<string, unknown> | undefined)?.sourcePanel || req.query?.source || 'exam_start').trim() || 'exam_start';
+                await ExternalExamJoinLog.create({
+                    examId: exam._id,
+                    studentId: new mongoose.Types.ObjectId(studentId),
+                    joinedAt: new Date(),
+                    sourcePanel,
+                    registration_id_snapshot: String((profileSnapshot as { registration_id?: unknown } | null)?.registration_id || ''),
+                    groupIds_snapshot: normalizeObjectIdArray((profileSnapshot as { groupIds?: unknown } | null)?.groupIds || []),
+                    ip: String(ipAddress || ''),
+                    userAgent: String(req.headers['user-agent'] || ''),
+                });
+            } catch (logErr) {
+                console.warn('[startExam external join log]', logErr);
+            }
+
             res.json({
                 redirect: true,
                 externalExamUrl: exam.externalExamUrl,
@@ -1108,6 +1510,29 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
         // Check existing active session (resume lock-safe)
         let session = await ExamSession.findOne({ exam: examId, student: studentId, isActive: true }).sort({ attemptNo: -1 });
         if (session && session.isActive) {
+            if (new Date() > new Date(session.expiresAt)) {
+                session.status = 'expired';
+                await session.save();
+                const autoSubmit = await finalizeExamSession({
+                    examId,
+                    studentId,
+                    attemptId: String(session._id),
+                    submissionType: 'auto_expired',
+                    isAutoSubmit: true,
+                    requestMeta: {
+                        ipAddress,
+                        userAgent: String(userAgent),
+                    },
+                });
+
+                res.status(409).json({
+                    message: 'Session expired. Auto-submission has been triggered.',
+                    sessionExpired: true,
+                    autoSubmitted: autoSubmit.ok,
+                    resultReady: autoSubmit.ok,
+                });
+                return;
+            }
             if (session.sessionLocked) {
                 res.status(423).json({ message: 'Exam session is locked due to device mismatch. Contact admin.' });
                 return;
@@ -1142,18 +1567,7 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
             });
 
             res.json({
-                session: {
-                    sessionId: session._id,
-                    startedAt: session.startedAt,
-                    expiresAt: session.expiresAt,
-                    savedAnswers: session.answers,
-                    attemptNo: session.attemptNo || attemptNo,
-                    attemptRevision: Number((session as any).attemptRevision || 0),
-                    sessionLocked: Boolean((session as any).sessionLocked),
-                    lockReason: String((session as any).lockReason || ''),
-                    violationsCount: Number((session as any).violationsCount || 0),
-                    serverNow: new Date().toISOString(),
-                },
+                session: mapExamSessionForClient(session, examId, studentId),
                 exam: sanitizeExamForStudent(exam),
                 questions,
                 serverNow: new Date().toISOString(),
@@ -1204,18 +1618,7 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
         });
 
         res.json({
-            session: {
-                sessionId: session._id,
-                startedAt: session.startedAt,
-                expiresAt: session.expiresAt,
-                savedAnswers: [],
-                attemptNo,
-                attemptRevision: Number((session as any).attemptRevision || 0),
-                sessionLocked: Boolean((session as any).sessionLocked),
-                lockReason: String((session as any).lockReason || ''),
-                violationsCount: Number((session as any).violationsCount || 0),
-                serverNow: new Date().toISOString(),
-            },
+            session: mapExamSessionForClient(session, examId, studentId),
             exam: sanitizeExamForStudent(exam),
             questions,
             serverNow: new Date().toISOString(),
@@ -1234,7 +1637,7 @@ export async function startExam(req: AuthRequest, res: Response): Promise<void> 
 export async function autosaveExam(req: AuthRequest, res: Response): Promise<void> {
     try {
         const studentId = req.user!._id;
-        const examId = req.params.id;
+        const examId = String(req.params.id || '');
         const { answers, tabSwitchCount, cheat_flags, attemptId, currentQuestionId } = req.body || {};
         const expectedRevision = parseAttemptRevision((req.body || {}).attemptRevision);
 
@@ -1271,12 +1674,22 @@ export async function autosaveExam(req: AuthRequest, res: Response): Promise<voi
 
         // Check session hasn't expired
         if (now > session.expiresAt) {
-            session.isActive = false;
-            session.status = 'submitted';
-            session.auto_submitted = true;
-            session.submissionType = 'auto_expired';
+            session.status = 'expired';
             await session.save();
-            res.status(400).json({ message: 'Session expired. Auto-submitting.' });
+            void finalizeExamSession({
+                examId,
+                studentId,
+                attemptId: String(session._id),
+                submissionType: 'auto_expired',
+                isAutoSubmit: true,
+                requestMeta: {
+                    ipAddress: getRequestIp(req),
+                    userAgent: getRequestUserAgent(req),
+                },
+            }).catch((error) => {
+                console.error('autosaveExam auto-expired finalize error:', error);
+            });
+            res.status(409).json({ message: 'Session expired. Auto-submission triggered.' });
             return;
         }
 
@@ -1434,59 +1847,56 @@ export async function submitExam(req: AuthRequest, res: Response): Promise<void>
         const { answers, tabSwitchCount, isAutoSubmit, cheat_flags, attemptId, submissionType } = req.body || {};
         const expectedRevision = parseAttemptRevision((req.body || {}).attemptRevision);
         const resolvedSubmissionType = resolveSubmissionType(submissionType, Boolean(isAutoSubmit));
-
-        // Prevent exceeding attempt limit globally on submit
         const exam = await Exam.findById(examId);
         if (!exam) {
             res.status(404).json({ message: 'Exam not found.' });
             return;
         }
 
-        const attemptCount = await ExamResult.countDocuments({ exam: examId, student: studentId });
-        if (attemptCount >= exam.attemptLimit) {
-            res.status(400).json({ message: `Attempt limit (${exam.attemptLimit}) reached.` });
-            return;
-        }
-
         const sessionQuery: Record<string, unknown> = { exam: examId, student: studentId, isActive: true };
-        if (attemptId) {
-            sessionQuery._id = attemptId;
-        }
-        const session = await ExamSession.findOne(sessionQuery).sort({ attemptNo: -1 });
-        if (!session) {
+        if (attemptId) sessionQuery._id = attemptId;
+        const activeSession = await ExamSession.findOne(sessionQuery).sort({ attemptNo: -1 });
+        if (!activeSession) {
+            const latestResult = await ExamResult.findOne({ exam: examId, student: studentId })
+                .sort({ submittedAt: -1, attemptNo: -1 })
+                .lean();
+            if (latestResult) {
+                res.json({
+                    message: 'Attempt already submitted.',
+                    resultId: latestResult._id,
+                    submitted: true,
+                    alreadySubmitted: true,
+                    obtainedMarks: Number((latestResult as any).obtainedMarks || 0),
+                    totalMarks: Number((latestResult as any).totalMarks || exam.totalMarks),
+                    percentage: Number((latestResult as any).percentage || 0),
+                    correctCount: Number((latestResult as any).correctCount || 0),
+                    wrongCount: Number((latestResult as any).wrongCount || 0),
+                    unansweredCount: Number((latestResult as any).unansweredCount || 0),
+                    resultPublishDate: exam.resultPublishDate,
+                    resultPublishMode: getResultPublishMode(exam.toObject() as unknown as Record<string, unknown>),
+                    resultPublished: isExamResultPublished(exam.toObject() as unknown as Record<string, unknown>),
+                    attemptRevision: null,
+                });
+                return;
+            }
             res.status(404).json({ message: 'No session found to submit.' });
             return;
         }
-        if (session.sessionLocked) {
-            res.status(423).json({
-                message: 'Session is locked and cannot be submitted until reviewed.',
-                action: 'locked',
-                lockReason: String((session as any).lockReason || ''),
-            });
-            return;
-        }
-        if (expectedRevision !== null && Number((session as any).attemptRevision || 0) !== expectedRevision) {
-            res.status(409).json({
-                message: 'Attempt state is stale. Please refresh exam state before submit.',
-                latestRevision: Number((session as any).attemptRevision || 0),
-            });
-            return;
-        }
 
-        const fwd2 = req.headers['x-forwarded-for'];
-        const ipAddress = (Array.isArray(fwd2) ? fwd2[0] : fwd2)?.split(',')[0] || req.socket.remoteAddress || '';
-        const userAgent = req.headers['user-agent'] || '';
+        const fwd = req.headers['x-forwarded-for'];
+        const ipAddress = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0] || req.socket.remoteAddress || '';
+        const userAgent = String(req.headers['user-agent'] || '');
         const submitFingerprint = getDeviceFingerprint(String(userAgent), String(ipAddress));
-        if (session.deviceFingerprint && submitFingerprint !== session.deviceFingerprint) {
-            session.sessionLocked = true;
-            session.lockReason = 'device_mismatch_submit';
-            session.cheat_flags = [
-                ...(session.cheat_flags || []),
+        if (activeSession.deviceFingerprint && submitFingerprint !== activeSession.deviceFingerprint) {
+            activeSession.sessionLocked = true;
+            activeSession.lockReason = 'device_mismatch_submit';
+            activeSession.cheat_flags = [
+                ...(activeSession.cheat_flags || []),
                 { reason: 'device_mismatch_submit', timestamp: new Date() },
             ];
-            await session.save();
-            broadcastExamAttemptEvent(String(session._id), 'attempt-locked', {
-                reason: session.lockReason,
+            await activeSession.save();
+            broadcastExamAttemptEvent(String(activeSession._id), 'attempt-locked', {
+                reason: activeSession.lockReason,
                 source: 'submit',
             });
             void broadcastExamMetricsUpdate(examId, 'submit_locked_device_mismatch');
@@ -1494,271 +1904,96 @@ export async function submitExam(req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
-        const currentAttemptNo = Number((session as any).attemptNo || (attemptCount + 1));
-        const existingResult = await ExamResult.findOne({
-            exam: examId,
-            student: studentId,
-            attemptNo: currentAttemptNo,
-        }).lean();
-        if (existingResult) {
-            if (session.isActive) {
-                session.isActive = false;
-                session.status = 'submitted';
-                session.auto_submitted = Boolean((existingResult as any).isAutoSubmitted);
-                session.submissionType = resolveSubmissionType(
-                    (session as any).submissionType,
-                    Boolean((existingResult as any).isAutoSubmitted)
-                );
-                session.submittedAt = new Date((existingResult as any).submittedAt || Date.now());
-                session.attemptRevision = Number((session as any).attemptRevision || 0) + 1;
-                await session.save();
-            }
-            res.json({
-                message: 'Attempt already submitted.',
-                resultId: existingResult._id,
-                submitted: true,
-                alreadySubmitted: true,
-                obtainedMarks: Number((existingResult as any).obtainedMarks || 0),
-                totalMarks: Number((existingResult as any).totalMarks || exam.totalMarks),
-                percentage: Number((existingResult as any).percentage || 0),
-                correctCount: Number((existingResult as any).correctCount || 0),
-                wrongCount: Number((existingResult as any).wrongCount || 0),
-                unansweredCount: Number((existingResult as any).unansweredCount || 0),
-                resultPublishDate: exam.resultPublishDate,
-                resultPublishMode: getResultPublishMode(exam.toObject() as unknown as Record<string, unknown>),
-                resultPublished: isExamResultPublished(exam.toObject() as unknown as Record<string, unknown>),
-                attemptRevision: Number((session as any).attemptRevision || 0),
-            });
-            void broadcastExamMetricsUpdate(examId, 'submit_already_submitted');
-            return;
-        }
-
-        // Fetch exactly the questions assigned to this student session
-        const assignedQuestionIds = session.answers.map(a => a.questionId);
-        const questions = await Question.find({ _id: { $in: assignedQuestionIds } }).lean();
-        let obtainedMarks = 0;
-        let correctCount = 0;
-        let wrongCount = 0;
-        let unansweredCount = 0;
-
-        const maxAttemptSelectByQuestion = new Map<string, number>();
-        for (const q of questions) {
-            maxAttemptSelectByQuestion.set(String(q._id), Number((q as Record<string, unknown>).max_attempt_select || 0));
-        }
-
-        const merged = mergeAnswersWithConstraints({
-            existingAnswers: session.answers.map((answer) => ({
-                questionId: answer.questionId,
-                selectedAnswer: answer.selectedAnswer,
-                writtenAnswerUrl: answer.writtenAnswerUrl,
-                answerHistory: answer.answerHistory,
-                changeCount: answer.changeCount,
-                savedAt: answer.savedAt,
-            })),
-            incomingAnswers: normalizeIncomingAnswers(answers).filter((answer) => assignedQuestionIds.includes(answer.questionId)),
-            answerEditLimitPerQuestion: Number.isFinite(Number(exam.answerEditLimitPerQuestion))
-                ? Number(exam.answerEditLimitPerQuestion)
-                : undefined,
-            maxAttemptSelectByQuestion,
-            now: new Date(),
+        const finalized = await finalizeExamSession({
+            examId,
+            studentId,
+            attemptId: String(activeSession._id),
+            expectedRevision,
+            submissionType: resolvedSubmissionType,
+            isAutoSubmit: Boolean(isAutoSubmit),
+            incomingAnswers: answers,
+            tabSwitchCount,
+            cheatFlags: cheat_flags,
+            requestMeta: {
+                ipAddress,
+                userAgent,
+            },
+            forcedSubmittedBy: resolvedSubmissionType === 'forced' ? String(req.user?._id || '') : undefined,
         });
 
-        if (merged.violations.length > 0) {
-            session.cheat_flags = [
-                ...(session.cheat_flags || []),
-                ...merged.violations.map((violation) => ({
-                    reason: `${violation.reason}:${violation.questionId}:${violation.attempted}/${violation.limit}`,
-                    timestamp: new Date(),
-                })),
-            ];
-            await session.save();
-            res.status(400).json({
-                message: 'Answer constraints violated. Please review your submission.',
-                violations: merged.violations,
+        if (!finalized.ok) {
+            res.status(finalized.statusCode).json({
+                message: finalized.message,
+                latestRevision: finalized.latestRevision,
+                lockReason: finalized.lockReason,
+                violations: finalized.violations,
             });
             return;
         }
 
-        session.answers = merged.mergedAnswers as any;
+        const sessionObj = finalized.session as Record<string, unknown>;
+        const resultObj = finalized.result as Record<string, unknown>;
 
-        const answerMap = new Map<string, { selectedAnswer?: string; writtenAnswerUrl?: string }>(
-            merged.mergedAnswers.map((answer) => ([
-                String(answer.questionId),
-                {
-                    selectedAnswer: String(answer.selectedAnswer || ''),
-                    writtenAnswerUrl: String(answer.writtenAnswerUrl || ''),
-                }
-            ]))
-        );
-
-        const evaluatedAnswers = questions.map(q => {
-            const qIdStr = q._id!.toString();
-            const answer = answerMap.get(qIdStr) || {};
-            const selected = answer.selectedAnswer || '';
-            const writtenAnswerUrl = answer.writtenAnswerUrl;
-            const rawQuestionType = String((q as Record<string, unknown>).questionType || '').trim().toLowerCase();
-            const inferredWritten = Boolean(
-                writtenAnswerUrl ||
-                (!q.optionA && !q.optionB && !q.optionC && !q.optionD)
-            );
-            const normalizedQuestionType: 'mcq' | 'written' = (
-                rawQuestionType === 'written' || rawQuestionType === 'mcq'
-                    ? rawQuestionType
-                    : (inferredWritten ? 'written' : 'mcq')
-            ) as 'mcq' | 'written';
-            let isCorrect = false;
-
-            if (normalizedQuestionType === 'mcq') {
-                isCorrect = selected === q.correctAnswer;
-                if (!selected) {
-                    unansweredCount++;
-                } else if (isCorrect) {
-                    correctCount++;
-                    obtainedMarks += q.marks;
-                } else {
-                    wrongCount++;
-                    if (exam.negativeMarking) {
-                        // Per-question negativeMarks override, else exam-level default
-                        const negVal = (q as Record<string, unknown>).negativeMarks as number | undefined;
-                        obtainedMarks -= negVal ?? exam.negativeMarkValue;
-                    }
-                }
-            } else { // written
-                // For written questions, marks are not awarded automatically.
-                // They need to be evaluated by an admin.
-                if (!writtenAnswerUrl) {
-                    unansweredCount++;
-                }
-            }
-
-            // Update per-question analytics
-            Question.findByIdAndUpdate(q._id, {
-                $inc: {
-                    totalAttempted: selected || writtenAnswerUrl ? 1 : 0,
-                    totalCorrect: isCorrect ? 1 : 0, // Only for MCQs
-                },
-            }).exec();
-
-            return {
-                question: q._id,
-                questionType: normalizedQuestionType,
-                selectedAnswer: selected,
-                writtenAnswerUrl: writtenAnswerUrl,
-                isCorrect,
-                timeTaken: 0,
-            };
-        });
-
-        obtainedMarks = Math.max(0, obtainedMarks); // floor at 0
-        const percentage = Math.round((obtainedMarks / exam.totalMarks) * 100 * 10) / 10;
-        const timeTaken = session ? Math.floor((Date.now() - session.startedAt.getTime()) / 1000) : 0;
-
-        const hasWrittenQuestions = evaluatedAnswers.some(a => a.questionType === 'written');
-        const resultStatus = hasWrittenQuestions ? 'submitted' : 'evaluated';
-
-        const result = await ExamResult.create({
-            exam: examId,
-            student: studentId,
-            attemptNo: currentAttemptNo,
-            answers: evaluatedAnswers,
-            totalMarks: exam.totalMarks,
-            obtainedMarks,
-            correctCount,
-            wrongCount,
-            unansweredCount,
-            percentage,
-            timeTaken,
-            deviceInfo: session?.deviceInfo || detectDevice(userAgent),
-            browserInfo: session?.browserInfo || detectBrowser(userAgent),
-            ipAddress: session?.ipAddress || ipAddress,
-            tabSwitchCount: tabSwitchCount !== undefined ? tabSwitchCount : session.tabSwitchCount,
-            isAutoSubmitted: !!isAutoSubmit,
-            submittedAt: new Date(),
-            cheat_flags: [...(session.cheat_flags || []), ...normalizeCheatFlags(cheat_flags)],
-            status: resultStatus
-        });
-
-        session.isActive = false;
-        session.status = 'submitted';
-        session.auto_submitted = !!isAutoSubmit;
-        session.submissionType = resolvedSubmissionType;
-        session.submittedAt = result.submittedAt || new Date();
-        session.lastSavedAt = new Date();
-        if (resolvedSubmissionType === 'forced') {
-            session.forcedSubmittedAt = new Date();
-            if (req.user?._id) {
-                session.forcedSubmittedBy = new mongoose.Types.ObjectId(String(req.user._id));
-            }
-        }
-        if (tabSwitchCount !== undefined) {
-            session.tabSwitchCount = tabSwitchCount;
-        }
-        session.attemptRevision = Number((session as any).attemptRevision || 0) + 1;
-        await session.save();
-
-        broadcastExamAttemptEvent(String(session._id), 'revision-update', {
-            revision: Number((session as any).attemptRevision || 0),
+        broadcastExamAttemptEvent(String(sessionObj._id || activeSession._id), 'revision-update', {
+            revision: Number(sessionObj.attemptRevision || 0),
             submitted: true,
             submissionType: resolvedSubmissionType,
         });
         broadcastAdminLiveEvent('attempt-updated', {
-            attemptId: String(session._id),
+            attemptId: String(sessionObj._id || activeSession._id),
             examId,
             studentId,
             submitted: true,
             submissionType: resolvedSubmissionType,
-            attemptRevision: Number((session as any).attemptRevision || 0),
-            obtainedMarks,
-            percentage,
+            attemptRevision: Number(sessionObj.attemptRevision || 0),
+            obtainedMarks: finalized.obtainedMarks,
+            percentage: finalized.percentage,
         });
 
         if (resolvedSubmissionType === 'forced') {
-            broadcastExamAttemptEvent(String(session._id), 'forced-submit', {
+            broadcastExamAttemptEvent(String(sessionObj._id || activeSession._id), 'forced-submit', {
                 reason: 'forced_submission',
-                resultId: String(result._id),
+                resultId: String(resultObj._id || ''),
             });
             broadcastAdminLiveEvent('forced-submit', {
-                attemptId: String(session._id),
+                attemptId: String(sessionObj._id || activeSession._id),
                 examId,
                 studentId,
-                resultId: String(result._id),
+                resultId: String(resultObj._id || ''),
             });
         }
 
-        // Audit: Submit event
         await ExamEvent.create({
-            attempt: session?._id,
+            attempt: String(sessionObj._id || activeSession._id),
             student: studentId,
             exam: examId,
             eventType: 'submit',
             metadata: {
-                action: resolvedSubmissionType === 'manual' ? 'manual_submit' : resolvedSubmissionType,
-                score: obtainedMarks,
-                percentage
+                action: finalized.alreadySubmitted ? 'duplicate_submit' : (resolvedSubmissionType === 'manual' ? 'manual_submit' : resolvedSubmissionType),
+                score: finalized.obtainedMarks,
+                percentage: finalized.percentage,
             },
             ip: ipAddress,
-            userAgent
+            userAgent,
         });
 
         res.json({
-            message: 'Exam submitted successfully.',
-            resultId: result._id,
+            message: finalized.alreadySubmitted ? 'Attempt already submitted.' : 'Exam submitted successfully.',
+            resultId: resultObj._id,
             submitted: true,
-            obtainedMarks,
-            totalMarks: exam.totalMarks,
-            percentage,
-            correctCount,
-            wrongCount,
-            unansweredCount,
+            alreadySubmitted: finalized.alreadySubmitted,
+            obtainedMarks: finalized.obtainedMarks,
+            totalMarks: Number(resultObj.totalMarks || exam.totalMarks),
+            percentage: finalized.percentage,
+            correctCount: finalized.correctCount,
+            wrongCount: finalized.wrongCount,
+            unansweredCount: finalized.unansweredCount,
             resultPublishDate: exam.resultPublishDate,
             resultPublishMode: getResultPublishMode(exam.toObject() as unknown as Record<string, unknown>),
             resultPublished: isExamResultPublished(exam.toObject() as unknown as Record<string, unknown>),
-            attemptRevision: Number((session as any).attemptRevision || 0),
+            attemptRevision: Number(sessionObj.attemptRevision || 0),
         });
         void broadcastExamMetricsUpdate(examId, resolvedSubmissionType === 'forced' ? 'force_submitted' : 'submitted');
-
-        // Update exam analytics (async, non-blocking)
-        updateExamAnalytics(examId).catch(console.error);
     } catch (err) {
         console.error('submitExam error:', err);
         res.status(500).json({ message: 'Server error' });
@@ -1785,50 +2020,47 @@ export async function submitExamAsSystem(input: SystemSubmitInput): Promise<{ st
         submissionType = 'forced',
     } = input;
 
-    let statusCode = 200;
-    let body: unknown = { message: 'Submit handler did not return a payload.' };
-    const sourceHeaders = sourceReq?.headers || {};
+    const result = await finalizeExamSession({
+        examId,
+        studentId,
+        attemptId,
+        submissionType,
+        isAutoSubmit: true,
+        cheatFlags: reason ? [{ reason, timestamp: new Date().toISOString() }] : [],
+        requestMeta: {
+            ipAddress: sourceReq ? getRequestIp(sourceReq) : '',
+            userAgent: sourceReq ? getRequestUserAgent(sourceReq) : 'CampusWay-System',
+        },
+    });
 
-    const fakeReq = {
-        params: { id: examId },
+    if (!result.ok) {
+        return {
+            statusCode: result.statusCode,
+            body: {
+                message: result.message,
+                latestRevision: result.latestRevision,
+                lockReason: result.lockReason,
+            },
+        };
+    }
+
+    const resultObj = result.result as Record<string, unknown>;
+    const sessionObj = result.session as Record<string, unknown>;
+    return {
+        statusCode: 200,
         body: {
-            attemptId,
-            isAutoSubmit: true,
-            submissionType,
-            cheat_flags: reason ? [{ reason, timestamp: new Date().toISOString() }] : [],
+            message: result.alreadySubmitted ? 'Attempt already submitted.' : 'Exam submitted successfully.',
+            resultId: resultObj._id,
+            submitted: true,
+            alreadySubmitted: result.alreadySubmitted,
+            obtainedMarks: result.obtainedMarks,
+            percentage: result.percentage,
+            correctCount: result.correctCount,
+            wrongCount: result.wrongCount,
+            unansweredCount: result.unansweredCount,
+            attemptRevision: Number(sessionObj.attemptRevision || 0),
         },
-        headers: sourceHeaders,
-        socket: sourceReq?.socket || ({ remoteAddress: '' } as any),
-        get: (name: string) => {
-            if (typeof sourceReq?.get === 'function') {
-                return sourceReq.get(name);
-            }
-            const key = name.toLowerCase();
-            const value = (sourceHeaders as Record<string, unknown>)[key] || (sourceHeaders as Record<string, unknown>)[name];
-            return typeof value === 'string' ? value : undefined;
-        },
-        user: {
-            _id: studentId,
-            username: 'system',
-            email: '',
-            role: 'student',
-            fullName: 'System Trigger',
-        },
-    } as unknown as AuthRequest;
-
-    const fakeRes = {
-        status(code: number) {
-            statusCode = code;
-            return this;
-        },
-        json(payload: unknown) {
-            body = payload;
-            return this;
-        },
-    } as unknown as Response;
-
-    await submitExam(fakeReq, fakeRes);
-    return { statusCode, body };
+    };
 }
 
 export async function getExamAttemptState(req: AuthRequest, res: Response): Promise<void> {
@@ -1856,19 +2088,9 @@ export async function getExamAttemptState(req: AuthRequest, res: Response): Prom
 
         res.json({
             session: {
-                sessionId: session._id,
-                startedAt: session.startedAt,
-                expiresAt: session.expiresAt,
-                savedAnswers: session.answers,
-                attemptNo: session.attemptNo,
-                attemptRevision: Number((session as any).attemptRevision || 0),
+                ...mapExamSessionForClient(session, examId, studentId),
                 isActive: session.isActive,
-                status: session.status,
                 submittedAt: session.submittedAt,
-                sessionLocked: Boolean((session as any).sessionLocked),
-                lockReason: String((session as any).lockReason || ''),
-                violationsCount: Number((session as any).violationsCount || 0),
-                serverNow: new Date().toISOString(),
             },
             exam: sanitizeExamForStudent(exam),
             questions,
@@ -2206,7 +2428,7 @@ export async function getExamResult(req: AuthRequest, res: Response): Promise<vo
                     totalMarks: exam.totalMarks,
                     totalQuestions: exam.totalQuestions,
                 },
-                message: 'Result is not published yet. Please wait until publish time.',
+                message: 'Result not published yet',
             });
             return;
         }
@@ -2730,11 +2952,44 @@ async function updateExamAnalytics(examId: string): Promise<void> {
     });
 
     // Rank all students
-    const sorted = results.sort((a, b) => b.obtainedMarks - a.obtainedMarks);
+    const sorted = results.sort((a, b) => {
+        if (b.obtainedMarks !== a.obtainedMarks) {
+            return b.obtainedMarks - a.obtainedMarks;
+        }
+        if (Number(a.timeTaken || 0) !== Number(b.timeTaken || 0)) {
+            return Number(a.timeTaken || 0) - Number(b.timeTaken || 0);
+        }
+        return new Date(String(a.submittedAt || 0)).getTime() - new Date(String(b.submittedAt || 0)).getTime();
+    });
     const updates = sorted.map((r, idx) =>
         ExamResult.findByIdAndUpdate(r._id, { rank: idx + 1 })
     );
     await Promise.all(updates);
+
+    // Sync student profile points for all participants
+    const studentIds = Array.from(new Set(results.map(r => String(r.student))));
+    studentIds.map(sid => updateStudentPoints(sid).catch(console.error));
+}
+
+async function updateStudentPoints(studentId: string): Promise<void> {
+    const results = await ExamResult.find({ student: studentId }).lean();
+    const totalPoints = results.reduce((sum, item) => {
+        const rankBonus = item.rank ? Math.max(0, 100 - Number(item.rank)) : 0;
+        return sum + Number(item.percentage || 0) + rankBonus;
+    }, 0);
+
+    // Also get overall rank across all students
+    const allStudents = await StudentProfile.find({}).sort({ points: -1 }).select('user_id points').lean();
+    const myIdx = allStudents.findIndex(s => String(s.user_id) === studentId);
+
+    await StudentProfile.findOneAndUpdate(
+        { user_id: studentId },
+        {
+            points: Math.round(totalPoints),
+            rank: myIdx !== -1 ? myIdx + 1 : undefined
+        },
+        { upsert: true }
+    );
 }
 
 function detectDevice(ua: string): string {

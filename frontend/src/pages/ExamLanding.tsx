@@ -1,7 +1,8 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate } from 'react-router-dom';
 import { Activity, CalendarClock, Clock3, Copy, Search, Tag, Users } from 'lucide-react';
-import { getExamLanding } from '../services/api';
+import { getExamLanding, trackAnalyticsEvent } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 type LandingCard = {
@@ -32,6 +33,7 @@ type LandingCard = {
     attemptLimit: number;
     share_link?: string;
     shareUrl?: string;
+    paymentPending?: boolean;
 };
 
 const GROUP_OPTIONS = ['All', 'SSC', 'HSC', 'Admission', 'Custom'];
@@ -44,7 +46,8 @@ const STATUS_OPTIONS = [
     { value: 'locked', label: 'Locked' },
 ];
 
-function statusBadge(status: LandingCard['status']) {
+function statusBadge(status: LandingCard['status'], paymentPending?: boolean) {
+    if (paymentPending) return 'bg-amber-500/20 text-amber-300';
     if (status === 'live' || status === 'in_progress') return 'bg-emerald-500/20 text-emerald-300';
     if (status === 'upcoming') return 'bg-cyan-500/20 text-cyan-300';
     if (status === 'past') return 'bg-slate-500/20 text-slate-300';
@@ -53,40 +56,50 @@ function statusBadge(status: LandingCard['status']) {
 
 export default function ExamLandingPage() {
     const { isAuthenticated, isLoading, user } = useAuth();
-    const [cards, setCards] = useState<LandingCard[]>([]);
-    const [featured, setFeatured] = useState<LandingCard[]>([]);
-    const [loading, setLoading] = useState(true);
     const [group, setGroup] = useState('All');
     const [status, setStatus] = useState('all');
     const [search, setSearch] = useState('');
+    const { data, isLoading: loadingCards } = useQuery({
+        queryKey: ['examLanding', group, status, search],
+        queryFn: async () => {
+            const { data: resData } = await getExamLanding({
+                group: group === 'All' ? '' : group,
+                status,
+                search,
+                limit: 100,
+            });
+            const fetchedCards = resData.items || resData.exams || [];
 
-    useEffect(() => {
-        if (!isAuthenticated) return;
-        const load = async () => {
-            setLoading(true);
-            try {
-                const { data } = await getExamLanding({
-                    group: group === 'All' ? '' : group,
-                    status,
-                    search,
-                    limit: 100,
-                });
-                setCards(data.items || data.exams || []);
-                setFeatured(data.featured || []);
-            } finally {
-                setLoading(false);
-            }
-        };
-        void load();
-    }, [group, status, search, isAuthenticated]);
+            void trackAnalyticsEvent({
+                eventName: 'exam_viewed',
+                module: 'exams',
+                source: 'student',
+                meta: {
+                    filters: { group, status, search: search || '' },
+                    total: Number(fetchedCards.length || 0),
+                },
+            }).catch(() => undefined);
+
+            return {
+                cards: fetchedCards,
+                featured: resData.featured || []
+            };
+        },
+        enabled: isAuthenticated,
+        staleTime: 60 * 1000,
+    });
+
+    const loading = loadingCards;
+    const cards: LandingCard[] = data?.cards || [];
+    const featured: LandingCard[] = data?.featured || [];
 
     const groupedByCategory = useMemo(() => {
-        return cards.reduce<Record<string, LandingCard[]>>((acc, card) => {
+        return cards.reduce((acc: Record<string, LandingCard[]>, card: LandingCard) => {
             const key = card.group_category || 'Custom';
             if (!acc[key]) acc[key] = [];
             acc[key].push(card);
             return acc;
-        }, {});
+        }, {} as Record<string, LandingCard[]>);
     }, [cards]);
 
     if (isLoading) {
@@ -94,11 +107,11 @@ export default function ExamLandingPage() {
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/student-login" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     if (user?.role !== 'student') {
-        return <Navigate to="/student/dashboard" replace />;
+        return <Navigate to="/exam-portal" replace />;
     }
 
     return (
@@ -148,7 +161,7 @@ export default function ExamLandingPage() {
                     <section className="space-y-3">
                         <h2 className="text-lg font-semibold text-cyan-200">Featured</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {featured.map((card) => (
+                            {featured.map((card: LandingCard) => (
                                 <article key={`featured-${card._id}`} className="rounded-2xl border border-cyan-400/20 bg-cyan-500/5 p-4">
                                     <h3 className="text-base font-semibold">{card.title}</h3>
                                     <p className="text-xs text-slate-300 mt-1 line-clamp-2">{card.description || card.subjectBn || card.subject || ''}</p>
@@ -169,11 +182,13 @@ export default function ExamLandingPage() {
                                 <div key={category} className="space-y-3">
                                     <h2 className="text-lg font-semibold text-white">{category}</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                        {categoryCards.map((card) => (
+                                        {(categoryCards as LandingCard[]).map((card: LandingCard) => (
                                             <article key={card._id} className="rounded-2xl border border-slate-700/80 bg-slate-900/50 p-4 space-y-3">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <h3 className="font-semibold line-clamp-2">{card.title}</h3>
-                                                    <span className={`text-[10px] px-2 py-1 rounded-full uppercase ${statusBadge(card.status)}`}>{card.status.replace('_', ' ')}</span>
+                                                    <span className={`text-[10px] px-2 py-1 rounded-full uppercase ${statusBadge(card.status, card.paymentPending)}`}>
+                                                        {card.paymentPending ? 'Payment Pending' : card.status.replace('_', ' ')}
+                                                    </span>
                                                 </div>
                                                 <p className="text-xs text-slate-300 line-clamp-2">{card.description || card.subjectBn || card.subject || ''}</p>
                                                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
@@ -201,8 +216,20 @@ export default function ExamLandingPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 pt-2">
-                                                    <Link to={`/exam/take/${card.share_link || card._id}`} className={`text-xs px-3 py-2 rounded-lg ${card.status === 'locked' ? 'bg-slate-700 text-slate-400 pointer-events-none' : 'bg-cyan-500/20 text-cyan-200 hover:bg-cyan-500/30'}`}>
-                                                        {card.status === 'in_progress' ? 'Resume' : 'Start'}
+                                                    <Link
+                                                        to={`/exam/take/${card.share_link || card._id}`}
+                                                        onClick={() => {
+                                                            if (card.status === 'locked' && !card.paymentPending) return;
+                                                            void trackAnalyticsEvent({
+                                                                eventName: 'exam_started',
+                                                                module: 'exams',
+                                                                source: 'student',
+                                                                meta: { examId: card._id, status: card.status, entry: 'landing' },
+                                                            }).catch(() => undefined);
+                                                        }}
+                                                        className={`text-xs px-3 py-2 rounded-lg ${card.status === 'locked' && !card.paymentPending ? 'bg-slate-700 text-slate-400 pointer-events-none' : card.paymentPending ? 'bg-amber-600/20 text-amber-200 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-200 hover:bg-cyan-500/30'}`}
+                                                    >
+                                                        {card.paymentPending ? 'Clear Due' : card.status === 'in_progress' ? 'Resume' : 'Start'}
                                                     </Link>
                                                     <button
                                                         type="button"

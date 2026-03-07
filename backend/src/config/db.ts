@@ -10,49 +10,96 @@ async function ensureCriticalIndexes(): Promise<void> {
     if (!db.db) return;
 
     try {
-        const collection = db.db.collection('student_results');
-        const indexes = await collection.indexes();
-        const legacyUnique = indexes.find((idx) =>
+        // --- Student Results ---
+        const results = db.db.collection('student_results');
+        const resultIndexes = await results.indexes();
+        const legacyUnique = resultIndexes.find((idx) =>
             idx.name === 'exam_1_student_1'
             && idx.unique === true
             && idx.key?.exam === 1
             && idx.key?.student === 1
         );
-
         if (legacyUnique) {
-            await collection.dropIndex('exam_1_student_1');
+            await results.dropIndex('exam_1_student_1');
             console.log('[db] Dropped legacy index student_results.exam_1_student_1');
         }
-
-        const hasCurrentUnique = indexes.some((idx) =>
+        const hasCurrentUnique = resultIndexes.some((idx) =>
             idx.unique === true
             && idx.key?.exam === 1
             && idx.key?.student === 1
             && idx.key?.attemptNo === 1
         );
-
         if (!hasCurrentUnique) {
-            await collection.createIndex(
+            await results.createIndex(
                 { exam: 1, student: 1, attemptNo: 1 },
                 { unique: true, name: 'exam_1_student_1_attemptNo_1' }
             );
             console.log('[db] Ensured index student_results.exam_1_student_1_attemptNo_1');
         }
 
+        // --- Users ---
         const users = db.db.collection('users');
         await Promise.all([
-            users.createIndex({ email: 1 }, { unique: true, name: 'email_1' }),
-            users.createIndex({ username: 1 }, { unique: true, name: 'username_1' }),
+            users.createIndex({ email: 1 }, { unique: true, name: 'email_1' }).catch(() => { }),
+            users.createIndex({ username: 1 }, { unique: true, name: 'username_1' }).catch(() => { }),
+            users.createIndex({ role: 1, status: 1 }, { name: 'role_1_status_1' }).catch(() => { }),
         ]);
 
+        // --- Exams ---
         const exams = db.db.collection('exam_collection');
-        await exams.createIndex({ share_link: 1 }, { sparse: true, unique: true, name: 'share_link_1' });
+        await Promise.all([
+            exams.createIndex({ share_link: 1 }, { sparse: true, unique: true, name: 'share_link_1' }).catch(() => { }),
+            exams.createIndex({ startTime: 1, endTime: 1 }, { name: 'startTime_1_endTime_1' }).catch(() => { }),
+            exams.createIndex({ publishTime: -1 }, { name: 'publishTime_-1' }).catch(() => { }),
+            exams.createIndex({ status: 1 }, { name: 'status_1' }).catch(() => { }),
+        ]);
 
+        // --- Exam Sessions ---
+        const sessions = db.db.collection('exam_sessions');
+        await Promise.all([
+            sessions.createIndex({ exam: 1, user: 1 }, { name: 'exam_1_user_1' }).catch(() => { }),
+            sessions.createIndex({ status: 1, expiresAtUTC: 1 }, { name: 'status_1_expiresAtUTC_1' }).catch(() => { }),
+        ]);
+
+        // --- Payments ---
         const payments = db.db.collection('manual_payments');
         await Promise.all([
-            payments.createIndex({ reference: 1 }, { sparse: true, name: 'reference_1' }),
-            payments.createIndex({ date: -1 }, { name: 'date_-1' }),
+            payments.createIndex({ reference: 1 }, { sparse: true, name: 'reference_1' }).catch(() => { }),
+            payments.createIndex({ date: -1 }, { name: 'date_-1' }).catch(() => { }),
+            payments.createIndex({ studentId: 1, status: 1 }, { name: 'studentId_1_status_1' }).catch(() => { }),
         ]);
+
+        // --- Universities ---
+        const universities = db.db.collection('universities');
+        await Promise.all([
+            universities.createIndex({ category: 1 }, { name: 'category_1' }).catch(() => { }),
+            universities.createIndex({ clusterGroup: 1 }, { name: 'clusterGroup_1' }).catch(() => { }),
+            universities.createIndex({ name: 'text', shortForm: 'text' }, { name: 'name_text_shortForm_text' }).catch(() => { }),
+        ]);
+
+        // --- News ---
+        const news = db.db.collection('news_v2');
+        await Promise.all([
+            news.createIndex({ status: 1, publishedAt: -1 }, { name: 'status_1_publishedAt_-1' }).catch(() => { }),
+            news.createIndex({ sourceId: 1 }, { name: 'sourceId_1' }).catch(() => { }),
+            news.createIndex({ slug: 1 }, { unique: true, sparse: true, name: 'slug_1' }).catch(() => { }),
+        ]);
+
+        // --- Student Profiles ---
+        const studentProfiles = db.db.collection('student_profiles');
+        await Promise.all([
+            studentProfiles.createIndex({ user_id: 1 }, { unique: true, name: 'user_id_1' }).catch(() => { }),
+            studentProfiles.createIndex({ points: -1 }, { name: 'points_-1' }).catch(() => { }),
+        ]);
+
+        // --- Webhook Events ---
+        const webhookEvents = db.db.collection('paymentwebhookevents');
+        await Promise.all([
+            webhookEvents.createIndex({ provider: 1, externalId: 1 }, { name: 'provider_1_externalId_1' }).catch(() => { }),
+            webhookEvents.createIndex({ receivedAt: -1 }, { name: 'receivedAt_-1' }).catch(() => { }),
+        ]);
+
+        console.log('[db] All critical indexes ensured');
     } catch (error) {
         console.error('[db] Failed to ensure critical indexes:', error);
     }

@@ -10,6 +10,7 @@ import 'react-quill/dist/quill.snow.css';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { useAuth } from '../hooks/useAuth';
+import { adminRouteFromLegacySearch, adminRouteFromTab } from '../lib/appRoutes';
 import {
     adminGetUniversities, adminCreateUniversity, adminUpdateUniversity,
     adminDeleteUniversity,
@@ -17,6 +18,9 @@ import {
     adminGetQuestions, adminCreateQuestion, adminDeleteQuestion,
     adminGetUsers,
     adminGetStudentGroups,
+    adminMfaConfirm,
+    adminBulkImportUniversities,
+    adminExportExamResults,
     adminRegenerateExamShareLink,
     adminSignExamBannerUpload,
     ApiUniversity,
@@ -34,7 +38,6 @@ import BannerPanel from '../components/admin/BannerPanel';
 import ReportsPanel from '../components/admin/ReportsPanel';
 import HomeControlPanel from '../components/admin/HomeControlPanel';
 import SystemLogsPanel from '../components/admin/SystemLogsPanel';
-import ServicesPanel from '../components/admin/ServicesPanel';
 import ResourcesPanel from '../components/admin/ResourcesPanel';
 import ContactPanel from '../components/admin/ContactPanel';
 import SiteSettingsPanel from '../components/admin/SiteSettingsPanel';
@@ -72,7 +75,7 @@ const QUILL_MODULES = {
     ],
 };
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€ Shared Modal â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Shared Modal */
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -87,7 +90,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
     );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€ University Form â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* University Form */
 function UniversityForm({ initial, onSave, onClose }: {
     initial?: Partial<ApiUniversity>;
     onSave: (data: Partial<ApiUniversity>) => Promise<void>;
@@ -172,7 +175,7 @@ function UniversityForm({ initial, onSave, onClose }: {
     );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€ Exam Form (Wizard) â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Exam Form (Wizard) */
 function ExamForm({
     initial,
     onSave,
@@ -914,7 +917,7 @@ function ExamForm({
     );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€ Question Form (Rich Text) â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Question Form (Rich Text) */
 function QuestionForm({ examId, onSave, onClose }: { examId: string; onSave: () => void; onClose: () => void }) {
     const [form, setForm] = useState<Record<string, unknown>>({
         question: '', optionA: '', optionB: '', optionC: '', optionD: '',
@@ -985,7 +988,7 @@ function QuestionForm({ examId, onSave, onClose }: { examId: string; onSave: () 
     );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€ Confirm Delete â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Confirm Delete */
 function DeleteConfirm({ label, onConfirm, onClose }: { label: string; onConfirm: () => void; onClose: () => void }) {
     return (
         <div className="text-center space-y-4">
@@ -1002,7 +1005,7 @@ function DeleteConfirm({ label, onConfirm, onClose }: { label: string; onConfirm
     );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€ MFA Confirm â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* MFA Confirm */
 function MfaConfirmModal({ onConfirm, onClose }: { onConfirm: () => void; onClose: () => void }) {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -1013,18 +1016,11 @@ function MfaConfirmModal({ onConfirm, onClose }: { onConfirm: () => void; onClos
         if (!password) { setError('Password required'); return; }
         setLoading(true);
         try {
-            const token = sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token');
-            const res = await fetch(`/api/campusway-secure-admin/auth/mfa/confirm`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ password }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Verification failed');
+            await adminMfaConfirm(password);
             toast.success('Identity verified');
             onConfirm();
         } catch (err: any) {
-            setError(err.message || 'Verification failed');
+            setError(err.response?.data?.message || err.message || 'Verification failed');
         } finally { setLoading(false); }
     };
 
@@ -1050,17 +1046,18 @@ function MfaConfirmModal({ onConfirm, onClose }: { onConfirm: () => void; onClos
 }
 
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   MAIN ADMIN DASHBOARD â€” SHELL
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-export default function AdminDashboard() {
+type AdminDashboardProps = {
+    forcedTab?: string;
+    forcedSubtab?: 'students' | 'groups' | 'plans';
+};
+
+/* Main Admin Dashboard Shell */
+export default function AdminDashboard({ forcedTab, forcedSubtab }: AdminDashboardProps = {}) {
     const { user, isAuthenticated, isLoading, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const [tab, setTab] = useState(() => {
-        const initial = new URLSearchParams(window.location.search).get('tab');
-        return initial || 'dashboard';
-    });
+    const [tab, setTab] = useState(forcedTab || 'dashboard');
+    const [studentManagementTab, setStudentManagementTab] = useState<'students' | 'groups' | 'plans'>(forcedSubtab || 'students');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -1087,14 +1084,30 @@ export default function AdminDashboard() {
     const [examStatusFilter, setExamStatusFilter] = useState<'all' | 'upcoming' | 'live' | 'completed' | 'draft'>('all');
     const [examGroupFilter, setExamGroupFilter] = useState('all');
 
-    const isAdmin = user && ['superadmin', 'admin', 'moderator'].includes(user.role);
+    const isAdmin = user && ['superadmin', 'admin', 'moderator', 'editor', 'viewer'].includes(user.role);
 
+    // Keep tab state aligned with routed entry-points.
     useEffect(() => {
-        const current = new URLSearchParams(location.search);
-        if (current.get('tab') === tab) return;
-        current.set('tab', tab);
-        navigate({ pathname: location.pathname, search: `?${current.toString()}` }, { replace: true });
-    }, [tab, navigate, location.pathname, location.search]);
+        setTab(forcedTab || 'dashboard');
+        if (forcedTab === 'student-management') {
+            setStudentManagementTab(forcedSubtab || 'students');
+            return;
+        }
+        setStudentManagementTab('students');
+    }, [forcedTab, forcedSubtab]);
+
+    // One-time migration for legacy query based links (?tab=...&subtab=...).
+    useEffect(() => {
+        if (!location.search.includes('tab=')) return;
+        const mapped = adminRouteFromLegacySearch(location.search);
+        if (!mapped) return;
+        const cleanCurrent = `${location.pathname}`;
+        if (mapped === cleanCurrent) {
+            navigate({ pathname: cleanCurrent, search: '' }, { replace: true });
+            return;
+        }
+        navigate(mapped, { replace: true });
+    }, [location.pathname, location.search, navigate]);
 
     const refreshExamCards = useCallback(async () => {
         const examRes = await adminGetExams({ view: 'cards', includeMetrics: 'true', limit: 200 }).catch(() => ({ data: { exams: [] } }));
@@ -1102,9 +1115,13 @@ export default function AdminDashboard() {
     }, []);
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated) navigate('/admin/login');
+        if (!isLoading && !isAuthenticated) {
+            navigate('/__cw_admin__/login');
+            return;
+        }
         if (!isLoading && isAuthenticated && !isAdmin) {
-            navigate(user?.role === 'student' ? '/student/dashboard' : '/admin/login');
+            navigate('/__cw_admin__/access-denied', { replace: true });
+            return;
         }
     }, [isLoading, isAuthenticated, isAdmin, navigate, user?.role]);
 
@@ -1171,7 +1188,7 @@ export default function AdminDashboard() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-950/65 flex items-center justify-center">
+            <div className="min-h-screen bg-background dark:bg-slate-950/65 flex items-center justify-center">
                 <div className="animate-spin w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full" />
             </div>
         );
@@ -1407,18 +1424,18 @@ export default function AdminDashboard() {
         toast.success('Share URL copied');
     };
     const triggerExport = async (examId: string) => {
-        const token = sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token');
         const toastId = toast.loading('Generating Excel...');
         try {
             setPendingExport(null);
-            const res = await fetch(`/api/campusway-secure-admin/exams/${examId}/export`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!res.ok) throw new Error('Failed');
-            const blob = await res.blob();
+            const res = await adminExportExamResults(examId);
+            const blob = res.data as Blob;
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `Results_${examId}.xlsx`;
             document.body.appendChild(a); a.click(); document.body.removeChild(a); window.URL.revokeObjectURL(url);
             toast.success('Download complete', { id: toastId });
-        } catch (err: any) { toast.error(err.message || 'Export failed', { id: toastId }); }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || err.message || 'Export failed', { id: toastId });
+        }
     };
     const handleDeleteQuestion = async (examId: string, qId: string) => { await adminDeleteQuestion(examId, qId); toast.success('Question deleted'); setDeleteModal(null); fetchQuestions(examId); };
     const handleCreateUni = async (data: Partial<ApiUniversity>) => {
@@ -1450,45 +1467,38 @@ export default function AdminDashboard() {
         setImportingUni(true);
         const toastId = toast.loading('Importing universities...');
         try {
-            const token = sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token') || '';
             const formData = new FormData();
             formData.append('file', file);
-            const response = await fetch('/api/campusway-secure-admin/universities/import-excel', {
-                method: 'POST',
-                headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Import failed');
-            }
+            await adminBulkImportUniversities(formData);
 
             toast.success('University import completed', { id: toastId });
             fetchAll();
         } catch (err: any) {
-            toast.error(err?.message || 'Import failed', { id: toastId });
+            toast.error(err?.response?.data?.message || err?.message || 'Import failed', { id: toastId });
         } finally {
             setImportingUni(false);
             if (e?.target) e.target.value = '';
         }
     };
 
-    if (!isAdmin) {
-        return (
-            <div className="min-h-screen bg-slate-950/65 flex items-center justify-center px-4">
-                <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-center">
-                    <h2 className="text-lg font-semibold text-rose-100">Admin access required</h2>
-                    <p className="mt-2 text-sm text-rose-200/80">
-                        This page is only available for admin roles. Redirecting to home.
-                    </p>
-                </div>
-            </div>
-        );
-    }
+    if (!isAdmin) return null;
 
-    const handleLogout = () => { logout(); navigate('/admin/login'); };
+    const handleLogout = () => { logout(); navigate('/__cw_admin__/login'); };
+    const handleTabChange = (nextTab: string) => {
+        setTab(nextTab);
+        const nextSubtab = nextTab === 'student-management' ? 'students' : undefined;
+        if (nextTab === 'student-management') {
+            setStudentManagementTab('students');
+        } else if (studentManagementTab !== 'students') {
+            setStudentManagementTab('students');
+        }
+        const routePath = adminRouteFromTab(nextTab, nextSubtab);
+        if (routePath && location.pathname !== routePath) {
+            navigate(routePath);
+        }
+    };
 
-    /* â”€â”€ Render inline panels (University, Exam, User, Settings, FileUpload) â”€â”€ */
+    /* Render inline panels (University, Exam, User, Settings, FileUpload) */
 
     const renderExams = () => {
         const groupOptions = Array.from(new Set(exams.map((exam) => String(exam.group_category || 'Custom')))).sort();
@@ -1719,7 +1729,7 @@ export default function AdminDashboard() {
         </div>
     );
 
-    /* â”€â”€ Content Router â”€â”€ */
+    /* Content Router */
     const renderContent = () => {
         const r = user?.role || 'student';
 
@@ -1727,18 +1737,18 @@ export default function AdminDashboard() {
         if (['settings', 'users', 'exports', 'file-upload', 'logs'].includes(tab) && !['superadmin', 'admin'].includes(r)) {
             return <div className="text-center py-20 text-red-400 bg-red-500/5 rounded-2xl border border-red-500/10">Unauthorized Access. You do not have permission to view this module.</div>;
         }
-        if (tab === 'student-management' && !['superadmin', 'admin', 'moderator'].includes(r)) {
+        if (['student-management', 'subscription-plans'].includes(tab) && !['superadmin', 'admin', 'moderator'].includes(r)) {
             return <div className="text-center py-20 text-red-400 bg-red-500/5 rounded-2xl border border-red-500/10">Unauthorized Access. Student management rights required.</div>;
         }
         if (['contact', 'featured', 'student-dashboard-control'].includes(tab) && !['superadmin', 'admin', 'moderator'].includes(r)) {
             return <div className="text-center py-20 text-red-400 bg-red-500/5 rounded-2xl border border-red-500/10">Unauthorized Access. Minimal moderator rights required.</div>;
         }
-        if (['universities', 'exams', 'live-monitor', 'question-bank', 'news', 'services', 'resources', 'banners', 'home-control', 'reports'].includes(tab) && !['superadmin', 'admin', 'moderator', 'editor'].includes(r)) {
+        if (['universities', 'exams', 'live-monitor', 'question-bank', 'news', 'resources', 'banners', 'home-control', 'reports'].includes(tab) && !['superadmin', 'admin', 'moderator', 'editor'].includes(r)) {
             return <div className="text-center py-20 text-red-400 bg-red-500/5 rounded-2xl border border-red-500/10">Unauthorized Access. Editor rights required.</div>;
         }
 
         switch (tab) {
-            case 'dashboard': return <DashboardHome universities={universities} exams={exams} users={users} onTabChange={setTab} />;
+            case 'dashboard': return <DashboardHome universities={universities} exams={exams} users={users} onTabChange={handleTabChange} />;
             case 'universities': return <UniversitiesPanel />;
             case 'featured': return <FeaturedUniversitiesPanel />;
             case 'student-dashboard-control': return <StudentDashboardControlPanel />;
@@ -1752,14 +1762,13 @@ export default function AdminDashboard() {
                             News management has moved to the dedicated admin route tree.
                         </p>
                         <div className="mt-6">
-                            <button className="btn-primary" onClick={() => navigate('/admin/news')}>
-                                Open /admin/news
+                            <button className="btn-primary" onClick={() => navigate('/__cw_admin__/news/dashboard')}>
+                                Open News Console
                             </button>
                         </div>
                     </div>
                 );
             case 'question-bank': return <QuestionBankPanel />;
-            case 'services': return <ServicesPanel />;
             case 'resources': return <ResourcesPanel />;
             case 'contact': return <ContactPanel />;
             case 'banners': return <BannerPanel />;
@@ -1770,7 +1779,21 @@ export default function AdminDashboard() {
             case 'file-upload': return renderFileUpload();
             case 'reports': return <ReportsPanel exams={exams} users={users} />;
             case 'home-control': return <HomeControlPanel />;
-            case 'student-management': return <StudentManagementPanel />;
+            case 'student-management': return <StudentManagementPanel initialTab={studentManagementTab} />;
+            case 'subscription-plans':
+                return (
+                    <div className="rounded-2xl border border-indigo-500/20 bg-slate-900/60 p-8 text-center">
+                        <h3 className="text-2xl font-bold text-white">Subscription Plans Module</h3>
+                        <p className="mt-2 text-sm text-slate-400">
+                            Subscription plans management has moved to dedicated admin routes.
+                        </p>
+                        <div className="mt-6">
+                            <button className="btn-primary" onClick={() => navigate('/__cw_admin__/subscription-plans')}>
+                                Open /__cw_admin__/subscription-plans
+                            </button>
+                        </div>
+                    </div>
+                );
             case 'security': return <SecuritySettingsPanel />;
             case 'users': return <UsersPanel />;
             case 'password': return <PasswordPanel />;
@@ -1778,16 +1801,16 @@ export default function AdminDashboard() {
             case 'admin-profile': return <AdminProfilePanel />;
             case 'settings': return <SiteSettingsPanel />;
             case 'logs': return <SystemLogsPanel />;
-            default: return <DashboardHome universities={universities} exams={exams} users={users} onTabChange={setTab} />;
+            default: return <DashboardHome universities={universities} exams={exams} users={users} onTabChange={handleTabChange} />;
         }
     };
 
     return (
-        <div className="min-h-screen bg-slate-950/65 flex overflow-x-hidden">
+        <div className="min-h-screen bg-background text-text dark:bg-slate-950/65 dark:text-dark-text flex overflow-x-hidden">
             {/* Sidebar */}
             <AdminSidebar
                 activeTab={tab}
-                onTabChange={setTab}
+                onTabChange={handleTabChange}
                 sidebarOpen={sidebarOpen}
                 setSidebarOpen={setSidebarOpen}
                 collapsed={sidebarCollapsed}
@@ -1805,15 +1828,15 @@ export default function AdminDashboard() {
                     loading={loading}
                     user={user}
                     onLogout={handleLogout}
-                    onTabChange={setTab}
+                    onTabChange={handleTabChange}
                 />
 
-                <div className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 lg:p-6">
                     {renderContent()}
                 </div>
             </main>
 
-            {/* â”€â”€ Modals â”€â”€ */}
+            {/* Modals */}
             {uniModal === 'create' && (
                 <Modal title="Add University" onClose={() => setUniModal(null)}>
                     <UniversityForm onSave={handleCreateUni} onClose={() => setUniModal(null)} />
@@ -1874,7 +1897,3 @@ export default function AdminDashboard() {
         </div>
     );
 }
-
-
-
-

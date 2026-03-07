@@ -19,7 +19,7 @@ export async function getActiveBanners(req: Request, res: Response): Promise<voi
     try {
         const now = new Date();
         const slotRaw = String(req.query.slot || '').trim().toLowerCase();
-        const slot = slotRaw === 'top' || slotRaw === 'middle' || slotRaw === 'footer' ? slotRaw : '';
+        const slot = slotRaw === 'top' || slotRaw === 'middle' || slotRaw === 'footer' || slotRaw === 'home_ads' ? slotRaw : '';
         const query: Record<string, unknown> = {
             isActive: true,
             status: 'published',
@@ -51,7 +51,7 @@ export async function adminCreateBanner(req: AuthRequest, res: Response): Promis
     try {
         const body = (req.body || {}) as Record<string, unknown>;
         const slotRaw = String(body.slot || 'top').trim().toLowerCase();
-        const slot = slotRaw === 'middle' || slotRaw === 'footer' ? slotRaw : 'top';
+        const slot = slotRaw === 'middle' || slotRaw === 'footer' || slotRaw === 'home_ads' ? slotRaw : 'top';
         const priority = Number(body.priority || 0);
         const statusRaw = String(body.status || 'draft').trim().toLowerCase();
         const status = statusRaw === 'published' ? 'published' : 'draft';
@@ -80,7 +80,7 @@ export async function adminUpdateBanner(req: Request, res: Response): Promise<vo
         const update: Record<string, unknown> = { ...body };
         if (body.slot !== undefined) {
             const slotRaw = String(body.slot || '').trim().toLowerCase();
-            update.slot = slotRaw === 'middle' || slotRaw === 'footer' ? slotRaw : 'top';
+            update.slot = slotRaw === 'middle' || slotRaw === 'footer' || slotRaw === 'home_ads' ? slotRaw : 'top';
         }
         if (body.priority !== undefined) update.priority = Number(body.priority || 0);
         if (body.status !== undefined) update.status = String(body.status || '').toLowerCase() === 'published' ? 'published' : 'draft';

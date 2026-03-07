@@ -1,7 +1,13 @@
 ﻿import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Bell, Plus, Edit, Trash2, RefreshCw, Save, X, ToggleLeft, ToggleRight, AlertCircle } from 'lucide-react';
-import api from '../../services/api';
+import {
+    adminCreateAlert,
+    adminDeleteAlert,
+    adminGetAlerts,
+    adminPublishAlert,
+    adminUpdateAlert,
+} from '../../services/api';
 
 interface HomeAlert {
     _id: string;
@@ -26,8 +32,6 @@ interface HomeAlert {
     createdAt: string;
 }
 
-const ADMIN_PATH = import.meta.env.VITE_ADMIN_PATH || 'campusway-secure-admin';
-
 const emptyForm = {
     title: '',
     message: '',
@@ -44,16 +48,19 @@ const emptyForm = {
 export default function AlertsPanel() {
     const [alerts, setAlerts] = useState<HomeAlert[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [modal, setModal] = useState<null | 'create' | HomeAlert>(null);
     const [form, setForm] = useState(emptyForm);
     const [saving, setSaving] = useState(false);
 
     const fetchAlerts = async () => {
         setLoading(true);
+        setLoadError('');
         try {
-            const { data } = await api.get(`/${ADMIN_PATH}/alerts`);
+            const { data } = await adminGetAlerts();
             setAlerts(data.alerts || []);
         } catch {
+            setLoadError('Failed to load alerts');
             toast.error('Failed to load alerts');
         } finally {
             setLoading(false);
@@ -122,10 +129,10 @@ export default function AlertsPanel() {
                 endAt: form.endAt || undefined,
             };
             if (modal === 'create') {
-                await api.post(`/${ADMIN_PATH}/alerts`, payload);
+                await adminCreateAlert(payload);
                 toast.success('Alert created');
             } else if (modal && typeof modal === 'object') {
-                await api.put(`/${ADMIN_PATH}/alerts/${modal._id}`, payload);
+                await adminUpdateAlert(modal._id, payload);
                 toast.success('Alert updated');
             }
             setModal(null);
@@ -140,7 +147,7 @@ export default function AlertsPanel() {
     const deleteAlert = async (id: string) => {
         if (!confirm('Delete this alert?')) return;
         try {
-            await api.delete(`/${ADMIN_PATH}/alerts/${id}`);
+            await adminDeleteAlert(id);
             toast.success('Alert deleted');
             void fetchAlerts();
         } catch {
@@ -150,7 +157,7 @@ export default function AlertsPanel() {
 
     const toggleAlert = async (id: string, publish: boolean) => {
         try {
-            await api.put(`/${ADMIN_PATH}/alerts/${id}/publish`, { publish });
+            await adminPublishAlert(id, publish);
             void fetchAlerts();
         } catch {
             toast.error('Failed to change publish state');
@@ -202,14 +209,74 @@ export default function AlertsPanel() {
                     <div className="p-12 text-center">
                         <RefreshCw className="w-8 h-8 text-indigo-400 animate-spin mx-auto" />
                     </div>
+                ) : loadError ? (
+                    <div className="p-8 text-center">
+                        <AlertCircle className="w-10 h-10 text-rose-400 mx-auto mb-3" />
+                        <p className="text-sm text-rose-300">{loadError}</p>
+                        <button
+                            type="button"
+                            onClick={() => void fetchAlerts()}
+                            className="mt-3 inline-flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200 hover:bg-rose-500/20"
+                        >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            Retry
+                        </button>
+                    </div>
                 ) : alerts.length === 0 ? (
                     <div className="p-12 text-center">
                         <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                         <p className="text-slate-500">No alerts yet. Create one to broadcast to students.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                    <>
+                        <div className="md:hidden space-y-2 p-3">
+                            {alerts.map((alert) => {
+                                const targetSummary = alert.target?.type === 'groups'
+                                    ? `Groups (${(alert.target.groupIds || []).length})`
+                                    : alert.target?.type === 'users'
+                                        ? `Users (${(alert.target.userIds || []).length})`
+                                        : 'All Students';
+                                return (
+                                    <article key={alert._id} className="rounded-xl border border-indigo-500/15 bg-slate-950/60 p-3">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-white break-words">{alert.title || 'Untitled'}</p>
+                                                <p className="mt-1 text-xs text-slate-400 break-words">{alert.message}</p>
+                                            </div>
+                                            <span className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-semibold ${isActiveNow(alert) ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                                                {isActiveNow(alert) ? 'Live' : alert.status}
+                                            </span>
+                                        </div>
+                                        <p className="mt-2 text-[11px] text-slate-400">Target: {targetSummary}</p>
+                                        <p className="text-[11px] text-slate-500 break-words">
+                                            {alert.startAt ? new Date(alert.startAt).toLocaleString() : 'Now'}
+                                            {alert.endAt ? ` -> ${new Date(alert.endAt).toLocaleString()}` : ' -> Open'}
+                                        </p>
+                                        <div className="mt-3 flex items-center gap-1">
+                                            <button
+                                                onClick={() => void toggleAlert(alert._id, alert.status !== 'published')}
+                                                className="p-1.5 hover:bg-white/5 rounded-lg"
+                                                title={alert.status === 'published' ? 'Unpublish' : 'Publish'}
+                                            >
+                                                {alert.status === 'published'
+                                                    ? <ToggleRight className="w-4 h-4 text-emerald-400" />
+                                                    : <ToggleLeft className="w-4 h-4 text-slate-500" />
+                                                }
+                                            </button>
+                                            <button onClick={() => openEdit(alert)} className="p-1.5 hover:bg-amber-500/10 rounded-lg" title="Edit">
+                                                <Edit className="w-4 h-4 text-amber-400" />
+                                            </button>
+                                            <button onClick={() => void deleteAlert(alert._id)} className="p-1.5 hover:bg-red-500/10 rounded-lg" title="Delete">
+                                                <Trash2 className="w-4 h-4 text-red-400" />
+                                            </button>
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </div>
+
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-indigo-500/10">
                                     {['Title', 'Target', 'Ack', 'Metrics', 'Schedule', 'Status', 'Actions'].map((header) => (
@@ -227,8 +294,8 @@ export default function AlertsPanel() {
                                     return (
                                         <tr key={alert._id} className="border-b border-indigo-500/5 hover:bg-white/[0.02] transition-colors">
                                             <td className="py-3 px-4">
-                                                <p className="text-white font-medium truncate max-w-[200px]">{alert.title || 'Untitled'}</p>
-                                                <p className="text-xs text-slate-500 truncate max-w-[240px]">{alert.message}</p>
+                                                <p className="text-white font-medium max-w-[320px] break-words">{alert.title || 'Untitled'}</p>
+                                                <p className="text-xs text-slate-500 max-w-[360px] break-words">{alert.message}</p>
                                             </td>
                                             <td className="py-3 px-4 text-xs text-slate-300">{targetSummary}</td>
                                             <td className="py-3 px-4 text-xs text-slate-300">{alert.requireAck ? 'Required' : 'Optional'}</td>
@@ -238,7 +305,7 @@ export default function AlertsPanel() {
                                             </td>
                                             <td className="py-3 px-4 text-xs text-slate-400">
                                                 {alert.startAt ? new Date(alert.startAt).toLocaleString() : 'Now'}
-                                                {alert.endAt ? ` → ${new Date(alert.endAt).toLocaleString()}` : ' → Open'}
+                                                {alert.endAt ? ` -> ${new Date(alert.endAt).toLocaleString()}` : ' -> Open'}
                                             </td>
                                             <td className="py-3 px-4">
                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${isActiveNow(alert) ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
@@ -269,8 +336,9 @@ export default function AlertsPanel() {
                                     );
                                 })}
                             </tbody>
-                        </table>
-                    </div>
+                            </table>
+                        </div>
+                    </>
                 )}
             </div>
 
@@ -304,7 +372,7 @@ export default function AlertsPanel() {
                                     className="w-full bg-slate-950/65 border border-indigo-500/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-indigo-500/30 outline-none resize-none"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
                                     <label className="text-xs text-slate-400 mb-1 block">Priority</label>
                                     <input
@@ -324,7 +392,7 @@ export default function AlertsPanel() {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
                                     <label className="text-xs text-slate-400 mb-1 block">Target Type</label>
                                     <select
@@ -347,7 +415,7 @@ export default function AlertsPanel() {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
                                     <label className="text-xs text-slate-400 mb-1 block">Start At</label>
                                     <input
@@ -367,7 +435,7 @@ export default function AlertsPanel() {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <label className="flex items-center gap-3 cursor-pointer bg-slate-950/65 p-3 rounded-xl border border-indigo-500/10">
                                     <input
                                         type="checkbox"

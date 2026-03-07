@@ -1,0 +1,794 @@
+[
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "light",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 360,
+    "theme": "dark",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5173/",
+    "pageErrors": []
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/universities",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/universities\nCall log:\n\u001b[2m  - navigating to \"http://127",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/news",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/subscription-plans",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/subscription-plans\nCall log:\n\u001b[2m  - navigating to \"http",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/admin/login",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/student/login\nCall log:\n\u001b[2m  - navigating to \"http://12",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "route": "/admin/dashboard",
+    "ok": false,
+    "status": "error_page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:",
+    "pageErrors": [
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+    ]
+  }
+]

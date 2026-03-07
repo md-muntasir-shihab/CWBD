@@ -15,18 +15,20 @@ import { addAuthSessionStreamClient } from '../realtime/authSessionStream';
 import { AuthRequest } from '../middlewares/auth';
 import { getClientIp, getDeviceInfo } from '../utils/requestMeta';
 import { sendCampusMail } from '../utils/mailer';
-import { resolvePermissions } from '../utils/permissions';
+import { resolvePermissions, resolvePermissionsV2 } from '../utils/permissions';
 import { SecurityConfig, getSecurityConfig, invalidateSecurityConfigCache, TwoFactorMethod } from '../services/securityConfigService';
 import { getBrowserFingerprint, terminateSessions, terminateSessionsForUser } from '../services/sessionSecurityService';
 import { generateOtpCode, hashOtpCode, maskEmail, normalizeTwoFactorMethod, sendOtpChallenge } from '../services/twoFactorService';
 import { getRuntimeSettingsSnapshot } from '../services/runtimeSettingsService';
-import { upsertCredentialMirror } from '../services/credentialVaultService';
 import { isPasswordCompliant, updateSecuritySettingsSnapshot } from '../services/securityCenterService';
+import { upsertCredentialMirror } from '../services/credentialVaultService';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.REFRESH_SECRET || 'refresh_secret';
 const APP_DOMAIN = process.env.APP_DOMAIN || 'http://localhost:5173';
-const ADMIN_PATH = process.env.ADMIN_SECRET_PATH || 'campusway-secure-admin';
+const ADMIN_UI_PATH = process.env.ADMIN_UI_PATH || '__cw_admin__';
+
+type LoginPortal = 'student' | 'admin' | 'chairman';
 
 interface AccessTokenPayload {
     _id: string;
@@ -35,6 +37,7 @@ interface AccessTokenPayload {
     role: string;
     fullName: string;
     permissions: Partial<IUserPermissions>;
+    permissionsV2?: Record<string, Record<string, boolean>>;
     sessionId?: string;
 }
 
@@ -47,6 +50,7 @@ function generateAccessToken(user: IUser, fullName: string, sessionId?: string, 
         role: user.role,
         fullName,
         permissions: user.permissions,
+        permissionsV2: (user.permissionsV2 as Record<string, Record<string, boolean>> | undefined) || resolvePermissionsV2(user.role),
         sessionId,
     };
     return jwt.sign(payload, JWT_SECRET, { expiresIn: expiresInSeconds });
@@ -62,7 +66,29 @@ function hashToken(token: string): string {
 }
 
 function getRedirectPath(role: string): string {
-    return role === 'student' ? '/student/dashboard' : `/${ADMIN_PATH}`;
+    if (role === 'student') return '/dashboard';
+    if (role === 'chairman') return '/chairman/dashboard';
+    return `/${ADMIN_UI_PATH}/dashboard`;
+}
+
+function normalizePortal(value: unknown): LoginPortal | null {
+    const portal = String(value || '').trim().toLowerCase();
+    if (portal === 'student' || portal === 'admin' || portal === 'chairman') return portal;
+    return null;
+}
+
+function portalAllowsRole(portal: LoginPortal | null, role: string): boolean {
+    if (!portal) return true;
+    if (portal === 'student') return role === 'student';
+    if (portal === 'chairman') return role === 'chairman';
+    if (portal === 'admin') return isAdminRole(role);
+    return true;
+}
+
+function roleMismatchMessage(portal: LoginPortal): string {
+    if (portal === 'student') return 'This login is for students only.';
+    if (portal === 'chairman') return 'This login is for chairman accounts only.';
+    return 'This login is for admin accounts only.';
 }
 
 type OauthProviderKey = 'google' | 'apple' | 'twitter';
@@ -75,25 +101,25 @@ function getOauthStatus() {
         enabled: boolean;
         configured: boolean;
     }> = [
-        {
-            id: 'google',
-            label: 'Google',
-            enabled: oauthEnabled && String(process.env.OAUTH_GOOGLE_ENABLED || '').trim().toLowerCase() === 'true',
-            configured: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-        },
-        {
-            id: 'apple',
-            label: 'Apple',
-            enabled: oauthEnabled && String(process.env.OAUTH_APPLE_ENABLED || '').trim().toLowerCase() === 'true',
-            configured: Boolean(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
-        },
-        {
-            id: 'twitter',
-            label: 'Twitter',
-            enabled: oauthEnabled && String(process.env.OAUTH_TWITTER_ENABLED || '').trim().toLowerCase() === 'true',
-            configured: Boolean(process.env.TWITTER_CLIENT_ID && process.env.TWITTER_CLIENT_SECRET),
-        },
-    ];
+            {
+                id: 'google',
+                label: 'Google',
+                enabled: oauthEnabled && String(process.env.OAUTH_GOOGLE_ENABLED || '').trim().toLowerCase() === 'true',
+                configured: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+            },
+            {
+                id: 'apple',
+                label: 'Apple',
+                enabled: oauthEnabled && String(process.env.OAUTH_APPLE_ENABLED || '').trim().toLowerCase() === 'true',
+                configured: Boolean(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
+            },
+            {
+                id: 'twitter',
+                label: 'Twitter',
+                enabled: oauthEnabled && String(process.env.OAUTH_TWITTER_ENABLED || '').trim().toLowerCase() === 'true',
+                configured: Boolean(process.env.TWITTER_CLIENT_ID && process.env.TWITTER_CLIENT_SECRET),
+            },
+        ];
     return { oauthEnabled, providers };
 }
 
@@ -204,7 +230,7 @@ function setRefreshCookie(res: Response, refreshToken: string, ttlDays = 7): voi
 }
 
 function isAdminRole(role: string): boolean {
-    return ['superadmin', 'admin', 'moderator', 'editor', 'viewer'].includes(role);
+    return ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'].includes(role);
 }
 
 function needsTwoFactor(user: IUser, security: SecurityConfig): boolean {
@@ -251,6 +277,7 @@ async function buildUserPayload(user: IUser): Promise<Record<string, unknown>> {
         fullName,
         status: user.status,
         permissions: user.permissions,
+        permissionsV2: user.permissionsV2 || resolvePermissionsV2(user.role),
         mustChangePassword: user.mustChangePassword,
         redirectTo: getRedirectPath(user.role),
         profile_photo: user.profile_photo || '',
@@ -410,6 +437,7 @@ export async function login(req: Request, res: Response): Promise<void> {
         const identifierRaw = req.body.identifier || req.body.email || req.body.username;
         const identifier = String(identifierRaw || '').trim().toLowerCase();
         const password = String(req.body.password || '');
+        const portal = normalizePortal(req.body.portal);
 
         if (!identifier || !password) {
             res.status(400).json({ message: 'Username/email and password are required' });
@@ -425,18 +453,42 @@ export async function login(req: Request, res: Response): Promise<void> {
             res.status(401).json({ message: 'Invalid credentials' });
             return;
         }
+
+        if (!portalAllowsRole(portal, user.role)) {
+            res.status(403).json({ message: portal ? roleMismatchMessage(portal) : 'Account role mismatch for this portal.' });
+            return;
+        }
+
         const security = await getSecurityConfig(true);
 
-        const status = normalizeStatus(user.status);
-        if (status === 'suspended' || status === 'blocked') {
+        if (user.role === 'student' && security.panic.disableStudentLogins) {
             await logLoginAttempt({
                 user,
                 success: false,
                 req,
                 identifier,
-                reason: 'account_disabled',
+                reason: 'student_login_disabled_by_policy',
             });
-            res.status(403).json({ message: 'Account is suspended or blocked. Contact support.' });
+            res.status(423).json({
+                code: 'STUDENT_LOGIN_DISABLED',
+                message: 'Student logins are temporarily disabled by administrator policy.',
+            });
+            return;
+        }
+
+        const status = normalizeStatus(user.status);
+        if (status === 'suspended' || status === 'blocked' || status === 'pending') {
+            await logLoginAttempt({
+                user,
+                success: false,
+                req,
+                identifier,
+                reason: status === 'pending' ? 'account_pending_verification' : 'account_disabled',
+            });
+            const msg = status === 'pending'
+                ? 'Your account is pending email verification. Please check your inbox.'
+                : 'Account is suspended or blocked. Contact support.';
+            res.status(403).json({ message: msg });
             return;
         }
 
@@ -493,6 +545,9 @@ export async function login(req: Request, res: Response): Promise<void> {
         user.device_info = deviceInfo;
         if (!user.permissions) {
             user.permissions = resolvePermissions(user.role);
+        }
+        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object') {
+            user.permissionsV2 = resolvePermissionsV2(user.role);
         }
         await user.save();
 
@@ -571,6 +626,16 @@ export async function login(req: Request, res: Response): Promise<void> {
         console.error('login error:', error);
         res.status(500).json({ message: 'Server error' });
     }
+}
+
+export async function loginAdmin(req: Request, res: Response): Promise<void> {
+    req.body = { ...(req.body || {}), portal: 'admin' };
+    await login(req, res);
+}
+
+export async function loginChairman(req: Request, res: Response): Promise<void> {
+    req.body = { ...(req.body || {}), portal: 'chairman' };
+    await login(req, res);
 }
 
 export async function refresh(req: Request, res: Response): Promise<void> {
@@ -748,6 +813,9 @@ export async function verify2fa(req: Request, res: Response): Promise<void> {
         user.device_info = getDeviceInfo(req);
         if (!user.permissions) {
             user.permissions = resolvePermissions(user.role);
+        }
+        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object') {
+            user.permissionsV2 = resolvePermissionsV2(user.role);
         }
         await user.save();
 
@@ -1351,6 +1419,13 @@ export async function register(req: Request, res: Response): Promise<void> {
         const password = String(req.body.password || '');
         const phone = String(req.body.phone || '').trim();
         const security = await getSecurityConfig(true);
+        if (security.panic.disableStudentLogins) {
+            res.status(423).json({
+                code: 'STUDENT_LOGIN_DISABLED',
+                message: 'Student registration is temporarily disabled by administrator policy.',
+            });
+            return;
+        }
 
         if (!fullName || !email || !username) {
             res.status(400).json({ message: 'Full name, username, email and password are required' });
@@ -1381,8 +1456,8 @@ export async function register(req: Request, res: Response): Promise<void> {
             status: 'pending',
             phone_number: phone || undefined,
             permissions: resolvePermissions('student'),
+            permissionsV2: resolvePermissionsV2('student'),
         });
-        await upsertCredentialMirror(newUser._id, password, newUser._id);
 
         await StudentProfile.create({
             user_id: newUser._id,
@@ -1607,13 +1682,10 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
         user.lockUntil = undefined;
         user.password_updated_at = new Date();
         await user.save();
-        await upsertCredentialMirror(user._id, newPassword, user._id);
         await terminateSessionsForUser(String(user._id), 'password_reset', {
             initiatedBy: String(user._id),
             meta: { trigger: 'reset_password' },
         });
-
-        await PasswordReset.deleteOne({ _id: tokenDoc._id });
         await AuditLog.create({
             actor_id: user._id,
             actor_role: user.role,
@@ -1672,6 +1744,7 @@ export async function getMe(req: AuthRequest, res: Response): Promise<void> {
                 fullName,
                 status: user.status,
                 permissions: user.permissions,
+                permissionsV2: user.permissionsV2 || resolvePermissionsV2(user.role),
                 mustChangePassword: user.mustChangePassword,
                 redirectTo: getRedirectPath(user.role),
                 profile_photo: user.profile_photo || '',

@@ -287,7 +287,7 @@ export default function UsersPanel() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+            <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 md:grid-cols-5">
                 <div className="bg-slate-900/65 p-3 rounded-xl text-white">Total: {summary.total}</div>
                 <div className="bg-slate-900/65 p-3 rounded-xl text-emerald-400">Active: {summary.active}</div>
                 <div className="bg-slate-900/65 p-3 rounded-xl text-red-400">Suspended: {summary.suspended}</div>

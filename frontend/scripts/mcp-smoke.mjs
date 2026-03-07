@@ -16,10 +16,11 @@ const routePlan = [
     { route: '/resources', kind: 'public' },
     { route: '/contact', kind: 'public' },
     { route: '/login', kind: 'public' },
-    { route: '/student/login', kind: 'public' },
-    { route: '/student/dashboard', kind: 'student' },
-    { route: '/student/profile', kind: 'student' },
-    { route: '/campusway-secure-admin', kind: 'admin' },
+    { route: '/chairman/login', kind: 'public' },
+    { route: '/__cw_admin__/login', kind: 'public' },
+    { route: '/dashboard', kind: 'student' },
+    { route: '/profile', kind: 'student' },
+    { route: '/__cw_admin__/dashboard', kind: 'admin' },
 ];
 
 function slugify(route) {
@@ -52,21 +53,21 @@ async function monitorPage(page) {
 
 async function loginStudent(context) {
     const page = await context.newPage();
-    await page.goto(`${BASE_URL}/student/login`);
+    await page.goto(`${BASE_URL}/login`);
     await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(STUDENT_EMAIL);
     await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(STUDENT_PASSWORD);
     await page.getByRole('button', { name: /(Sign in|Access Dashboard)/i }).first().click();
-    await page.waitForURL(/\/student\/dashboard/, { timeout: 30000 });
+    await page.waitForURL(/\/dashboard/, { timeout: 30000 });
     await page.close();
 }
 
 async function loginAdmin(context) {
     const page = await context.newPage();
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto(`${BASE_URL}/__cw_admin__/login`);
     await page.locator('input#identifier, input[name="identifier"], input[type="text"], input[type="email"]').first().fill(ADMIN_EMAIL);
     await page.locator('input#password, input[name="password"], input[type="password"]').first().fill(ADMIN_PASSWORD);
     await page.getByRole('button', { name: /Sign In/i }).click();
-    await page.waitForURL(/\/campusway-secure-admin/, { timeout: 30000 });
+    await page.waitForURL(/\/__cw_admin__\/dashboard/, { timeout: 30000 });
     await page.close();
 }
 

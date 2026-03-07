@@ -42,7 +42,7 @@ export interface IExamSession extends Document {
     /* ── Phase 8: Advanced Security & Written Uploads ── */
     cheat_flags: { reason: string; timestamp: Date }[];
     auto_submitted: boolean;
-    status: 'in_progress' | 'submitted' | 'evaluated';
+    status: 'in_progress' | 'submitted' | 'evaluated' | 'expired';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -94,11 +94,12 @@ const ExamSessionSchema = new Schema<IExamSession>({
         timestamp: { type: Date, default: Date.now }
     }],
     auto_submitted: { type: Boolean, default: false },
-    status: { type: String, enum: ['in_progress', 'submitted', 'evaluated'], default: 'in_progress' },
+    status: { type: String, enum: ['in_progress', 'submitted', 'evaluated', 'expired'], default: 'in_progress' },
 }, { timestamps: true, collection: 'exam_attempts' });
 
 ExamSessionSchema.index({ exam: 1, student: 1 });
 ExamSessionSchema.index({ exam: 1, student: 1, isActive: 1 });
+ExamSessionSchema.index({ exam: 1, student: 1, isActive: 1, status: 1, attemptNo: -1 });
 ExamSessionSchema.index({ expiresAt: 1, isActive: 1 });
 
 export default mongoose.model<IExamSession>('ExamSession', ExamSessionSchema);

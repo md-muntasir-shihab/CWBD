@@ -3,6 +3,7 @@ import { User, Upload, Save, Loader2, AlertCircle, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { changePassword, getStudentProfile, updateStudentProfile, uploadStudentDocument } from '../../services/api';
 import AchievementPopupCard from '../../components/ui/AchievementPopupCard';
+import { useMySubscription } from '../../hooks/useSubscriptionPlans';
 
 const normalizeDepartmentValue = (value: string): 'science' | 'arts' | 'commerce' | '' => {
     const normalized = (value || '').trim().toLowerCase();
@@ -14,6 +15,7 @@ const normalizeDepartmentValue = (value: string): 'science' | 'arts' | 'commerce
 };
 
 export default function StudentProfile() {
+    const mySubscriptionQuery = useMySubscription();
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -202,6 +204,7 @@ export default function StudentProfile() {
     );
 
     const completion = profile?.profile_completion || 0;
+    const mySubscription = mySubscriptionQuery.data;
 
     return (
         <div className="w-full max-w-5xl space-y-6 sm:space-y-8">
@@ -217,6 +220,11 @@ export default function StudentProfile() {
             <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Profile &amp; Documents</h1>
                 <p className="text-slate-500 mt-1">Manage your personal information and verified documents</p>
+                {mySubscription?.isActive ? (
+                    <span className="mt-3 inline-flex rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-500">
+                        Active Plan: {mySubscription.planName}
+                    </span>
+                ) : null}
             </div>
 
             {profile?.pendingRequest && (

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Lock, Clock, CheckCircle, AlertTriangle, Calendar, BookOpen, TrendingUp, ChevronRight, ExternalLink, Star, Zap, Loader2, RefreshCw } from 'lucide-react';
+import { Lock, Clock, CheckCircle, AlertTriangle, Calendar, BookOpen, TrendingUp, ChevronRight, Star, Zap, Loader2, RefreshCw } from 'lucide-react';
 import { getStudentExams } from '../services/api';
 import ProfileCompletionLock from '../components/profile/ProfileCompletionLock';
 
@@ -164,66 +164,40 @@ function ExamCardComponent({ exam }: { exam: ExamCard }) {
     );
 }
 
-/* ─── Subscription Gate ─── */
-function SubscriptionRequired() {
+function ExamCardSkeleton() {
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-16">
-            <div className="card p-8 sm:p-12 max-w-md w-full text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-danger/10 rounded-full flex items-center justify-center mx-auto mb-5">
-                    <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-danger" />
-                </div>
-                <h2 className="section-title text-xl sm:text-2xl mb-3">Subscription Required</h2>
-                <p className="text-text-muted dark:text-dark-text/60 text-sm leading-relaxed mb-6">
-                    Access to online exams requires an active subscription. Contact admin to purchase or activate your plan.
-                </p>
-                <div className="space-y-3">
-                    <Link to="/contact" className="btn-primary w-full gap-2">
-                        <ExternalLink className="w-4 h-4" /> Contact Admin to Subscribe
-                    </Link>
-                    <Link to="/" className="btn-outline w-full">Go to Home</Link>
-                </div>
-                <div className="mt-6 p-4 bg-background dark:bg-dark-bg rounded-xl text-left space-y-2">
-                    {['Unlimited exam attempts', 'Access to all mock tests', 'Detailed result analytics', 'Solution review after exam'].map(f => (
-                        <div key={f} className="flex items-center gap-2 text-sm text-text-muted dark:text-dark-text/60">
-                            <CheckCircle className="w-3.5 h-3.5 text-success flex-shrink-0" />{f}
-                        </div>
-                    ))}
-                </div>
+        <div className="card p-4 sm:p-5 animate-pulse space-y-3">
+            <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-5 w-2/3 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-4 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="grid grid-cols-3 gap-2">
+                <div className="h-14 rounded-lg bg-slate-200 dark:bg-slate-700" />
+                <div className="h-14 rounded-lg bg-slate-200 dark:bg-slate-700" />
+                <div className="h-14 rounded-lg bg-slate-200 dark:bg-slate-700" />
             </div>
+            <div className="h-4 w-5/6 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-4 w-4/6 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-10 w-32 rounded-xl bg-slate-200 dark:bg-slate-700" />
         </div>
     );
 }
 
+/* ─── Subscription Gate ─── */
 /* ─── Main Exams Page ─── */
 export default function ExamsPage() {
     const { user, isLoading: authLoading } = useAuth();
-    const [exams, setExams] = useState<ExamCard[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [subscriptionRequired, setSubscriptionRequired] = useState(false);
+    const { data, isLoading: loading, error: queryError } = useQuery({
+        queryKey: ['exams'],
+        queryFn: async () => {
+            const res = await getStudentExams();
+            return res.data as { exams: ExamCard[]; subscriptionActive: boolean };
+        },
+        enabled: !!user,
+        staleTime: 5 * 60 * 1000,
+    });
 
-    useEffect(() => {
-        if (!user) return;
-        setLoading(true);
-        getStudentExams()
-            .then(res => {
-                const data = res.data as { exams: ExamCard[]; subscriptionActive: boolean; subscriptionRequired?: boolean };
-                if (data.subscriptionRequired) {
-                    setSubscriptionRequired(true);
-                } else {
-                    setExams(data.exams || []);
-                }
-                setLoading(false);
-            })
-            .catch(err => {
-                if (err.response?.status === 403 && err.response?.data?.subscriptionRequired) {
-                    setSubscriptionRequired(true);
-                } else {
-                    setError(err.response?.data?.message || 'Failed to load exams.');
-                }
-                setLoading(false);
-            });
-    }, [user]);
+    const exams = data?.exams || [];
+    const error = queryError ? (queryError as any).response?.data?.message || 'Failed to load exams.' : '';
 
     // Gate 1: Auth session bootstrap
     if (authLoading) return (
@@ -231,7 +205,9 @@ export default function ExamsPage() {
             <div className="card p-8 sm:p-12 max-w-md w-full text-center">
                 <Loader2 className="w-8 h-8 mx-auto mb-4 text-primary animate-spin" />
                 <h1 className="section-title text-xl sm:text-2xl mb-3">Checking session</h1>
-                <p className="text-text-muted dark:text-dark-text/60 text-sm">Please wait while we verify your account.</p>
+                <p className="text-text-muted dark:text-dark-text/60 text-sm">
+                    Please wait while we verify your account access and load exam eligibility rules for this device.
+                </p>
             </div>
         </div>
     );
@@ -253,9 +229,6 @@ export default function ExamsPage() {
             </div>
         </div>
     );
-
-    // Gate 3: Subscription
-    if (!loading && subscriptionRequired) return <SubscriptionRequired />;
 
     const byStatus = (...statuses: ExamStatus[]) => exams.filter(e => statuses.includes(e.status));
     const activeExams = byStatus('active', 'in_progress');
@@ -322,9 +295,18 @@ export default function ExamsPage() {
             <section className="section-container py-8 sm:py-10 space-y-10">
                 {/* Loading */}
                 {loading && (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                        <p className="text-sm text-text-muted dark:text-dark-text/60">Loading your exams...</p>
+                    <div className="space-y-6" aria-live="polite">
+                        <div className="flex flex-col items-center justify-center pt-4 gap-3">
+                            <Loader2 className="w-9 h-9 text-primary animate-spin" />
+                            <p className="text-sm text-text-muted dark:text-dark-text/60">
+                                Loading your exams, checking access gates, and preparing the latest schedule.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                            <ExamCardSkeleton />
+                            <ExamCardSkeleton />
+                            <ExamCardSkeleton />
+                        </div>
                     </div>
                 )}
 
@@ -384,3 +366,4 @@ export default function ExamsPage() {
         </div>
     );
 }
+

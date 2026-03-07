@@ -244,4 +244,33 @@ ExamSchema.index({ group_category: 1, startDate: 1 });
 ExamSchema.index({ isPublished: 1, startDate: 1, endDate: 1, group_category: 1 });
 ExamSchema.index({ share_link: 1 }, { unique: true, sparse: true });
 
+ExamSchema.pre('validate', function validateExternalExamConfig(next) {
+    const doc = this as IExam;
+    const deliveryMode = String(doc.deliveryMode || 'internal').trim().toLowerCase();
+    const externalExamUrl = String(doc.externalExamUrl || '').trim();
+
+    if (deliveryMode === 'external_link') {
+        if (!externalExamUrl) {
+            next(new Error('externalExamUrl is required when deliveryMode is external_link.'));
+            return;
+        }
+        try {
+            const parsed = new URL(externalExamUrl);
+            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                next(new Error('externalExamUrl must start with http:// or https://'));
+                return;
+            }
+            doc.externalExamUrl = parsed.toString();
+        } catch {
+            next(new Error('externalExamUrl must be a valid URL.'));
+            return;
+        }
+    } else {
+        doc.deliveryMode = 'internal';
+        doc.externalExamUrl = undefined;
+    }
+
+    next();
+});
+
 export default mongoose.model<IExam>('Exam', ExamSchema);

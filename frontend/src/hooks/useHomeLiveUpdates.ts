@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getHomeStreamUrl } from '../services/api';
+import { queryKeys } from '../lib/queryKeys';
 
 const FALLBACK_POLL_MS = 30000;
 
@@ -14,9 +15,15 @@ export default function useHomeLiveUpdates(): void {
         let disposed = false;
 
         const invalidate = () => {
-            queryClient.invalidateQueries({ queryKey: ['home-system'] }).catch(() => undefined);
-            queryClient.invalidateQueries({ queryKey: ['universities'] }).catch(() => undefined);
-            queryClient.invalidateQueries({ queryKey: ['university-categories'] }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.home }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.homeSettings }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.homeSettingsLegacy }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.websiteSettings }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.siteSettings }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.publicSettings }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.universities }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.universityCategories }).catch(() => undefined);
+            queryClient.invalidateQueries({ queryKey: queryKeys.universityCategoriesLegacy }).catch(() => undefined);
             queryClient.invalidateQueries({ queryKey: ['home-clusters-featured'] }).catch(() => undefined);
         };
 

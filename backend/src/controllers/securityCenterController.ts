@@ -21,6 +21,9 @@ const ALLOWED_ROOT_KEYS = [
     'siteAccess',
     'examProtection',
     'logging',
+    'twoPersonApproval',
+    'retention',
+    'panic',
     'rateLimit',
 ];
 

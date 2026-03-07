@@ -1,0 +1,62 @@
+
+> campusway-frontend@1.0.0 dev
+> vite
+
+
+  [32m[1mVITE[22m v6.4.1[39m  [2mready in [0m[1m520[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m2:40:37 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home/stream[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:42:06 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/layout/Navbar.tsx, /src/styles/index.css[22m
+[2m2:42:28 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Universities.tsx, /src/styles/index.css[22m
+[2m2:42:36 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminCorePages.tsx, /src/styles/index.css[22m
+[2m2:50:49 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/styles/index.css[22m
+[2m2:50:55 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Universities.tsx, /src/styles/index.css[22m
+[2m2:51:11 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ExamLanding.tsx, /src/styles/index.css[22m
+[2m2:53:37 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwicGVybWlzc2lvbnNWMiI6e30sInNlc3Npb25JZCI6Ijg5NWIzY2EyLTVmMTYtNGQzOC04ZWY5LTc4MjM2NWRlNjAzOSIsImlhdCI6MTc3MjY1NjQyOCwiZXhwIjoxNzcyNjU3NjI4fQ.RrAUsyag7SGLm-TcFDser52P_TT9B6Rs2N1z7pV0yq8[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+[2m2:53:37 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home/stream[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+[2m2:53:37 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/me[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:38 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwicGVybWlzc2lvbnNWMiI6e30sInNlc3Npb25JZCI6Ijg5NWIzY2EyLTVmMTYtNGQzOC04ZWY5LTc4MjM2NWRlNjAzOSIsImlhdCI6MTc3MjY1NjQyOCwiZXhwIjoxNzcyNjU3NjI4fQ.RrAUsyag7SGLm-TcFDser52P_TT9B6Rs2N1z7pV0yq8[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:39 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home/stream[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:40 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwicGVybWlzc2lvbnNWMiI6e30sInNlc3Npb25JZCI6Ijg5NWIzY2EyLTVmMTYtNGQzOC04ZWY5LTc4MjM2NWRlNjAzOSIsImlhdCI6MTc3MjY1NjQyOCwiZXhwIjoxNzcyNjU3NjI4fQ.RrAUsyag7SGLm-TcFDser52P_TT9B6Rs2N1z7pV0yq8[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home/stream[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:43 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home/stream[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:44 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwicGVybWlzc2lvbnNWMiI6e30sInNlc3Npb25JZCI6Ijg5NWIzY2EyLTVmMTYtNGQzOC04ZWY5LTc4MjM2NWRlNjAzOSIsImlhdCI6MTc3MjY1NjQyOCwiZXhwIjoxNzcyNjU3NjI4fQ.RrAUsyag7SGLm-TcFDser52P_TT9B6Rs2N1z7pV0yq8[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:45 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home/stream[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:53:47 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home/stream[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)

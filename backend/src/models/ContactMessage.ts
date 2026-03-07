@@ -8,6 +8,8 @@ export interface IContactMessage extends Document {
     message: string;
     isRead: boolean;
     isReplied: boolean;
+    ip?: string;
+    userAgent?: string;
     createdAt: Date;
 }
 
@@ -19,6 +21,8 @@ const ContactMessageSchema = new Schema<IContactMessage>({
     message: { type: String, required: true },
     isRead: { type: Boolean, default: false },
     isReplied: { type: Boolean, default: false },
+    ip: { type: String, trim: true },
+    userAgent: { type: String, trim: true },
 }, { timestamps: true });
 
 ContactMessageSchema.index({ createdAt: -1 });

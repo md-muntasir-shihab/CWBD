@@ -1,9 +1,15 @@
 import { APIRequestContext, expect, test } from '@playwright/test';
 
-const adminCreds = {
-    email: process.env.E2E_ADMIN_DESKTOP_EMAIL || 'e2e_admin_desktop@campusway.local',
-    password: process.env.E2E_ADMIN_DESKTOP_PASSWORD || 'E2E_Admin#12345',
-};
+const adminCredsCandidates = [
+    {
+        email: process.env.E2E_ADMIN_DESKTOP_EMAIL || 'e2e_admin_desktop@campusway.local',
+        password: process.env.E2E_ADMIN_DESKTOP_PASSWORD || 'E2E_Admin#12345',
+    },
+    {
+        email: process.env.E2E_ADMIN_MOBILE_EMAIL || 'e2e_admin_mobile@campusway.local',
+        password: process.env.E2E_ADMIN_MOBILE_PASSWORD || 'E2E_Admin#12345',
+    },
+];
 
 type LoginResult = {
     token: string;
@@ -26,10 +32,13 @@ test.describe('Finance + Support Critical Flows', () => {
     let modulesAvailable = true;
     let canRunPasswordReveal = false;
     const strictPasswordReveal = process.env.E2E_STRICT_PASSWORD_REVEAL === 'true';
+    let activeAdminCreds = adminCredsCandidates[0];
 
     test.beforeAll(async ({ request }, workerInfo) => {
         test.skip(workerInfo.project.name.includes('mobile'), 'Finance/support critical suite is desktop-only.');
-        const login = await apiLogin(request, adminCreds.email, adminCreds.password);
+        const loginResult = await apiLoginWithFallback(request, adminCredsCandidates);
+        const login = loginResult.login;
+        activeAdminCreds = loginResult.creds;
         adminToken = login.token;
         canRunPasswordReveal = login.user?.role === 'superadmin';
         const probe = await request.get('/api/campusway-secure-admin/finance/summary', {
@@ -93,7 +102,7 @@ test.describe('Finance + Support Critical Flows', () => {
 
         const mfaRes = await request.post('/api/campusway-secure-admin/auth/mfa/confirm', {
             headers: authHeader(adminToken),
-            data: { password: adminCreds.password },
+            data: { password: activeAdminCreds.password },
         });
         expect(mfaRes.status()).toBe(200);
         const mfaBody = await mfaRes.json();
@@ -269,6 +278,33 @@ test.describe('Finance + Support Critical Flows', () => {
 
 function authHeader(token: string): Record<string, string> {
     return { Authorization: `Bearer ${token}` };
+}
+
+async function apiLoginWithFallback(
+    request: APIRequestContext,
+    candidates: Array<{ email: string; password: string }>,
+): Promise<{ login: LoginResult; creds: { email: string; password: string } }> {
+    let lastStatus = 0;
+    let lastBody: unknown = null;
+
+    for (const creds of candidates) {
+        const response = await request.post('/api/auth/login', {
+            data: { identifier: creds.email, password: creds.password },
+        });
+        lastStatus = response.status();
+        lastBody = await response.json().catch(async () => ({ message: await response.text() }));
+        if (response.status() === 200) {
+            const login = lastBody as LoginResult;
+            expect(login.token).toBeTruthy();
+            return { login, creds };
+        }
+    }
+
+    expect(lastStatus, `Login failed for admin candidates. Last response: ${JSON.stringify(lastBody)}`).toBe(200);
+    return {
+        login: lastBody as LoginResult,
+        creds: candidates[0],
+    };
 }
 
 async function apiLogin(request: APIRequestContext, identifier: string, password: string): Promise<LoginResult> {

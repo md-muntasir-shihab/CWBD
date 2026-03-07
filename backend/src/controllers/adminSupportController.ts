@@ -2,9 +2,11 @@ import { Response } from 'express';
 import mongoose from 'mongoose';
 import AnnouncementNotice from '../models/AnnouncementNotice';
 import AuditLog from '../models/AuditLog';
+import Notification from '../models/Notification';
 import StudentProfile from '../models/StudentProfile';
 import SupportTicket from '../models/SupportTicket';
 import { AuthRequest } from '../middlewares/auth';
+import { broadcastStudentDashboardEvent } from '../realtime/studentDashboardStream';
 import { getClientIp } from '../utils/requestMeta';
 
 function asObjectId(value: unknown): mongoose.Types.ObjectId | null {
@@ -42,6 +44,39 @@ function normalizeStatus(raw: unknown): 'open' | 'in_progress' | 'resolved' | 'c
     const value = String(raw || '').trim().toLowerCase();
     if (value === 'open' || value === 'in_progress' || value === 'resolved' || value === 'closed') return value;
     return 'open';
+}
+
+function toObjectIdList(values: string[]): mongoose.Types.ObjectId[] {
+    const unique = new Set<string>();
+    const output: mongoose.Types.ObjectId[] = [];
+    for (const value of values) {
+        const cleaned = String(value || '').trim();
+        if (!mongoose.Types.ObjectId.isValid(cleaned)) continue;
+        if (unique.has(cleaned)) continue;
+        unique.add(cleaned);
+        output.push(new mongoose.Types.ObjectId(cleaned));
+    }
+    return output;
+}
+
+async function resolveNoticeTargetUserIds(
+    target: 'all' | 'groups' | 'students',
+    targetIds: string[],
+): Promise<mongoose.Types.ObjectId[]> {
+    if (target === 'all') return [];
+    if (target === 'students') {
+        return toObjectIdList(targetIds);
+    }
+
+    const groupIds = toObjectIdList(targetIds);
+    if (groupIds.length === 0) return [];
+
+    const profiles = await StudentProfile.find({ groupIds: { $in: groupIds } })
+        .select('user_id')
+        .lean();
+
+    const userIds = profiles.map((profile) => String(profile.user_id || '')).filter(Boolean);
+    return toObjectIdList(userIds);
 }
 
 async function generateTicketNo(): Promise<string> {
@@ -120,9 +155,38 @@ export async function adminCreateNotice(req: AuthRequest, res: Response): Promis
             createdBy,
         });
 
+        const reminderKey = `notice:${String(notice._id)}`;
+        const targetUserIds = await resolveNoticeTargetUserIds(target, notice.targetIds || []);
+        await Notification.updateOne(
+            { reminderKey },
+            {
+                $set: {
+                    title,
+                    message,
+                    category: 'general',
+                    publishAt: notice.startAt,
+                    expireAt: notice.endAt || null,
+                    isActive: notice.isActive,
+                    linkUrl: '/support',
+                    attachmentUrl: '',
+                    targetRole: 'student',
+                    targetUserIds,
+                    createdBy,
+                    updatedBy: createdBy,
+                },
+                $setOnInsert: { reminderKey },
+            },
+            { upsert: true }
+        );
+        broadcastStudentDashboardEvent({
+            type: 'notification_updated',
+            meta: { action: 'create', source: 'notice', noticeId: String(notice._id) },
+        });
+
         await createAudit(req, 'notice_created', {
             noticeId: String(notice._id),
             target,
+            targetIdsCount: Array.isArray(notice.targetIds) ? notice.targetIds.length : 0,
         });
 
         res.status(201).json({ item: notice, message: 'Notice created successfully' });
@@ -142,6 +206,21 @@ export async function adminToggleNotice(req: AuthRequest, res: Response): Promis
 
         notice.isActive = !notice.isActive;
         await notice.save();
+
+        const actorId = req.user ? asObjectId(req.user._id) : null;
+        await Notification.updateOne(
+            { reminderKey: `notice:${String(notice._id)}` },
+            {
+                $set: {
+                    isActive: notice.isActive,
+                    updatedBy: actorId || undefined,
+                },
+            }
+        );
+        broadcastStudentDashboardEvent({
+            type: 'notification_updated',
+            meta: { action: 'toggle', source: 'notice', noticeId: String(notice._id), isActive: notice.isActive },
+        });
 
         await createAudit(req, 'notice_toggled', {
             noticeId: String(notice._id),

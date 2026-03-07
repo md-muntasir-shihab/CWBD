@@ -1,0 +1,17 @@
+
+> campusway-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+1:32:21 PM [tsx] change in ./src\server.ts Rerunning...
+c[db] MongoDB connected successfully
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+[cron] Starting exam auto-submit worker (every minute).
+1:55:26 PM [tsx] change in ./src\server.ts Rerunning...
+c[db] MongoDB connected successfully
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+[cron] Starting exam auto-submit worker (every minute).
+2:59:23 PM [tsx] change in ./src\server.ts Rerunning...
+c[db] MongoDB connected successfully
+[db] All critical indexes ensured
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+[cron] Starting exam auto-submit worker (every minute).

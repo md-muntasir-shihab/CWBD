@@ -1,0 +1,89 @@
+F:\CampusWay\backend\src\routes\adminRoutes.ts:360
+router.post('/social-links', authorize('superadmin', 'admin'), adminCreateSocialLink);
+                                                               ^
+
+ReferenceError: adminCreateSocialLink is not defined
+    at adminExportUniversitiesLegacy (F:\CampusWay\backend\src\routes\adminRoutes.ts:360:64)
+    at Object.<anonymous> (F:\CampusWay\backend\src\routes\adminRoutes.ts:741:16)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object.transformer (F:\CampusWay\backend\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1556:12)
+    at require (node:internal/modules/helpers:152:16)
+    at path (F:\CampusWay\backend\src\server.ts:14:25)
+    at Object.<anonymous> (F:\CampusWay\backend\src\server.ts:226:7)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object.transformer (F:\CampusWay\backend\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+
+Node.js v24.14.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::5003
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at app.listen (F:\CampusWay\backend\node_modules\express\lib\application.js:635:24)
+    at start (F:\CampusWay\backend\src\server.ts:220:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1984:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 5003
+}
+
+Node.js v24.14.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::5003
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at app.listen (F:\CampusWay\backend\node_modules\express\lib\application.js:635:24)
+    at start (F:\CampusWay\backend\src\server.ts:235:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1984:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 5003
+}
+
+Node.js v24.14.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::5003
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at app.listen (F:\CampusWay\backend\node_modules\express\lib\application.js:635:24)
+    at start (F:\CampusWay\backend\src\server.ts:235:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1984:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 5003
+}
+
+Node.js v24.14.0

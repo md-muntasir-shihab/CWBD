@@ -34,35 +34,48 @@ export default function AdminNewsPasswordSection() {
 
     return (
         <form onSubmit={onSubmit} className="card-flat max-w-xl space-y-4 border border-cyan-500/20 p-4">
+            <input
+                type="text"
+                name="username"
+                autoComplete="username"
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden="true"
+                value="admin"
+                readOnly
+            />
             <div>
                 <h2 className="text-xl font-semibold">Change Password</h2>
-                <p className="text-sm text-slate-400">Update your admin password for News System access.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Update your admin password for News System access.</p>
             </div>
             <label className="space-y-1">
-                <span className="text-xs uppercase tracking-wide text-slate-400">Current Password</span>
+                <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Current Password</span>
                 <input
                     className="input-field"
                     type="password"
+                    autoComplete="current-password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
                 />
             </label>
             <label className="space-y-1">
-                <span className="text-xs uppercase tracking-wide text-slate-400">New Password</span>
+                <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">New Password</span>
                 <input
                     className="input-field"
                     type="password"
+                    autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                 />
             </label>
             <label className="space-y-1">
-                <span className="text-xs uppercase tracking-wide text-slate-400">Confirm New Password</span>
+                <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Confirm New Password</span>
                 <input
                     className="input-field"
                     type="password"
+                    autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required

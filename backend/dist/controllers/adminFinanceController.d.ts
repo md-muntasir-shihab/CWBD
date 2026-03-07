@@ -1,0 +1,27 @@
+import { Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
+export declare function adminFinanceStream(_req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetPayments(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminExportPayments(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminCreatePayment(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminUpdatePayment(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminApprovePayment(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetStudentPayments(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetExpenses(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminCreateExpense(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminUpdateExpense(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetStaffPayouts(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminCreateStaffPayout(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetFinanceSummary(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetFinanceRevenueSeries(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetFinanceExpenseBreakdown(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetFinanceCashflow(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetFinanceStudentGrowth(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetFinancePlanDistribution(_req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetFinanceTestBoard(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetDues(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminUpdateDue(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminSendDueReminder(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminDispatchReminders(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetStudentLtv(req: AuthRequest, res: Response): Promise<void>;
+//# sourceMappingURL=adminFinanceController.d.ts.map

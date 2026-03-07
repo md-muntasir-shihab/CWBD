@@ -11,6 +11,7 @@ import ActiveSession from '../models/ActiveSession';
 import ExamResult from '../models/ExamResult';
 import ExamSession from '../models/ExamSession';
 import { resolvePermissions } from '../utils/permissions';
+import { seedContentPipeline } from './seed-content-pipeline';
 
 type SeedUser = {
     email: string;
@@ -63,6 +64,15 @@ const SEEDED_STUDENTS: SeedUser[] = [
 
 const BACKUP_PATH = path.resolve(process.cwd(), '.e2e-security-backup.json');
 
+function makeDeterministicPhone(seedKey: string, variant: 'student' | 'guardian'): string {
+    const normalized = `${seedKey}:${variant}`.toLowerCase();
+    let hash = 0;
+    for (const ch of normalized) {
+        hash = (hash * 33 + ch.charCodeAt(0)) % 1_000_000_000;
+    }
+    return `01${String(hash).padStart(9, '0')}`.slice(0, 11);
+}
+
 async function upsertSeedUser(seed: SeedUser): Promise<string> {
     const hashed = await bcrypt.hash(seed.password, 12);
     const permissions: IUserPermissions = resolvePermissions(seed.role);
@@ -113,6 +123,8 @@ async function upsertSeedUser(seed: SeedUser): Promise<string> {
     );
 
     if (seed.role === 'student') {
+        const phoneNumber = makeDeterministicPhone(seed.username || seed.email, 'student');
+        const guardianPhone = makeDeterministicPhone(seed.username || seed.email, 'guardian');
         await StudentProfile.findOneAndUpdate(
             { user_id: user._id },
             {
@@ -120,8 +132,8 @@ async function upsertSeedUser(seed: SeedUser): Promise<string> {
                     full_name: seed.fullName,
                     username: seed.username,
                     email: seed.email,
-                    phone_number: '01700000000',
-                    guardian_phone: '01800000000',
+                    phone_number: phoneNumber,
+                    guardian_phone: guardianPhone,
                     department: 'science',
                     ssc_batch: '2022',
                     hsc_batch: '2024',
@@ -222,12 +234,14 @@ async function run(): Promise<void> {
         ]);
 
         await backupAndPatchSecurity();
+        const contentSeed = await seedContentPipeline({ runLabel: 'e2e_prepare' });
 
         const output = {
             ok: true,
             message: 'E2E environment prepared.',
             admins: adminResults,
             students: studentResults,
+            contentSeed,
             backupPath: BACKUP_PATH,
             baseUrl: process.env.E2E_BASE_URL || 'http://localhost:5175',
         };

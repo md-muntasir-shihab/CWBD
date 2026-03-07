@@ -2,112 +2,109 @@ import crypto from 'crypto';
 import mongoose from 'mongoose';
 import CredentialVault from '../models/CredentialVault';
 
-const ALGO = 'aes-256-gcm';
+const CIPHER_ALGO = 'aes-256-gcm';
 const IV_BYTES = 12;
 
-function decodeKey(raw: string): Buffer {
-    const trimmed = raw.trim();
-    if (!trimmed) throw new Error('Credential vault key is empty');
+let warnedNoSecret = false;
+let warnedDecrypt = false;
 
-    // Try base64 first, then hex, then utf8.
-    const base64 = Buffer.from(trimmed, 'base64');
-    if (base64.length === 32) return base64;
+function resolveVaultKey(): Buffer | null {
+    const raw = String(
+        process.env.CREDENTIAL_VAULT_SECRET
+        || process.env.JWT_SECRET
+        || process.env.JWT_ACCESS_SECRET
+        || process.env.ACCESS_TOKEN_SECRET
+        || '',
+    ).trim();
 
-    if (/^[0-9a-fA-F]+$/.test(trimmed)) {
-        const hex = Buffer.from(trimmed, 'hex');
-        if (hex.length === 32) return hex;
+    if (!raw) {
+        if (!warnedNoSecret && process.env.NODE_ENV !== 'test') {
+            warnedNoSecret = true;
+            console.warn('[credential-vault] Secret missing. Mirror is disabled.');
+        }
+        return null;
     }
-
-    const utf = Buffer.from(trimmed, 'utf8');
-    if (utf.length === 32) return utf;
-    throw new Error('Credential vault key must be exactly 32 bytes (base64/hex/utf8)');
+    return crypto.createHash('sha256').update(raw).digest();
 }
 
-function getKey(version: 'current' | 'previous' = 'current'): Buffer {
-    const value = version === 'current'
-        ? process.env.PASSWORD_VAULT_KEY_CURRENT || ''
-        : process.env.PASSWORD_VAULT_KEY_PREVIOUS || '';
-    return decodeKey(value);
+function toObjectId(value: mongoose.Types.ObjectId | string | null | undefined): mongoose.Types.ObjectId | null {
+    if (!value) return null;
+    const text = String(value);
+    if (!mongoose.Types.ObjectId.isValid(text)) return null;
+    return new mongoose.Types.ObjectId(text);
 }
 
-export function isCredentialVaultConfigured(): boolean {
-    try {
-        getKey('current');
-        return true;
-    } catch {
-        return false;
-    }
-}
-
-function encryptPlaintext(plain: string): { encryptedPassword: string; iv: string; authTag: string } {
-    const key = getKey('current');
+function encryptPassword(plainText: string, key: Buffer): string {
     const iv = crypto.randomBytes(IV_BYTES);
-    const cipher = crypto.createCipheriv(ALGO, key, iv);
-    const encrypted = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
-    const authTag = cipher.getAuthTag();
-    return {
-        encryptedPassword: encrypted.toString('base64'),
-        iv: iv.toString('base64'),
-        authTag: authTag.toString('base64'),
-    };
+    const cipher = crypto.createCipheriv(CIPHER_ALGO, key, iv);
+    const encrypted = Buffer.concat([cipher.update(plainText, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted.toString('hex')}`;
 }
 
-function tryDecryptWithKey(encryptedPassword: string, iv: string, authTag: string, key: Buffer): string {
-    const decipher = crypto.createDecipheriv(ALGO, key, Buffer.from(iv, 'base64'));
-    decipher.setAuthTag(Buffer.from(authTag, 'base64'));
-    const plain = Buffer.concat([
-        decipher.update(Buffer.from(encryptedPassword, 'base64')),
-        decipher.final(),
-    ]);
-    return plain.toString('utf8');
-}
-
-export function decryptCredentialMirror(payload: {
-    encryptedPassword: string;
-    iv: string;
-    authTag: string;
-}): string {
-    try {
-        return tryDecryptWithKey(payload.encryptedPassword, payload.iv, payload.authTag, getKey('current'));
-    } catch {
-        const previous = process.env.PASSWORD_VAULT_KEY_PREVIOUS;
-        if (!previous) throw new Error('Failed to decrypt credential mirror');
-        return tryDecryptWithKey(payload.encryptedPassword, payload.iv, payload.authTag, getKey('previous'));
+function decryptPassword(cipherText: string, key: Buffer): string {
+    const [ivHex, tagHex, encryptedHex] = String(cipherText || '').split(':');
+    if (!ivHex || !tagHex || !encryptedHex) {
+        throw new Error('Invalid ciphertext payload');
     }
+    const iv = Buffer.from(ivHex, 'hex');
+    const tag = Buffer.from(tagHex, 'hex');
+    const encrypted = Buffer.from(encryptedHex, 'hex');
+    const decipher = crypto.createDecipheriv(CIPHER_ALGO, key, iv);
+    decipher.setAuthTag(tag);
+    const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+    return decrypted.toString('utf8');
 }
 
 export async function upsertCredentialMirror(
-    userId: string | mongoose.Types.ObjectId,
+    userId: mongoose.Types.ObjectId | string,
     plainPassword: string,
-    updatedBy?: string | mongoose.Types.ObjectId | null
+    actorId?: mongoose.Types.ObjectId | string | null,
 ): Promise<void> {
-    if (!isCredentialVaultConfigured()) return;
+    const password = String(plainPassword || '');
+    if (!password) return;
 
-    const encrypted = encryptPlaintext(plainPassword);
-    await CredentialVault.updateOne(
-        { userId },
+    const key = resolveVaultKey();
+    if (!key) return;
+
+    const userObjectId = toObjectId(userId);
+    if (!userObjectId) return;
+
+    const actorObjectId = toObjectId(actorId || null);
+    const passwordCiphertext = encryptPassword(password, key);
+
+    await CredentialVault.findOneAndUpdate(
+        { user_id: userObjectId },
         {
             $set: {
-                ...encrypted,
-                version: 1,
-                updatedBy: updatedBy || null,
+                password_ciphertext: passwordCiphertext,
+                last_rotated_at: new Date(),
+                updated_by: actorObjectId,
             },
         },
-        { upsert: true }
+        { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 }
 
-export async function revealCredentialMirror(userId: string | mongoose.Types.ObjectId): Promise<string> {
-    if (!isCredentialVaultConfigured()) {
-        throw new Error('Credential vault is not configured');
+export async function revealCredentialMirror(
+    userId: mongoose.Types.ObjectId | string,
+): Promise<string | null> {
+    const key = resolveVaultKey();
+    if (!key) return null;
+
+    const userObjectId = toObjectId(userId);
+    if (!userObjectId) return null;
+
+    const row = await CredentialVault.findOne({ user_id: userObjectId }).lean();
+    if (!row?.password_ciphertext) return null;
+
+    try {
+        return decryptPassword(String(row.password_ciphertext), key);
+    } catch (error) {
+        if (!warnedDecrypt && process.env.NODE_ENV !== 'test') {
+            warnedDecrypt = true;
+            console.warn('[credential-vault] Failed to decrypt mirrored password.', error);
+        }
+        return null;
     }
-
-    const row = await CredentialVault.findOne({ userId }).lean();
-    if (!row) throw new Error('Credential mirror not found for this user');
-
-    return decryptCredentialMirror({
-        encryptedPassword: String(row.encryptedPassword || ''),
-        iv: String(row.iv || ''),
-        authTag: String(row.authTag || ''),
-    });
 }

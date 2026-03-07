@@ -1,0 +1,83 @@
+[
+  {
+    "route": "/",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/news",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/services",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/resources",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/contact",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/login",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/admin/login",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/dashboard",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  },
+  {
+    "route": "/exams",
+    "status": "pass",
+    "note": "ok",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedApi": [],
+    "failedAssets": []
+  }
+]

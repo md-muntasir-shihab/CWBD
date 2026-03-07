@@ -1,0 +1,19 @@
+﻿{
+  "status": "partial",
+  "artifacts": [
+    "backend/src/scripts/migrate-exam-console-v1.ts",
+    "docs/openapi/exam-console.json",
+    "docs/runbooks/exam-console-operations.md",
+    "qa-artifacts/playwright-report/",
+    "qa-artifacts/perf/baseline-report.json",
+    "qa-artifacts/perf/post-fix-report.json",
+    "qa-artifacts/security/zap-summary.json"
+  ],
+  "prs": [],
+  "reports": [
+    "qa-artifacts/perf/baseline-report.json",
+    "qa-artifacts/perf/post-fix-report.json",
+    "qa-artifacts/security/zap-summary.json"
+  ],
+  "timestamp": "2026-02-28T16:20:00+06:00"
+}

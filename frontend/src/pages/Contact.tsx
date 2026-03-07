@@ -1,290 +1,613 @@
-import { useState, FormEvent, useMemo } from 'react';
+import { type ComponentType, type FormEvent, useEffect, useMemo, useState } from "react";
+import { isAxiosError } from "axios";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 import {
-    Mail,
-    Phone,
-    MapPin,
-    Clock,
-    Send,
-    CheckCircle,
     AlertCircle,
+    CheckCircle2,
+    ExternalLink,
     Facebook,
-    MessageCircle,
-    Youtube,
     Instagram,
-    Twitter,
-} from 'lucide-react';
-import { submitContact } from '../services/api';
-import { useWebsiteSettings } from '../hooks/useWebsiteSettings';
+    Link2,
+    Mail,
+    MessageCircle,
+    MessagesSquare,
+    Phone,
+    Send,
+    ShieldCheck,
+} from "lucide-react";
+import { usePublicContactSettings, useSubmitContactMessage } from "../hooks/useContactQueries";
+import { mockPublicContactSettings } from "../mocks/contactMock";
+import type { ContactMessagePayload, PreferredContactMethod, PublicSettingsContactResponse } from "../types/contact";
 
-interface FormData {
+const isMockMode = String(import.meta.env.VITE_USE_MOCK_API || "false").toLowerCase() === "true";
+
+const EMPTY_SETTINGS: PublicSettingsContactResponse = {
+    siteName: "CampusWay",
+    logoUrl: "",
+    siteDescription: "CampusWay support is available for admission and exam guidance.",
+    contactLinks: {},
+    footer: {},
+};
+
+type ContactFormState = {
     name: string;
-    email: string;
     phone: string;
+    email: string;
     subject: string;
     message: string;
+    preferredContact: PreferredContactMethod;
+    consent: boolean;
+};
+
+type ContactFormErrors = Partial<Record<keyof ContactFormState, string>>;
+
+type QuickCard = {
+    id: string;
+    title: string;
+    subtitle: string;
+    value: string;
+    href?: string;
+    icon: ComponentType<{ className?: string }>;
+};
+
+type SocialGridItem = {
+    id: string;
+    name: string;
+    icon?: ComponentType<{ className?: string }>;
+    iconUrl?: string;
+    url: string;
+    enabled: boolean;
+};
+
+const formInitialState: ContactFormState = {
+    name: "",
+    phone: "",
+    email: "",
+    subject: "",
+    message: "",
+    preferredContact: "whatsapp",
+    consent: false,
+};
+
+const preferredContactOptions: Array<{ value: PreferredContactMethod; label: string }> = [
+    { value: "whatsapp", label: "WhatsApp" },
+    { value: "phone", label: "Phone Call" },
+    { value: "email", label: "Email" },
+    { value: "messenger", label: "Messenger" },
+];
+
+const socialPlatformDefs: Array<{
+    id: string;
+    label: string;
+    icon: ComponentType<{ className?: string }>;
+    getUrl: (settings: PublicSettingsContactResponse) => string;
+}> = [
+    {
+        id: "facebook",
+        label: "Facebook",
+        icon: Facebook,
+        getUrl: (settings) => settings.contactLinks.facebookUrl || "",
+    },
+    {
+        id: "telegram",
+        label: "Telegram",
+        icon: Send,
+        getUrl: (settings) => settings.contactLinks.telegramUrl || "",
+    },
+    {
+        id: "instagram",
+        label: "Instagram",
+        icon: Instagram,
+        getUrl: (settings) => settings.contactLinks.instagramUrl || "",
+    },
+    {
+        id: "whatsapp",
+        label: "WhatsApp",
+        icon: MessageCircle,
+        getUrl: (settings) => settings.contactLinks.whatsappUrl || "",
+    },
+    {
+        id: "messenger",
+        label: "Messenger",
+        icon: MessagesSquare,
+        getUrl: (settings) => settings.contactLinks.messengerUrl || "",
+    },
+];
+
+function sectionMotion(index: number) {
+    return {
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.22, delay: index * 0.04, ease: "easeOut" },
+    } as const;
 }
 
-const SUBJECTS = ['General Inquiry', 'Admission Help', 'Technical Issue', 'Partnership', 'Feedback', 'Other'];
+function cleanHref(raw: string): string {
+    return raw.trim();
+}
 
-const socialIcons = {
-    facebook: Facebook,
-    whatsapp: MessageCircle,
-    telegram: Send,
-    twitter: Twitter,
-    youtube: Youtube,
-    instagram: Instagram,
-} as const;
+function buildPhoneHref(phone?: string): string {
+    const value = (phone || "").trim();
+    if (!value) return "";
+    const normalized = value.replace(/\s+/g, "");
+    return `tel:${normalized}`;
+}
+
+function buildEmailHref(email?: string): string {
+    const value = (email || "").trim();
+    if (!value) return "";
+    return `mailto:${value}`;
+}
+
+function validateForm(form: ContactFormState): ContactFormErrors {
+    const errors: ContactFormErrors = {};
+    if (!form.name.trim()) errors.name = "Full name is required.";
+    if (!form.phone.trim()) errors.phone = "Phone is required.";
+    if (!form.subject.trim()) errors.subject = "Subject is required.";
+    if (!form.message.trim()) {
+        errors.message = "Message is required.";
+    } else if (form.message.trim().length < 20) {
+        errors.message = "Message must be at least 20 characters.";
+    }
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+        errors.email = "Enter a valid email address.";
+    }
+    if (!form.consent) errors.consent = "Consent is required.";
+    return errors;
+}
 
 export default function ContactPage() {
-    const { data: settings } = useWebsiteSettings();
-    const [form, setForm] = useState<FormData>({ name: '', email: '', phone: '', subject: '', message: '' });
-    const [errors, setErrors] = useState<Partial<FormData>>({});
-    const [sending, setSending] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const settingsQuery = usePublicContactSettings();
+    const submitMutation = useSubmitContactMessage();
+    const [form, setForm] = useState<ContactFormState>(formInitialState);
+    const [errors, setErrors] = useState<ContactFormErrors>({});
+    const [isDesktop, setIsDesktop] = useState(false);
+    const [submitResult, setSubmitResult] = useState<{ ticketId?: string } | null>(null);
 
-    const validate = (): boolean => {
-        const e: Partial<FormData> = {};
-        if (!form.name.trim()) e.name = 'Name is required';
-        if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = 'Valid email required';
-        if (!form.subject) e.subject = 'Please select a subject';
-        if (form.message.trim().length < 20) e.message = 'Message must be at least 20 characters';
-        setErrors(e);
-        return Object.keys(e).length === 0;
+    useEffect(() => {
+        const media = window.matchMedia("(min-width: 1024px)");
+        const sync = () => setIsDesktop(media.matches);
+        sync();
+        media.addEventListener("change", sync);
+        return () => media.removeEventListener("change", sync);
+    }, []);
+
+    const settings = settingsQuery.data || (isMockMode ? mockPublicContactSettings : EMPTY_SETTINGS);
+
+    const quickCards = useMemo<QuickCard[]>(() => {
+        const whatsappUrl = cleanHref(settings.contactLinks.whatsappUrl || "");
+        const messengerUrl = cleanHref(settings.contactLinks.messengerUrl || "");
+        const phone = settings.contactLinks.phone || "";
+        const email = settings.contactLinks.email || "";
+        return [
+            {
+                id: "whatsapp",
+                title: "WhatsApp",
+                subtitle: "Fast chat support",
+                value: whatsappUrl || "Not Available",
+                href: whatsappUrl || undefined,
+                icon: MessageCircle,
+            },
+            {
+                id: "messenger",
+                title: "Messenger",
+                subtitle: "Direct inbox support",
+                value: messengerUrl || "Not Available",
+                href: messengerUrl || undefined,
+                icon: MessagesSquare,
+            },
+            {
+                id: "phone",
+                title: "Call Now",
+                subtitle: "Speak with support",
+                value: phone || "Not Available",
+                href: buildPhoneHref(phone) || undefined,
+                icon: Phone,
+            },
+            {
+                id: "email",
+                title: "Email",
+                subtitle: "Detailed queries",
+                value: email || "Not Available",
+                href: buildEmailHref(email) || undefined,
+                icon: Mail,
+            },
+        ];
+    }, [settings.contactLinks.email, settings.contactLinks.messengerUrl, settings.contactLinks.phone, settings.contactLinks.whatsappUrl]);
+
+    const socialItems = useMemo<SocialGridItem[]>(() => {
+        const baseItems = socialPlatformDefs.map((item) => {
+            const url = cleanHref(item.getUrl(settings));
+            return {
+                id: item.id,
+                name: item.label,
+                icon: item.icon,
+                url,
+                enabled: Boolean(url),
+            } satisfies SocialGridItem;
+        });
+
+        const customItems = (settings.contactLinks.customLinks || []).map((item, index) => {
+            const url = cleanHref(item.url || "");
+            return {
+                id: `custom-${index}-${item.name}`,
+                name: item.name || "Custom Link",
+                iconUrl: item.iconUrl || "",
+                url,
+                enabled: item.enabled && Boolean(url),
+            } satisfies SocialGridItem;
+        });
+
+        return [...baseItems, ...customItems];
+    }, [settings]);
+
+    const footerNote =
+        settings.footer?.shortNote?.trim() || "By contacting us, you agree to CampusWay terms and privacy policy.";
+
+    const onFieldChange = <K extends keyof ContactFormState>(key: K, value: ContactFormState[K]) => {
+        setForm((prev) => ({ ...prev, [key]: value }));
+        setErrors((prev) => {
+            if (!prev[key]) return prev;
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
     };
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        if (!validate()) return;
-        setSending(true);
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setSubmitResult(null);
+
+        const validationErrors = validateForm(form);
+        setErrors(validationErrors);
+        if (Object.keys(validationErrors).length > 0) return;
+
+        const payload: ContactMessagePayload = {
+            name: form.name.trim(),
+            phone: form.phone.trim(),
+            email: form.email.trim() || undefined,
+            subject: form.subject.trim(),
+            message: form.message.trim(),
+            preferredContact: form.preferredContact,
+            consent: form.consent,
+        };
+
         try {
-            await submitContact(form);
-            setSuccess(true);
-        } catch {
-            setErrors((prev) => ({ ...prev, message: 'Failed to send message. Please try again.' }));
-        } finally {
-            setSending(false);
+            const response = await submitMutation.mutateAsync(payload);
+            setSubmitResult({ ticketId: response.ticketId });
+            setForm((prev) => ({
+                ...formInitialState,
+                preferredContact: prev.preferredContact,
+            }));
+            toast.success("Message sent successfully.");
+        } catch (error: unknown) {
+            const message = isAxiosError<{ message?: string }>(error)
+                ? error.response?.data?.message || "Failed to send message. Please retry."
+                : error instanceof Error
+                  ? error.message
+                  : "Failed to send message. Please retry.";
+            toast.error(message);
         }
     };
 
-    const socialItems = useMemo(() => {
-        const order = settings?.socialUi?.platformOrder?.length
-            ? settings.socialUi.platformOrder
-            : (Object.keys(socialIcons) as Array<keyof typeof socialIcons>);
-        return order
-            .map((platform) => ({ platform, url: settings?.socialLinks?.[platform] || '' }))
-            .filter((item) => Boolean(item.url));
-    }, [settings]);
-
-    const contactCards = [
-        {
-            icon: Mail,
-            color: 'bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/20',
-            label: 'Email',
-            value: settings?.contactEmail || 'info@campusway.com',
-            sub: 'Reply within 24 hours',
-        },
-        {
-            icon: Phone,
-            color: 'bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20',
-            label: 'Phone',
-            value: settings?.contactPhone || '+880 1600-000000',
-            sub: 'Sun-Thu, 9 AM - 6 PM',
-        },
-        {
-            icon: MapPin,
-            color: 'bg-cyan-500/10 text-cyan-500 dark:bg-cyan-500/20',
-            label: 'Office',
-            value: 'Dhaka, Bangladesh',
-            sub: 'Gulshan 2, Block C',
-        },
-        {
-            icon: Clock,
-            color: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20',
-            label: 'Office Hours',
-            value: '9:00 AM - 6:00 PM',
-            sub: 'Saturday closed',
-        },
-    ];
-
-    if (success) {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="card p-8 sm:p-12 max-w-md w-full text-center">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
-                        <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-500" />
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-heading font-bold dark:text-dark-text mb-3">Message Sent!</h2>
-                    <p className="text-text-muted dark:text-dark-text/60 text-sm mb-6">
-                        Thank you for reaching out. We will get back to you soon.
-                    </p>
-                    <button
-                        onClick={() => {
-                            setSuccess(false);
-                            setForm({ name: '', email: '', phone: '', subject: '', message: '' });
-                        }}
-                        className="btn-primary w-full"
-                    >
-                        Send Another Message
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen">
-            <section className="page-hero">
-                <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
-                    <div className="absolute bottom-0 right-20 h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
+        <div className="section-container space-y-5 py-4 sm:space-y-6 sm:py-6 lg:space-y-8 lg:py-8">
+            <motion.section {...sectionMotion(0)} className="card-flat p-5 sm:p-6">
+                <p className="mb-2 inline-flex items-center rounded-full border border-card-border bg-surface2/70 px-3 py-1 text-xs font-semibold text-primary dark:bg-dark-surface/70">
+                    Contact CampusWay
+                </p>
+                <h1 className="text-2xl font-bold text-text dark:text-dark-text sm:text-3xl">We are here to help you</h1>
+                <p className="mt-2 max-w-2xl text-sm text-text-muted dark:text-dark-text/70 sm:text-base">
+                    {settings.siteDescription || "Reach us for admission, exam, and account support."}
+                </p>
+                <div className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm font-medium text-success dark:bg-success/15">
+                    <ShieldCheck className="h-4 w-4" />
+                    Average response time: within 24 hours.
                 </div>
-                <div className="section-container relative py-12 sm:py-16 lg:py-20">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5">
-                        <Mail className="h-4 w-4 text-cyan-200" aria-hidden />
-                        <span className="text-sm text-white/90">We are here to help</span>
+                {settingsQuery.isError && !isMockMode ? (
+                    <div className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+                        <AlertCircle className="h-4 w-4" />
+                        Live contact settings are unavailable.
+                        <button
+                            type="button"
+                            className="rounded-lg border border-warning/40 px-2 py-1 font-semibold"
+                            onClick={() => settingsQuery.refetch()}
+                        >
+                            Retry
+                        </button>
                     </div>
-                    <h1 className="text-3xl font-bold sm:text-4xl lg:text-5xl">Get In Touch</h1>
-                    <p className="max-w-xl text-base text-white/70 sm:text-lg">
-                        Have questions about admissions, exams, or subscriptions? Contact our team.
-                    </p>
-                </div>
-            </section>
+                ) : null}
+            </motion.section>
 
-            <section className="section-container py-8 sm:py-12 lg:py-16">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-10">
-                    <div className="space-y-4 lg:col-span-2">
-                        <h2 className="section-title">Contact Information</h2>
-                        <p className="section-subtitle text-sm">Choose the channel that works best for you.</p>
-
-                        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                            {contactCards.map((card) => (
-                                <div key={card.label} className="card-flat p-4 flex items-center gap-4">
-                                    <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center flex-shrink-0 ${card.color}`}>
-                                        <card.icon className="h-5 w-5" aria-hidden />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[11px] uppercase tracking-wide text-text-muted dark:text-dark-text/50">{card.label}</p>
-                                        <p className="truncate text-sm font-semibold dark:text-dark-text">{card.value}</p>
-                                        <p className="text-xs text-text-muted dark:text-dark-text/50">{card.sub}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="pt-2">
-                            <p className="mb-3 text-sm font-semibold dark:text-dark-text">Follow & Connect</p>
-                            <div className="flex flex-wrap items-center gap-2">
-                                {socialItems.map(({ platform, url }) => {
-                                    const Icon = socialIcons[platform as keyof typeof socialIcons];
-                                    return (
-                                        <a
-                                            key={platform}
-                                            href={url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm transition-all hover:border-indigo-500 hover:text-indigo-600 dark:border-white/10 dark:hover:border-cyan-400"
-                                        >
-                                            <Icon className="h-4 w-4" />
-                                            <span className="capitalize">{platform}</span>
-                                        </a>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="lg:col-span-3">
-                        <div className="card p-5 sm:p-7">
-                            <h2 className="mb-5 text-lg font-bold sm:text-xl">Send a Message</h2>
-                            <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label htmlFor="name" className="mb-1.5 block text-sm font-medium">Full Name <span className="text-rose-500">*</span></label>
-                                        <input
-                                            id="name"
-                                            type="text"
-                                            value={form.name}
-                                            onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                            className={`input-field ${errors.name ? 'border-rose-500 focus:ring-rose-500/30' : ''}`}
-                                            placeholder="Your full name"
-                                            aria-invalid={!!errors.name}
-                                        />
-                                        {errors.name && <p className="mt-1 flex items-center gap-1 text-xs text-rose-500"><AlertCircle className="h-3 w-3" />{errors.name}</p>}
-                                    </div>
-                                    <div>
-                                        <label htmlFor="email" className="mb-1.5 block text-sm font-medium">Email Address <span className="text-rose-500">*</span></label>
-                                        <input
-                                            id="email"
-                                            type="email"
-                                            value={form.email}
-                                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                            className={`input-field ${errors.email ? 'border-rose-500 focus:ring-rose-500/30' : ''}`}
-                                            placeholder="your@email.com"
-                                            aria-invalid={!!errors.email}
-                                        />
-                                        {errors.email && <p className="mt-1 flex items-center gap-1 text-xs text-rose-500"><AlertCircle className="h-3 w-3" />{errors.email}</p>}
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label htmlFor="phone" className="mb-1.5 block text-sm font-medium">Phone (optional)</label>
-                                        <input
-                                            id="phone"
-                                            type="tel"
-                                            value={form.phone}
-                                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                                            className="input-field"
-                                            placeholder="+880 ..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="subject" className="mb-1.5 block text-sm font-medium">Subject <span className="text-rose-500">*</span></label>
-                                        <select
-                                            id="subject"
-                                            value={form.subject}
-                                            onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                                            className={`input-field ${errors.subject ? 'border-rose-500' : ''}`}
-                                            aria-invalid={!!errors.subject}
-                                        >
-                                            <option value="">Select a subject</option>
-                                            {SUBJECTS.map((subject) => <option key={subject}>{subject}</option>)}
-                                        </select>
-                                        {errors.subject && <p className="mt-1 flex items-center gap-1 text-xs text-rose-500"><AlertCircle className="h-3 w-3" />{errors.subject}</p>}
-                                    </div>
+            <motion.section {...sectionMotion(1)} className="space-y-3">
+                <h2 className="text-xl font-bold text-text dark:text-dark-text sm:text-2xl">Quick Contact</h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {quickCards.map((card) => {
+                        const isAvailable = Boolean(card.href);
+                        const content = (
+                            <motion.div
+                                whileHover={isDesktop && isAvailable ? { y: -3 } : undefined}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className={`card-flat flex h-full flex-col gap-3 p-4 ${isAvailable ? "cursor-pointer" : "opacity-70"}`}
+                            >
+                                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                    <card.icon className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <label htmlFor="message" className="mb-1.5 block text-sm font-medium">Message <span className="text-rose-500">*</span></label>
-                                    <textarea
-                                        id="message"
-                                        rows={5}
-                                        value={form.message}
-                                        onChange={(e) => setForm({ ...form, message: e.target.value })}
-                                        className={`input-field resize-none ${errors.message ? 'border-rose-500 focus:ring-rose-500/30' : ''}`}
-                                        placeholder="Describe your query in detail..."
-                                        aria-invalid={!!errors.message}
-                                    />
-                                    <div className="mt-1 flex justify-between">
-                                        {errors.message ? <p className="flex items-center gap-1 text-xs text-rose-500"><AlertCircle className="h-3 w-3" />{errors.message}</p> : <span />}
-                                        <span className="text-xs text-text-muted dark:text-dark-text/50">{form.message.length}/500</span>
-                                    </div>
+                                    <p className="text-sm font-semibold text-text dark:text-dark-text">{card.title}</p>
+                                    <p className="mt-0.5 text-xs text-text-muted dark:text-dark-text/65">{card.subtitle}</p>
                                 </div>
-                                <button type="submit" disabled={sending} className="btn-primary w-full gap-2 py-3">
-                                    {sending ? (
-                                        <>
-                                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                                            <span>Sending...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Send className="h-4 w-4" />
-                                            <span>Send Message</span>
-                                        </>
-                                    )}
-                                </button>
-                            </form>
+                                <p className={`text-sm font-medium ${isAvailable ? "text-text dark:text-dark-text" : "text-text-muted dark:text-dark-text/55"}`}>
+                                    {card.value}
+                                </p>
+                                <div className="mt-auto">
+                                    <span
+                                        className={`inline-flex min-h-[44px] items-center rounded-xl px-3 py-2 text-sm font-semibold ${
+                                            isAvailable
+                                                ? "bg-primary/10 text-primary"
+                                                : "border border-card-border text-text-muted dark:text-dark-text/55"
+                                        }`}
+                                    >
+                                        {isAvailable ? "Open" : "Not Available"}
+                                    </span>
+                                </div>
+                            </motion.div>
+                        );
+
+                        if (!isAvailable) return <div key={card.id}>{content}</div>;
+
+                        return (
+                            <a
+                                key={card.id}
+                                href={card.href}
+                                target={card.id === "phone" || card.id === "email" ? undefined : "_blank"}
+                                rel={card.id === "phone" || card.id === "email" ? undefined : "noopener noreferrer"}
+                                className="block h-full"
+                            >
+                                {content}
+                            </a>
+                        );
+                    })}
+                </div>
+            </motion.section>
+
+            <motion.section {...sectionMotion(2)} className="space-y-3">
+                <h2 className="text-xl font-bold text-text dark:text-dark-text sm:text-2xl">Social Links</h2>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    {socialItems.map((item) => {
+                        const isEnabled = item.enabled;
+                        return (
+                            <div key={item.id} className="card-flat p-3">
+                                {isEnabled ? (
+                                    <a
+                                        href={item.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex min-h-[82px] flex-col items-start justify-between gap-2"
+                                    >
+                                        <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                            {item.iconUrl ? (
+                                                <img src={item.iconUrl} alt={item.name} className="h-5 w-5 object-contain" />
+                                            ) : item.icon ? (
+                                                <item.icon className="h-5 w-5" />
+                                            ) : (
+                                                <Link2 className="h-5 w-5" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-text dark:text-dark-text">{item.name}</p>
+                                            <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-primary">
+                                                Open <ExternalLink className="h-3 w-3" />
+                                            </p>
+                                        </div>
+                                    </a>
+                                ) : (
+                                    <div className="flex min-h-[82px] flex-col items-start justify-between gap-2 opacity-70">
+                                        <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-surface2 text-text-muted dark:bg-dark-surface dark:text-dark-text/60">
+                                            {item.iconUrl ? (
+                                                <img src={item.iconUrl} alt={item.name} className="h-5 w-5 object-contain" />
+                                            ) : item.icon ? (
+                                                <item.icon className="h-5 w-5" />
+                                            ) : (
+                                                <Link2 className="h-5 w-5" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-text dark:text-dark-text">{item.name}</p>
+                                            <p className="mt-0.5 text-xs text-text-muted dark:text-dark-text/55">Not Available</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </motion.section>
+
+            <motion.section {...sectionMotion(3)} className="card-flat p-5 sm:p-6">
+                <h2 className="text-xl font-bold text-text dark:text-dark-text sm:text-2xl">Contact Form</h2>
+                <p className="mt-1 text-sm text-text-muted dark:text-dark-text/65">
+                    Share details clearly so our team can respond faster.
+                </p>
+
+                <form className="mt-5 space-y-4" noValidate onSubmit={handleSubmit}>
+                    {submitResult ? (
+                        <div className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
+                            <p className="inline-flex items-center gap-2 font-semibold">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Message sent.
+                            </p>
+                            {submitResult.ticketId ? <p className="mt-1 text-xs">Ticket ID: {submitResult.ticketId}</p> : null}
+                        </div>
+                    ) : null}
+
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                        <div>
+                            <label htmlFor="contact-name" className="mb-1 block text-sm font-medium text-text dark:text-dark-text">
+                                Full Name <span className="text-danger">*</span>
+                            </label>
+                            <input
+                                id="contact-name"
+                                value={form.name}
+                                onChange={(event) => onFieldChange("name", event.target.value)}
+                                className={`input-field ${errors.name ? "border-danger" : ""}`}
+                                placeholder="Your full name"
+                                autoComplete="name"
+                            />
+                            {errors.name ? <p className="mt-1 text-xs text-danger">{errors.name}</p> : null}
+                        </div>
+                        <div>
+                            <label htmlFor="contact-phone" className="mb-1 block text-sm font-medium text-text dark:text-dark-text">
+                                Phone <span className="text-danger">*</span>
+                            </label>
+                            <input
+                                id="contact-phone"
+                                value={form.phone}
+                                onChange={(event) => onFieldChange("phone", event.target.value)}
+                                className={`input-field ${errors.phone ? "border-danger" : ""}`}
+                                placeholder="+8801XXXXXXXXX"
+                                autoComplete="tel"
+                            />
+                            {errors.phone ? <p className="mt-1 text-xs text-danger">{errors.phone}</p> : null}
                         </div>
                     </div>
+
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                        <div>
+                            <label htmlFor="contact-email" className="mb-1 block text-sm font-medium text-text dark:text-dark-text">
+                                Email (optional)
+                            </label>
+                            <input
+                                id="contact-email"
+                                value={form.email}
+                                onChange={(event) => onFieldChange("email", event.target.value)}
+                                className={`input-field ${errors.email ? "border-danger" : ""}`}
+                                placeholder="you@example.com"
+                                autoComplete="email"
+                            />
+                            {errors.email ? <p className="mt-1 text-xs text-danger">{errors.email}</p> : null}
+                        </div>
+                        <div>
+                            <label htmlFor="contact-subject" className="mb-1 block text-sm font-medium text-text dark:text-dark-text">
+                                Subject <span className="text-danger">*</span>
+                            </label>
+                            <input
+                                id="contact-subject"
+                                value={form.subject}
+                                onChange={(event) => onFieldChange("subject", event.target.value)}
+                                className={`input-field ${errors.subject ? "border-danger" : ""}`}
+                                placeholder="What do you need help with?"
+                            />
+                            {errors.subject ? <p className="mt-1 text-xs text-danger">{errors.subject}</p> : null}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="contact-message" className="mb-1 block text-sm font-medium text-text dark:text-dark-text">
+                            Message <span className="text-danger">*</span>
+                        </label>
+                        <textarea
+                            id="contact-message"
+                            value={form.message}
+                            onChange={(event) => onFieldChange("message", event.target.value)}
+                            className={`input-field min-h-[140px] resize-y ${errors.message ? "border-danger" : ""}`}
+                            placeholder="Write your message in at least 20 characters."
+                        />
+                        <div className="mt-1 flex items-center justify-between">
+                            {errors.message ? <p className="text-xs text-danger">{errors.message}</p> : <span className="text-xs text-text-muted dark:text-dark-text/55">Minimum 20 characters</span>}
+                            <span className="text-xs text-text-muted dark:text-dark-text/55">{form.message.trim().length} chars</span>
+                        </div>
+                    </div>
+
+                    <fieldset>
+                        <legend className="mb-2 text-sm font-medium text-text dark:text-dark-text">Preferred contact method</legend>
+                        <div className="grid grid-cols-2 gap-2">
+                            {preferredContactOptions.map((option) => {
+                                const active = form.preferredContact === option.value;
+                                return (
+                                    <label
+                                        key={option.value}
+                                        className={`flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
+                                            active
+                                                ? "border-primary bg-primary/10 text-primary"
+                                                : "border-card-border text-text dark:text-dark-text"
+                                        }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="preferredContact"
+                                            value={option.value}
+                                            checked={active}
+                                            onChange={() => onFieldChange("preferredContact", option.value)}
+                                            className="h-4 w-4 accent-primary"
+                                        />
+                                        {option.label}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </fieldset>
+
+                    <div>
+                        <label className="flex cursor-pointer items-start gap-2 text-sm text-text dark:text-dark-text">
+                            <input
+                                type="checkbox"
+                                checked={form.consent}
+                                onChange={(event) => onFieldChange("consent", event.target.checked)}
+                                className="mt-0.5 h-4 w-4 rounded accent-primary"
+                            />
+                            <span>I agree to be contacted.</span>
+                        </label>
+                        {errors.consent ? (
+                            <p className="mt-1 inline-flex items-center gap-1 text-xs text-danger">
+                                <AlertCircle className="h-3.5 w-3.5" />
+                                {errors.consent}
+                            </p>
+                        ) : null}
+                    </div>
+
+                    <button type="submit" className="btn-primary w-full" disabled={submitMutation.isPending}>
+                        {submitMutation.isPending ? (
+                            <span className="inline-flex items-center gap-2">
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
+                                Sending...
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-2">
+                                <Send className="h-4 w-4" />
+                                Submit Message
+                            </span>
+                        )}
+                    </button>
+                </form>
+            </motion.section>
+
+            <motion.section {...sectionMotion(4)} className="card-flat p-5 sm:p-6">
+                <h2 className="text-xl font-bold text-text dark:text-dark-text sm:text-2xl">Support Tickets</h2>
+                <p className="mt-1 text-sm text-text-muted dark:text-dark-text/65">
+                    Need tracked follow-up? Use Support Center preview.
+                </p>
+                <div className="mt-4">
+                    <Link to="/support" className="btn-secondary">
+                        Open Support Center Preview
+                    </Link>
                 </div>
-            </section>
+            </motion.section>
+
+            <motion.section {...sectionMotion(5)} className="pb-2 text-center">
+                <p className="text-sm text-text-muted dark:text-dark-text/65">{footerNote}</p>
+                <p className="mt-1 text-xs text-text-muted dark:text-dark-text/55">
+                    <Link to="/terms" className="hover:text-primary">
+                        Terms
+                    </Link>{" "}
+                    ·{" "}
+                    <Link to="/privacy" className="hover:text-primary">
+                        Privacy
+                    </Link>
+                </p>
+            </motion.section>
         </div>
     );
 }

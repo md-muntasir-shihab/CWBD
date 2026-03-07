@@ -1,0 +1,126 @@
+
+> campusway-frontend@1.0.0 dev
+> vite --host 0.0.0.0 --port 5174
+
+
+  [32m[1mVITE[22m v6.4.1[39m  [2mready in [0m[1m1288[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5174[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.0.120:[1m5174[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m2:30:11 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/News.tsx, /src/styles/index.css[22m
+[2m2:30:20 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/SingleNews.tsx, /src/styles/index.css[22m
+[2m2:31:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/admin/StudentManagementPanel.tsx, /src/styles/index.css[22m
+[2m2:32:15 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+[2m2:32:15 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/me[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:16 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:18 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:20 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/admin/StudentManagementPanel.tsx, /src/styles/index.css[22m
+[2m2:32:22 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:30 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:45 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/me[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:46 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:56 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles/index.css, /src/pages/student/StudentResults.tsx, /src/pages/student/StudentLogin.tsx, /src/pages/student/StudentForgotPassword.tsx, /src/pages/student/StudentSupport.tsx, /src/pages/student/StudentDashboard.tsx, /src/pages/student/StudentExamsHub.tsx, /src/pages/student/StudentResources.tsx, /src/pages/student/StudentPayments.tsx, /src/pages/student/StudentResetPassword.tsx, /src/pages/student/StudentResultDetail.tsx, /src/pages/Pricing.tsx, /src/pages/Contact.tsx, /src/App.tsx, /src/components/layout/Navbar.tsx, /src/components/layout/Footer.tsx, /src/components/exam/ExamHeader.tsx, /src/pages/student/StudentProfile.tsx, /src/pages/SingleNews.tsx, /src/pages/ExamResult.tsx, /src/pages/News.tsx, /src/pages/admin-news/AdminNewsConsole.tsx, /src/pages/Exams.tsx, /src/pages/ServiceDetail.tsx, /src/pages/student/StudentApplications.tsx, /src/pages/Home.tsx, /src/hooks/useAuth.tsx, /src/pages/student/StudentExamDetail.tsx, /src/pages/CertificateVerify.tsx, /src/pages/student/StudentNotifications.tsx, /src/pages/student/StudentRegister.tsx, /src/pages/ExamLanding.tsx, /src/pages/UniversityDetails.tsx, /src/pages/Resources.tsx, /src/pages/ExamTaking.tsx, /src/pages/Services.tsx, /src/pages/AdminDashboard.tsx, /src/pages/Profile.tsx, /src/components/student/GlobalAlertGate.tsx, /src/pages/admin-news/sections/AdminNewsItemsSection.tsx, /src/components/auth/OtpForm.tsx, /src/pages/admin-news/sections/AdminNewsExportsSection.tsx, /src/pages/admin-news/sections/AdminNewsSettingsHub.tsx, /src/pages/admin-news/sections/AdminNewsAuditSection.tsx, /src/pages/admin-news/sections/AdminNewsMediaSection.tsx, /src/pages/admin-news/sections/AdminNewsSourcesSection.tsx, /src/pages/admin-news/sections/AdminNewsDashboard.tsx, /src/pages/admin-news/sections/AdminNewsPasswordSection.tsx, /src/components/admin/BackupsPanel.tsx, /src/components/admin/StudentManagementPanel.tsx, /src/components/admin/ExamAnalyticsPanel.tsx, /src/components/admin/UsersPanel.tsx, /src/components/admin/QuestionBankPanel.tsx, /src/components/admin/FeaturedUniversitiesPanel.tsx, /src/components/admin/SystemLogsPanel.tsx, /src/components/admin/FinancePanel.tsx, /src/components/admin/ContactPanel.tsx, /src/components/admin/HomeControlPanel.tsx, /src/components/admin/AdminProfilePanel.tsx, /src/components/admin/SupportTicketsPanel.tsx, /src/components/admin/UniversitiesPanel.tsx, /src/components/admin/ResourcesPanel.tsx, /src/components/admin/LiveExamMonitorPanel.tsx, /src/components/admin/ServicesPanel.tsx, /src/components/admin/AlertsPanel.tsx, /src/components/admin/ExportsPanel.tsx, /src/components/admin/PasswordPanel.tsx, /src/components/admin/QuestionImporter.tsx, /src/components/admin/BannerPanel.tsx, /src/components/admin/SecuritySettingsPanel.tsx, /src/components/admin/SiteSettingsPanel.tsx, /src/pages/admin-news/sections/AdminNewsSettingsSection.tsx, /src/components/admin/DashboardConfigPanel.tsx, /src/components/admin/BadgeManagementPanel.tsx, /src/components/admin/NotificationsPanel.tsx[22m
+[2m2:32:58 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/hooks/useAuth.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m2:32:58 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/styles/index.css, /src/pages/student/StudentLogin.tsx, /src/components/auth/ForceLogoutModal.tsx, /src/components/layout/Navbar.tsx, /src/pages/student/StudentLayout.tsx, /src/pages/admin-news/AdminNewsConsole.tsx, /src/pages/Exams.tsx, /src/pages/Login.tsx, /src/pages/OtpVerification.tsx, /src/pages/admin-news/AdminNewsLogin.tsx, /src/pages/ExamLanding.tsx, /src/pages/AdminDashboard.tsx, /src/components/auth/OtpForm.tsx, /src/components/profile/ProfileCompletionLock.tsx, /src/components/admin/StudentManagementPanel.tsx, /src/components/admin/AdminProfilePanel.tsx[22m
+[2m2:32:58 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:58 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:58 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:58 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news-v2/compose-news-articl[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:58 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/me[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:58 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/me[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:59 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:59 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:32:59 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news-v2/compose-news-articl[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:08 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/News.tsx, /src/styles/index.css[22m
+[2m2:33:19 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/SingleNews.tsx, /src/styles/index.css[22m
+[2m2:33:19 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:19 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news-v2/compose-news-articl[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:20 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:20 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news-v2/compose-news-articl[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:26 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:26 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:26 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news-v2/compose-news-articl[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:27 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:27 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news/settings[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m2:33:27 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/news-v2/compose-news-articl[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)

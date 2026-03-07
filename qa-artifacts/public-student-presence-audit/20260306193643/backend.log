@@ -1,0 +1,349 @@
+
+> campusway-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+[db] MongoDB connected successfully
+[db] Failed to ensure critical indexes: MongoServerError: ns does not exist: campusway_public_student_audit_20260306193643.student_results
+    at Connection.sendCommand (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:559:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Connection.command (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:633:22)
+    at async Server.command (F:\CampusWay\backend\node_modules\mongodb\src\sdam\server.ts:350:21)
+    at async tryOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:289:24)
+    at async executeOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async ListIndexesCursor._initialize (F:\CampusWay\backend\node_modules\mongodb\src\cursor\list_indexes_cursor.ts:33:22)
+    at async ListIndexesCursor.cursorInit (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:949:21)
+    at async ListIndexesCursor.fetchBatch (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:987:7)
+    at async ListIndexesCursor.next (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:608:9)
+    at async ListIndexesCursor.[Symbol.asyncIterator] (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:502:26)
+    at async ListIndexesCursor.toArray (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:696:22)
+    at async Collection.indexes (F:\CampusWay\backend\node_modules\mongodb\src\collection.ts:914:45)
+    at async ensureCriticalIndexes (F:\CampusWay\backend\src\config\db.ts:15:31)
+    at async connectDB (F:\CampusWay\backend\src\config\db.ts:112:9)
+    at async start (F:\CampusWay\backend\src\server.ts:265:5) {
+  errorLabelSet: Set(0) {},
+  errorResponse: {
+    ok: 0,
+    errmsg: 'ns does not exist: campusway_public_student_audit_20260306193643.student_results',
+    code: 26,
+    codeName: 'NamespaceNotFound'
+  },
+  ok: 0,
+  code: 26,
+  codeName: 'NamespaceNotFound'
+}
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+[cron] Starting exam auto-submit worker (every minute).
+🚀 CampusWay Backend running on port 5074
+📡 Public API: http://localhost:5074/api
+🔒 Admin API:  http://localhost:5074/api/campusway-secure-admin
+[0mGET /api/health [32m200[0m 542.270 ms - 87[0m
+[0mGET /api/settings/public [32m200[0m 31.051 ms - -[0m
+[0mPOST /api/auth/login [32m200[0m 474.130 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[0mGET /api/auth/me [32m200[0m 155.546 ms - 867[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 48.628 ms - 956[0m
+[0mGET /api/alerts/active [32m200[0m 88.387 ms - 13[0m
+[0mGET /api/subscriptions/me [32m200[0m 50.725 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 16.060 ms - -[0m
+[0mGET /api/student/notifications [32m200[0m 41.856 ms - 325[0m
+[0mGET /api/student/live-alerts [32m200[0m 40.607 ms - 294[0m
+[0mGET /api/student/featured-universities [32m200[0m 34.801 ms - -[0m
+[0mGET /api/student/exam-history [32m200[0m 39.033 ms - 151[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[0mGET /api/student/upcoming-exams [32m200[0m 88.540 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 22.711 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 55.774 ms - -[0m
+[0mGET /api/home [32m200[0m 55.760 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.260 ms - -[0m
+[0mGET /api/university-categories [32m200[0m 11.816 ms - -[0m
+[0mGET /api/home-settings/public [32m200[0m 11.264 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 156.820 ms - -[0m
+[0mGET /api/home [32m200[0m 165.151 ms - -[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Science+%26+Technology [32m200[0m 44.266 ms - -[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=GST+(General%2FPublic) [32m200[0m 48.844 ms - -[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Individual+Admission [32m200[0m 54.597 ms - -[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=GST+(Science+%26+Technology) [32m200[0m 37.760 ms - 75[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Medical+College [32m200[0m 30.336 ms - -[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=DCU [32m200[0m 24.435 ms - 75[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Specialized+University [32m200[0m 19.668 ms - 75[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Affiliate+College [32m200[0m 17.461 ms - 75[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Under+Army [32m200[0m 35.249 ms - 75[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=AGRI+Cluster [32m200[0m 45.134 ms - -[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Dental+College [32m200[0m 7.130 ms - 75[0m
+[0mGET /api/universities?page=1&limit=300&sort=deadline&category=Nursing+Colleges [32m200[0m 6.389 ms - 75[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 63.333 ms - 956[0m
+[0mGET /api/student/featured-universities [32m200[0m 70.964 ms - -[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 92.834 ms - -[0m
+[0mGET /api/student/notifications [32m200[0m 34.095 ms - 325[0m
+[0mGET /api/student/live-alerts [32m200[0m 20.595 ms - 294[0m
+[0mGET /api/student/exam-history [32m200[0m 13.267 ms - 151[0m
+[0mGET /api/home/stream [32m200[0m 0.327 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 27.095 ms - -[0m
+[0mGET /api/home [32m200[0m 27.599 ms - -[0m
+[0mGET /api/exams/public-list?status=live&page=1&limit=24 [32m200[0m 6.141 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.252 ms - -[0m
+[0mGET /api/news/sources [32m200[0m 8.562 ms - 560[0m
+[0mGET /api/news/settings [32m200[0m 8.141 ms - -[0m
+[0mGET /api/news-v2/widgets [32m200[0m 38.540 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 94.181 ms - -[0m
+[0mGET /api/news?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 79.223 ms - -[0m
+[0mGET /api/home [32m200[0m 79.242 ms - -[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 97.452 ms - 956[0m
+[0mGET /api/alerts/active [36m304[0m 168.825 ms - -[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 168.380 ms - -[0m
+[0mGET /api/student/live-alerts [32m200[0m 56.698 ms - 294[0m
+[0mGET /api/student/notifications [32m200[0m 60.884 ms - 325[0m
+[0mGET /api/student/featured-universities [32m200[0m 140.432 ms - -[0m
+[0mGET /api/student/exam-history [32m200[0m 8.767 ms - 151[0m
+[0mGET /api/home/stream [32m200[0m 0.271 ms - -[0m
+[0mGET /api/resources [32m200[0m 7.445 ms - -[0m
+[0mGET /api/resources [36m304[0m 66.226 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 99.642 ms - -[0m
+[0mGET /api/home [32m200[0m 179.279 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.283 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 155.985 ms - -[0m
+[0mGET /api/home [32m200[0m 143.300 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 54.333 ms - -[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 22.016 ms - 956[0m
+[0mGET /api/student/featured-universities [32m200[0m 25.568 ms - -[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 31.537 ms - -[0m
+[0mGET /api/student/notifications [32m200[0m 10.389 ms - 325[0m
+[0mGET /api/student/exam-history [32m200[0m 12.542 ms - 151[0m
+[0mGET /api/student/live-alerts [32m200[0m 18.304 ms - 294[0m
+[0mGET /api/home/stream [32m200[0m 0.250 ms - -[0m
+[0mGET /api/subscription-plans [32m200[0m 3.736 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 215.594 ms - -[0m
+[0mPOST /api/events/track [32m201[0m 139.087 ms - 49[0m
+[0mPOST /api/events/track [32m201[0m 146.888 ms - 49[0m
+[0mPOST /api/events/track [32m201[0m 154.596 ms - 49[0m
+[0mGET /api/home [32m200[0m 221.148 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.224 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 59.474 ms - -[0m
+[0mGET /api/home [32m200[0m 91.513 ms - -[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 18.412 ms - 956[0m
+[0mGET /api/alerts/active [36m304[0m 29.897 ms - -[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 27.628 ms - -[0m
+[0mGET /api/student/notifications [32m200[0m 14.260 ms - 325[0m
+[0mGET /api/student/featured-universities [32m200[0m 14.781 ms - -[0m
+[0mGET /api/student/live-alerts [32m200[0m 57.724 ms - 294[0m
+[0mGET /api/student/exam-history [32m200[0m 48.839 ms - 151[0m
+[0mGET /api/home/stream [32m200[0m 0.324 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 37.584 ms - -[0m
+[0mGET /api/home [32m200[0m 38.974 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.308 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 131.256 ms - -[0m
+[0mGET /api/home [32m200[0m 144.767 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.198 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 15.699 ms - -[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 21.926 ms - 956[0m
+[0mGET /api/student/featured-universities [32m200[0m 24.487 ms - -[0m
+[0mGET /api/student/live-alerts [32m200[0m 86.248 ms - 294[0m
+[0mGET /api/student/notifications [32m200[0m 95.078 ms - 325[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 99.915 ms - -[0m
+[0mGET /api/student/exam-history [32m200[0m 9.502 ms - 151[0m
+[0mGET /api/student/dashboard/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 14.315 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.701 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 7.603 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 32.302 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 35.398 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 31.627 ms - -[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 119.060 ms - 956[0m
+[0mGET /api/alerts/active [36m304[0m 143.127 ms - -[0m
+[0mGET /api/subscriptions/me [36m304[0m 149.564 ms - -[0m
+[0mGET /api/student/featured-universities [32m200[0m 114.584 ms - -[0m
+[0mGET /api/student/notifications [32m200[0m 31.306 ms - 325[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 141.402 ms - -[0m
+[0mGET /api/student/live-alerts [32m200[0m 28.685 ms - 294[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[0mGET /api/student/exam-history [32m200[0m 31.414 ms - 151[0m
+[0mGET /api/alerts/active [36m304[0m 12.295 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.268 ms - -[0m
+[0mGET /api/student/dashboard/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 8.255 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 16.120 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 103.780 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 119.185 ms - -[0m
+[0mGET /api/exams/public-list?status=live&page=1&limit=24 [32m200[0m 87.266 ms - -[0m
+[0mGET /api/home [32m200[0m 99.229 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 17.442 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 3.343 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.238 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 37.900 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 32.689 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 20.980 ms - -[0m
+[0mGET /api/students/me/results [32m200[0m 84.253 ms - 171[0m
+[0mGET /api/alerts/active [36m304[0m 93.982 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[0mGET /api/alerts/active [36m304[0m 8.195 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.411 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 6.467 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 15.872 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 39.116 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 24.800 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 8.268 ms - -[0m
+[0mGET /api/students/me/payments [32m200[0m 36.081 ms - 135[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[0mGET /api/alerts/active [36m304[0m 83.307 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 8.803 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.240 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 6.756 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 34.123 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 29.317 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 21.302 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[0mGET /api/alerts/active [36m304[0m 23.475 ms - -[0m
+[0mGET /api/students/me/notifications?type=all [32m200[0m 24.104 ms - 351[0m
+[0mGET /api/alerts/active [36m304[0m 88.466 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.281 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 7.430 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 21.640 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 25.559 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 42.206 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 1
+}
+[0mGET /api/alerts/active [36m304[0m 58.203 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 2
+}
+[0mGET /api/subscriptions/me [36m304[0m 69.940 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 59.316 ms - -[0m
+[0mGET /api/student/profile [32m200[0m 130.552 ms - -[0m
+[0mGET /api/student/profile [36m304[0m 15.746 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 26.292 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.250 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 50.327 ms - -[0m
+[0mGET /api/home [32m200[0m 80.822 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 96.921 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 68.297 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 2
+}
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 3
+}
+[0mGET /api/alerts/active [36m304[0m 41.433 ms - -[0m
+[0mGET /api/students/me/resources [32m200[0m 34.320 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 8.365 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.192 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 8.363 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 81.373 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 77.456 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 37.695 ms - -[0m
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 3
+}
+[auth-stream] connected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab',
+  clientsForSession: 4
+}
+[0mGET /api/student/support-tickets [32m200[0m 36.944 ms - 12[0m
+[0mGET /api/alerts/active [36m304[0m 51.042 ms - -[0m
+[0mGET /api/student/notices [32m200[0m 97.838 ms - 395[0m
+[0mGET /api/alerts/active [36m304[0m 61.535 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 6.737 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.284 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.248 ms - -[0m
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 36.601 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 23.399 ms - -[0m
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWFiMmNkN2YxNDU3ZjVjM2Y0N2VhNzQiLCJ1c2VybmFtZSI6ImUyZV9zdHVkZW50X2Rlc2t0b3AiLCJlbWFpbCI6ImUyZV9zdHVkZW50X2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN0dWRlbnQiLCJmdWxsTmFtZSI6IkUyRSBTdHVkZW50IERlc2t0b3AiLCJwZXJtaXNzaW9ucyI6eyJjYW5FZGl0RXhhbXMiOmZhbHNlLCJjYW5NYW5hZ2VTdHVkZW50cyI6ZmFsc2UsImNhblZpZXdSZXBvcnRzIjpmYWxzZSwiY2FuRGVsZXRlRGF0YSI6ZmFsc2UsImNhbk1hbmFnZUZpbmFuY2UiOmZhbHNlLCJjYW5NYW5hZ2VQbGFucyI6ZmFsc2UsImNhbk1hbmFnZVRpY2tldHMiOmZhbHNlLCJjYW5NYW5hZ2VCYWNrdXBzIjpmYWxzZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjpmYWxzZX0sInBlcm1pc3Npb25zVjIiOnt9LCJzZXNzaW9uSWQiOiI3MmNlOWE5ZS02OTIyLTRjODctOGU1MS04OTZkNGZiODg0YWIiLCJpYXQiOjE3NzI4MjU4MTgsImV4cCI6MTc3MjgyNzAxOH0.PYfKQEnmxPfqx5sej1hGurjmoVHjqvRhQPkQTInt1vg [32m200[0m 9.325 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}
+[auth-stream] disconnected {
+  userId: '69ab2cd7f1457f5c3f47ea74',
+  sessionId: '72ce9a9e-6922-4c87-8e51-896d4fb884ab'
+}

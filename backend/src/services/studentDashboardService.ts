@@ -9,6 +9,7 @@ import Notification from '../models/Notification';
 import StudentDashboardConfig from '../models/StudentDashboardConfig';
 import StudentBadge from '../models/StudentBadge';
 import StudentApplication from '../models/StudentApplication';
+import StudentDueLedger from '../models/StudentDueLedger';
 import { getExamCardMetrics } from './examCardMetricsService';
 import { getSecurityConfig } from './securityConfigService';
 
@@ -60,10 +61,29 @@ export interface DashboardExamCard {
     remainingUsers: number;
     activeUsers: number;
     statusBadge: 'upcoming' | 'live' | 'completed' | 'draft';
+    subscriptionRequired?: boolean;
+    subscriptionActive?: boolean;
     accessDeniedReason?: string;
     status: ExamCardStatus;
     canTakeExam: boolean;
     externalExamUrl: string;
+}
+
+export type StudentLiveAlertType =
+    | 'exam_soon'
+    | 'application_closing'
+    | 'payment_pending'
+    | 'result_published';
+
+export interface StudentLiveAlertItem {
+    id: string;
+    type: StudentLiveAlertType;
+    title: string;
+    message: string;
+    dateIso: string;
+    severity: 'info' | 'warning' | 'danger' | 'success';
+    ctaLabel: string;
+    ctaUrl: string;
 }
 
 async function ensureDashboardConfig() {
@@ -232,6 +252,13 @@ export async function getUpcomingExamCards(studentId: string): Promise<Dashboard
         (user?.subscription as Record<string, unknown> | undefined)?.plan ||
         '',
     ).toLowerCase();
+    const subscriptionExpiryRaw = (user?.subscription as Record<string, unknown> | undefined)?.expiryDate;
+    const subscriptionExpiryTime = subscriptionExpiryRaw ? new Date(String(subscriptionExpiryRaw)).getTime() : 0;
+    const subscriptionActive = Boolean(
+        (user?.subscription as Record<string, unknown> | undefined)?.isActive &&
+        Number.isFinite(subscriptionExpiryTime) &&
+        subscriptionExpiryTime > Date.now()
+    );
     const metricsMap = await getExamCardMetrics(exams as unknown as Array<Record<string, unknown>>);
     const resultCounts = new Map<string, number>();
     for (const r of results) {
@@ -280,6 +307,7 @@ export async function getUpcomingExamCards(studentId: string): Promise<Dashboard
         const requiredPlanCodes = Array.isArray(accessControl.allowedPlanCodes)
             ? (accessControl.allowedPlanCodes as unknown[]).map((code) => String(code).toLowerCase())
             : [];
+        const subscriptionRequired = Boolean((exam as Record<string, unknown>).subscriptionRequired) || requiredPlanCodes.length > 0;
         let accessDeniedReason = '';
         if (requiredUserIds.length > 0 && !requiredUserIds.includes(String(studentId))) {
             accessDeniedReason = 'access_user_restricted';
@@ -287,6 +315,8 @@ export async function getUpcomingExamCards(studentId: string): Promise<Dashboard
             accessDeniedReason = 'access_group_restricted';
         } else if (requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode)) {
             accessDeniedReason = 'access_plan_restricted';
+        } else if (subscriptionRequired && !subscriptionActive) {
+            accessDeniedReason = 'subscription_required';
         }
         const metrics = metricsMap.get(examId) || {
             totalParticipants: 0,
@@ -328,6 +358,8 @@ export async function getUpcomingExamCards(studentId: string): Promise<Dashboard
             remainingUsers: Number(metrics.remainingUsers || 0),
             activeUsers: Number(metrics.activeUsers || 0),
             statusBadge: status === 'closed' ? 'draft' : (status === 'completed' ? 'completed' : status),
+            subscriptionRequired,
+            subscriptionActive,
             accessDeniedReason: accessDeniedReason || undefined,
             status,
             canTakeExam,
@@ -403,11 +435,17 @@ export async function getFeaturedUniversities() {
     };
 }
 
-export async function getStudentNotifications() {
+export async function getStudentNotifications(studentId: string) {
     const now = new Date();
+    const studentObjectId = new mongoose.Types.ObjectId(studentId);
     const rows = await Notification.find({
         isActive: true,
         targetRole: { $in: ['student', 'all'] },
+        $or: [
+            { targetUserIds: { $exists: false } },
+            { targetUserIds: { $size: 0 } },
+            { targetUserIds: studentObjectId },
+        ],
         $and: [
             { $or: [{ publishAt: { $exists: false } }, { publishAt: null }, { publishAt: { $lte: now } }] },
             { $or: [{ expireAt: { $exists: false } }, { expireAt: null }, { expireAt: { $gte: now } }] },
@@ -519,7 +557,7 @@ export async function getStudentDashboardAggregate(studentId: string) {
         getStudentDashboardHeader(studentId),
         getUpcomingExamCards(studentId),
         getFeaturedUniversities(),
-        getStudentNotifications(),
+        getStudentNotifications(studentId),
         getExamHistoryAndProgress(studentId),
     ]);
 
@@ -532,5 +570,128 @@ export async function getStudentDashboardAggregate(studentId: string) {
         progress: examHistory.progress,
         badges: examHistory.badges,
         lastUpdatedAt: new Date().toISOString(),
+    };
+}
+
+export async function getStudentLiveAlerts(studentId: string): Promise<{ items: StudentLiveAlertItem[]; lastUpdatedAt: string }> {
+    const now = new Date();
+    const soonWindow = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+
+    const [upcomingExams, closingUniversities, dueLedger, recentResults] = await Promise.all([
+        Exam.find({
+            isPublished: true,
+            startDate: { $gte: now, $lte: soonWindow },
+        })
+            .sort({ startDate: 1 })
+            .limit(6)
+            .select('_id title subject startDate')
+            .lean(),
+        University.find({
+            isActive: true,
+            isArchived: { $ne: true },
+            applicationEndDate: { $gte: now, $lte: soonWindow },
+        })
+            .sort({ applicationEndDate: 1 })
+            .limit(6)
+            .select('_id name shortForm slug applicationEndDate')
+            .lean(),
+        StudentDueLedger.findOne({ studentId })
+            .select('netDue updatedAt')
+            .lean(),
+        ExamResult.find({ student: studentId, status: 'evaluated' })
+            .sort({ submittedAt: -1 })
+            .limit(5)
+            .populate({ path: 'exam', select: 'title subject resultPublishDate resultPublishMode' })
+            .lean(),
+    ]);
+
+    const alerts: StudentLiveAlertItem[] = [];
+
+    for (const exam of upcomingExams) {
+        const startDate = exam.startDate ? new Date(exam.startDate) : null;
+        if (!startDate || Number.isNaN(startDate.getTime())) continue;
+        const diffDays = Math.max(0, Math.ceil((startDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)));
+        alerts.push({
+            id: `exam-soon-${String(exam._id)}`,
+            type: 'exam_soon',
+            title: String(exam.title || 'Upcoming Exam'),
+            message: `${String(exam.subject || 'General')} exam starts in ${diffDays} day${diffDays === 1 ? '' : 's'}.`,
+            dateIso: startDate.toISOString(),
+            severity: diffDays <= 1 ? 'warning' : 'info',
+            ctaLabel: 'Open Exams',
+            ctaUrl: '/exams',
+        });
+    }
+
+    for (const university of closingUniversities) {
+        const endDate = (university as { applicationEndDate?: Date }).applicationEndDate
+            ? new Date((university as { applicationEndDate?: Date }).applicationEndDate as Date)
+            : null;
+        if (!endDate || Number.isNaN(endDate.getTime())) continue;
+        const diffDays = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)));
+        alerts.push({
+            id: `application-closing-${String(university._id)}`,
+            type: 'application_closing',
+            title: String((university as { name?: string }).name || 'Application Deadline'),
+            message: `Application closes in ${diffDays} day${diffDays === 1 ? '' : 's'}.`,
+            dateIso: endDate.toISOString(),
+            severity: diffDays <= 2 ? 'danger' : 'warning',
+            ctaLabel: 'View Universities',
+            ctaUrl: '/universities',
+        });
+    }
+
+    const pendingDueAmount = Number((dueLedger as { netDue?: number } | null)?.netDue || 0);
+    if (pendingDueAmount > 0) {
+        alerts.push({
+            id: 'payment-pending',
+            type: 'payment_pending',
+            title: 'Payment Pending',
+            message: `You have an outstanding due of ৳${pendingDueAmount.toLocaleString()}.`,
+            dateIso: new Date((dueLedger as { updatedAt?: Date } | null)?.updatedAt || now).toISOString(),
+            severity: 'danger',
+            ctaLabel: 'Open Payments',
+            ctaUrl: '/payments',
+        });
+    }
+
+    for (const result of recentResults) {
+        const examRaw = result.exam;
+        const exam =
+            examRaw &&
+            typeof examRaw === 'object' &&
+            !(examRaw instanceof mongoose.Types.ObjectId)
+                ? (examRaw as Record<string, unknown>)
+                : {};
+        const submittedAt = (result as { submittedAt?: Date }).submittedAt ? new Date((result as { submittedAt?: Date }).submittedAt as Date) : now;
+        alerts.push({
+            id: `result-published-${String(result._id)}`,
+            type: 'result_published',
+            title: String(exam.title || 'Result Published'),
+            message: `Your latest evaluated result (${Number(result.percentage || 0).toFixed(1)}%) is available.`,
+            dateIso: submittedAt.toISOString(),
+            severity: 'success',
+            ctaLabel: 'View Results',
+            ctaUrl: '/results',
+        });
+    }
+
+    const severityWeight: Record<StudentLiveAlertItem['severity'], number> = {
+        danger: 0,
+        warning: 1,
+        info: 2,
+        success: 3,
+    };
+
+    alerts.sort((a, b) => {
+        if (severityWeight[a.severity] !== severityWeight[b.severity]) {
+            return severityWeight[a.severity] - severityWeight[b.severity];
+        }
+        return new Date(a.dateIso).getTime() - new Date(b.dateIso).getTime();
+    });
+
+    return {
+        items: alerts.slice(0, 12),
+        lastUpdatedAt: now.toISOString(),
     };
 }

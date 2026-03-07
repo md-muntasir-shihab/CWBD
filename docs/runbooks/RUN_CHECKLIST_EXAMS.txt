@@ -1,0 +1,10 @@
+[ ] Start API server and connect MongoDB
+[ ] Seed one student, one admin, one live exam + questions
+[ ] Verify /api/exams list and detail contract
+[ ] Verify blocked access reasons (profile/payment/subscription/window)
+[ ] Start session, fetch questions, autosave answers, submit
+[ ] Verify result locked then published
+[ ] Verify solutions release rule behavior
+[ ] Validate auto-submit cron by expiring active session
+[ ] Verify admin CRUD for exam/questions/results/payments/students
+[ ] Verify frontend pages /exams, /exam/:id, /result, /solutions

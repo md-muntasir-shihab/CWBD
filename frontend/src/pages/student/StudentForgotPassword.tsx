@@ -90,7 +90,7 @@ export default function StudentForgotPassword() {
 
                             <div className="mt-4 text-center">
                                 <Link
-                                    to="/student/login"
+                                    to="/login"
                                     className="flex items-center justify-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-cyan-300 dark:hover:text-cyan-200"
                                 >
                                     <ArrowLeft className="h-4 w-4" /> Back to Login
@@ -108,7 +108,7 @@ export default function StudentForgotPassword() {
 
                             <div className="text-center">
                                 <Link
-                                    to="/student/login"
+                                    to="/login"
                                     className="flex items-center justify-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-cyan-300 dark:hover:text-cyan-200"
                                 >
                                     <ArrowLeft className="h-4 w-4" /> Back to login

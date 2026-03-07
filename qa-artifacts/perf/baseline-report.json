@@ -1,0 +1,14 @@
+﻿{
+  "generatedAt": "2026-02-28T16:15:00+06:00",
+  "scope": "exam-console",
+  "checks": {
+    "backendBuild": "pass",
+    "frontendBuild": "pass",
+    "autosaveLatencyP95Ms": null,
+    "examLandingLcpSec": null
+  },
+  "notes": [
+    "Automated build gates passed.",
+    "Runtime performance probes require running environment and were not executed in this pass."
+  ]
+}

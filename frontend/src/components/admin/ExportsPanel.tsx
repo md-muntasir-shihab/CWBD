@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { Download, RefreshCw, FileText, Users, GraduationCap, Newspaper, Briefcase, BarChart3 } from 'lucide-react';
 import {
     adminExportNews,
-    adminExportServices,
+    adminExportSubscriptionPlans,
     adminExportStudentExamHistory,
     adminExportUniversities,
     adminExportStudents,
@@ -37,8 +37,8 @@ export default function ExportsPanel() {
         try {
             if (type === 'news') {
                 downloadBlob((await adminExportNews()).data, 'news_export.json');
-            } else if (type === 'services') {
-                downloadBlob((await adminExportServices()).data, 'services_export.json');
+            } else if (type === 'subscription-plans') {
+                downloadFile((await adminExportSubscriptionPlans('xlsx')).data as Blob, 'subscription_plans_export.xlsx');
             } else if (type === 'universities') {
                 downloadBlob((await adminExportUniversities()).data, 'universities_export.json');
             } else if (type === 'students') {
@@ -58,7 +58,7 @@ export default function ExportsPanel() {
         { key: 'universities', label: 'Universities', desc: 'Export all university data', icon: GraduationCap, color: 'from-indigo-500 to-blue-500', cta: 'Export JSON' },
         { key: 'students', label: 'Students', desc: 'Export student accounts', icon: Users, color: 'from-green-500 to-emerald-500', cta: 'Export JSON' },
         { key: 'news', label: 'News', desc: 'Export news articles', icon: Newspaper, color: 'from-orange-500 to-amber-500', cta: 'Export JSON' },
-        { key: 'services', label: 'Services', desc: 'Export service listings', icon: Briefcase, color: 'from-purple-500 to-pink-500', cta: 'Export JSON' },
+        { key: 'subscription-plans', label: 'Subscription Plans', desc: 'Export subscription plan listings', icon: Briefcase, color: 'from-purple-500 to-pink-500', cta: 'Export XLSX' },
         { key: 'exam-history', label: 'Exam History', desc: 'Export attempts, rank and submission timeline', icon: BarChart3, color: 'from-cyan-500 to-indigo-500', cta: examHistoryFormat === 'csv' ? 'Export CSV' : 'Export XLSX' },
     ];
 

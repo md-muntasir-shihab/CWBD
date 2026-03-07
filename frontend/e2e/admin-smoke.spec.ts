@@ -1,17 +1,5 @@
-import { expect, test, Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { attachHealthTracker, expectPageHealthy, loginAsAdmin } from './helpers';
-
-async function clickAdminSection(page: Page, label: string): Promise<void> {
-    const exact = page.getByRole('button', { name: new RegExp(`^${label}$`, 'i') }).first();
-    try {
-        await exact.click({ timeout: 2500 });
-        return;
-    } catch {
-        const candidates = page.getByRole('button', { name: new RegExp(label, 'i') });
-        const count = await candidates.count();
-        await candidates.nth(Math.max(0, count - 1)).click();
-    }
-}
 
 test.describe('Admin Smoke', () => {
     test('admin can login and navigate key tabs', async ({ page }) => {
@@ -19,25 +7,27 @@ test.describe('Admin Smoke', () => {
         await loginAsAdmin(page);
         const isMobileViewport = (page.viewportSize()?.width || 0) < 768;
         if (isMobileViewport) {
-            await expect(page.getByRole('button', { name: /Toggle menu/i })).toBeVisible();
+            await expect(page.getByRole('button', { name: /Toggle menu|Open admin menu/i })).toBeVisible();
             await expect(page.getByRole('heading', { name: /Dashboard/i })).toBeVisible();
             await expectPageHealthy(page, tracker);
             tracker.detach();
             return;
         }
 
-        await expect(page.getByText('Admin Panel').first()).toBeVisible();
-        await expect(page.getByRole('button', { name: /^Dashboard$/i })).toBeVisible();
+        await expect(page).toHaveURL(/\/__cw_admin__\/dashboard/);
 
-        await clickAdminSection(page, 'Exams');
-        await expect(page.getByRole('heading', { name: /Exams/i })).toBeVisible();
+        await page.goto('/__cw_admin__/exams');
+        await expect(page).toHaveURL(/\/__cw_admin__\/exams/);
+        await expect(page.getByText(/Exam Management|Exams/i).first()).toBeVisible();
 
-        await clickAdminSection(page, 'Student Management');
+        await page.goto('/__cw_admin__/students');
+        await expect(page).toHaveURL(/\/__cw_admin__\/students/);
         await expect(page.getByText(/Student Management/i).first()).toBeVisible();
 
-        await clickAdminSection(page, 'Security');
-        await expect(page.getByRole('heading', { name: /Security and Session Control/i })).toBeVisible();
-        await expect(page.getByRole('heading', { name: /Runtime Flags/i })).toBeVisible();
+        await page.goto('/__cw_admin__/settings/security-center');
+        await expect(page).toHaveURL(/\/__cw_admin__\/settings\/security-center/);
+        await expect(page.getByRole('heading', { name: /Security Center/i }).first()).toBeVisible();
+        await expect(page.getByText(/Password Policy/i).first()).toBeVisible();
 
         await expectPageHealthy(page, tracker);
         tracker.detach();

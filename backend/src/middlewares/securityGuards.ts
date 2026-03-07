@@ -4,7 +4,12 @@ import { getClientIp } from '../utils/requestMeta';
 import { getSecuritySettingsSnapshot, isIpAllowed } from '../services/securityCenterService';
 
 function isAdminRole(role: string | undefined): boolean {
-    return ['superadmin', 'admin', 'moderator', 'editor', 'viewer'].includes(String(role || '').toLowerCase());
+    return ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'].includes(String(role || '').toLowerCase());
+}
+
+function isMutatingMethod(method: string): boolean {
+    const normalized = String(method || '').toUpperCase();
+    return !['GET', 'HEAD', 'OPTIONS'].includes(normalized);
 }
 
 export async function enforceSiteAccess(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -77,6 +82,34 @@ export async function enforceAdminPanelPolicy(req: AuthRequest, res: Response, n
                 });
                 return;
             }
+        }
+
+        next();
+    } catch {
+        next();
+    }
+}
+
+export async function enforceAdminReadOnlyMode(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+        if (!req.user) {
+            res.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+
+        if (!isMutatingMethod(req.method)) {
+            next();
+            return;
+        }
+
+        const security = await getSecuritySettingsSnapshot(false);
+        const role = String(req.user.role || '').toLowerCase();
+        if (security.panic.readOnlyMode && role !== 'superadmin') {
+            res.status(423).json({
+                code: 'READ_ONLY_MODE',
+                message: 'Read-only mode is enabled. Only super admin can run mutations.',
+            });
+            return;
         }
 
         next();

@@ -45,6 +45,34 @@ export interface LoggingSettings {
     logAdminActions: boolean;
 }
 
+export type RiskyActionKey =
+    | 'students.bulk_delete'
+    | 'universities.bulk_delete'
+    | 'news.bulk_delete'
+    | 'exams.publish_result'
+    | 'news.publish_breaking'
+    | 'payments.mark_refunded';
+
+export interface TwoPersonApprovalSettings {
+    enabled: boolean;
+    riskyActions: RiskyActionKey[];
+    approvalExpiryMinutes: number;
+}
+
+export interface RetentionSettings {
+    enabled: boolean;
+    examSessionsDays: number;
+    auditLogsDays: number;
+    eventLogsDays: number;
+}
+
+export interface PanicSettings {
+    readOnlyMode: boolean;
+    disableStudentLogins: boolean;
+    disablePaymentWebhooks: boolean;
+    disableExamStarts: boolean;
+}
+
 export interface RateLimitSettings {
     loginWindowMs: number;
     loginMax: number;
@@ -66,6 +94,9 @@ export interface ISecuritySettings extends Document {
     examProtection: ExamProtectionSettings;
     logging: LoggingSettings;
     rateLimit: RateLimitSettings;
+    twoPersonApproval: TwoPersonApprovalSettings;
+    retention: RetentionSettings;
+    panic: PanicSettings;
     updatedBy?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
@@ -109,6 +140,33 @@ const SecuritySettingsSchema = new Schema<ISecuritySettings>(
             logLevel: { type: String, enum: ['debug', 'info', 'warn', 'error'], default: 'info' },
             logLoginFailures: { type: Boolean, default: true },
             logAdminActions: { type: Boolean, default: true },
+        },
+        twoPersonApproval: {
+            enabled: { type: Boolean, default: false },
+            riskyActions: {
+                type: [String],
+                default: [
+                    'students.bulk_delete',
+                    'universities.bulk_delete',
+                    'news.bulk_delete',
+                    'exams.publish_result',
+                    'news.publish_breaking',
+                    'payments.mark_refunded',
+                ],
+            },
+            approvalExpiryMinutes: { type: Number, default: 120, min: 5, max: 1440 },
+        },
+        retention: {
+            enabled: { type: Boolean, default: false },
+            examSessionsDays: { type: Number, default: 30, min: 7, max: 3650 },
+            auditLogsDays: { type: Number, default: 180, min: 30, max: 3650 },
+            eventLogsDays: { type: Number, default: 90, min: 30, max: 3650 },
+        },
+        panic: {
+            readOnlyMode: { type: Boolean, default: false },
+            disableStudentLogins: { type: Boolean, default: false },
+            disablePaymentWebhooks: { type: Boolean, default: false },
+            disableExamStarts: { type: Boolean, default: false },
         },
         rateLimit: {
             loginWindowMs: { type: Number, default: 15 * 60 * 1000, min: 10_000 },

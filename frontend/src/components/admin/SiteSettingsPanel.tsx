@@ -1,8 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Save, RefreshCw, Globe, Mail, Phone, Share2, Upload, Palette, Coins } from 'lucide-react';
-import { adminGetHomeSystem, adminUpdateWebsiteSettings } from '../../services/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Save, RefreshCw, Globe, Mail, Phone, Upload, Palette, Coins } from 'lucide-react';
+import { adminUpdateWebsiteSettings, getPublicSettings } from '../../services/api';
 import CyberToggle from '../ui/CyberToggle';
+import SocialLinksManager from './SocialLinksManager';
+import { invalidateQueryGroup, invalidationGroups, queryKeys } from '../../lib/queryKeys';
+import { useAdminRuntimeFlags } from '../../hooks/useAdminRuntimeFlags';
+import InfoHint from '../ui/InfoHint';
 
 type SiteSettingsForm = {
     websiteName: string;
@@ -14,6 +19,7 @@ type SiteSettingsForm = {
     socialLinks: {
         facebook: string;
         whatsapp: string;
+        messenger: string;
         telegram: string;
         twitter: string;
         youtube: string;
@@ -38,6 +44,10 @@ type SiteSettingsForm = {
         displayMode: 'symbol' | 'code';
         thousandSeparator: boolean;
     };
+    subscriptionPageTitle: string;
+    subscriptionPageSubtitle: string;
+    subscriptionDefaultBannerUrl: string;
+    subscriptionLoggedOutCtaMode: 'login' | 'contact';
 };
 
 const defaultSettings: SiteSettingsForm = {
@@ -50,6 +60,7 @@ const defaultSettings: SiteSettingsForm = {
     socialLinks: {
         facebook: '',
         whatsapp: '',
+        messenger: '',
         telegram: '',
         twitter: '',
         youtube: '',
@@ -65,7 +76,7 @@ const defaultSettings: SiteSettingsForm = {
         clusterEnabled: true,
         buttonVariant: 'squircle',
         showLabels: false,
-        platformOrder: ['facebook', 'whatsapp', 'telegram', 'twitter', 'youtube', 'instagram'],
+        platformOrder: ['facebook', 'whatsapp', 'messenger', 'telegram', 'twitter', 'youtube', 'instagram'],
     },
     pricingUi: {
         currencyCode: 'BDT',
@@ -74,9 +85,15 @@ const defaultSettings: SiteSettingsForm = {
         displayMode: 'symbol',
         thousandSeparator: true,
     },
+    subscriptionPageTitle: 'Subscription Plans',
+    subscriptionPageSubtitle: 'Choose free or paid plans to unlock premium exam access.',
+    subscriptionDefaultBannerUrl: '',
+    subscriptionLoggedOutCtaMode: 'contact',
 };
 
 export default function SiteSettingsPanel() {
+    const queryClient = useQueryClient();
+    const runtimeFlags = useAdminRuntimeFlags();
     const [settings, setSettings] = useState<SiteSettingsForm>(defaultSettings);
 
     const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -84,50 +101,72 @@ export default function SiteSettingsPanel() {
     const [previewLogo, setPreviewLogo] = useState('');
     const [previewFavicon, setPreviewFavicon] = useState('');
 
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-
     const logoRef = useRef<HTMLInputElement>(null);
     const faviconRef = useRef<HTMLInputElement>(null);
-
-    const fetchSettings = async () => {
-        setLoading(true);
-        try {
-            const { data } = await adminGetHomeSystem();
-            if (data.settings) {
-                setSettings({
-                    ...defaultSettings,
-                    ...data.settings,
-                    socialLinks: {
-                        ...defaultSettings.socialLinks,
-                        ...(data.settings.socialLinks || {}),
-                    },
-                    theme: {
-                        ...defaultSettings.theme,
-                        ...(data.settings.theme || {}),
-                    },
-                    socialUi: {
-                        ...defaultSettings.socialUi,
-                        ...(data.settings.socialUi || {}),
-                    },
-                    pricingUi: {
-                        ...defaultSettings.pricingUi,
-                        ...(data.settings.pricingUi || {}),
-                    },
-                });
-                setPreviewLogo(data.settings.logo || '');
-                setPreviewFavicon(data.settings.favicon || '');
-            }
-        }
-        catch {
-            toast.error('Failed to load settings');
-        }
-        finally { setLoading(false); }
-    };
+    const settingsQuery = useQuery({
+        queryKey: queryKeys.siteSettings,
+        queryFn: async () => (await getPublicSettings()).data,
+    });
 
     useEffect(() => {
-        fetchSettings();
-    }, []);
+        if (!settingsQuery.data) return;
+        const data = settingsQuery.data;
+        setSettings({
+            ...defaultSettings,
+            ...data,
+            socialLinks: {
+                ...defaultSettings.socialLinks,
+                ...(data.socialLinks || {}),
+            },
+            theme: {
+                ...defaultSettings.theme,
+                ...(data.theme || {}),
+            },
+            socialUi: {
+                ...defaultSettings.socialUi,
+                ...(data.socialUi || {}),
+            },
+            pricingUi: {
+                ...defaultSettings.pricingUi,
+                ...(data.pricingUi || {}),
+            },
+        });
+        setPreviewLogo(data.logo || '');
+        setPreviewFavicon(data.favicon || '');
+    }, [settingsQuery.data]);
+
+    const saveMutation = useMutation({
+        mutationFn: async () => {
+            const formData = new FormData();
+            formData.append('websiteName', settings.websiteName);
+            formData.append('motto', settings.motto);
+            formData.append('metaTitle', settings.metaTitle);
+            formData.append('metaDescription', settings.metaDescription);
+            formData.append('contactEmail', settings.contactEmail);
+            formData.append('contactPhone', settings.contactPhone);
+            formData.append('socialLinks', JSON.stringify(settings.socialLinks));
+            formData.append('theme', JSON.stringify(settings.theme));
+            formData.append('socialUi', JSON.stringify(settings.socialUi));
+            formData.append('pricingUi', JSON.stringify(settings.pricingUi));
+            formData.append('subscriptionPageTitle', settings.subscriptionPageTitle);
+            formData.append('subscriptionPageSubtitle', settings.subscriptionPageSubtitle);
+            formData.append('subscriptionDefaultBannerUrl', settings.subscriptionDefaultBannerUrl);
+            formData.append('subscriptionLoggedOutCtaMode', settings.subscriptionLoggedOutCtaMode);
+
+            if (logoFile) formData.append('logo', logoFile);
+            if (faviconFile) formData.append('favicon', faviconFile);
+            return adminUpdateWebsiteSettings(formData);
+        },
+        onSuccess: async () => {
+            toast.success('Website settings saved successfully');
+            await invalidateQueryGroup(queryClient, invalidationGroups.siteSave);
+            await invalidateQueryGroup(queryClient, invalidationGroups.plansSave);
+            await settingsQuery.refetch();
+        },
+        onError: () => {
+            toast.error('Failed to save settings');
+        },
+    });
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon') => {
         const file = e.target.files?.[0];
@@ -142,34 +181,10 @@ export default function SiteSettingsPanel() {
     };
 
     const onSave = async () => {
-        setSaving(true);
-        try {
-            const formData = new FormData();
-            formData.append('websiteName', settings.websiteName);
-            formData.append('motto', settings.motto);
-            formData.append('metaTitle', settings.metaTitle);
-            formData.append('metaDescription', settings.metaDescription);
-            formData.append('contactEmail', settings.contactEmail);
-            formData.append('contactPhone', settings.contactPhone);
-            formData.append('socialLinks', JSON.stringify(settings.socialLinks));
-            formData.append('theme', JSON.stringify(settings.theme));
-            formData.append('socialUi', JSON.stringify(settings.socialUi));
-            formData.append('pricingUi', JSON.stringify(settings.pricingUi));
-
-            if (logoFile) formData.append('logo', logoFile);
-            if (faviconFile) formData.append('favicon', faviconFile);
-
-            await adminUpdateWebsiteSettings(formData);
-            toast.success('Website settings saved successfully');
-            fetchSettings();
-        }
-        catch {
-            toast.error('Failed to save settings');
-        }
-        finally { setSaving(false); }
+        await saveMutation.mutateAsync();
     };
 
-    if (loading) {
+    if (settingsQuery.isLoading) {
         return <div className="flex justify-center py-20"><RefreshCw className="w-6 h-6 text-indigo-400 animate-spin" /></div>;
     }
 
@@ -177,11 +192,20 @@ export default function SiteSettingsPanel() {
         <div className="space-y-6 max-w-5xl">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 className="text-lg font-bold text-white">Website Settings</h2>
+                    <h2 className="text-lg font-bold text-white">
+                        Website Settings
+                        {runtimeFlags.trainingMode ? (
+                            <InfoHint
+                                className="ml-2"
+                                title="Branding Tip"
+                                description="Changes to logo, website name, social links, and subscription texts update public pages immediately after save."
+                            />
+                        ) : null}
+                    </h2>
                     <p className="text-xs text-slate-500">Global identity, theme, social and pricing controls</p>
                 </div>
-                <button onClick={onSave} disabled={saving} className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white text-sm px-6 py-2 rounded-xl flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
-                    {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+                <button onClick={onSave} disabled={saveMutation.isPending} className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white text-sm px-6 py-2 rounded-xl flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
+                    {saveMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
                 </button>
             </div>
 
@@ -254,6 +278,51 @@ export default function SiteSettingsPanel() {
                                 <input value={settings.contactPhone} onChange={e => setSettings({ ...settings, contactPhone: e.target.value })}
                                     className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white" />
                             </div>
+                            <div>
+                                <label className="text-xs text-slate-400 font-medium">WhatsApp URL</label>
+                                <input
+                                    value={settings.socialLinks.whatsapp}
+                                    onChange={e => setSettings({ ...settings, socialLinks: { ...settings.socialLinks, whatsapp: e.target.value } })}
+                                    placeholder="https://wa.me/8801XXXXXXXXX"
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400 font-medium">Messenger URL</label>
+                                <input
+                                    value={settings.socialLinks.messenger}
+                                    onChange={e => setSettings({ ...settings, socialLinks: { ...settings.socialLinks, messenger: e.target.value } })}
+                                    placeholder="https://m.me/your-page"
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400 font-medium">Facebook URL</label>
+                                <input
+                                    value={settings.socialLinks.facebook}
+                                    onChange={e => setSettings({ ...settings, socialLinks: { ...settings.socialLinks, facebook: e.target.value } })}
+                                    placeholder="https://facebook.com/your-page"
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400 font-medium">Telegram URL</label>
+                                <input
+                                    value={settings.socialLinks.telegram}
+                                    onChange={e => setSettings({ ...settings, socialLinks: { ...settings.socialLinks, telegram: e.target.value } })}
+                                    placeholder="https://t.me/your-channel"
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400 font-medium">Instagram URL</label>
+                                <input
+                                    value={settings.socialLinks.instagram}
+                                    onChange={e => setSettings({ ...settings, socialLinks: { ...settings.socialLinks, instagram: e.target.value } })}
+                                    placeholder="https://instagram.com/your-page"
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -321,25 +390,52 @@ export default function SiteSettingsPanel() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-6 space-y-4">
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2"><Globe className="w-4 h-4 text-indigo-400" /> Subscription Page</h3>
+                        <div className="grid grid-cols-1 gap-3">
+                            <div>
+                                <label className="text-xs text-slate-400">Page Title</label>
+                                <input
+                                    value={settings.subscriptionPageTitle}
+                                    onChange={(e) => setSettings({ ...settings, subscriptionPageTitle: e.target.value })}
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400">Page Subtitle</label>
+                                <textarea
+                                    rows={2}
+                                    value={settings.subscriptionPageSubtitle}
+                                    onChange={(e) => setSettings({ ...settings, subscriptionPageSubtitle: e.target.value })}
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400">Default Plan Banner URL</label>
+                                <input
+                                    value={settings.subscriptionDefaultBannerUrl}
+                                    onChange={(e) => setSettings({ ...settings, subscriptionDefaultBannerUrl: e.target.value })}
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400">Logged-out CTA Behavior</label>
+                                <select
+                                    value={settings.subscriptionLoggedOutCtaMode}
+                                    onChange={(e) => setSettings({ ...settings, subscriptionLoggedOutCtaMode: e.target.value as 'login' | 'contact' })}
+                                    className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
+                                >
+                                    <option value="login">Send to Login</option>
+                                    <option value="contact">Send to Contact</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-6 space-y-4">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2"><Share2 className="w-4 h-4 text-indigo-400" /> Social Links</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {(['facebook', 'whatsapp', 'telegram', 'twitter', 'youtube', 'instagram'] as const).map((platform) => (
-                        <div key={platform}>
-                            <label className="text-xs text-slate-400 capitalize">{platform}</label>
-                            <input
-                                placeholder={`${platform} URL`}
-                                value={settings.socialLinks[platform]}
-                                onChange={e => setSettings({ ...settings, socialLinks: { ...settings.socialLinks, [platform]: e.target.value } })}
-                                className="mt-1 w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white"
-                            />
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <SocialLinksManager />
         </div>
     );
 }

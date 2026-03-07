@@ -1,15 +1,15 @@
-/** @type {import('tailwindcss').Config} */
+﻿/** @type {import('tailwindcss').Config} */
 export default {
     content: [
-        "./index.html",
-        "./src/**/*.{js,ts,jsx,tsx}",
+        './index.html',
+        './src/**/*.{js,ts,jsx,tsx}',
     ],
     darkMode: 'class',
     theme: {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: '#0D5FDB',
+                    DEFAULT: 'var(--primary)',
                     50: '#EDF5FF',
                     100: '#D9E9FF',
                     200: '#B7D4FF',
@@ -34,34 +34,35 @@ export default {
                     800: '#035E58',
                     900: '#024340',
                 },
-                surface: '#FFFFFF',
-                background: '#F6FBFF',
-                'card-border': '#D7E8F7',
+                surface: 'var(--surface)',
+                surface2: 'var(--surface2)',
+                background: 'var(--bg)',
+                'card-border': 'var(--border)',
                 text: {
-                    DEFAULT: '#0F2740',
-                    muted: '#58708A',
+                    DEFAULT: 'var(--text)',
+                    muted: 'var(--muted)',
                 },
-                success: '#16A34A',
-                warning: '#F59E0B',
-                danger: '#EF4444',
+                success: 'var(--success)',
+                warning: 'var(--warning)',
+                danger: 'var(--danger)',
                 dark: {
-                    bg: '#061226',
-                    surface: '#0B1A30',
-                    text: '#D6E7FF',
-                    border: '#18314D',
+                    bg: 'var(--bg)',
+                    surface: 'var(--surface)',
+                    text: 'var(--text)',
+                    border: 'var(--border)',
                 },
             },
             fontFamily: {
-                sans: ['Manrope', 'Segoe UI', 'sans-serif'],
-                heading: ['Sora', 'Manrope', 'Segoe UI', 'sans-serif'],
+                sans: ['"Plus Jakarta Sans"', 'Segoe UI', 'sans-serif'],
+                heading: ['Sora', '"Plus Jakarta Sans"', 'Segoe UI', 'sans-serif'],
             },
             boxShadow: {
-                'card': '0 8px 30px -16px rgba(13, 95, 219, 0.26)',
-                'card-hover': '0 22px 45px -22px rgba(13, 95, 219, 0.38)',
-                'elevated': '0 26px 60px -24px rgba(7, 58, 141, 0.42)',
+                card: '0 8px 30px -16px var(--shadowColor, rgba(13, 95, 219, 0.26))',
+                'card-hover': '0 22px 45px -22px var(--shadowColor, rgba(13, 95, 219, 0.38))',
+                elevated: '0 26px 60px -24px var(--shadowColor, rgba(7, 58, 141, 0.42))',
             },
             borderRadius: {
-                'xl': '0.75rem',
+                xl: '0.75rem',
                 '2xl': '1rem',
                 '3xl': '1.5rem',
             },
@@ -69,7 +70,7 @@ export default {
                 'fade-in': 'fadeIn 0.5s ease-out',
                 'slide-up': 'slideUp 0.5s ease-out',
                 'pulse-slow': 'pulse 3s ease-in-out infinite',
-                'marquee': 'marquee 24s linear infinite',
+                marquee: 'marquee 24s linear infinite',
             },
             keyframes: {
                 fadeIn: {

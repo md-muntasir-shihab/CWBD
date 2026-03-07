@@ -20,15 +20,18 @@ import {
 } from 'lucide-react';
 import {
     StudentFeaturedUniversity,
+    StudentLiveAlertItem,
     StudentNotificationItem,
     StudentUpcomingExam,
     getStudentDashboardProfileSection,
     getStudentDashboardStreamUrl,
     getStudentExamHistory,
     getStudentFeaturedUniversities,
+    getStudentLiveAlerts,
     getStudentNotifications,
     getStudentUpcomingExams,
 } from '../../services/api';
+import { useMySubscription } from '../../hooks/useSubscriptionPlans';
 import { useWebsiteSettings } from '../../hooks/useWebsiteSettings';
 import { isExternalUrl, normalizeExternalUrl, normalizeInternalOrExternalUrl } from '../../utils/url';
 
@@ -36,6 +39,7 @@ const DASHBOARD_QUERY_KEYS = {
     profile: ['student-dashboard', 'profile'] as const,
     upcoming: ['student-dashboard', 'upcoming'] as const,
     featured: ['student-dashboard', 'featured'] as const,
+    liveAlerts: ['student-dashboard', 'live-alerts'] as const,
     notifications: ['student-dashboard', 'notifications'] as const,
     history: ['student-dashboard', 'history'] as const,
 };
@@ -269,6 +273,32 @@ function NotificationRow({ item }: { item: StudentNotificationItem }) {
     );
 }
 
+function LiveAlertCard({ item }: { item: StudentLiveAlertItem }) {
+    const tone = item.severity === 'danger'
+        ? 'border-rose-500/30 bg-rose-500/10 text-rose-100'
+        : item.severity === 'warning'
+            ? 'border-amber-500/30 bg-amber-500/10 text-amber-100'
+            : item.severity === 'success'
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
+                : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-100';
+
+    return (
+        <article className={`min-w-[270px] md:min-w-0 rounded-xl border p-3 ${tone}`}>
+            <div className="flex items-start justify-between gap-2">
+                <h3 className="text-sm font-semibold line-clamp-1">{item.title}</h3>
+                <span className="text-[10px] uppercase tracking-wide opacity-80">{item.type.replace('_', ' ')}</span>
+            </div>
+            <p className="mt-1 text-xs opacity-90 line-clamp-2">{item.message}</p>
+            <div className="mt-3 flex items-center justify-between gap-2">
+                <span className="text-[11px] opacity-80">{formatDateTime(item.dateIso)}</span>
+                <Link to={item.ctaUrl} className="text-[11px] font-semibold underline underline-offset-2">
+                    {item.ctaLabel}
+                </Link>
+            </div>
+        </article>
+    );
+}
+
 function LoadingGrid() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -292,6 +322,7 @@ export default function StudentDashboard() {
         queryKey: DASHBOARD_QUERY_KEYS.profile,
         queryFn: async () => (await getStudentDashboardProfileSection()).data,
     });
+    const mySubscriptionQuery = useMySubscription();
     const upcomingQuery = useQuery({
         queryKey: DASHBOARD_QUERY_KEYS.upcoming,
         queryFn: async () => (await getStudentUpcomingExams()).data,
@@ -303,6 +334,10 @@ export default function StudentDashboard() {
     const notificationsQuery = useQuery({
         queryKey: DASHBOARD_QUERY_KEYS.notifications,
         queryFn: async () => (await getStudentNotifications()).data,
+    });
+    const liveAlertsQuery = useQuery({
+        queryKey: DASHBOARD_QUERY_KEYS.liveAlerts,
+        queryFn: async () => (await getStudentLiveAlerts()).data,
     });
     const historyQuery = useQuery({
         queryKey: DASHBOARD_QUERY_KEYS.history,
@@ -319,6 +354,7 @@ export default function StudentDashboard() {
             profileQuery.data?.lastUpdatedAt,
             upcomingQuery.data?.lastUpdatedAt,
             featuredQuery.data?.lastUpdatedAt,
+            liveAlertsQuery.data?.lastUpdatedAt,
             notificationsQuery.data?.lastUpdatedAt,
             historyQuery.data?.lastUpdatedAt,
         ].filter(Boolean) as string[];
@@ -329,6 +365,7 @@ export default function StudentDashboard() {
         profileQuery.data?.lastUpdatedAt,
         upcomingQuery.data?.lastUpdatedAt,
         featuredQuery.data?.lastUpdatedAt,
+        liveAlertsQuery.data?.lastUpdatedAt,
         notificationsQuery.data?.lastUpdatedAt,
         historyQuery.data?.lastUpdatedAt,
     ]);
@@ -395,6 +432,7 @@ export default function StudentDashboard() {
 
     const upcomingExams = upcomingQuery.data?.items || [];
     const featured = featuredQuery.data?.items || [];
+    const liveAlerts = liveAlertsQuery.data?.items || [];
     const notifications = notificationsQuery.data?.items || [];
     const examHistory = historyQuery.data?.history || [];
     const progress = historyQuery.data?.progress;
@@ -446,6 +484,17 @@ export default function StudentDashboard() {
     const profile = profileQuery.data;
     const progressPct = Number(profile?.profileCompletionPercentage || 0);
     const profileEligible = Boolean(profile?.isProfileEligible);
+    const mySubscription = mySubscriptionQuery.data;
+    const mySubscriptionStatus = mySubscription?.status || (profile?.subscription?.isActive ? 'active' : 'pending');
+    const mySubscriptionLabel = mySubscriptionStatus === 'active'
+        ? 'Active'
+        : mySubscriptionStatus === 'expired'
+            ? 'Expired'
+            : mySubscriptionStatus === 'suspended'
+                ? 'Suspended'
+                : 'Pending';
+    const mySubscriptionPlanName = mySubscription?.planName || profile?.subscription?.planName || 'No active plan';
+    const mySubscriptionExpiry = mySubscription?.expiresAtUTC || profile?.subscription?.expiryDate || null;
 
     return (
         <div className="space-y-6 max-w-7xl">
@@ -514,10 +563,40 @@ export default function StudentDashboard() {
                 </div>
             </section>
 
+            <section className="rounded-2xl border border-indigo-500/20 bg-[#111d33] p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 className="text-base font-bold text-white">My Subscription</h2>
+                        <p className="text-xs text-slate-400 mt-1">{mySubscriptionPlanName}</p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold border ${mySubscriptionStatus === 'active'
+                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                        : mySubscriptionStatus === 'pending'
+                            ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                            : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                        }`}>
+                        {mySubscriptionLabel}
+                    </span>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                    <span>Expires: {formatDateTime(mySubscriptionExpiry || undefined)}</span>
+                    <span className="text-slate-500">|</span>
+                    <span>Active: {mySubscription?.isActive ? 'Yes' : 'No'}</span>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                    <Link to="/subscription-plans" className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-500">
+                        Renew / Upgrade
+                    </Link>
+                    <Link to="/contact" className="rounded-lg border border-indigo-500/25 px-3 py-2 text-xs font-semibold text-indigo-200 hover:bg-indigo-500/10">
+                        Contact Support
+                    </Link>
+                </div>
+            </section>
+
             <section className="space-y-3">
                 <div className="flex items-center justify-between">
                     <h2 className="text-base font-bold text-white flex items-center gap-2"><CalendarClock className="w-4 h-4 text-cyan-300" /> Upcoming Exams</h2>
-                    {(upcomingQuery.isFetching || featuredQuery.isFetching || notificationsQuery.isFetching || historyQuery.isFetching) ? (
+                    {(upcomingQuery.isFetching || featuredQuery.isFetching || liveAlertsQuery.isFetching || notificationsQuery.isFetching || historyQuery.isFetching) ? (
                         <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
                     ) : null}
                 </div>
@@ -564,6 +643,22 @@ export default function StudentDashboard() {
                         <div className="rounded-2xl border border-indigo-500/10 bg-[#111d33] p-5 text-sm text-slate-400">No featured universities configured.</div>
                     ) : featured.map((item) => <FeaturedUniversityCard key={item._id} item={item} />)}
                 </div>
+            </section>
+
+            <section className="rounded-2xl border border-indigo-500/10 bg-[#111d33] p-4">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                    <h2 className="text-base font-bold text-white flex items-center gap-2"><AlertCircle className="w-4 h-4 text-cyan-300" /> Live Alerts</h2>
+                    {liveAlertsQuery.isFetching ? <RefreshCw className="w-4 h-4 animate-spin text-slate-400" /> : null}
+                </div>
+                {liveAlerts.length === 0 ? (
+                    <p className="text-sm text-slate-500">No live alerts at this moment.</p>
+                ) : (
+                    <div className="flex gap-3 overflow-x-auto pb-1 md:grid md:grid-cols-2 md:overflow-visible">
+                        {liveAlerts.map((item) => (
+                            <LiveAlertCard key={item.id} item={item} />
+                        ))}
+                    </div>
+                )}
             </section>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">

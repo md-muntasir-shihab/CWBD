@@ -315,6 +315,14 @@ export default function UniversityDetailsPage() {
 
     const appDays = getDays(uni.applicationEnd);
     const appProgress = progressPct(uni.applicationStart, uni.applicationEnd);
+    const hasApplicationWindow = Boolean(uni.applicationStart || uni.applicationEnd);
+    const applicationDurationDays = (() => {
+        if (!uni.applicationStart || !uni.applicationEnd) return null;
+        const start = new Date(uni.applicationStart).getTime();
+        const end = new Date(uni.applicationEnd).getTime();
+        if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+        return Math.ceil((end - start) / 86400000);
+    })();
     const activeUnitData = uni.units?.[activeUnit] ?? null;
     const hasMultipleUnits = (uni.units?.length ?? 0) > 1;
     const hasSingleUnit = (uni.units?.length ?? 0) === 1;
@@ -453,38 +461,51 @@ export default function UniversityDetailsPage() {
                         )}
 
                         {/* 2. QUICK INFO PANEL + Application Progress */}
-                        {(uni.applicationStart || uni.applicationEnd) && (
-                            <div className="card p-5 sm:p-6">
-                                <SectionHeader icon={Clock} title="Application Window" />
-                                <div className="space-y-4">
-                                    <div className="flex flex-wrap items-center justify-between gap-3">
-                                        <div className="space-y-0.5">
-                                            <p className="text-xs text-text-muted dark:text-dark-text/50">Opens</p>
-                                            <p className="font-semibold dark:text-dark-text text-sm">{fmtDate(uni.applicationStart)}</p>
-                                        </div>
-                                        <div className="text-right space-y-0.5">
-                                            <p className="text-xs text-text-muted dark:text-dark-text/50">Closes</p>
-                                            <p className="font-semibold dark:text-dark-text text-sm">{fmtDate(uni.applicationEnd)}</p>
-                                        </div>
+                        <div className="card p-5 sm:p-6">
+                            <SectionHeader icon={Clock} title="Application Window" />
+                            <div className="space-y-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="space-y-0.5">
+                                        <p className="text-xs text-text-muted dark:text-dark-text/50">Opens</p>
+                                        <p className="font-semibold dark:text-dark-text text-sm">{fmtDate(uni.applicationStart)}</p>
                                     </div>
-                                    {/* Progress */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-xs text-text-muted dark:text-dark-text/50">Progress</span>
-                                            <span className={`${countdownClass(appDays)} text-xs`}>
-                                                {appDays >= 0 ? `Closes in ${appDays} day${appDays !== 1 ? 's' : ''}` : 'Application closed'}
-                                            </span>
-                                        </div>
-                                        <div className="h-2.5 bg-background dark:bg-dark-border rounded-full overflow-hidden">
-                                            <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-700"
-                                                style={{ width: `${appProgress}%` }}
-                                                role="progressbar" aria-valuenow={appProgress} aria-valuemin={0} aria-valuemax={100} />
-                                        </div>
-                                        <p className="text-[10px] text-text-muted dark:text-dark-text/40 mt-1 text-right">{appProgress}% of application period elapsed</p>
+                                    <div className="text-right space-y-0.5">
+                                        <p className="text-xs text-text-muted dark:text-dark-text/50">Closes</p>
+                                        <p className="font-semibold dark:text-dark-text text-sm">{fmtDate(uni.applicationEnd)}</p>
                                     </div>
                                 </div>
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="text-text-muted dark:text-dark-text/50">Duration</span>
+                                    <span className="font-medium dark:text-dark-text">
+                                        {applicationDurationDays !== null ? `${applicationDurationDays} days` : 'N/A'}
+                                    </span>
+                                </div>
+                                {/* Progress */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <span className="text-xs text-text-muted dark:text-dark-text/50">Progress</span>
+                                        <span className={`${countdownClass(appDays)} text-xs`}>
+                                            {hasApplicationWindow
+                                                ? (appDays >= 0 ? `Closes in ${appDays} day${appDays !== 1 ? 's' : ''}` : 'Application closed')
+                                                : 'Application dates unavailable'}
+                                        </span>
+                                    </div>
+                                    <div className="h-2.5 bg-background dark:bg-dark-border rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-700"
+                                            style={{ width: `${hasApplicationWindow ? appProgress : 0}%` }}
+                                            role="progressbar"
+                                            aria-valuenow={hasApplicationWindow ? appProgress : 0}
+                                            aria-valuemin={0}
+                                            aria-valuemax={100}
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-text-muted dark:text-dark-text/40 mt-1 text-right">
+                                        {hasApplicationWindow ? `${appProgress}% of application period elapsed` : 'Progress unavailable'}
+                                    </p>
+                                </div>
                             </div>
-                        )}
+                        </div>
 
                         {/* 3. DEPARTMENTS / UNITS */}
                         {(uni.units?.length ?? 0) > 0 && (
@@ -738,25 +759,29 @@ export default function UniversityDetailsPage() {
                         )}
 
                         {/* 4. EXAM CENTERS — city-grouped */}
-                        {(uni.examCenters?.length ?? 0) > 0 && (
-                            <div className="card p-5">
-                                <h3 className="text-base font-heading font-bold dark:text-dark-text mb-4 flex items-center justify-between gap-2">
-                                    <span className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-primary dark:text-primary-300" />
-                                        Exam Centers
-                                    </span>
-                                    <span className="badge-primary text-xs">{uni.examCenters.length} total</span>
-                                </h3>
-                                <GroupedCenters centers={uni.examCenters} expanded={centersExpanded} />
-                                {uni.examCenters.length > 3 && (
-                                    <button onClick={() => setCentersExpanded(!centersExpanded)}
-                                        className="text-xs text-primary dark:text-primary-300 hover:text-accent mt-3 flex items-center gap-1 font-medium min-h-[36px]">
-                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${centersExpanded ? 'rotate-180' : ''}`} />
-                                        {centersExpanded ? 'Show fewer cities' : `Show all ${uni.examCenters.length} centers`}
-                                    </button>
-                                )}
-                            </div>
-                        )}
+                        <div className="card p-5">
+                            <h3 className="text-base font-heading font-bold dark:text-dark-text mb-4 flex items-center justify-between gap-2">
+                                <span className="flex items-center gap-2">
+                                    <MapPin className="w-4 h-4 text-primary dark:text-primary-300" />
+                                    Exam Centers
+                                </span>
+                                <span className="badge-primary text-xs">{(uni.examCenters?.length ?? 0)} total</span>
+                            </h3>
+                            {(uni.examCenters?.length ?? 0) > 0 ? (
+                                <>
+                                    <GroupedCenters centers={uni.examCenters || []} expanded={centersExpanded} />
+                                    {(uni.examCenters?.length ?? 0) > 3 && (
+                                        <button onClick={() => setCentersExpanded(!centersExpanded)}
+                                            className="text-xs text-primary dark:text-primary-300 hover:text-accent mt-3 flex items-center gap-1 font-medium min-h-[36px]">
+                                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${centersExpanded ? 'rotate-180' : ''}`} />
+                                            {centersExpanded ? 'Show fewer cities' : `Show all ${uni.examCenters?.length || 0} centers`}
+                                        </button>
+                                    )}
+                                </>
+                            ) : (
+                                <p className="text-sm text-text-muted dark:text-dark-text/60">No exam center data available (N/A).</p>
+                            )}
+                        </div>
 
                         {/* 10. RELATED UNIVERSITIES */}
                         {(uni.relatedUniversities?.length ?? 0) > 0 && (

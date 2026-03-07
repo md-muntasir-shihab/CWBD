@@ -21,19 +21,26 @@ export interface IUniversity extends Document {
     category: string;
     categoryId?: mongoose.Types.ObjectId | null;
     established: number;
+    establishedYear?: number;
     address: string;
     contactNumber: string;
     email: string;
     website: string;
+    websiteUrl?: string;
     admissionWebsite: string;
+    admissionUrl?: string;
     totalSeats: string;
     scienceSeats: string;
+    seatsScienceEng?: string;
     artsSeats: string;
+    seatsArtsHum?: string;
     businessSeats: string;
+    seatsBusiness?: string;
     shortDescription: string;
     description?: string;
     logoUrl?: string;
     clusterId?: mongoose.Types.ObjectId | null;
+    clusterGroup?: string;
     clusterName?: string;
     clusterCount?: number;
     clusterDateOverrides?: {
@@ -48,8 +55,11 @@ export interface IUniversity extends Document {
     applicationStartDate?: Date;
     applicationEndDate?: Date;
     scienceExamDate?: string;
+    examDateScience?: string;
     artsExamDate?: string;
+    examDateArts?: string;
     businessExamDate?: string;
+    examDateBusiness?: string;
     units: IUnit[];
     examCenters: IExamCenter[];
     socialLinks: { platform: string; url: string; icon?: string }[];
@@ -96,19 +106,26 @@ const UniversitySchema = new Schema<IUniversity>({
     category: { type: String, required: true },
     categoryId: { type: Schema.Types.ObjectId, ref: 'UniversityCategory', default: null },
     established: { type: Number },
+    establishedYear: { type: Number },
     address: { type: String },
     contactNumber: { type: String },
     email: { type: String },
     website: { type: String },
+    websiteUrl: { type: String },
     admissionWebsite: { type: String },
+    admissionUrl: { type: String },
     totalSeats: { type: String, default: 'N/A' },
     scienceSeats: { type: String, default: 'N/A' },
+    seatsScienceEng: { type: String, default: 'N/A' },
     artsSeats: { type: String, default: 'N/A' },
+    seatsArtsHum: { type: String, default: 'N/A' },
     businessSeats: { type: String, default: 'N/A' },
+    seatsBusiness: { type: String, default: 'N/A' },
     shortDescription: { type: String },
     description: { type: String, default: '' },
     logoUrl: String,
     clusterId: { type: Schema.Types.ObjectId, ref: 'UniversityCluster', default: null },
+    clusterGroup: { type: String, default: '' },
     clusterName: String,
     clusterCount: Number,
     clusterDateOverrides: { type: ClusterDateOverridesSchema, default: () => ({}) },
@@ -116,8 +133,11 @@ const UniversitySchema = new Schema<IUniversity>({
     applicationStartDate: Date,
     applicationEndDate: Date,
     scienceExamDate: { type: String, default: 'N/A' },
+    examDateScience: { type: String, default: 'N/A' },
     artsExamDate: { type: String, default: 'N/A' },
+    examDateArts: { type: String, default: 'N/A' },
     businessExamDate: { type: String, default: 'N/A' },
+    examDateBusiness: { type: String, default: 'N/A' },
     units: [UnitSchema],
     examCenters: [ExamCenterSchema],
     socialLinks: [{ platform: String, url: String, icon: String }],
@@ -137,6 +157,11 @@ UniversitySchema.index({ category: 1 });
 UniversitySchema.index({ categoryId: 1, isActive: 1, isArchived: 1 });
 UniversitySchema.index({ category: 1, isActive: 1, isArchived: 1 });
 UniversitySchema.index({ clusterId: 1 });
+UniversitySchema.index({ clusterGroup: 1 });
+UniversitySchema.index({ shortForm: 1 });
+UniversitySchema.index({ applicationEndDate: 1 });
+UniversitySchema.index({ category: 1, clusterGroup: 1, isActive: 1, isArchived: 1 });
 UniversitySchema.index({ name: 'text', shortForm: 'text' });
+UniversitySchema.index({ name: 1, shortForm: 1 });
 
 export default mongoose.model<IUniversity>('University', UniversitySchema);

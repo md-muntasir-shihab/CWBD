@@ -1,7 +1,9 @@
-import { useState, FormEvent } from 'react';
-import { Lock, Eye, EyeOff, GraduationCap, AlertCircle, Loader2, ArrowRight, Shield } from 'lucide-react';
+import { FormEvent, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
+import AuthBrandHeader from '../components/auth/AuthBrandHeader';
+import ThemeSwitchPro from '../components/ui/ThemeSwitchPro';
 
 export default function LoginPage() {
     const [identifier, setIdentifier] = useState('');
@@ -12,146 +14,106 @@ export default function LoginPage() {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        if (!identifier || !password) {
-            setError('Please fill in all fields');
+    const onSubmit = async (event: FormEvent) => {
+        event.preventDefault();
+        if (!identifier.trim() || !password) {
+            setError('Email/phone and password are required.');
             return;
         }
 
         setError('');
         setLoading(true);
         try {
-            const res = await login(identifier, password);
-            if (res.requires2fa) {
-                navigate('/otp-verify?from=admin');
+            const response = await login(identifier.trim(), password, { portal: 'student' });
+            if (response?.requires2fa) {
+                navigate('/otp-verify?from=student', { replace: true });
                 return;
             }
-
-            const target = res.user.role === 'student' ? '/student/dashboard' : '/campusway-secure-admin';
-            navigate(target);
+            navigate('/dashboard', { replace: true });
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+            const message = String(err?.response?.data?.message || 'Login failed. Please try again.');
+            if (/admin|chairman/i.test(message)) {
+                setError('This login page is for students only.');
+            } else {
+                setError(message);
+            }
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#061226] relative overflow-hidden font-sans p-4">
-            {/* Animated Background Orbs */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[100px] animate-pulse pointer-events-none" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/20 rounded-full blur-[120px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+        <div className="min-h-screen cw-bg px-4 py-8">
+            <div className="mx-auto flex w-full max-w-lg justify-end">
+                <ThemeSwitchPro className="mb-4" />
+            </div>
+            <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center justify-center">
+                <div className="w-full rounded-3xl border cw-border cw-surface p-6 shadow-xl sm:p-8">
+                    <AuthBrandHeader subtitle="Student Portal" />
 
-            <div className="w-full max-w-md relative z-10">
-                <Link to="/" className="flex flex-col items-center mb-10 group transition-transform hover:scale-105 duration-300">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0D5FDB] to-[#0EA5E9] flex items-center justify-center shadow-[0_20px_40px_-15px_rgba(13,95,219,0.5)] mb-4">
-                        <GraduationCap className="w-8 h-8 text-white" />
-                    </div>
-                    <span className="text-2xl font-heading font-black text-white tracking-tight">CampusWay</span>
-                    <span className="text-[10px] font-bold text-primary-300 uppercase tracking-widest mt-1 opacity-80 underline-offset-4 decoration-accent underline decoration-2">Admin Portal Login</span>
-                </Link>
+                    <h1 className="mb-2 text-center text-2xl font-bold cw-text">Student Login</h1>
+                    <p className="mb-6 text-center text-sm cw-muted">Sign in to access your admission dashboard.</p>
 
-                <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl p-8 sm:p-10 relative overflow-hidden group/card hover:border-white/20 transition-colors duration-500">
-                    {/* Interior Glow */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-
-                    <div className="text-center mb-8 relative">
-                        <h1 className="text-2xl sm:text-3xl font-heading font-black text-white mb-2 leading-tight">Welcome Back</h1>
-                        <p className="text-sm text-slate-400 font-medium">Secure access to your management panel</p>
-                    </div>
-
-                    {error && (
-                        <div className="flex items-start gap-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 mb-6 text-rose-200 text-sm animate-in fade-in slide-in-from-top-2">
-                            <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-500" />
-                            <span className="leading-relaxed font-medium">{error}</span>
+                    {error ? (
+                        <div className="mb-4 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+                            {error}
                         </div>
-                    )}
+                    ) : null}
 
-                    <form onSubmit={handleSubmit} noValidate className="space-y-5">
-                        <div className="space-y-2">
-                            <label htmlFor="identifier" className="block text-xs font-bold text-slate-300 uppercase tracking-widest ml-1">
-                                Email / Username
+                    <form onSubmit={onSubmit} className="space-y-4">
+                        <div>
+                            <label htmlFor="identifier" className="mb-1 block text-xs font-semibold uppercase tracking-wide cw-muted">
+                                Email / Phone / Username
                             </label>
                             <input
                                 id="identifier"
                                 type="text"
                                 autoComplete="username"
                                 value={identifier}
-                                onChange={(e) => setIdentifier(e.target.value)}
-                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-medium"
-                                placeholder="admin@example.com"
-                                aria-required="true"
+                                onChange={(event) => setIdentifier(event.target.value)}
+                                className="input-field h-12 w-full"
+                                placeholder="you@example.com"
                                 disabled={loading}
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between ml-1">
-                                <label htmlFor="password" className="block text-xs font-bold text-slate-300 uppercase tracking-widest">Password</label>
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/student/forgot-password')}
-                                    className="text-[10px] font-bold text-primary-300 hover:text-white transition-colors uppercase tracking-wider underline-offset-4 hover:underline"
-                                >
-                                    Forgot?
-                                </button>
+                        <div>
+                            <div className="mb-1 flex items-center justify-between">
+                                <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wide cw-muted">
+                                    Password
+                                </label>
+                                <Link to="/student/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                                    Forgot password?
+                                </Link>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                                 <input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-14 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-medium"
-                                    placeholder="••••••••"
-                                    aria-required="true"
+                                    onChange={(event) => setPassword(event.target.value)}
+                                    className="input-field h-12 w-full pr-11"
+                                    placeholder="********"
                                     disabled={loading}
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-white transition-colors"
-                                    aria-label={showPassword ? 'Hide' : 'Show'}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 cw-muted hover:cw-text"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                                 >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full h-14 bg-gradient-to-r from-primary to-[#0EA5E9] hover:from-primary-600 hover:to-primary text-white font-black rounded-2xl shadow-[0_10px_30px_-10px_rgba(13,95,219,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-3 overflow-hidden group/btn"
-                        >
-                            {loading ? (
-                                <><Loader2 className="w-5 h-5 animate-spin" /><span>Verifying Identity...</span></>
-                            ) : (
-                                <>
-                                    <span>Sign in to Dashboard</span>
-                                    <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                </>
-                            )}
+                        <button type="submit" disabled={loading} className="btn-primary h-12 w-full justify-center gap-2 rounded-xl">
+                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+                            {loading ? 'Signing in...' : 'Sign In'}
                         </button>
                     </form>
-
-                    <div className="mt-8 flex items-center justify-center gap-4">
-                        <div className="h-[1px] flex-1 bg-white/5" />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex-shrink-0">Security Check</span>
-                        <div className="h-[1px] flex-1 bg-white/5" />
-                    </div>
-
-                    <p className="text-[11px] text-slate-500 text-center mt-6 leading-relaxed flex items-center justify-center gap-2">
-                        <Shield className="w-3 h-3 text-primary-400" />
-                        Admin-only access. IPs are currently being logged for security.
-                    </p>
                 </div>
-
-                <p className="text-center text-sm text-slate-500 mt-10">
-                    <Link to="/" className="hover:text-white transition-colors font-bold underline underline-offset-8 decoration-primary/20">Return to Portal</Link>
-                </p>
             </div>
         </div>
     );

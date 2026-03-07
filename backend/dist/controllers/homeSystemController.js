@@ -1,0 +1,316 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.updateStats = exports.getStats = exports.updateAnnouncement = exports.updatePromotionalBanner = exports.updateHero = exports.updateHome = exports.updateSettings = exports.getSettings = exports.getHomeStream = exports.getAggregatedHomeData = void 0;
+const WebsiteSettings_1 = __importDefault(require("../models/WebsiteSettings"));
+const HomePage_1 = __importDefault(require("../models/HomePage"));
+const User_1 = __importDefault(require("../models/User"));
+const Exam_1 = __importDefault(require("../models/Exam"));
+const University_1 = __importDefault(require("../models/University"));
+const ExamResult_1 = __importDefault(require("../models/ExamResult"));
+const Settings_1 = __importDefault(require("../models/Settings"));
+const homeStream_1 = require("../realtime/homeStream");
+const homeAggregateController_1 = require("./homeAggregateController");
+const DEFAULT_SOCIAL_LINKS = {
+    facebook: '',
+    whatsapp: '',
+    messenger: '',
+    telegram: '',
+    twitter: '',
+    youtube: '',
+    instagram: '',
+};
+const DEFAULT_THEME_SETTINGS = {
+    modeDefault: 'system',
+    allowSystemMode: true,
+    switchVariant: 'pro',
+    animationLevel: 'subtle',
+    brandGradients: [
+        'linear-gradient(135deg,#0D5FDB 0%,#0EA5E9 55%,#22D3EE 100%)',
+        'linear-gradient(135deg,#0891B2 0%,#2563EB 100%)',
+    ],
+};
+const DEFAULT_SOCIAL_UI = {
+    clusterEnabled: true,
+    buttonVariant: 'squircle',
+    showLabels: false,
+    platformOrder: ['facebook', 'whatsapp', 'messenger', 'telegram', 'twitter', 'youtube', 'instagram'],
+};
+const DEFAULT_PRICING_UI = {
+    currencyCode: 'BDT',
+    currencySymbol: '\\u09F3',
+    currencyLocale: 'bn-BD',
+    displayMode: 'symbol',
+    thousandSeparator: true,
+};
+// Helper to ensure configs exist
+const ensureConfigs = async () => {
+    let settings = await WebsiteSettings_1.default.findOne();
+    if (!settings)
+        settings = await WebsiteSettings_1.default.create({});
+    let home = await HomePage_1.default.findOne();
+    if (!home)
+        home = await HomePage_1.default.create({});
+    return { settings, home };
+};
+function parseSeatValue(value) {
+    if (value === null || value === undefined)
+        return 0;
+    const text = String(value).replace(/[^\d]/g, '');
+    const num = Number(text);
+    return Number.isFinite(num) ? num : 0;
+}
+function countUpcomingDateStrings(values, windowDays) {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + windowDays);
+    return values.reduce((count, value) => {
+        if (!value)
+            return count;
+        const date = new Date(String(value));
+        if (Number.isNaN(date.getTime()))
+            return count;
+        return (date >= start && date <= end) ? count + 1 : count;
+    }, 0);
+}
+function toTime(value) {
+    if (!value)
+        return 0;
+    const time = new Date(String(value)).getTime();
+    return Number.isFinite(time) ? time : 0;
+}
+const getAggregatedHomeData = async (req, res) => {
+    await (0, homeAggregateController_1.getAggregatedHomeData)(req, res);
+};
+exports.getAggregatedHomeData = getAggregatedHomeData;
+const getHomeStream = async (_req, res) => {
+    (0, homeStream_1.addHomeStreamClient)(res);
+};
+exports.getHomeStream = getHomeStream;
+const getSettings = async (req, res) => {
+    try {
+        const { settings } = await ensureConfigs();
+        const siteSettings = await Settings_1.default.findOne().lean();
+        const socialLinksList = Array.isArray(siteSettings?.socialLinks)
+            ? siteSettings.socialLinks
+                .filter((item) => item?.enabled !== false && item?.url)
+                .map((item) => ({
+                id: String(item?._id || ''),
+                platformName: String(item?.platform || ''),
+                targetUrl: String(item?.url || ''),
+                iconUploadOrUrl: String(item?.icon || ''),
+                description: String(item?.description || ''),
+                enabled: item?.enabled !== false,
+                placements: Array.isArray(item?.placements) ? item.placements : ['header', 'footer', 'home', 'news', 'contact'],
+            }))
+            : [];
+        const socialLinksFromList = socialLinksList.reduce((acc, item) => {
+            const key = String(item.platformName || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+            if (!key || !item.targetUrl)
+                return acc;
+            if (['facebook', 'whatsapp', 'messenger', 'telegram', 'twitter', 'youtube', 'instagram'].includes(key)) {
+                acc[key] = item.targetUrl;
+            }
+            else if (key === 'x') {
+                acc.twitter = item.targetUrl;
+            }
+            return acc;
+        }, {});
+        const base = settings.toObject();
+        res.json({
+            ...base,
+            siteName: String(base.websiteName || ''),
+            logoUrl: String(base.logo || ''),
+            socialLinks: {
+                ...DEFAULT_SOCIAL_LINKS,
+                ...(base.socialLinks || {}),
+                ...socialLinksFromList,
+            },
+            socialLinksList,
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.getSettings = getSettings;
+const updateSettings = async (req, res) => {
+    try {
+        const payload = { ...req.body };
+        const files = req.files;
+        console.log('Update Settings Body:', req.body);
+        console.log('Update Settings Files:', files);
+        if (files?.logo?.[0])
+            payload.logo = `/uploads/${files.logo[0].filename}`;
+        if (files?.favicon?.[0])
+            payload.favicon = `/uploads/${files.favicon[0].filename}`;
+        const current = await WebsiteSettings_1.default.findOne();
+        // Handle JSON-like payload fields coming through multipart/form-data.
+        const parseIfStringifiedObject = (rawValue) => {
+            if (typeof rawValue !== 'string')
+                return rawValue;
+            if (!rawValue.trim() || rawValue === '[object Object]')
+                return undefined;
+            try {
+                return JSON.parse(rawValue);
+            }
+            catch {
+                return undefined;
+            }
+        };
+        const parsedSocial = parseIfStringifiedObject(payload.socialLinks);
+        if (parsedSocial && typeof parsedSocial === 'object') {
+            payload.socialLinks = { ...DEFAULT_SOCIAL_LINKS, ...(current?.socialLinks || {}), ...parsedSocial };
+        }
+        else if (payload.socialLinks !== undefined) {
+            payload.socialLinks = { ...DEFAULT_SOCIAL_LINKS, ...(current?.socialLinks || {}) };
+        }
+        const parsedTheme = parseIfStringifiedObject(payload.theme);
+        if (parsedTheme && typeof parsedTheme === 'object') {
+            payload.theme = { ...DEFAULT_THEME_SETTINGS, ...(current?.theme || {}), ...parsedTheme };
+        }
+        else if (payload.theme !== undefined) {
+            payload.theme = { ...DEFAULT_THEME_SETTINGS, ...(current?.theme || {}) };
+        }
+        const parsedSocialUi = parseIfStringifiedObject(payload.socialUi);
+        if (parsedSocialUi && typeof parsedSocialUi === 'object') {
+            payload.socialUi = { ...DEFAULT_SOCIAL_UI, ...(current?.socialUi || {}), ...parsedSocialUi };
+        }
+        else if (payload.socialUi !== undefined) {
+            payload.socialUi = { ...DEFAULT_SOCIAL_UI, ...(current?.socialUi || {}) };
+        }
+        const parsedPricingUi = parseIfStringifiedObject(payload.pricingUi);
+        if (parsedPricingUi && typeof parsedPricingUi === 'object') {
+            payload.pricingUi = { ...DEFAULT_PRICING_UI, ...(current?.pricingUi || {}), ...parsedPricingUi };
+        }
+        else if (payload.pricingUi !== undefined) {
+            payload.pricingUi = { ...DEFAULT_PRICING_UI, ...(current?.pricingUi || {}) };
+        }
+        // Use findOneAndUpdate to ensure we update the single settings document
+        const settings = await WebsiteSettings_1.default.findOneAndUpdate({}, { $set: payload }, { new: true, upsert: true, runValidators: true });
+        console.log('Settings updated in DB:', settings);
+        (0, homeStream_1.broadcastHomeStreamEvent)({ type: 'home-updated', meta: { section: 'website-settings' } });
+        res.json({ message: 'Settings updated successfully', settings });
+    }
+    catch (error) {
+        console.error('Settings save error:', error);
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error instanceof Error ? error.message : String(error)
+        });
+    }
+};
+exports.updateSettings = updateSettings;
+const updateHome = async (req, res) => {
+    try {
+        const payload = req.body;
+        let home = await HomePage_1.default.findOne();
+        if (!home)
+            home = new HomePage_1.default();
+        Object.assign(home, payload);
+        await home.save();
+        (0, homeStream_1.broadcastHomeStreamEvent)({ type: 'home-updated', meta: { section: 'home' } });
+        res.json({ message: 'Home page updated successfully', home });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.updateHome = updateHome;
+const updateHero = async (req, res) => {
+    try {
+        const payload = req.body;
+        const file = req.file;
+        if (file)
+            payload.backgroundImage = `/uploads/${file.filename}`;
+        let home = await HomePage_1.default.findOne();
+        if (!home)
+            home = new HomePage_1.default();
+        home.heroSection = { ...home.heroSection, ...payload };
+        // ensure overlay is boolean
+        if (payload.overlay !== undefined) {
+            home.heroSection.overlay = payload.overlay === 'true' || payload.overlay === true;
+        }
+        await home.save();
+        (0, homeStream_1.broadcastHomeStreamEvent)({ type: 'home-updated', meta: { section: 'hero' } });
+        res.json({ message: 'Hero section updated', heroSection: home.heroSection });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.updateHero = updateHero;
+const updatePromotionalBanner = async (req, res) => {
+    try {
+        const payload = req.body;
+        const file = req.file;
+        if (file)
+            payload.image = `/uploads/${file.filename}`;
+        let home = await HomePage_1.default.findOne();
+        if (!home)
+            home = new HomePage_1.default();
+        home.promotionalBanner = { ...home.promotionalBanner, ...payload };
+        if (payload.enabled !== undefined) {
+            home.promotionalBanner.enabled = payload.enabled === 'true' || payload.enabled === true;
+        }
+        await home.save();
+        (0, homeStream_1.broadcastHomeStreamEvent)({ type: 'banner-updated', meta: { section: 'promotionalBanner' } });
+        res.json({ message: 'Banner updated', promotionalBanner: home.promotionalBanner });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.updatePromotionalBanner = updatePromotionalBanner;
+const updateAnnouncement = async (req, res) => {
+    try {
+        const payload = req.body;
+        let home = await HomePage_1.default.findOne();
+        if (!home)
+            home = new HomePage_1.default();
+        home.announcementBar = { ...home.announcementBar, ...payload };
+        if (payload.enabled !== undefined) {
+            home.announcementBar.enabled = payload.enabled === 'true' || payload.enabled === true;
+        }
+        await home.save();
+        (0, homeStream_1.broadcastHomeStreamEvent)({ type: 'home-updated', meta: { section: 'announcement' } });
+        res.json({ message: 'Announcement updated', announcementBar: home.announcementBar });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.updateAnnouncement = updateAnnouncement;
+const getStats = async (req, res) => {
+    try {
+        const totalStudents = await User_1.default.countDocuments({ role: 'student' });
+        const totalExams = await Exam_1.default.countDocuments();
+        const totalUniversities = await University_1.default.countDocuments();
+        const totalResults = await ExamResult_1.default.countDocuments();
+        res.json({ totalStudents, totalExams, totalUniversities, totalResults });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.getStats = getStats;
+const updateStats = async (req, res) => {
+    try {
+        const payload = req.body;
+        let home = await HomePage_1.default.findOne();
+        if (!home)
+            home = new HomePage_1.default();
+        home.statistics = { ...home.statistics, ...payload };
+        await home.save();
+        (0, homeStream_1.broadcastHomeStreamEvent)({ type: 'home-updated', meta: { section: 'statistics' } });
+        res.json({ message: 'Stats updated', statistics: home.statistics });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.updateStats = updateStats;
+//# sourceMappingURL=homeSystemController.js.map

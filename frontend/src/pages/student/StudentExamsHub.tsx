@@ -18,6 +18,7 @@ function statusBadgeLabel(exam: StudentUpcomingExam): string {
         if (exam.accessDeniedReason === 'access_group_restricted') return 'Group restricted';
         if (exam.accessDeniedReason === 'access_plan_restricted') return 'Payment pending';
         if (exam.accessDeniedReason === 'access_user_restricted') return 'Restricted';
+        if (exam.accessDeniedReason === 'subscription_required') return 'Subscription required';
     }
     if (exam.status === 'live') return 'Eligible';
     if (exam.status === 'upcoming') return 'Upcoming';

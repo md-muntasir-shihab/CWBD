@@ -3,17 +3,26 @@ import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import AuditLog from '../models/AuditLog';
 import ActiveSession from '../models/ActiveSession';
+import User, { UserRole } from '../models/User';
 import { IUserPermissions } from '../models/User';
 import { getSecurityConfig } from '../services/securityConfigService';
+import {
+    hasLegacyPermissionBridge,
+    hasPermissionsV2Override,
+    hasRolePermission,
+    type PermissionAction,
+    type PermissionModule,
+} from '../security/permissionsMatrix';
 
 export interface AuthRequest extends Request {
     user?: {
         _id: string;
         username: string;
         email: string;
-        role: string;
+        role: UserRole;
         fullName: string;
         permissions?: Partial<IUserPermissions>;
+        permissionsV2?: Partial<Record<string, Partial<Record<string, boolean>>>>;
         sessionId?: string;
     };
 }
@@ -22,9 +31,10 @@ interface DecodedAuthToken {
     _id: string;
     username: string;
     email: string;
-    role: string;
+    role: UserRole;
     fullName: string;
     permissions?: Partial<IUserPermissions>;
+    permissionsV2?: Partial<Record<string, Partial<Record<string, boolean>>>>;
     sessionId?: string;
 }
 
@@ -168,6 +178,22 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
 
 export const requireAuth = authenticate;
 
+export function optionalAuthenticate(req: AuthRequest, _res: Response, next: NextFunction): void {
+    const token = extractToken(req);
+    if (!token) {
+        next();
+        return;
+    }
+
+    try {
+        decodeAndAttach(req, token);
+    } catch {
+        // Silent fallback for optional auth: invalid tokens should not block public routes.
+    }
+
+    next();
+}
+
 export function authorize(...roles: string[]) {
     return (req: AuthRequest, res: Response, next: NextFunction): void => {
         if (!req.user) {
@@ -175,19 +201,113 @@ export function authorize(...roles: string[]) {
             return;
         }
         if (!roles.includes(req.user.role)) {
-            res.status(403).json({ message: 'Insufficient permissions' });
+            forbidden(res, {
+                message: 'Insufficient permissions',
+            });
             return;
         }
         next();
     };
 }
 
-export function requireRole(role: string) {
-    return authorize(role);
+export function forbidden(
+    res: Response,
+    payload: {
+        message?: string;
+        module?: PermissionModule;
+        action?: PermissionAction;
+    } = {},
+): void {
+    res.status(403).json({
+        errorCode: 'FORBIDDEN',
+        message: payload.message || 'You do not have permission to perform this action.',
+        ...(payload.module ? { module: payload.module } : {}),
+        ...(payload.action ? { action: payload.action } : {}),
+    });
+}
+
+export function requireRole(...roles: UserRole[]) {
+    return authorize(...roles);
 }
 
 export function requireAnyRole(...roles: string[]) {
     return authorize(...roles);
+}
+
+export function requireAuthStudent(req: AuthRequest, res: Response, next: NextFunction): void {
+    if (!req.user) {
+        res.status(401).json({ message: 'Authentication required' });
+        return;
+    }
+    if (req.user.role !== 'student') {
+        forbidden(res, { message: 'Student access only' });
+        return;
+    }
+    next();
+}
+
+type SubscriptionGateState = {
+    allowed: boolean;
+    reason: 'missing' | 'inactive' | 'expired' | 'not_student';
+    expiryDate: Date | null;
+};
+
+function evaluateSubscriptionState(user: Record<string, any>): SubscriptionGateState {
+    if (String(user.role || '') !== 'student') {
+        return { allowed: false, reason: 'not_student', expiryDate: null };
+    }
+
+    const subscription = user.subscription || {};
+    const hasPlanIdentity = Boolean(subscription.plan || subscription.planCode || subscription.planName);
+    if (!hasPlanIdentity) {
+        return { allowed: false, reason: 'missing', expiryDate: null };
+    }
+
+    const isActive = subscription.isActive === true;
+    const expiryDate = subscription.expiryDate ? new Date(subscription.expiryDate) : null;
+
+    if (!isActive) {
+        return { allowed: false, reason: 'inactive', expiryDate };
+    }
+
+    if (!expiryDate || Number.isNaN(expiryDate.getTime()) || expiryDate.getTime() < Date.now()) {
+        return { allowed: false, reason: 'expired', expiryDate };
+    }
+
+    return { allowed: true, reason: 'inactive', expiryDate };
+}
+
+export async function requireActiveSubscription(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+        if (!req.user?._id) {
+            res.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+
+        const user = await User.findById(req.user._id).select('role subscription').lean();
+        if (!user) {
+            res.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+
+        const gate = evaluateSubscriptionState(user as Record<string, any>);
+        if (!gate.allowed) {
+            const expiryLabel = gate.expiryDate ? gate.expiryDate.toISOString() : null;
+            res.status(403).json({
+                subscriptionRequired: true,
+                reason: gate.reason,
+                expiryDate: expiryLabel,
+                message: gate.reason === 'expired'
+                    ? `Your subscription has expired${expiryLabel ? ` on ${expiryLabel}` : ''}.`
+                    : 'Active subscription required to access exams.',
+            });
+            return;
+        }
+
+        next();
+    } catch {
+        res.status(500).json({ message: 'Unable to validate subscription state' });
+    }
 }
 
 export function authorizePermission(permission: keyof IUserPermissions) {
@@ -203,11 +323,57 @@ export function authorizePermission(permission: keyof IUserPermissions) {
         }
 
         if (!req.user.permissions?.[permission]) {
-            res.status(403).json({ message: `Permission denied: ${permission}` });
+            forbidden(res, { message: `Permission denied: ${permission}` });
             return;
         }
 
         next();
+    };
+}
+
+export function requirePermission(moduleName: PermissionModule, action: PermissionAction) {
+    return (req: AuthRequest, res: Response, next: NextFunction): void => {
+        if (!req.user) {
+            res.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+
+        const role = req.user.role;
+        if (role === 'superadmin') {
+            next();
+            return;
+        }
+
+        const permissionsV2Override = hasPermissionsV2Override(req.user.permissionsV2, moduleName, action);
+        if (permissionsV2Override === true) {
+            next();
+            return;
+        }
+        if (permissionsV2Override === false) {
+            forbidden(res, {
+                message: `You are not allowed to ${action} ${moduleName}.`,
+                module: moduleName,
+                action,
+            });
+            return;
+        }
+
+        if (hasRolePermission(role, moduleName, action)) {
+            next();
+            return;
+        }
+
+        const legacyBridge = hasLegacyPermissionBridge(req.user.permissions, moduleName, action);
+        if (legacyBridge === true) {
+            next();
+            return;
+        }
+
+        forbidden(res, {
+            message: `You are not allowed to ${action} ${moduleName}.`,
+            module: moduleName,
+            action,
+        });
     };
 }
 
@@ -221,7 +387,7 @@ export function checkOwnership(req: AuthRequest, res: Response, next: NextFuncti
         return;
     }
     if (req.params.id && req.params.id !== req.user._id.toString()) {
-        res.status(403).json({ message: 'Forbidden: You can only modify your own data.' });
+        forbidden(res, { message: 'You can only modify your own data.' });
         return;
     }
     next();

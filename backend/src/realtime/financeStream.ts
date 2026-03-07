@@ -7,6 +7,7 @@ export type FinanceEventName =
     | 'expense-recorded'
     | 'payout-recorded'
     | 'due-updated'
+    | 'payment-updated'
     | 'ping';
 
 const clients = new Set<Response>();

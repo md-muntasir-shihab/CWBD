@@ -50,6 +50,17 @@ export interface NormalizedQuestionOption {
     media_id?: mongoose.Types.ObjectId | null;
 }
 
+export interface LocalizedTextValue {
+    en: string;
+    bn: string;
+}
+
+export interface LocalizedOptionValue {
+    key: string;
+    text: LocalizedTextValue;
+    media_id?: mongoose.Types.ObjectId | null;
+}
+
 export interface NormalizedQuestionPayload {
     class_level: string;
     department: string;
@@ -58,14 +69,18 @@ export interface NormalizedQuestionPayload {
     topic: string;
     question: string;
     question_text: string;
+    questionText: LocalizedTextValue;
     question_html: string;
     question_type: QBankQuestionType;
     questionType: LegacyQuestionType;
     options: NormalizedQuestionOption[];
+    optionsLocalized: LocalizedOptionValue[];
     correct_answer: string[];
     correctAnswer?: 'A' | 'B' | 'C' | 'D';
     explanation: string;
     explanation_text: string;
+    explanationText: LocalizedTextValue;
+    languageMode: 'EN' | 'BN' | 'BOTH';
     difficulty: 'easy' | 'medium' | 'hard';
     tags: string[];
     estimated_time: number;
@@ -117,6 +132,132 @@ function toStringArray(value: unknown): string[] {
             .filter(Boolean);
     }
     return [];
+}
+
+function asLocalizedText(value: unknown): LocalizedTextValue {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const row = value as Record<string, unknown>;
+        return {
+            en: String(row.en || '').trim(),
+            bn: String(row.bn || '').trim(),
+        };
+    }
+
+    const text = String(value || '').trim();
+    return { en: text, bn: '' };
+}
+
+function normalizeLocalizedOptionText(value: unknown): LocalizedTextValue {
+    return asLocalizedText(value);
+}
+
+function normalizeLanguageMode(
+    payload: Record<string, unknown>,
+    localized: {
+        questionText: LocalizedTextValue;
+        explanationText: LocalizedTextValue;
+        optionsLocalized: LocalizedOptionValue[];
+    },
+): 'EN' | 'BN' | 'BOTH' {
+    const explicit = String(payload.languageMode || payload.language_mode || '').trim().toUpperCase();
+    if (explicit === 'EN' || explicit === 'BN' || explicit === 'BOTH') {
+        return explicit;
+    }
+
+    const hasBn =
+        Boolean(localized.questionText.bn) ||
+        Boolean(localized.explanationText.bn) ||
+        localized.optionsLocalized.some((item) => Boolean(item.text.bn));
+    const hasEn =
+        Boolean(localized.questionText.en) ||
+        Boolean(localized.explanationText.en) ||
+        localized.optionsLocalized.some((item) => Boolean(item.text.en));
+
+    if (hasBn && hasEn) return 'BOTH';
+    if (hasBn) return 'BN';
+    return 'EN';
+}
+
+function normalizeOptionsLocalized(payload: Record<string, unknown>): LocalizedOptionValue[] {
+    const keyOrder = new Map([
+        ['A', 0],
+        ['B', 1],
+        ['C', 2],
+        ['D', 3],
+    ]);
+
+    if (Array.isArray(payload.optionsLocalized)) {
+        const rows = payload.optionsLocalized
+            .map((entry, index) => {
+                const row = entry as Record<string, unknown>;
+                const key = String(row.key || String.fromCharCode(65 + index))
+                    .trim()
+                    .toUpperCase();
+                const text = normalizeLocalizedOptionText(row.text ?? row.value ?? row.option ?? '');
+                if (!text.en && !text.bn && row.text && typeof row.text === 'string') {
+                    text.en = String(row.text).trim();
+                }
+                return {
+                    key,
+                    text,
+                    media_id:
+                        row.media_id && mongoose.Types.ObjectId.isValid(String(row.media_id))
+                            ? new mongoose.Types.ObjectId(String(row.media_id))
+                            : null,
+                };
+            })
+            .filter((entry) => entry.key && (entry.text.en || entry.text.bn))
+            .sort((a, b) => (keyOrder.get(a.key) ?? 999) - (keyOrder.get(b.key) ?? 999));
+        if (rows.length > 0) return rows;
+    }
+
+    if (Array.isArray(payload.options)) {
+        const rows = payload.options
+            .map((entry, index) => {
+                const row = entry as Record<string, unknown>;
+                const key = String(row.key || String.fromCharCode(65 + index))
+                    .trim()
+                    .toUpperCase();
+                const text = normalizeLocalizedOptionText(row.text);
+                const banglaFallback = String(row.text_bn || row.textBn || '').trim();
+                if (banglaFallback && !text.bn) {
+                    text.bn = banglaFallback;
+                }
+                return {
+                    key,
+                    text,
+                    media_id:
+                        row.media_id && mongoose.Types.ObjectId.isValid(String(row.media_id))
+                            ? new mongoose.Types.ObjectId(String(row.media_id))
+                            : null,
+                };
+            })
+            .filter((entry) => entry.key && (entry.text.en || entry.text.bn))
+            .sort((a, b) => (keyOrder.get(a.key) ?? 999) - (keyOrder.get(b.key) ?? 999));
+        if (rows.length > 0) return rows;
+    }
+
+    const legacy = ['A', 'B', 'C', 'D']
+        .map((key) => {
+            const en = String(
+                payload[`option${key}`] ||
+                payload[`option_${key.toLowerCase()}`] ||
+                '',
+            ).trim();
+            const bn = String(
+                payload[`option${key}_bn`] ||
+                payload[`option_${key.toLowerCase()}_bn`] ||
+                '',
+            ).trim();
+            return {
+                key,
+                text: { en, bn },
+                media_id: null,
+            } as LocalizedOptionValue;
+        })
+        .filter((entry) => entry.text.en || entry.text.bn);
+
+    return legacy;
 }
 
 export function sanitizeRichHtml(raw: unknown): string {
@@ -269,11 +410,44 @@ export function normalizeQuestionPayload(
     fallbackStatus: 'draft' | 'pending_review' | 'approved' | 'rejected' | 'archived' = 'draft',
 ): { normalized: NormalizedQuestionPayload; errors: string[] } {
     const questionType = normalizeQuestionType(payload);
-    const options = normalizeOptions(payload);
+    const optionsLocalizedFromPayload = normalizeOptionsLocalized(payload);
+    let options: NormalizedQuestionOption[] = optionsLocalizedFromPayload.map((opt) => ({
+        key: opt.key,
+        text: opt.text.en || opt.text.bn || '',
+        media_id: opt.media_id || null,
+    }));
+    if (options.length === 0) {
+        options = normalizeOptions(payload);
+    }
+
+    const optionsLocalized: LocalizedOptionValue[] = optionsLocalizedFromPayload.length > 0
+        ? optionsLocalizedFromPayload
+        : options.map((opt) => ({
+            key: opt.key,
+            text: { en: String(opt.text || '').trim(), bn: '' },
+            media_id: opt.media_id || null,
+        }));
+
     const correctAnswers = normalizeCorrectAnswers(payload);
-    const questionText = String(payload.question_text || payload.question || '').trim();
+    const questionTextLocalizedInput = asLocalizedText(payload.questionText || payload.question_text_localized || '');
+    const questionTextEn = questionTextLocalizedInput.en || String(payload.question_text || payload.question || '').trim();
+    const questionTextBn = questionTextLocalizedInput.bn || String(payload.question_text_bn || payload.question_bn || '').trim();
+    const questionTextLocalized: LocalizedTextValue = {
+        en: questionTextEn,
+        bn: questionTextBn,
+    };
+    const questionText = questionTextLocalized.en || questionTextLocalized.bn;
+
     const sanitizedHtml = sanitizeRichHtml(payload.question_html || '');
-    const explanation = String(payload.explanation || payload.explanation_text || '').trim();
+    const explanationTextLocalizedInput = asLocalizedText(payload.explanationText || payload.explanation_text_localized || '');
+    const explanationEn = explanationTextLocalizedInput.en || String(payload.explanation || payload.explanation_text || '').trim();
+    const explanationBn = explanationTextLocalizedInput.bn || String(payload.explanation_bn || '').trim();
+    const explanationTextLocalized: LocalizedTextValue = {
+        en: explanationEn,
+        bn: explanationBn,
+    };
+    const explanation = explanationTextLocalized.en || explanationTextLocalized.bn;
+
     const marks = Number(payload.marks || 1);
     const negative = Number(payload.negative_marks ?? payload.negativeMarks ?? 0);
     const estimated = Number(payload.estimated_time || 60);
@@ -284,6 +458,11 @@ export function normalizeQuestionPayload(
         statusRaw === 'pending_review' || statusRaw === 'approved' || statusRaw === 'rejected' || statusRaw === 'archived'
             ? statusRaw
             : 'draft';
+    const languageMode = normalizeLanguageMode(payload, {
+        questionText: questionTextLocalized,
+        explanationText: explanationTextLocalized,
+        optionsLocalized,
+    });
 
     const normalized: NormalizedQuestionPayload = {
         class_level: String(payload.class_level || payload.class || '').trim(),
@@ -293,19 +472,23 @@ export function normalizeQuestionPayload(
         topic: String(payload.topic || '').trim(),
         question: questionText,
         question_text: questionText,
+        questionText: questionTextLocalized,
         question_html: sanitizedHtml,
         question_type: questionType,
         questionType: normalizeLegacyType(questionType),
         options,
+        optionsLocalized,
         correct_answer: correctAnswers,
         correctAnswer: (correctAnswers[0] as 'A' | 'B' | 'C' | 'D') || undefined,
         explanation,
         explanation_text: explanation,
+        explanationText: explanationTextLocalized,
+        languageMode,
         difficulty: normalizeDifficulty(payload),
         tags,
         estimated_time: Number.isFinite(estimated) && estimated > 0 ? Math.round(estimated) : 60,
         skill_tags: skillTags,
-        has_explanation: Boolean(explanation),
+        has_explanation: Boolean(explanationTextLocalized.en || explanationTextLocalized.bn),
         optionA: options.find((opt) => opt.key === 'A')?.text || '',
         optionB: options.find((opt) => opt.key === 'B')?.text || '',
         optionC: options.find((opt) => opt.key === 'C')?.text || '',

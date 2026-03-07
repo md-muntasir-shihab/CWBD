@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import fs from 'fs/promises';
 import { Readable } from 'stream';
 import csvParser from 'csv-parser';
 import * as XLSX from 'xlsx';
@@ -22,13 +23,14 @@ import { getClientIp } from '../utils/requestMeta';
 import { resolvePermissions } from '../utils/permissions';
 import { addUserStreamClient, broadcastUserEvent } from '../realtime/userStream';
 import { broadcastStudentDashboardEvent } from '../realtime/studentDashboardStream';
+import { broadcastHomeStreamEvent } from '../realtime/homeStream';
 import { getRuntimeSettingsSnapshot } from '../services/runtimeSettingsService';
-import { revealCredentialMirror, upsertCredentialMirror } from '../services/credentialVaultService';
 import { computeStudentProfileScore } from '../services/studentProfileScoreService';
+import { revealCredentialMirror, upsertCredentialMirror } from '../services/credentialVaultService';
 
 function normalizeRole(value: unknown, fallback: UserRole = 'student'): UserRole {
     const role = String(value || '').trim().toLowerCase();
-    const valid: UserRole[] = ['superadmin', 'admin', 'moderator', 'student', 'editor', 'viewer'];
+    const valid: UserRole[] = ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent', 'student', 'chairman'];
     return valid.includes(role as UserRole) ? (role as UserRole) : fallback;
 }
 
@@ -62,6 +64,91 @@ function toBoolean(value: unknown): boolean {
     if (typeof value === 'boolean') return value;
     const normalized = String(value || '').trim().toLowerCase();
     return ['1', 'true', 'yes', 'on'].includes(normalized);
+}
+
+function normalizePaymentStatus(value: unknown, fallback: 'pending' | 'paid' | 'failed' | 'refunded' | 'rejected' = 'paid') {
+    const status = String(value || '').trim().toLowerCase();
+    if (status === 'pending' || status === 'paid' || status === 'failed' || status === 'refunded' || status === 'rejected') {
+        return status;
+    }
+    return fallback;
+}
+
+function normalizePaymentMethod(value: unknown) {
+    const method = String(value || '').trim().toLowerCase();
+    if (['bkash', 'nagad', 'rocket', 'upay', 'cash', 'manual', 'bank', 'card', 'sslcommerz'].includes(method)) {
+        return method;
+    }
+    return 'manual';
+}
+
+async function createEnrollmentPaymentEntry(payload: {
+    studentId: mongoose.Types.ObjectId;
+    recordedById?: string | null;
+    planCode?: string;
+    planName?: string;
+    amount: number;
+    method?: unknown;
+    status?: unknown;
+    transactionId?: unknown;
+    notes?: unknown;
+    date?: unknown;
+}) {
+    const amount = Number(payload.amount || 0);
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+
+    const recordedBy = payload.recordedById && mongoose.Types.ObjectId.isValid(payload.recordedById)
+        ? new mongoose.Types.ObjectId(payload.recordedById)
+        : null;
+    if (!recordedBy) return null;
+
+    let subscriptionPlanId: mongoose.Types.ObjectId | undefined;
+    if (payload.planCode) {
+        const plan = await SubscriptionPlan.findOne({ code: payload.planCode }).select('_id name').lean();
+        if (plan?._id && mongoose.Types.ObjectId.isValid(String(plan._id))) {
+            subscriptionPlanId = new mongoose.Types.ObjectId(String(plan._id));
+        }
+    }
+
+    const status = normalizePaymentStatus(payload.status, 'paid');
+    const date = payload.date ? new Date(String(payload.date)) : new Date();
+    const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+    const transactionId = String(payload.transactionId || '').trim();
+    const planLabel = String(payload.planName || payload.planCode || '').trim();
+    const notesRaw = String(payload.notes || '').trim();
+    const notes = notesRaw || (planLabel ? `Enrollment payment for ${planLabel}` : 'Enrollment payment');
+
+    return ManualPayment.create({
+        studentId: payload.studentId,
+        ...(subscriptionPlanId ? { subscriptionPlanId } : {}),
+        amount,
+        currency: 'BDT',
+        method: normalizePaymentMethod(payload.method),
+        status,
+        date: safeDate,
+        paidAt: status === 'paid' ? safeDate : null,
+        transactionId,
+        reference: transactionId,
+        notes,
+        entryType: 'subscription',
+        recordedBy,
+    });
+}
+
+function readFirstString(source: Record<string, unknown>, keys: string[]): string {
+    for (const key of keys) {
+        const raw = source[key];
+        if (typeof raw === 'string') {
+            const trimmed = raw.trim();
+            if (trimmed) return trimmed;
+        }
+    }
+    return '';
+}
+
+function readOptionalString(source: Record<string, unknown>, keys: string[]): string | undefined {
+    const value = readFirstString(source, keys);
+    return value || undefined;
 }
 
 function buildPermissions(role: UserRole, input?: Partial<IUserPermissions>): IUserPermissions {
@@ -177,6 +264,19 @@ async function parseExcelBuffer(buffer: Buffer): Promise<Record<string, string>[
     const sheet = workbook.Sheets[firstSheetName];
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' });
     return rows.map((row) => normalizeRow(row));
+}
+
+async function getUploadedFileBuffer(file?: Express.Multer.File | null): Promise<Buffer | null> {
+    if (!file) return null;
+    if (file.buffer && file.buffer.length > 0) return file.buffer;
+    if (file.path) {
+        try {
+            return await fs.readFile(file.path);
+        } finally {
+            await fs.unlink(file.path).catch(() => null);
+        }
+    }
+    return null;
 }
 
 async function createAuditLog(
@@ -300,7 +400,7 @@ export async function adminGetUsers(req: AuthRequest, res: Response): Promise<vo
         if (scope === 'students') {
             match.role = 'student';
         } else if (scope === 'admins') {
-            match.role = { $in: ['superadmin', 'admin', 'moderator'] };
+            match.role = { $in: ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent', 'chairman'] };
         } else if (role) {
             const roles = role.split(',').map((r) => normalizeRole(r));
             match.role = roles.length > 1 ? { $in: roles } : roles[0];
@@ -411,7 +511,7 @@ export async function adminGetUsers(req: AuthRequest, res: Response): Promise<vo
                                     active: { $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] } },
                                     suspended: { $sum: { $cond: [{ $in: ['$status', ['suspended', 'blocked']] }, 1, 0] } },
                                     students: { $sum: { $cond: [{ $eq: ['$role', 'student'] }, 1, 0] } },
-                                    admins: { $sum: { $cond: [{ $in: ['$role', ['superadmin', 'admin', 'moderator']] }, 1, 0] } },
+                                    admins: { $sum: { $cond: [{ $in: ['$role', ['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent', 'chairman']] }, 1, 0] } },
                                 },
                             },
                         ],
@@ -706,6 +806,7 @@ export async function adminCreateUser(req: AuthRequest, res: Response): Promise<
             subscription: defaultSubscription,
         });
         await upsertCredentialMirror(user._id, generatedPassword, req.user?._id || null);
+
 
         if (role === 'student') {
             const profile = await StudentProfile.create({
@@ -1161,9 +1262,93 @@ export async function adminBulkUserAction(req: AuthRequest, res: Response): Prom
     }
 }
 
+export async function adminBulkStudentAction(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const body = req.body as Record<string, unknown>;
+        const studentIds = Array.isArray(body.studentIds)
+            ? body.studentIds.map((id) => String(id)).filter(Boolean)
+            : [];
+        const action = String(body.action || '').trim().toLowerCase();
+
+        if (studentIds.length === 0 || !action) {
+            res.status(400).json({ message: 'studentIds and action are required' });
+            return;
+        }
+
+        let affected = 0;
+        if (action === 'delete') {
+            const users = await User.find({ _id: { $in: studentIds } });
+            const protectedUsers = users.filter((u) => u.role === 'superadmin' && req.user?.role !== 'superadmin');
+            if (protectedUsers.length > 0) {
+                res.status(403).json({ message: 'Operation includes protected accounts' });
+                return;
+            }
+
+            await Promise.all([
+                User.deleteMany({ _id: { $in: studentIds } }),
+                StudentProfile.deleteMany({ user_id: { $in: studentIds } }),
+                AdminProfile.deleteMany({ user_id: { $in: studentIds } }),
+                LoginActivity.deleteMany({ user_id: { $in: studentIds } }),
+                StudentGroup.updateMany({}, { $pull: { manualStudents: { $in: studentIds } } }),
+            ]);
+            affected = studentIds.length;
+        } else if (action === 'suspend') {
+            const result = await User.updateMany({ _id: { $in: studentIds } }, { $set: { status: 'suspended' } });
+            affected = result.modifiedCount;
+        } else if (action === 'activate') {
+            const result = await User.updateMany({ _id: { $in: studentIds } }, { $set: { status: 'active' } });
+            affected = result.modifiedCount;
+        } else if (action === 'add_to_group') {
+            const groupId = String(body.groupId || '');
+            if (!groupId) {
+                res.status(400).json({ message: 'groupId is required for this action' });
+                return;
+            }
+            const group = await StudentGroup.findById(groupId);
+            if (!group) {
+                res.status(404).json({ message: 'Target group not found' });
+                return;
+            }
+            if (group.type === 'dynamic') {
+                res.status(400).json({ message: 'Cannot manually add students to a dynamic group' });
+                return;
+            }
+
+            const currentMembers = Array.isArray(group.manualStudents) ? group.manualStudents : [];
+            const incomingMembers = studentIds
+                .filter((id) => mongoose.Types.ObjectId.isValid(id))
+                .map((id) => new mongoose.Types.ObjectId(id));
+            const uniqueById = new Map<string, mongoose.Types.ObjectId>();
+            for (const memberId of [...currentMembers, ...incomingMembers]) {
+                uniqueById.set(String(memberId), memberId);
+            }
+            group.manualStudents = Array.from(uniqueById.values());
+            await group.save();
+            affected = studentIds.length;
+        } else {
+            res.status(400).json({ message: 'Unsupported bulk action' });
+            return;
+        }
+
+        await createAuditLog(req, 'bulk_student_action', undefined, 'student', {
+            action,
+            affected,
+            requested: studentIds.length,
+        });
+
+        res.json({ message: 'Bulk action completed', action, affected });
+    } catch (error) {
+        console.error('adminBulkStudentAction error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
 export async function adminBulkImportStudents(req: AuthRequest, res: Response): Promise<void> {
     try {
         const body = req.body as Record<string, unknown>;
+        const targetGroupId = body.targetGroupId as string | undefined;
+        const targetPlanCode = body.targetPlanCode as string | undefined;
+
         let rows: Record<string, string>[] = [];
 
         const studentsBody = body.students;
@@ -1171,15 +1356,34 @@ export async function adminBulkImportStudents(req: AuthRequest, res: Response): 
             rows = studentsBody
                 .map((item) => normalizeRow(item as Record<string, unknown>))
                 .filter((item) => Object.keys(item).length > 0);
-        } else if (req.file?.buffer) {
-            const mime = req.file.mimetype || '';
-            const filename = req.file.originalname?.toLowerCase() || '';
-            const isCsv = mime.includes('csv') || filename.endsWith('.csv');
-            rows = isCsv ? await parseCsvBuffer(req.file.buffer) : await parseExcelBuffer(req.file.buffer);
+        } else {
+            const uploadedBuffer = await getUploadedFileBuffer(req.file);
+            if (uploadedBuffer) {
+                const mime = req.file?.mimetype || '';
+                const filename = req.file?.originalname?.toLowerCase() || '';
+                const isCsv = mime.includes('csv') || filename.endsWith('.csv');
+                rows = isCsv ? await parseCsvBuffer(uploadedBuffer) : await parseExcelBuffer(uploadedBuffer);
+            }
         }
 
         if (rows.length === 0) {
             res.status(400).json({ message: 'No valid student records found. Provide JSON array or upload CSV/Excel file.' });
+            return;
+        }
+
+        // Validate target plan if provided
+        let targetPlan: any = null;
+        if (targetPlanCode) {
+            targetPlan = await SubscriptionPlan.findOne({ planCode: targetPlanCode });
+            if (!targetPlan) {
+                res.status(400).json({ message: `Target subscription plan '${targetPlanCode}' not found.` });
+                return;
+            }
+        }
+
+        // Validate target group if provided
+        if (targetGroupId && !mongoose.Types.ObjectId.isValid(targetGroupId)) {
+            res.status(400).json({ message: 'Invalid targetGroupId provided.' });
             return;
         }
 
@@ -1219,6 +1423,27 @@ export async function adminBulkImportStudents(req: AuthRequest, res: Response): 
             const hashedPassword = await bcrypt.hash(plainPassword, 12);
 
             try {
+                // Determine subscription
+                const subscription = targetPlan ? {
+                    plan: targetPlan.planCode,
+                    planCode: targetPlan.planCode,
+                    planName: targetPlan.name,
+                    isActive: true,
+                    startDate: new Date(),
+                    expiryDate: new Date(Date.now() + (targetPlan.durationDays || 365) * 24 * 60 * 60 * 1000),
+                    assignedBy: req.user?._id,
+                    assignedAt: new Date(),
+                } : {
+                    plan: 'legacy_free',
+                    planCode: 'legacy_free',
+                    planName: 'Legacy Free Access',
+                    isActive: true,
+                    startDate: new Date(),
+                    expiryDate: new Date(Date.now() + (3650 * 24 * 60 * 60 * 1000)),
+                    assignedBy: req.user?._id,
+                    assignedAt: new Date(),
+                };
+
                 const user = await User.create({
                     full_name: fullName,
                     username,
@@ -1227,18 +1452,9 @@ export async function adminBulkImportStudents(req: AuthRequest, res: Response): 
                     role: 'student',
                     status: normalizeStatus(row.status, 'active'),
                     permissions: buildPermissions('student'),
-                    phone_number: row.phone_number || row.phone || '',
+                    phone_number: row.phone_number || row.phone || undefined,
                     mustChangePassword: true,
-                    subscription: {
-                        plan: 'legacy_free',
-                        planCode: 'legacy_free',
-                        planName: 'Legacy Free Access',
-                        isActive: true,
-                        startDate: new Date(),
-                        expiryDate: new Date(Date.now() + (3650 * 24 * 60 * 60 * 1000)),
-                        assignedBy: req.user?._id,
-                        assignedAt: new Date(),
-                    },
+                    subscription,
                 });
                 await upsertCredentialMirror(user._id, plainPassword, req.user?._id || null);
 
@@ -1248,9 +1464,9 @@ export async function adminBulkImportStudents(req: AuthRequest, res: Response): 
                     full_name: fullName,
                     username,
                     email,
-                    phone: row.phone || row.phone_number || '',
-                    phone_number: row.phone_number || row.phone || '',
-                    guardian_phone: row.guardian_phone || '',
+                    phone: row.phone || row.phone_number || undefined,
+                    phone_number: row.phone_number || row.phone || undefined,
+                    guardian_phone: row.guardian_phone || undefined,
                     ssc_batch: row.ssc_batch || '',
                     hsc_batch: row.hsc_batch || '',
                     department: ['science', 'arts', 'commerce'].includes((row.department || '').toLowerCase())
@@ -1263,7 +1479,7 @@ export async function adminBulkImportStudents(req: AuthRequest, res: Response): 
                     institution_name: row.institution_name || row.institution || '',
                     profile_photo_url: row.profile_photo_url || row.profile_photo || '',
                     admittedAt: row.admitted_at ? new Date(row.admitted_at) : user.createdAt,
-                    groupIds: [],
+                    groupIds: targetGroupId ? [new mongoose.Types.ObjectId(targetGroupId)] : [],
                     profile_completion_percentage: 20,
                 });
 
@@ -1284,6 +1500,8 @@ export async function adminBulkImportStudents(req: AuthRequest, res: Response): 
             imported,
             skipped,
             total: rows.length,
+            targetGroupId,
+            targetPlanCode,
         });
         broadcastUserEvent({
             type: 'students_imported',
@@ -1341,64 +1559,56 @@ export async function adminResetUserPassword(req: AuthRequest, res: Response): P
     }
 }
 
-export async function adminRevealUserPassword(req: AuthRequest, res: Response): Promise<void> {
+export async function adminRevealStudentPassword(req: AuthRequest, res: Response): Promise<void> {
     try {
-        if (!req.user) {
-            res.status(401).json({ message: 'Authentication required' });
-            return;
-        }
-
-        if (req.user.role !== 'superadmin') {
-            res.status(403).json({ message: 'Only superadmin can reveal passwords' });
-            return;
-        }
-
-        const user = await User.findById(req.params.id).select('role username email');
-        if (!user) {
-            res.status(404).json({ message: 'User not found' });
-            return;
-        }
-
-        const runtime = await getRuntimeSettingsSnapshot(true);
-        if (!runtime.featureFlags.passwordRevealEnabled) {
-            res.status(403).json({ message: 'Password reveal is disabled by runtime settings' });
+        if (!req.user || !['superadmin', 'admin'].includes(req.user.role)) {
+            res.status(403).json({ message: 'Only admin can reveal student passwords' });
             return;
         }
 
         const body = req.body as Record<string, unknown>;
-        const reason = String(body.reason || '').trim();
         const mfaToken = String(body.mfaToken || '').trim();
-        if (!reason) {
-            res.status(400).json({ message: 'Reveal reason is required' });
+        const reason = String(body.reason || '').trim();
+        if (!mfaToken || !reason) {
+            res.status(400).json({ message: 'mfaToken and reason are required' });
             return;
         }
 
-        if (!validateMfaTokenForUser(req.user._id, mfaToken)) {
-            res.status(401).json({ message: 'Invalid or expired MFA confirmation token' });
+        if (!validateMfaTokenForUser(String(req.user?._id || ''), mfaToken)) {
+            res.status(401).json({ message: 'MFA token expired or invalid' });
             return;
         }
 
-        const plainPassword = await revealCredentialMirror(user._id);
+        const student = await User.findById(req.params.id).select('_id username email role').lean();
+        if (!student || student.role !== 'student') {
+            res.status(404).json({ message: 'Student not found' });
+            return;
+        }
 
-        await createAuditLog(req, 'user_password_revealed', String(user._id), 'user', {
+        const revealedPassword = await revealCredentialMirror(String(student._id));
+        if (!revealedPassword) {
+            res.status(404).json({ message: 'No mirrored password found. Reset password once, then try reveal again.' });
+            return;
+        }
+
+        await createAuditLog(req, 'student_password_revealed', String(student._id), 'student', {
             reason,
-            username: user.username,
-            email: user.email,
+            via: 'credential_mirror',
         });
 
         res.json({
             message: 'Password revealed successfully',
             user: {
-                _id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role,
+                _id: String(student._id),
+                username: String(student.username || ''),
+                email: String(student.email || ''),
+                role: student.role,
             },
-            password: plainPassword,
+            password: revealedPassword,
         });
     } catch (error) {
-        console.error('adminRevealUserPassword error:', error);
-        res.status(500).json({ message: (error as Error).message || 'Server error' });
+        console.error('adminRevealStudentPassword error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 }
 
@@ -1463,41 +1673,108 @@ export async function adminGetUserActivity(req: AuthRequest, res: Response): Pro
     }
 }
 
-export async function adminExportStudents(_req: AuthRequest, res: Response): Promise<void> {
+export async function adminExportStudents(req: AuthRequest, res: Response): Promise<void> {
     try {
-        const students = await User.aggregate([
-            { $match: { role: 'student' } },
-            {
-                $lookup: {
-                    from: StudentProfile.collection.name,
-                    localField: '_id',
-                    foreignField: 'user_id',
-                    as: 'profile',
-                },
-            },
-            { $addFields: { profile: { $arrayElemAt: ['$profile', 0] } } },
-            {
-                $project: {
-                    _id: 1,
-                    full_name: 1,
-                    username: 1,
-                    email: 1,
-                    status: 1,
-                    phone_number: 1,
-                    roll_number: '$profile.roll_number',
-                    registration_id: '$profile.registration_id',
-                    institution_name: '$profile.institution_name',
-                    profile_completion_percentage: '$profile.profile_completion_percentage',
-                    createdAt: 1,
-                    lastLogin: 1,
-                    ip_address: 1,
-                    device_info: 1,
-                },
-            },
-            { $sort: { createdAt: -1 } },
-        ]);
+        const {
+            search = '',
+            batch = '',
+            sscBatch = '',
+            department = '',
+            group = '',
+            planCode = '',
+            status = '',
+            daysLeft: daysLeftFilter = '',
+            profileScoreBand = '',
+            paymentStatus = '',
+            startDate = '',
+            endDate = '',
+        } = req.query as Record<string, string>;
 
-        res.json(students);
+        const allRows = await listStudentRows();
+        const searchTerm = String(search || '').trim().toLowerCase();
+        const batchTerm = String(batch || '').trim().toLowerCase();
+        const sscBatchTerm = String(sscBatch || '').trim().toLowerCase();
+        const departmentTerm = String(department || '').trim().toLowerCase();
+        const groupTerm = String(group || '').trim().toLowerCase();
+        const planTerm = String(planCode || '').trim().toLowerCase();
+        const statusTerm = String(status || '').trim().toLowerCase();
+        const daysTerm = String(daysLeftFilter || '').trim().toLowerCase();
+        const scoreBandTerm = String(profileScoreBand || '').trim().toLowerCase();
+        const paymentTerm = String(paymentStatus || '').trim().toLowerCase();
+        const startDateTime = startDate ? new Date(startDate).getTime() : 0;
+        const endDateTime = endDate ? new Date(endDate).getTime() : 0;
+
+        const filteredRows = allRows.filter((row) => {
+            if (searchTerm) {
+                const haystack = [
+                    row.fullName,
+                    row.username,
+                    row.email,
+                    row.userUniqueId,
+                    row.batch,
+                    row.department,
+                    ...row.groups.map((groupItem) => groupItem.name),
+                ].join(' ').toLowerCase();
+                if (!haystack.includes(searchTerm)) return false;
+            }
+
+            if (batchTerm && row.batch.toLowerCase() !== batchTerm) return false;
+            if (sscBatchTerm && row.ssc_batch.toLowerCase() !== sscBatchTerm) return false;
+            if (departmentTerm && row.department.toLowerCase() !== departmentTerm) return false;
+            if (groupTerm) {
+                const hasGroup = row.groups.some((groupItem) =>
+                    String(groupItem._id).toLowerCase() === groupTerm || String(groupItem.slug).toLowerCase() === groupTerm
+                );
+                if (!hasGroup) return false;
+            }
+            if (planTerm && row.subscription.planCode.toLowerCase() !== planTerm) return false;
+            if (statusTerm && String(row.status).toLowerCase() !== statusTerm) return false;
+            if (paymentTerm && String(row.paymentStatus || '').toLowerCase() !== paymentTerm) return false;
+
+            if (startDateTime || endDateTime) {
+                const rowTime = new Date(row.admittedAt || row.createdAt).getTime();
+                if (startDateTime && rowTime < startDateTime) return false;
+                if (endDateTime && rowTime > endDateTime) return false;
+            }
+
+            if (daysTerm === 'expired') {
+                if (row.subscription.daysLeft > 0 || !row.subscription.expiryDate) return false;
+            } else if (daysTerm === '<=7' || daysTerm === 'lte7') {
+                if (row.subscription.daysLeft > 7) return false;
+            }
+
+            if (scoreBandTerm === 'lt70' || scoreBandTerm === '<70') {
+                if (Number(row.profileScore || 0) >= 70) return false;
+            } else if (scoreBandTerm === 'gte70' || scoreBandTerm === '>=70') {
+                if (Number(row.profileScore || 0) < 70) return false;
+            }
+            return true;
+        });
+
+        // Map to flat, user-friendly export format with all admission fields
+        const exportData = filteredRows.map((row) => ({
+            'Full Name': row.fullName,
+            'Username': row.username,
+            'Email': row.email,
+            'Phone Number': row.phoneNumber,
+            'Roll Number': row.rollNumber || 'N/A',
+            'Registration Number': row.registrationId || 'N/A',
+            'Batch': row.batch,
+            'SSC Batch': row.ssc_batch,
+            'Department': row.department,
+            'Guardian Name': row.guardianName || 'N/A',
+            'Guardian Number': row.guardianPhone || 'N/A',
+            'Address': row.presentAddress || row.permanentAddress || 'N/A',
+            'Institution': row.institutionName || 'N/A',
+            'Status': row.status,
+            'Admitted At': row.admittedAt || row.createdAt,
+            'Subscription Plan': row.subscription.planName || 'None',
+            'Plan Code': row.subscription.planCode || 'N/A',
+            'Days Left': row.subscription.daysLeft ?? 'N/A',
+            'Expiry Date': row.subscription.expiryDate || 'N/A'
+        }));
+
+        res.json(exportData);
     } catch (error) {
         console.error('adminExportStudents error:', error);
         res.status(500).json({ message: 'Server error during export' });
@@ -1526,6 +1803,44 @@ function getSubscriptionResponse(subscription: Record<string, unknown> | undefin
     };
 }
 
+function matchesRules(profile: any, user: any, rules: any): boolean {
+    if (!rules) return false;
+
+    // Rules are OR within a field, but AND across fields
+    if (rules.batches?.length > 0) {
+        const studentBatch = String(profile.hsc_batch || '').trim().toLowerCase();
+        if (!rules.batches.some((b: string) => b.toLowerCase() === studentBatch)) return false;
+    }
+
+    if (rules.sscBatches?.length > 0) {
+        const studentSscBatch = String(profile.ssc_batch || '').trim().toLowerCase();
+        if (!rules.sscBatches.some((b: string) => b.toLowerCase() === studentSscBatch)) return false;
+    }
+
+    if (rules.departments?.length > 0) {
+        const studentDept = String(profile.department || '').trim().toLowerCase();
+        if (!rules.departments.some((d: string) => d.toLowerCase() === studentDept)) return false;
+    }
+
+    if (rules.statuses?.length > 0) {
+        const studentStatus = String(user.status || '').trim().toLowerCase();
+        if (!rules.statuses.some((s: string) => s.toLowerCase() === studentStatus)) return false;
+    }
+
+    if (rules.planCodes?.length > 0) {
+        const studentPlan = String(user.subscription?.planCode || user.subscription?.plan || '').trim().toLowerCase();
+        if (!rules.planCodes.some((p: string) => p.toLowerCase() === studentPlan)) return false;
+    }
+
+    if (rules.profileScoreRange) {
+        const score = Number(profile.profileScore || 0);
+        if (rules.profileScoreRange.min !== undefined && score < rules.profileScoreRange.min) return false;
+        if (rules.profileScoreRange.max !== undefined && score > rules.profileScoreRange.max) return false;
+    }
+
+    return true;
+}
+
 async function listStudentRows() {
     const users = await User.find({ role: 'student' })
         .select('username email full_name status phone_number profile_photo subscription createdAt updatedAt lastLogin')
@@ -1535,7 +1850,7 @@ async function listStudentRows() {
     const userIds = users.map((user) => user._id);
     const [profiles, groupCountsRaw, examStatsRaw, dueLedgers, paymentAgg] = await Promise.all([
         StudentProfile.find({ user_id: { $in: userIds } })
-            .select('user_id user_unique_id full_name phone phone_number ssc_batch hsc_batch department admittedAt groupIds')
+            .select('user_id user_unique_id full_name phone phone_number ssc_batch hsc_batch department admittedAt groupIds guardian_name guardian_phone roll_number registration_id institution_name dob gender district country present_address permanent_address')
             .lean(),
         StudentProfile.aggregate([
             { $unwind: { path: '$groupIds', preserveNullAndEmptyArrays: false } },
@@ -1571,18 +1886,10 @@ async function listStudentRows() {
         ]),
     ]);
 
-    const groupIdSet = new Set<string>();
-    for (const profile of profiles) {
-        const groupIds = Array.isArray(profile.groupIds) ? profile.groupIds : [];
-        for (const id of groupIds) {
-            groupIdSet.add(String(id));
-        }
-    }
+    const allGroupsInDb = await StudentGroup.find({ isActive: true }).lean();
+    const manualGroupMap = new Map(allGroupsInDb.filter(g => g.type !== 'dynamic').map(g => [String(g._id), g]));
+    const dynamicGroups = allGroupsInDb.filter(g => g.type === 'dynamic');
 
-    const groups = await StudentGroup.find({ _id: { $in: Array.from(groupIdSet) } })
-        .select('name slug batchTag isActive studentCount')
-        .lean();
-    const groupMap = new Map(groups.map((group) => [String(group._id), group]));
     const profileMap = new Map(profiles.map((profile) => [String(profile.user_id), profile]));
     const examStatsMap = new Map(examStatsRaw.map((item) => [String(item._id), item]));
     const groupCountMap = new Map(groupCountsRaw.map((item) => [String(item._id), Number(item.studentCount || 0)]));
@@ -1613,41 +1920,57 @@ async function listStudentRows() {
             lastMethod: '',
         };
         const paymentStatus = pendingDue > 0 ? 'pending' : (payment.paymentCount > 0 ? 'paid' : 'clear');
-        const rawGroupIds = Array.isArray(profile?.groupIds) ? profile?.groupIds : [];
-        const normalizedGroupIds = rawGroupIds.map((id) => String(id));
-        const resolvedGroups = normalizedGroupIds
-            .map((id) => groupMap.get(id))
-            .filter(Boolean)
-            .map((group) => ({
-                _id: String(group?._id || ''),
-                name: String(group?.name || ''),
-                slug: String(group?.slug || ''),
-                batchTag: String(group?.batchTag || ''),
-                isActive: Boolean(group?.isActive),
-                studentCount: groupCountMap.get(String(group?._id || '')) || Number(group?.studentCount || 0),
-            }));
+
+        const subscription = getSubscriptionResponse(user.subscription as Record<string, any>);
+
+        const manualGroupIds = Array.isArray(profile?.groupIds) ? profile.groupIds : [];
+        const manualGroups = manualGroupIds.map(id => manualGroupMap.get(String(id))).filter(Boolean);
+        const matchedDynamicGroups = dynamicGroups.filter(dg => matchesRules(profile, user, dg.rules));
+        const mergedGroups = [...manualGroups, ...matchedDynamicGroups].map(group => ({
+            _id: String(group?._id || ''),
+            name: String(group?.name || ''),
+            slug: String(group?.slug || ''),
+            batchTag: String(group?.batchTag || ''),
+            isActive: Boolean(group?.isActive),
+            studentCount: groupCountMap.get(String(group?._id || '')) || Number(group?.studentCount || 0),
+        }));
 
         return {
             _id: String(user._id),
+            id: String(user._id),
             username: user.username,
             email: user.email,
-            fullName: String(profile?.full_name || user.full_name || user.username),
+            fullName: user.full_name,
             status: user.status,
-            userUniqueId: String(profile?.user_unique_id || ''),
-            phoneNumber: String(profile?.phone_number || profile?.phone || user.phone_number || ''),
-            batch: String(profile?.hsc_batch || ''),
-            ssc_batch: String(profile?.ssc_batch || ''),
-            department: String(profile?.department || ''),
-            admittedAt: profile?.admittedAt || user.createdAt,
-            groupIds: normalizedGroupIds,
-            groups: resolvedGroups,
+            phoneNumber: user.phone_number || profile?.phone_number || '',
+            profilePhoto: user.profile_photo || '',
+            userUniqueId: profile?.user_unique_id || '',
             profileScore: profileScore.score,
             profileScoreBreakdown: profileScore.breakdown,
             missingProfileFields: profileScore.missingFields,
-            subscription: getSubscriptionResponse(user.subscription as unknown as Record<string, unknown>),
+            batch: profile?.hsc_batch || '',
+            ssc_batch: profile?.ssc_batch || '',
+            department: profile?.department || '',
+            admittedAt: profile?.admittedAt || user.createdAt,
+            groupIds: Array.isArray(profile?.groupIds) ? profile.groupIds.map((id) => String(id)) : [],
+            groups: mergedGroups,
+            subscription,
             paymentStatus,
             pendingDue,
             paymentSummary: payment,
+            guardianName: String(profile?.guardian_name || ''),
+            guardianNumber: String(profile?.guardian_phone || ''),
+            guardianPhone: String(profile?.guardian_phone || ''),
+            rollNumber: String(profile?.roll_number || ''),
+            registrationNumber: String(profile?.registration_id || ''),
+            registrationId: String(profile?.registration_id || ''),
+            institutionName: String(profile?.institution_name || ''),
+            dob: profile?.dob || null,
+            gender: String(profile?.gender || ''),
+            district: String(profile?.district || ''),
+            country: String(profile?.country || ''),
+            presentAddress: String(profile?.present_address || ''),
+            permanentAddress: String(profile?.permanent_address || ''),
             examStats: {
                 totalAttempts: Number(stats?.totalAttempts || 0),
                 avgPercentage: Number(stats?.avgPercentage || 0),
@@ -1676,6 +1999,8 @@ export async function adminGetStudents(req: AuthRequest, res: Response): Promise
             daysLeft: daysLeftFilter = '',
             profileScoreBand = '',
             paymentStatus = '',
+            startDate = '',
+            endDate = '',
         } = req.query as Record<string, string>;
 
         const allRows = await listStudentRows();
@@ -1689,6 +2014,8 @@ export async function adminGetStudents(req: AuthRequest, res: Response): Promise
         const daysTerm = String(daysLeftFilter || '').trim().toLowerCase();
         const scoreBandTerm = String(profileScoreBand || '').trim().toLowerCase();
         const paymentTerm = String(paymentStatus || '').trim().toLowerCase();
+        const startDateTime = startDate ? new Date(startDate).getTime() : 0;
+        const endDateTime = endDate ? new Date(endDate).getTime() : 0;
 
         const filteredRows = allRows.filter((row) => {
             if (searchTerm) {
@@ -1716,6 +2043,12 @@ export async function adminGetStudents(req: AuthRequest, res: Response): Promise
             if (planTerm && row.subscription.planCode.toLowerCase() !== planTerm) return false;
             if (statusTerm && String(row.status).toLowerCase() !== statusTerm) return false;
             if (paymentTerm && String(row.paymentStatus || '').toLowerCase() !== paymentTerm) return false;
+
+            if (startDateTime || endDateTime) {
+                const rowTime = new Date(row.admittedAt || row.createdAt).getTime();
+                if (startDateTime && rowTime < startDateTime) return false;
+                if (endDateTime && rowTime > endDateTime) return false;
+            }
 
             if (daysTerm === 'expired') {
                 if (row.subscription.daysLeft > 0 || !row.subscription.expiryDate) return false;
@@ -1760,6 +2093,16 @@ export async function adminCreateStudent(req: AuthRequest, res: Response): Promi
         const username = String(body.username || '').trim().toLowerCase();
         const email = String(body.email || '').trim().toLowerCase();
         const fullName = String(body.full_name || body.fullName || body.name || '').trim();
+        const phoneNumber = readOptionalString(body, ['phone_number', 'phoneNumber', 'phone']);
+        const guardianPhone = readOptionalString(body, ['guardian_phone', 'guardianNumber']);
+        const userUniqueId = readOptionalString(body, ['user_unique_id', 'userUniqueId']);
+        const sscBatch = readFirstString(body, ['ssc_batch', 'sscBatch']);
+        const hscBatch = readFirstString(body, ['hsc_batch', 'hscBatch', 'batch']);
+        const collegeName = readFirstString(body, ['college_name', 'collegeName']);
+        const collegeAddress = readFirstString(body, ['college_address', 'collegeAddress']);
+        const rollNumber = readFirstString(body, ['roll_number', 'rollNumber']);
+        const registrationId = readFirstString(body, ['registration_id', 'registrationNumber']);
+        const institutionName = readFirstString(body, ['institution_name', 'institutionName']);
 
         if (!username || !email || !fullName) {
             res.status(400).json({ message: 'full_name, username and email are required' });
@@ -1772,7 +2115,8 @@ export async function adminCreateStudent(req: AuthRequest, res: Response): Promi
             return;
         }
 
-        const plainPassword = String(body.password || '').trim() || newRandomPassword(10);
+        const providedPassword = String(body.password || '').trim();
+        const plainPassword = providedPassword || newRandomPassword(10);
         const hashedPassword = await bcrypt.hash(plainPassword, 12);
         const normalizedSubscription = await resolveSubscriptionPayload(
             (body.subscription && typeof body.subscription === 'object')
@@ -1787,10 +2131,10 @@ export async function adminCreateStudent(req: AuthRequest, res: Response): Promi
             password: hashedPassword,
             role: 'student',
             status: normalizeStatus(body.status, 'active'),
-            phone_number: String(body.phone_number || body.phone || '').trim(),
+            phone_number: phoneNumber,
             profile_photo: typeof body.profile_photo === 'string' ? body.profile_photo : '',
             permissions: buildPermissions('student'),
-            mustChangePassword: toBoolean(body.mustChangePassword) || !body.password,
+            mustChangePassword: toBoolean(body.mustChangePassword) || !providedPassword,
             subscription: {
                 plan: normalizedSubscription.planCode,
                 planCode: normalizedSubscription.planCode,
@@ -1806,29 +2150,67 @@ export async function adminCreateStudent(req: AuthRequest, res: Response): Promi
 
         const profile = await StudentProfile.create({
             user_id: user._id,
-            user_unique_id: String(body.user_unique_id || `CW-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 9999)}`),
+            user_unique_id: userUniqueId || `CW-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 9999)}`,
             full_name: fullName,
             username,
             email,
-            phone: String(body.phone || body.phone_number || '').trim(),
-            phone_number: String(body.phone_number || body.phone || '').trim(),
-            guardian_phone: String(body.guardian_phone || '').trim(),
-            ssc_batch: String(body.ssc_batch || ''),
-            hsc_batch: String(body.hsc_batch || ''),
+            phone: phoneNumber,
+            phone_number: phoneNumber,
+            guardian_phone: guardianPhone,
+            ssc_batch: sscBatch,
+            hsc_batch: hscBatch,
             department: ['science', 'arts', 'commerce'].includes(String(body.department || '').toLowerCase())
                 ? String(body.department || '').toLowerCase()
                 : undefined,
-            college_name: String(body.college_name || ''),
-            college_address: String(body.college_address || ''),
-            roll_number: String(body.roll_number || ''),
-            registration_id: String(body.registration_id || ''),
-            institution_name: String(body.institution_name || ''),
+            college_name: collegeName,
+            college_address: collegeAddress,
+            roll_number: rollNumber,
+            registration_id: registrationId,
+            institution_name: institutionName,
             admittedAt: body.admittedAt ? new Date(String(body.admittedAt)) : user.createdAt,
-            groupIds: parseGroupIds(body.groupIds),
+            groupIds: parseGroupIds(body.groupIds || body.group_ids),
             profile_completion_percentage: 20,
         });
         profile.profile_completion_percentage = computeProfileCompletion(profile.toObject() as unknown as Record<string, unknown>);
         await profile.save();
+
+        let paymentSyncWarning: string | undefined;
+        try {
+            let enrollmentAmount = Number(body.paymentAmount ?? body.enrollmentAmount ?? body.paidAmount ?? NaN);
+            if (!Number.isFinite(enrollmentAmount) || enrollmentAmount < 0) {
+                const assignedPlan = normalizedSubscription.planCode
+                    ? await SubscriptionPlan.findOne({ code: normalizedSubscription.planCode })
+                        .select('price priceBDT')
+                        .lean()
+                    : null;
+                const defaultPlanAmount = Number((assignedPlan as { priceBDT?: number; price?: number } | null)?.priceBDT
+                    ?? (assignedPlan as { priceBDT?: number; price?: number } | null)?.price
+                    ?? 0);
+                enrollmentAmount = defaultPlanAmount > 0 ? defaultPlanAmount : 0;
+            }
+
+            const hasRecordPaymentFlag = body.recordPayment !== undefined || body.autoAddToFinance !== undefined;
+            const shouldRecordPayment = hasRecordPaymentFlag
+                ? toBoolean(body.recordPayment ?? body.autoAddToFinance)
+                : enrollmentAmount > 0;
+            if (shouldRecordPayment && enrollmentAmount > 0) {
+                await createEnrollmentPaymentEntry({
+                    studentId: user._id,
+                    recordedById: req.user?._id || null,
+                    planCode: normalizedSubscription.planCode,
+                    planName: normalizedSubscription.planName,
+                    amount: enrollmentAmount,
+                    method: body.paymentMethod,
+                    status: body.paymentStatus,
+                    transactionId: body.transactionId,
+                    notes: body.paymentNotes,
+                    date: body.paymentDate,
+                });
+            }
+        } catch (paymentError) {
+            console.error('adminCreateStudent payment sync error:', paymentError);
+            paymentSyncWarning = 'Student created but finance payment sync failed.';
+        }
 
         await createAuditLog(req, 'student_created', String(user._id), 'student', {
             subscriptionPlanCode: normalizedSubscription.planCode,
@@ -1852,7 +2234,8 @@ export async function adminCreateStudent(req: AuthRequest, res: Response): Promi
                 userUniqueId: profile.user_unique_id,
                 subscription: getSubscriptionResponse(user.subscription as unknown as Record<string, unknown>),
             },
-            generatedPassword: body.password ? undefined : plainPassword,
+            generatedPassword: providedPassword ? undefined : plainPassword,
+            paymentSyncWarning,
         });
     } catch (error) {
         console.error('adminCreateStudent error:', error);
@@ -1864,6 +2247,21 @@ export async function adminUpdateStudent(req: AuthRequest, res: Response): Promi
     try {
         const studentId = req.params.id;
         const body = req.body as Record<string, unknown>;
+        const normalizedBody: Record<string, unknown> = { ...body };
+        if (normalizedBody.full_name === undefined && typeof body.fullName === 'string') normalizedBody.full_name = body.fullName;
+        if (normalizedBody.phone_number === undefined && body.phoneNumber !== undefined) normalizedBody.phone_number = body.phoneNumber;
+        if (normalizedBody.phone_number === undefined && body.phone !== undefined) normalizedBody.phone_number = body.phone;
+        if (normalizedBody.guardian_phone === undefined && body.guardianNumber !== undefined) normalizedBody.guardian_phone = body.guardianNumber;
+        if (normalizedBody.ssc_batch === undefined && body.sscBatch !== undefined) normalizedBody.ssc_batch = body.sscBatch;
+        if (normalizedBody.hsc_batch === undefined && body.hscBatch !== undefined) normalizedBody.hsc_batch = body.hscBatch;
+        if (normalizedBody.college_name === undefined && body.collegeName !== undefined) normalizedBody.college_name = body.collegeName;
+        if (normalizedBody.college_address === undefined && body.collegeAddress !== undefined) normalizedBody.college_address = body.collegeAddress;
+        if (normalizedBody.roll_number === undefined && body.rollNumber !== undefined) normalizedBody.roll_number = body.rollNumber;
+        if (normalizedBody.registration_id === undefined && body.registrationNumber !== undefined) normalizedBody.registration_id = body.registrationNumber;
+        if (normalizedBody.institution_name === undefined && body.institutionName !== undefined) normalizedBody.institution_name = body.institutionName;
+        if (normalizedBody.user_unique_id === undefined && body.userUniqueId !== undefined) normalizedBody.user_unique_id = body.userUniqueId;
+        if (normalizedBody.groupIds === undefined && body.group_ids !== undefined) normalizedBody.groupIds = body.group_ids;
+
         const user = await User.findById(studentId);
         if (!user || user.role !== 'student') {
             res.status(404).json({ message: 'Student not found' });
@@ -1892,16 +2290,26 @@ export async function adminUpdateStudent(req: AuthRequest, res: Response): Promi
                 user.email = email;
             }
         }
-        if (typeof body.full_name === 'string' && body.full_name.trim()) user.full_name = body.full_name.trim();
-        if (typeof body.phone_number === 'string') user.phone_number = body.phone_number.trim();
-        if (typeof body.profile_photo === 'string') user.profile_photo = body.profile_photo.trim();
-        if (body.status) user.status = normalizeStatus(body.status, user.status);
+        if (typeof normalizedBody.full_name === 'string' && normalizedBody.full_name.trim()) user.full_name = normalizedBody.full_name.trim();
+        if (normalizedBody.phone_number !== undefined) {
+            user.phone_number = readOptionalString(normalizedBody, ['phone_number']) || undefined;
+        }
+        if (typeof normalizedBody.profile_photo === 'string') user.profile_photo = normalizedBody.profile_photo.trim();
+        if (normalizedBody.status) user.status = normalizeStatus(normalizedBody.status, user.status);
 
-        if (body.subscription || body.planCode || body.plan || body.planId || body.expiryDate || body.startDate || body.isActive !== undefined) {
+        if (
+            normalizedBody.subscription ||
+            normalizedBody.planCode ||
+            normalizedBody.plan ||
+            normalizedBody.planId ||
+            normalizedBody.expiryDate ||
+            normalizedBody.startDate ||
+            normalizedBody.isActive !== undefined
+        ) {
             const normalizedSubscription = await resolveSubscriptionPayload(
-                (body.subscription && typeof body.subscription === 'object')
-                    ? body.subscription as Record<string, unknown>
-                    : body,
+                (normalizedBody.subscription && typeof normalizedBody.subscription === 'object')
+                    ? normalizedBody.subscription as Record<string, unknown>
+                    : normalizedBody,
                 user.subscription as unknown as Record<string, unknown>
             );
             user.subscription = {
@@ -1935,15 +2343,15 @@ export async function adminUpdateStudent(req: AuthRequest, res: Response): Promi
             'guardianPhoneVerificationStatus', 'guardianPhoneVerifiedAt',
         ];
         for (const field of allowedProfileFields) {
-            if (body[field] !== undefined) {
-                (profile as unknown as Record<string, unknown>)[field] = body[field];
+            if (normalizedBody[field] !== undefined) {
+                (profile as unknown as Record<string, unknown>)[field] = normalizedBody[field];
             }
         }
-        if (body.admittedAt !== undefined) {
-            profile.admittedAt = body.admittedAt ? new Date(String(body.admittedAt)) : null;
+        if (normalizedBody.admittedAt !== undefined) {
+            profile.admittedAt = normalizedBody.admittedAt ? new Date(String(normalizedBody.admittedAt)) : null;
         }
-        if (body.groupIds !== undefined) {
-            profile.groupIds = parseGroupIds(body.groupIds);
+        if (normalizedBody.groupIds !== undefined) {
+            profile.groupIds = parseGroupIds(normalizedBody.groupIds);
         }
 
         profile.username = user.username;
@@ -1954,13 +2362,13 @@ export async function adminUpdateStudent(req: AuthRequest, res: Response): Promi
         await profile.save();
 
         await createAuditLog(req, 'student_updated', String(user._id), 'student', {
-            edited_fields: Object.keys(body),
+            edited_fields: Object.keys(normalizedBody),
         });
         broadcastUserEvent({
             type: 'user_updated',
             userId: String(user._id),
             actorId: req.user?._id,
-            meta: { source: 'student_management', editedFields: Object.keys(body) },
+            meta: { source: 'student_management', editedFields: Object.keys(normalizedBody) },
         });
         broadcastStudentDashboardEvent({ type: 'profile_updated', meta: { studentId: String(user._id), source: 'student_update' } });
 
@@ -2013,6 +2421,46 @@ export async function adminUpdateStudentSubscription(req: AuthRequest, res: Resp
         };
         await user.save();
 
+        let paymentSyncWarning: string | undefined;
+        try {
+            const shouldRecordPayment = req.body?.recordPayment === undefined
+                ? true
+                : toBoolean(req.body?.recordPayment);
+
+            if (shouldRecordPayment) {
+                let enrollmentAmount = Number(body.paymentAmount ?? body.enrollmentAmount ?? body.paidAmount ?? NaN);
+                if (!Number.isFinite(enrollmentAmount) || enrollmentAmount < 0) {
+                    const assignedPlan = normalizedSubscription.planCode
+                        ? await SubscriptionPlan.findOne({ code: normalizedSubscription.planCode })
+                            .select('price priceBDT')
+                            .lean()
+                        : null;
+                    const defaultPlanAmount = Number((assignedPlan as { priceBDT?: number; price?: number } | null)?.priceBDT
+                        ?? (assignedPlan as { priceBDT?: number; price?: number } | null)?.price
+                        ?? 0);
+                    enrollmentAmount = defaultPlanAmount > 0 ? defaultPlanAmount : 0;
+                }
+
+                if (enrollmentAmount > 0) {
+                    await createEnrollmentPaymentEntry({
+                        studentId: user._id,
+                        recordedById: req.user?._id || null,
+                        planCode: normalizedSubscription.planCode,
+                        planName: normalizedSubscription.planName,
+                        amount: enrollmentAmount,
+                        method: body.paymentMethod,
+                        status: body.paymentStatus,
+                        transactionId: body.transactionId,
+                        notes: body.paymentNotes,
+                        date: body.paymentDate,
+                    });
+                }
+            }
+        } catch (paymentError) {
+            console.error('adminUpdateStudentSubscription payment sync error:', paymentError);
+            paymentSyncWarning = 'Subscription updated but finance payment sync failed.';
+        }
+
         await createAuditLog(req, 'student_subscription_updated', String(user._id), 'student', {
             planCode: normalizedSubscription.planCode,
             expiryDate: normalizedSubscription.expiryDate,
@@ -2028,6 +2476,7 @@ export async function adminUpdateStudentSubscription(req: AuthRequest, res: Resp
         res.json({
             message: 'Student subscription updated successfully',
             subscription: getSubscriptionResponse(user.subscription as unknown as Record<string, unknown>),
+            paymentSyncWarning,
         });
     } catch (error) {
         console.error('adminUpdateStudentSubscription error:', error);
@@ -2159,6 +2608,8 @@ export async function adminCreateStudentGroup(req: AuthRequest, res: Response): 
         const item = await StudentGroup.create({
             name,
             slug,
+            type: body.type === 'dynamic' ? 'dynamic' : 'manual',
+            rules: body.type === 'dynamic' ? (body.rules || {}) : undefined,
             batchTag: String(body.batchTag || ''),
             description: String(body.description || ''),
             isActive: body.isActive !== undefined ? toBoolean(body.isActive) : true,
@@ -2181,6 +2632,8 @@ export async function adminUpdateStudentGroup(req: AuthRequest, res: Response): 
         if (body.batchTag !== undefined) update.batchTag = String(body.batchTag || '').trim();
         if (body.description !== undefined) update.description = String(body.description || '');
         if (body.isActive !== undefined) update.isActive = toBoolean(body.isActive);
+        if (body.type !== undefined) update.type = body.type === 'dynamic' ? 'dynamic' : 'manual';
+        if (body.rules !== undefined) update.rules = body.rules;
         if (body.meta !== undefined && typeof body.meta === 'object') update.meta = body.meta;
         if (body.slug !== undefined) {
             const slug = slugify(body.slug);
@@ -2202,7 +2655,29 @@ export async function adminUpdateStudentGroup(req: AuthRequest, res: Response): 
             return;
         }
 
-        await createAuditLog(req, 'student_group_updated', String(item._id), 'student_group', { edited_fields: Object.keys(update) });
+        // Handle member updates
+        const addStudentIds = Array.isArray(body.addStudentIds) ? body.addStudentIds : [];
+        const removeStudentIds = Array.isArray(body.removeStudentIds) ? body.removeStudentIds : [];
+
+        if (addStudentIds.length > 0) {
+            await StudentProfile.updateMany(
+                { _id: { $in: addStudentIds } },
+                { $addToSet: { groupIds: item._id } }
+            );
+        }
+
+        if (removeStudentIds.length > 0) {
+            await StudentProfile.updateMany(
+                { _id: { $in: removeStudentIds } },
+                { $pull: { groupIds: item._id } }
+            );
+        }
+
+        await createAuditLog(req, 'student_group_updated', String(item._id), 'student_group', {
+            edited_fields: Object.keys(update),
+            added_members: addStudentIds.length,
+            removed_members: removeStudentIds.length
+        });
         res.json({ item, message: 'Student group updated' });
     } catch (error) {
         console.error('adminUpdateStudentGroup error:', error);
@@ -2226,6 +2701,124 @@ export async function adminDeleteStudentGroup(req: AuthRequest, res: Response): 
     } catch (error) {
         console.error('adminDeleteStudentGroup error:', error);
         res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminExportStudentGroups(_req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const [groups, groupCountsRaw] = await Promise.all([
+            StudentGroup.find().sort({ isActive: -1, batchTag: 1, name: 1 }).lean(),
+            StudentProfile.aggregate([
+                { $unwind: { path: '$groupIds', preserveNullAndEmptyArrays: false } },
+                { $group: { _id: '$groupIds', studentCount: { $sum: 1 } } },
+            ]),
+        ]);
+
+        const countMap = new Map(groupCountsRaw.map((item) => [String(item._id), Number(item.studentCount || 0)]));
+        const rows = groups.map((group) => ({
+            name: group.name,
+            slug: group.slug,
+            batchTag: group.batchTag || '',
+            description: group.description || '',
+            isActive: group.isActive,
+            studentCount: countMap.get(String(group._id)) || 0,
+            createdAt: group.createdAt,
+            updatedAt: group.updatedAt,
+        }));
+
+        res.json(rows);
+    } catch (error) {
+        console.error('adminExportStudentGroups error:', error);
+        res.status(500).json({ message: 'Server error during group export' });
+    }
+}
+
+export async function adminImportStudentGroups(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const file = req.file;
+        const uploadedBuffer = await getUploadedFileBuffer(file);
+        if (!file || !uploadedBuffer) {
+            res.status(400).json({ message: 'File upload is required' });
+            return;
+        }
+
+        const filename = String(file.originalname || '').toLowerCase();
+        const isExcel = filename.endsWith('.xlsx') || filename.endsWith('.xls');
+        const rows = isExcel ? await parseExcelBuffer(uploadedBuffer) : await parseCsvBuffer(uploadedBuffer);
+
+        let created = 0;
+        let updated = 0;
+        let skipped = 0;
+        const errors: string[] = [];
+
+        for (let index = 0; index < rows.length; index += 1) {
+            const row = rows[index];
+            const name = String(row.name || '').trim();
+            const slug = slugify(row.slug || name);
+            if (!name || !slug) {
+                skipped += 1;
+                errors.push(`Row ${index + 1}: Missing group name/slug`);
+                continue;
+            }
+
+            const isActiveRaw = String(row.is_active || row.isactive || row.active || '').trim().toLowerCase();
+            const parsedIsActive = isActiveRaw
+                ? ['1', 'true', 'yes', 'on', 'active'].includes(isActiveRaw)
+                : true;
+
+            let meta: Record<string, unknown> = {};
+            const rawMeta = String(row.meta || row.meta_json || '').trim();
+            if (rawMeta) {
+                try {
+                    meta = JSON.parse(rawMeta);
+                } catch {
+                    errors.push(`Row ${index + 1}: Invalid meta JSON, ignored`);
+                }
+            }
+
+            const payload = {
+                name,
+                slug,
+                batchTag: String(row.batch_tag || row.batchtag || '').trim(),
+                description: String(row.description || '').trim(),
+                isActive: parsedIsActive,
+                meta,
+            };
+
+            const existing = await StudentGroup.findOne({ slug }).select('_id').lean();
+            if (existing?._id) {
+                await StudentGroup.findByIdAndUpdate(existing._id, payload, { new: false });
+                updated += 1;
+            } else {
+                await StudentGroup.create(payload);
+                created += 1;
+            }
+        }
+
+        await createAuditLog(req, 'student_group_imported', undefined, 'student_group', {
+            totalRows: rows.length,
+            created,
+            updated,
+            skipped,
+            errors: errors.length,
+        });
+
+        res.json({
+            message: `Group import completed. Created: ${created}, Updated: ${updated}, Skipped: ${skipped}.`,
+            created,
+            updated,
+            skipped,
+            totalRows: rows.length,
+            errors,
+        });
+    } catch (error) {
+        console.error('adminImportStudentGroups error:', error);
+        res.status(500).json({
+            message: 'Server error during group import',
+            error: process.env.NODE_ENV === 'production'
+                ? undefined
+                : (error instanceof Error ? error.message : String(error)),
+        });
     }
 }
 
@@ -2288,6 +2881,7 @@ export async function adminCreateSubscriptionPlan(req: AuthRequest, res: Respons
             priority: Number(body.priority || 100),
             sortOrder: Number(body.sortOrder || body.priority || 100),
         });
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'subscriptionPlans' } });
         await createAuditLog(req, 'subscription_plan_created', String(item._id), 'subscription_plan', { code: item.code });
         res.status(201).json({ item, message: 'Subscription plan created' });
     } catch (error) {
@@ -2343,6 +2937,7 @@ export async function adminUpdateSubscriptionPlan(req: AuthRequest, res: Respons
             return;
         }
 
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'subscriptionPlans' } });
         await createAuditLog(req, 'subscription_plan_updated', String(item._id), 'subscription_plan', { edited_fields: Object.keys(update) });
         res.json({ item, message: 'Subscription plan updated' });
     } catch (error) {
@@ -2361,6 +2956,7 @@ export async function adminToggleSubscriptionPlan(req: AuthRequest, res: Respons
         item.isActive = !item.isActive;
         await item.save();
 
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'subscriptionPlans' } });
         await createAuditLog(req, 'subscription_plan_toggled', String(item._id), 'subscription_plan', { isActive: item.isActive });
         res.json({ item, message: `Subscription plan ${item.isActive ? 'activated' : 'deactivated'}` });
     } catch (error) {

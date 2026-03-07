@@ -12,6 +12,7 @@ export interface IWebsiteSettings extends Document {
     socialLinks: {
         facebook: string;
         whatsapp: string;
+        messenger: string;
         telegram: string;
         twitter: string;
         youtube: string;
@@ -28,7 +29,7 @@ export interface IWebsiteSettings extends Document {
         clusterEnabled: boolean;
         buttonVariant: 'default' | 'squircle';
         showLabels: boolean;
-        platformOrder: Array<'facebook' | 'whatsapp' | 'telegram' | 'twitter' | 'youtube' | 'instagram'>;
+        platformOrder: Array<'facebook' | 'whatsapp' | 'messenger' | 'telegram' | 'twitter' | 'youtube' | 'instagram'>;
     };
     pricingUi: {
         currencyCode: string;
@@ -37,6 +38,10 @@ export interface IWebsiteSettings extends Document {
         displayMode: 'symbol' | 'code';
         thousandSeparator: boolean;
     };
+    subscriptionPageTitle: string;
+    subscriptionPageSubtitle: string;
+    subscriptionDefaultBannerUrl: string;
+    subscriptionLoggedOutCtaMode: 'login' | 'contact';
 }
 
 const WebsiteSettingsSchema = new Schema<IWebsiteSettings>({
@@ -51,6 +56,7 @@ const WebsiteSettingsSchema = new Schema<IWebsiteSettings>({
     socialLinks: {
         facebook: { type: String, default: '' },
         whatsapp: { type: String, default: '' },
+        messenger: { type: String, default: '' },
         telegram: { type: String, default: '' },
         twitter: { type: String, default: '' },
         youtube: { type: String, default: '' },
@@ -75,7 +81,7 @@ const WebsiteSettingsSchema = new Schema<IWebsiteSettings>({
         showLabels: { type: Boolean, default: false },
         platformOrder: {
             type: [String],
-            default: ['facebook', 'whatsapp', 'telegram', 'twitter', 'youtube', 'instagram'],
+            default: ['facebook', 'whatsapp', 'messenger', 'telegram', 'twitter', 'youtube', 'instagram'],
         },
     },
     pricingUi: {
@@ -85,6 +91,10 @@ const WebsiteSettingsSchema = new Schema<IWebsiteSettings>({
         displayMode: { type: String, enum: ['symbol', 'code'], default: 'symbol' },
         thousandSeparator: { type: Boolean, default: true },
     },
+    subscriptionPageTitle: { type: String, default: 'Subscription Plans' },
+    subscriptionPageSubtitle: { type: String, default: 'Choose free or paid plans to unlock premium exam access.' },
+    subscriptionDefaultBannerUrl: { type: String, default: '' },
+    subscriptionLoggedOutCtaMode: { type: String, enum: ['login', 'contact'], default: 'contact' },
 }, { timestamps: true });
 
 export default mongoose.model<IWebsiteSettings>('WebsiteSettings', WebsiteSettingsSchema);

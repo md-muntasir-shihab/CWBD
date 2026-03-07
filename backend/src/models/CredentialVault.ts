@@ -1,26 +1,22 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ICredentialVault extends Document {
-    userId: mongoose.Types.ObjectId;
-    encryptedPassword: string;
-    iv: string;
-    authTag: string;
-    version: number;
-    updatedBy?: mongoose.Types.ObjectId | null;
-    updatedAt: Date;
+    user_id: mongoose.Types.ObjectId;
+    password_ciphertext: string;
+    last_rotated_at?: Date | null;
+    updated_by?: mongoose.Types.ObjectId | null;
     createdAt: Date;
+    updatedAt: Date;
 }
 
 const CredentialVaultSchema = new Schema<ICredentialVault>(
     {
-        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-        encryptedPassword: { type: String, required: true },
-        iv: { type: String, required: true },
-        authTag: { type: String, required: true },
-        version: { type: Number, default: 1 },
-        updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+        user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
+        password_ciphertext: { type: String, required: true, trim: true },
+        last_rotated_at: { type: Date, default: null },
+        updated_by: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     },
-    { timestamps: true, collection: 'credential_vaults' }
+    { timestamps: true, collection: 'credential_vault' },
 );
 
 export default mongoose.model<ICredentialVault>('CredentialVault', CredentialVaultSchema);

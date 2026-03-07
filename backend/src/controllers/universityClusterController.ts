@@ -110,14 +110,14 @@ async function resolveClusterMembersInternal(clusterId: string): Promise<mongoos
     if (toDetach.length > 0) {
         await University.updateMany(
             { _id: { $in: toDetach.map((item) => item._id) } },
-            { $set: { clusterId: null, clusterName: '', clusterCount: 0 } },
+            { $set: { clusterId: null, clusterName: '', clusterGroup: '', clusterCount: 0 } },
         );
     }
 
     if (effective.length > 0) {
         await University.updateMany(
             { _id: { $in: effective } },
-            { $set: { clusterId: cluster._id, clusterName: cluster.name, clusterCount: effective.length } },
+            { $set: { clusterId: cluster._id, clusterName: cluster.name, clusterGroup: cluster.name, clusterCount: effective.length } },
         );
     }
 

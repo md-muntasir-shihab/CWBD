@@ -1,0 +1,190 @@
+
+> campusway-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+[db] MongoDB connected successfully
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+⏳ Starting Exam Auto-Submit Cron Job (Runs every minute)
+🚀 CampusWay Backend running on port 5005
+📡 Public API: http://localhost:5005/api
+🔒 Admin API:  http://localhost:5005/api/campusway-secure-admin
+[0mGET /api/news/settings [32m200[0m 36.404 ms - 963[0m
+[0mGET /api/news/sources [32m200[0m 9.458 ms - 12[0m
+[0mGET /api/news-v2/settings [32m200[0m 6.115 ms - 963[0m
+[0mGET /api/news-v2/sources [32m200[0m 12.036 ms - 12[0m
+[0mGET /api/banners [32m200[0m 14.152 ms - 14[0m
+[0mGET /api/home/clusters/featured?limit=8 [32m200[0m 48.967 ms - 876[0m
+[0mGET /api/settings [32m200[0m 49.539 ms - -[0m
+[0mGET /api/universities?limit=10&featured=true [32m200[0m 48.272 ms - -[0m
+[0mGET /api/universities?page=1&limit=25&sort=createdAt [32m200[0m 47.704 ms - -[0m
+[0mGET /api/home [32m200[0m 153.660 ms - -[0m
+[0mGET /api/universities?limit=50&sort=-updatedAt [32m200[0m 8.410 ms - -[0m
+[0mGET /api/universities/categories [32m200[0m 8.904 ms - 301[0m
+[0mGET /uploads/favicon-1772179587784-526587807.png [32m200[0m 55.585 ms - 449602[0m
+[0mGET /uploads/logo-1772179587783-814915617.png [32m200[0m 23.682 ms - 449602[0m
+[0mGET /uploads/image-1772269996647-183840051.png [32m200[0m 21.698 ms - 1101559[0m
+[0mGET /api/home/stream [32m200[0m 0.500 ms - -[0m
+[0mGET /api/news/settings [32m200[0m 14.412 ms - 963[0m
+[0mGET /api/news/sources [32m200[0m 13.493 ms - 12[0m
+[0mGET /api/news-v2/widgets [32m200[0m 11.265 ms - 650[0m
+[0mGET /api/settings [36m304[0m 32.643 ms - -[0m
+[0mGET /api/news-v2/list?page=1&limit=15&source=&category=All&tag=&q= [32m200[0m 82.886 ms - -[0m
+[0mGET /uploads/logo-1772179587783-814915617.png [36m304[0m 1.038 ms - -[0m
+[0mGET /uploads/file-1772310159122-252652753.png [32m200[0m 22.304 ms - 6513087[0m
+[0mGET /api/news/settings [36m304[0m 6.246 ms - -[0m
+[0mGET /api/settings [36m304[0m 35.287 ms - -[0m
+[0mGET /uploads/logo-1772179587783-814915617.png [36m304[0m 0.897 ms - -[0m
+[0mGET /api/news-v2/compose-news-articl [32m200[0m 175.299 ms - -[0m
+[0mGET /api/settings [36m304[0m 26.199 ms - -[0m
+[0mPOST /api/auth/login [32m200[0m 579.663 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[0mGET /api/auth/me [32m200[0m 41.208 ms - 658[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [32m200[0m 39.337 ms - 101[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [36m304[0m 10.755 ms - -[0m
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 8.459 ms - -[0m
+[0mGET /api/settings [36m304[0m 15.107 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 17.006 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 9.246 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[0mGET /api/campusway-secure-admin/news-v2/sources [32m200[0m 12.647 ms - 12[0m
+[0mGET /api/campusway-secure-admin/news-v2/items?status=pending_review&q=&sourceId=&aiOnly=false&duplicateFlagged=false&limit=100 [32m200[0m 57.700 ms - 41[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [36m304[0m 14.175 ms - -[0m
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 4.195 ms - -[0m
+[0mGET /api/settings [36m304[0m 10.008 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 14.740 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[0mGET /api/auth/me [36m304[0m 128.768 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/items?status=draft&q=&sourceId=&aiOnly=false&duplicateFlagged=false&limit=100 [32m200[0m 123.687 ms - 41[0m
+[0mGET /api/campusway-secure-admin/news-v2/sources [36m304[0m 52.786 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [36m304[0m 26.390 ms - -[0m
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 4.980 ms - -[0m
+[0mGET /api/settings [36m304[0m 9.090 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 11.386 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 9.813 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/sources [36m304[0m 36.115 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [36m304[0m 37.039 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 18.731 ms - -[0m
+[0mGET /api/settings [36m304[0m 11.647 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 19.682 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 62.171 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[0mGET /api/campusway-secure-admin/news-settings [32m200[0m 88.977 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/settings/appearance [32m200[0m 118.799 ms - 397[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [36m304[0m 12.869 ms - -[0m
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 11.429 ms - -[0m
+[0mGET /api/settings [36m304[0m 27.840 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 73.085 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[0mGET /api/auth/me [36m304[0m 124.781 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [36m304[0m 76.137 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/media?page=1&limit=24&q= [32m200[0m 105.937 ms - 41[0m
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 5.824 ms - -[0m
+[0mGET /api/settings [36m304[0m 11.412 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 10.558 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 10.314 ms - -[0m
+[0mGET /api/campusway-secure-admin/news-v2/dashboard [36m304[0m 16.348 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 5.760 ms - -[0m
+[0mGET /api/news/settings [36m304[0m 3.769 ms - -[0m
+[0mGET /api/settings [36m304[0m 23.218 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 46.381 ms - -[0m
+[0mGET /api/news-v2/compose-news-articl [32m200[0m 52.977 ms - -[0m
+[0mGET /uploads/logo-1772179587783-814915617.png [36m304[0m 3.362 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 36.049 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[0mPOST /api/news-v2/share/track [33m400[0m 8.236 ms - 33[0m
+[auth-stream] disconnected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTlkZjMxNDQ2YmI2ZTg5ZmMwYTVhMDEiLCJ1c2VybmFtZSI6ImNhbXB1c3dheV9hZG1pbiIsImVtYWlsIjoiYWRtaW5AY2FtcHVzd2F5LmNvbSIsInJvbGUiOiJzdXBlcmFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiYmUwZDkyOTItYmY3Yi00OTJlLTgzMWQtZmI3NmYzYjkwOTkxIiwiaWF0IjoxNzcyNDQwMDY5LCJleHAiOjE3NzI0NDEyNjl9.Af5h4IdJcW-dE7gVBmyiV7bZTQolE5XGJvNOtQ3be40 [32m200[0m 3.476 ms - -[0m
+[0mGET /api/news/settings [36m304[0m 4.850 ms - -[0m
+[0mGET /api/settings [36m304[0m 97.236 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 105.723 ms - -[0m
+[0mGET /api/news-v2/compose-news-articl [32m200[0m 142.911 ms - -[0m
+[auth-stream] connected {
+  userId: '699df31446bb6e89fc0a5a01',
+  sessionId: 'be0d9292-bf7b-492e-831d-fb76f3b90991',
+  clientsForSession: 1
+}
+[0mGET /api/auth/me [36m304[0m 99.387 ms - -[0m
+[0mGET /uploads/logo-1772179587783-814915617.png [36m304[0m 0.649 ms - -[0m
+[0mPOST /api/news-v2/share/track [33m400[0m 2.560 ms - 33[0m
+Unhandled error: {
+  statusCode: 400,
+  message: "Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (F:\\CampusWay\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at F:\\CampusWay\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:228:14)\n' +
+    '    at invokeCallback (F:\\CampusWay\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (F:\\CampusWay\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (F:\\CampusWay\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:508:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1729:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)'
+}
+[0mPOST /api/news-v2/share/track [33m400[0m 2.256 ms - 83[0m
+[0mPOST /api/news-v2/share/track [33m400[0m 5.945 ms - 33[0m

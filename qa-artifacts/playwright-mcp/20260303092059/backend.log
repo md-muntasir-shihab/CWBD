@@ -1,0 +1,1212 @@
+
+> campusway-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+[db] MongoDB connected successfully
+[db] Failed to ensure critical indexes: MongoServerError: ns does not exist: campusway_playwright_mcp_20260303092059.student_results
+    at Connection.sendCommand (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:559:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Connection.command (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:633:22)
+    at async Server.command (F:\CampusWay\backend\node_modules\mongodb\src\sdam\server.ts:350:21)
+    at async tryOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:289:24)
+    at async executeOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async ListIndexesCursor._initialize (F:\CampusWay\backend\node_modules\mongodb\src\cursor\list_indexes_cursor.ts:33:22)
+    at async ListIndexesCursor.cursorInit (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:949:21)
+    at async ListIndexesCursor.fetchBatch (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:987:7)
+    at async ListIndexesCursor.next (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:608:9)
+    at async ListIndexesCursor.[Symbol.asyncIterator] (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:502:26)
+    at async ListIndexesCursor.toArray (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:696:22)
+    at async Collection.indexes (F:\CampusWay\backend\node_modules\mongodb\src\collection.ts:914:45)
+    at async ensureCriticalIndexes (F:\CampusWay\backend\src\config\db.ts:15:31)
+    at async connectDB (F:\CampusWay\backend\src\config\db.ts:112:9)
+    at async start (F:\CampusWay\backend\src\server.ts:225:5) {
+  errorLabelSet: Set(0) {},
+  errorResponse: {
+    ok: 0,
+    errmsg: 'ns does not exist: campusway_playwright_mcp_20260303092059.student_results',
+    code: 26,
+    codeName: 'NamespaceNotFound'
+  },
+  ok: 0,
+  code: 26,
+  codeName: 'NamespaceNotFound'
+}
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+[cron] Starting exam auto-submit worker (every minute).
+🚀 CampusWay Backend running on port 5063
+📡 Public API: http://localhost:5063/api
+🔒 Admin API:  http://localhost:5063/api/campusway-secure-admin
+[0mGET /api/health [32m200[0m 1370.205 ms - 87[0m
+[0mGET /api/settings/public [32m200[0m 220.869 ms - -[0m
+[0mGET /api/home [32m200[0m 215.195 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.642 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 191.756 ms - -[0m
+[0mGET /api/home [32m200[0m 197.768 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.498 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 140.469 ms - -[0m
+[0mGET /api/home [32m200[0m 141.577 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.642 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 185.194 ms - -[0m
+[0mGET /api/home [32m200[0m 213.098 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 14.069 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 137.530 ms - -[0m
+[0mGET /api/home [32m200[0m 135.766 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 20.790 ms - -[0m
+[0mGET /api/home [32m200[0m 111.981 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 124.876 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.296 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 98.637 ms - -[0m
+[0mGET /api/home [32m200[0m 102.016 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.244 ms - -[0m
+[0mGET /api/home [32m200[0m 112.416 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 130.381 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.222 ms - -[0m
+[0mGET /api/home-settings/public [32m200[0m 10.266 ms - -[0m
+[0mGET /api/universities?page=1&limit=300 [32m200[0m 106.170 ms - 75[0m
+[0mGET /api/home [32m200[0m 137.230 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 165.830 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.386 ms - -[0m
+[0mGET /api/services [32m200[0m 81.176 ms - 70[0m
+[0mGET /api/services-config [32m200[0m 119.168 ms - 314[0m
+[0mGET /api/settings/public [36m304[0m 254.881 ms - -[0m
+[0mGET /api/home [32m200[0m 253.626 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.537 ms - -[0m
+[0mGET /api/news/settings [32m200[0m 8.807 ms - 989[0m
+[0mGET /api/settings/public [36m304[0m 38.258 ms - -[0m
+[0mGET /api/news-v2/list?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 23.748 ms - 95[0m
+[0mGET /api/home [32m200[0m 25.147 ms - -[0m
+[0mGET /api/news/sources [32m200[0m 322.566 ms - 12[0m
+[0mGET /api/news-v2/widgets [32m200[0m 323.380 ms - 41[0m
+[0mGET /api/home/stream [32m200[0m 0.363 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 32.090 ms - -[0m
+[0mGET /api/home [32m200[0m 34.711 ms - -[0m
+[0mGET /api/resources [32m200[0m 153.099 ms - 45[0m
+[0mGET /api/resources [36m304[0m 101.422 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.273 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 84.902 ms - -[0m
+[0mGET /api/home [32m200[0m 118.363 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.238 ms - -[0m
+[0mGET /api/subscription-plans/public [32m200[0m 3.716 ms - 55[0m
+[0mGET /api/settings/public [36m304[0m 45.144 ms - -[0m
+[0mGET /api/home [32m200[0m 159.814 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.277 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 104.036 ms - -[0m
+[0mGET /api/home [32m200[0m 132.516 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.303 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 68.840 ms - -[0m
+[0mGET /api/home [32m200[0m 100.173 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.246 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 101.987 ms - -[0m
+[0mGET /api/home [32m200[0m 114.301 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.251 ms - -[0m
+[0mGET /api/auth/oauth/providers [32m200[0m 14.555 ms - 240[0m
+[0mGET /api/settings/public [36m304[0m 241.871 ms - -[0m
+[0mGET /api/home [32m200[0m 292.610 ms - -[0m
+[0mPOST /api/auth/login [32m200[0m 992.980 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 1
+}
+[0mGET /api/home/stream [32m200[0m 24.078 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 12.211 ms - -[0m
+[0mGET /api/home [32m200[0m 317.649 ms - -[0m
+[0mGET /api/auth/me [32m200[0m 306.643 ms - 858[0m
+[0mGET /api/settings/public [36m304[0m 110.507 ms - -[0m
+[0mGET /api/home [32m200[0m 138.737 ms - -[0m
+[0mGET /api/auth/me [32m200[0m 207.172 ms - 858[0m
+[0mGET /api/auth/me [36m304[0m 92.186 ms - -[0m
+[0mGET /api/alerts/active [32m200[0m 108.718 ms - 13[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 148.245 ms - 943[0m
+[0mGET /api/student/notifications [32m200[0m 129.575 ms - 55[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 187.512 ms - 55[0m
+[0mGET /api/student/featured-universities [32m200[0m 183.068 ms - 55[0m
+[0mGET /api/student/live-alerts [32m200[0m 117.446 ms - 55[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 1
+}
+[0mGET /api/student/exam-history [32m200[0m 133.365 ms - 151[0m
+[0mGET /api/alerts/active [36m304[0m 120.601 ms - -[0m
+[0mGET /api/student/dashboard/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 82.503 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 52.140 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.267 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 111.049 ms - -[0m
+[0mGET /api/home [32m200[0m 124.016 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 200.343 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 42.267 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 1
+}
+[0mGET /api/students/me/exams [32m200[0m 56.685 ms - 104[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 2
+}
+[0mGET /api/alerts/active [36m304[0m 159.441 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 113.509 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.252 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 82.691 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 147.142 ms - -[0m
+[0mGET /api/home [32m200[0m 162.615 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 215.235 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 33.089 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 2
+}
+[0mGET /api/students/me/results [32m200[0m 17.340 ms - 171[0m
+[0mGET /api/alerts/active [36m304[0m 24.075 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 3
+}
+[0mGET /api/alerts/active [36m304[0m 70.329 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 4.762 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.258 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 211.618 ms - -[0m
+[0mGET /api/home [32m200[0m 211.325 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 243.022 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 20.375 ms - -[0m
+[0mGET /api/students/me/payments [32m200[0m 13.920 ms - 135[0m
+[0mGET /api/alerts/active [36m304[0m 25.293 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 3
+}
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 4
+}
+[0mGET /api/alerts/active [36m304[0m 137.427 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.406 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 30.370 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 128.415 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 111.746 ms - -[0m
+[0mGET /api/home [32m200[0m 165.010 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 4
+}
+[0mGET /api/students/me/notifications?type=all [32m200[0m 48.282 ms - 71[0m
+[0mGET /api/alerts/active [36m304[0m 55.360 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 90.568 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 32.867 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 16.043 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 4
+}
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 3.230 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.278 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 144.420 ms - -[0m
+[0mGET /api/home [32m200[0m 145.686 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 159.979 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 31.350 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 4
+}
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 5
+}
+[0mGET /api/alerts/active [36m304[0m 85.206 ms - -[0m
+[0mGET /api/student/profile [32m200[0m 98.352 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 23.652 ms - -[0m
+[0mGET /api/student/profile [36m304[0m 39.795 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.368 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 3.574 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 85.647 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 80.301 ms - -[0m
+[0mGET /api/home [32m200[0m 82.209 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 104.422 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 5
+}
+[0mGET /api/students/me/resources [32m200[0m 23.773 ms - 81[0m
+[0mGET /api/alerts/active [36m304[0m 49.237 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 7.109 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 5
+}
+[0mGET /api/alerts/active [36m304[0m 13.835 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 7.004 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.372 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 66.310 ms - -[0m
+[0mGET /api/home [32m200[0m 71.881 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 72.429 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 79.394 ms - -[0m
+[0mGET /api/student/support-tickets [32m200[0m 17.508 ms - 12[0m
+[0mGET /api/alerts/active [36m304[0m 23.642 ms - -[0m
+[0mGET /api/student/notices [32m200[0m 23.520 ms - 12[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 5
+}
+[0mGET /api/alerts/active [36m304[0m 7.228 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 11.073 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 5
+}
+[0mGET /api/home/stream [32m200[0m 0.287 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 10.592 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 159.728 ms - -[0m
+[0mGET /api/home [32m200[0m 174.282 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 189.729 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 36.890 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 5
+}
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 6
+}
+[0mGET /api/students/me/exams [32m200[0m 49.495 ms - 104[0m
+[0mGET /api/alerts/active [36m304[0m 69.218 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 31.910 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.285 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 25.102 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 126.097 ms - -[0m
+[0mGET /api/home [32m200[0m 128.894 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 147.007 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 11.622 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 6
+}
+[0mGET /api/students/me/results [32m200[0m 37.517 ms - 171[0m
+[0mGET /api/alerts/active [36m304[0m 53.698 ms - -[0m
+[0mGET /api/alerts/active [36m304[0m 65.463 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.264 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 8.046 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 544.152 ms - -[0m
+[0mGET /api/home [32m200[0m 557.683 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 1554.109 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 6
+}
+[0mGET /api/auth/me [36m304[0m 1075.543 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 163.590 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761',
+  clientsForSession: 6
+}
+[0mPOST /api/auth/login [32m200[0m 976.171 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 11.025 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 1
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 41.729 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.295 ms - -[0m
+[0mGET /api/auth/me [32m200[0m 508.320 ms - 679[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [32m200[0m 201.418 ms - 41[0m
+[0mGET /api/campusway-secure-admin/dashboard/summary [32m200[0m 201.621 ms - 465[0m
+[0mGET /api/home [32m200[0m 609.351 ms - -[0m
+[0mGET /api/auth/me [32m200[0m 163.367 ms - 679[0m
+[0mGET /api/settings/public [36m304[0m 186.317 ms - -[0m
+[0mGET /api/campusway-secure-admin/dashboard/summary [32m200[0m 77.353 ms - 465[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [32m200[0m 143.368 ms - 41[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [32m200[0m 131.178 ms - 68[0m
+[0mGET /api/auth/me [36m304[0m 321.065 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [32m200[0m 366.272 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 1
+}
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [32m200[0m 352.921 ms - 74[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 292.776 ms - 55[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 112.322 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 8.911 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 35.309 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.220 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 31.153 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 31.390 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 10.254 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 66.653 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [32m200[0m 81.709 ms - 74[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [32m200[0m 74.616 ms - 17[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [32m200[0m 68.392 ms - 75[0m
+[0mGET /api/campusway-secure-admin/university-clusters [32m200[0m 125.409 ms - 15[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 46.788 ms - -[0m
+[0mGET /api/campusway-secure-admin/home-settings [32m200[0m 68.587 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 38.463 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 100.044 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 45.908 ms - 55[0m
+[0mGET /api/campusway-secure-admin/university-categories?status=all [32m200[0m 130.100 ms - 17[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 177.953 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [36m304[0m 132.440 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [36m304[0m 130.142 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [36m304[0m 128.981 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[0mGET /api/campusway-secure-admin/university-clusters [36m304[0m 70.132 ms - -[0m
+[0mGET /api/campusway-secure-admin/home-settings [36m304[0m 21.875 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-categories?status=all [36m304[0m 16.863 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 7.436 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.245 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 4.256 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 121.975 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 188.172 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 81.779 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 156.134 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 174.814 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 160.329 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 776.193 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 587.770 ms - 55[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 196.366 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 17.953 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 202.658 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.213 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 68.358 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 128.255 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 134.314 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 39.779 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 20.927 ms - -[0m
+[0mGET /api/campusway-secure-admin/question-bank?page=1&limit=20&search=&subject=&chapter=&difficulty=&status=&has_image=&has_explanation=&quality_score_min= [32m200[0m 43.104 ms - 357[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 47.352 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 42.474 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 45.696 ms - 55[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 56.761 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 42.165 ms - -[0m
+[0mGET /api/campusway-secure-admin/question-bank?page=1&limit=20&search=&subject=&chapter=&difficulty=&status=&has_image=&has_explanation=&quality_score_min= [36m304[0m 34.986 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 3.691 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 5.841 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.338 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 4.321 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 87.510 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 83.326 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 65.249 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 90.508 ms - -[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 115.095 ms - 55[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 128.852 ms - 55[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 245.373 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 449.718 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 399.794 ms - -[0m
+[0mGET /api/admin/students?page=1&limit=20 [32m200[0m 533.132 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 614.062 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 295.064 ms - 55[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 55.840 ms - 55[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 516.407 ms - 55[0m
+[0mGET /api/admin/students?page=1&limit=20 [32m200[0m 493.365 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.252 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 277.012 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 294.121 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 9.280 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 37.311 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 79.836 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 145.486 ms - 55[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 142.160 ms - 55[0m
+[0mGET /api/auth/me [36m304[0m 249.777 ms - -[0m
+[0mGET /api/admin/students?page=1&limit=20 [32m200[0m 192.683 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 126.066 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 166.473 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 2
+}
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 38.520 ms - 55[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 188.046 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 143.027 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 3
+}
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 37.942 ms - 55[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 12.051 ms - 55[0m
+[0mGET /api/admin/students?page=1&limit=20 [32m200[0m 63.042 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 20.759 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.211 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 10.152 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 24.924 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 30.381 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 58.629 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 30.319 ms - -[0m
+[0mGET /api/campusway-secure-admin/finance/summary [32m200[0m 32.854 ms - 119[0m
+[0mGET /api/campusway-secure-admin/expenses?page=1&limit=6 [32m200[0m 31.515 ms - 41[0m
+[0mGET /api/campusway-secure-admin/payments?page=1&limit=6 [32m200[0m 33.717 ms - 41[0m
+[0mGET /api/campusway-secure-admin/dues?page=1&limit=6 [32m200[0m 29.841 ms - 41[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 46.004 ms - 55[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 65.712 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 94.200 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 128.648 ms - -[0m
+[0mGET /api/admin/students?page=1&limit=200 [32m200[0m 172.519 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 83.680 ms - 55[0m
+[0mGET /api/campusway-secure-admin/finance/summary [36m304[0m 26.637 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 35.314 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 3
+}
+[0mGET /api/campusway-secure-admin/payments?page=1&limit=6 [36m304[0m 24.238 ms - -[0m
+[0mGET /api/campusway-secure-admin/expenses?page=1&limit=6 [36m304[0m 28.073 ms - -[0m
+[0mGET /api/campusway-secure-admin/dues?page=1&limit=6 [36m304[0m 35.606 ms - -[0m
+[0mGET /api/campusway-secure-admin/subscription-plans [32m200[0m 26.986 ms - 55[0m
+[0mGET /api/admin/students?page=1&limit=200 [32m200[0m 37.413 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 2.684 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.547 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 4.071 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 574.134 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 568.958 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 620.878 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 565.176 ms - -[0m
+[0mGET /api/campusway-secure-admin/resources [32m200[0m 1533.526 ms - 71[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 1673.218 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 1092.340 ms - 55[0m
+[0mGET /api/auth/me [36m304[0m 1820.351 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 3
+}
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 1246.364 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 95.134 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[0mGET /api/campusway-secure-admin/resources [36m304[0m 412.835 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 14.244 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 151.222 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.253 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 115.990 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 117.363 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?page=1&limit=50 [32m200[0m 45.703 ms - 41[0m
+[0mGET /api/campusway-secure-admin/notices?page=1&limit=20 [32m200[0m 49.704 ms - 41[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 78.111 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 172.698 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 95.003 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 139.797 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 204.625 ms - 55[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 234.277 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?page=1&limit=50 [36m304[0m 153.133 ms - -[0m
+[0mGET /api/campusway-secure-admin/notices?page=1&limit=20 [36m304[0m 161.456 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 131.108 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 85.958 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 88.357 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.205 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 91.507 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 94.189 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 64.163 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 59.277 ms - -[0m
+[0mGET /api/campusway-secure-admin/security-settings [32m200[0m 64.012 ms - 879[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 61.721 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 110.667 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 112.460 ms - 55[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 217.111 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 146.594 ms - -[0m
+[0mGET /api/campusway-secure-admin/security-settings [36m304[0m 65.838 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[0mGET /api/campusway-secure-admin/settings/runtime [32m200[0m 326.458 ms - -[0m
+[0mGET /api/campusway-secure-admin/settings/runtime [36m304[0m 120.685 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.226 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 16.750 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 45.666 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 228.706 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 234.017 ms - -[0m
+[0mGET /api/campusway-secure-admin/health [32m200[0m 102.894 ms - 87[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 174.609 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 295.463 ms - -[0m
+[0mGET /api/campusway-secure-admin/audit-logs?page=1&limit=50 [32m200[0m 179.497 ms - 40[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 187.560 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 3.056 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 310.015 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 226.137 ms - 55[0m
+[0mGET /api/campusway-secure-admin/health [32m200[0m 36.922 ms - 87[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 314.988 ms - -[0m
+[0mGET /api/campusway-secure-admin/audit-logs?page=1&limit=50 [36m304[0m 97.624 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 82.325 ms - -[0m
+[0mGET /api/campusway-secure-admin/audit-logs?page=1&limit=50 [36m304[0m 36.500 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 120.028 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 15.394 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.196 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 141.086 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 143.460 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[0mGET /api/auth/me [36m304[0m 58.009 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 5.971 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 2.999 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.483 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 70.176 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 75.848 ms - -[0m
+[0mGET /api/campusway-secure-admin/home-settings/defaults [32m200[0m 6.111 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[0mGET /api/campusway-secure-admin/home-settings [36m304[0m 53.381 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 137.378 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [36m304[0m 104.509 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=1000&status=all&sortBy=name&sortOrder=asc [32m200[0m 113.898 ms - 75[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 3.733 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[0mGET /api/home/stream [32m200[0m 0.206 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 50.556 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 109.883 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 120.245 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 16.892 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 3.375 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.217 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 64.044 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 63.437 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 32.405 ms - -[0m
+[0mGET /api/campusway-secure-admin/banners [32m200[0m 19.490 ms - 14[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 4
+}
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/campusway-secure-admin/banners [36m304[0m 79.573 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.204 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 4.584 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 73.853 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 71.006 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 39.298 ms - -[0m
+[0mGET /api/campusway-secure-admin/security-settings [36m304[0m 15.724 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 3.833 ms - -[0m
+[0mGET /api/campusway-secure-admin/settings/runtime [36m304[0m 68.563 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/campusway-secure-admin/security-settings [36m304[0m 81.686 ms - -[0m
+[0mGET /api/campusway-secure-admin/settings/runtime [36m304[0m 69.690 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 36.034 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.237 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 59.268 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 59.243 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 26.876 ms - -[0m
+[0mGET /api/campusway-secure-admin/health [32m200[0m 5.508 ms - 87[0m
+[0mGET /api/campusway-secure-admin/audit-logs?page=1&limit=50 [36m304[0m 8.405 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/campusway-secure-admin/health [32m200[0m 15.592 ms - 87[0m
+[0mGET /api/campusway-secure-admin/audit-logs?page=1&limit=50 [36m304[0m 60.727 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 7.663 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/campusway-secure-admin/audit-logs?page=1&limit=50 [36m304[0m 6.646 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 6.289 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.357 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 65.920 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 77.331 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 13.500 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 3.305 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/settings/public [36m304[0m 77.151 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 4.130 ms - -[0m
+[0mGET /api/campusway-secure-admin/social-links [32m200[0m 17.989 ms - 12[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 39.653 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.219 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 64.361 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 73.139 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/auth/me [36m304[0m 64.079 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 5.361 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/profile/me [32m200[0m 100.151 ms - -[0m
+[0mGET /api/profile/me [36m304[0m 41.967 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.210 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 3.368 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 60.598 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 67.911 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 40.751 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 42.390 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [36m304[0m 67.524 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [36m304[0m 65.620 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-clusters [36m304[0m 66.105 ms - -[0m
+[0mGET /api/campusway-secure-admin/home-settings [36m304[0m 21.517 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [36m304[0m 92.673 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 41.087 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 85.298 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 41.322 ms - 55[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 77.820 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-categories?status=all [36m304[0m 178.051 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 28.606 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [36m304[0m 121.280 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [36m304[0m 121.602 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-clusters [36m304[0m 78.816 ms - -[0m
+[0mGET /api/campusway-secure-admin/home-settings [36m304[0m 22.834 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [36m304[0m 19.200 ms - -[0m
+[0mGET /api/campusway-secure-admin/university-categories?status=all [36m304[0m 52.270 ms - -[0m
+[0mPOST /api/campusway-secure-admin/universities [32m201[0m 41.031 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [32m200[0m 21.532 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [32m200[0m 16.386 ms - 44[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [32m200[0m 11.774 ms - -[0m
+[0mPUT /api/campusway-secure-admin/universities/69a6aa6d88ed9aab459eec17 [32m200[0m 16.710 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [32m200[0m 15.281 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [36m304[0m 11.428 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [32m200[0m 16.231 ms - -[0m
+[0mDELETE /api/campusway-secure-admin/universities/69a6aa6d88ed9aab459eec17 [32m200[0m 15.048 ms - 45[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25&sortBy=createdAt&sortOrder=desc&status=all [32m200[0m 16.096 ms - 74[0m
+[0mGET /api/campusway-secure-admin/universities/categories?status=all [32m200[0m 8.936 ms - 17[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=500&status=all&sortBy=name&sortOrder=asc [32m200[0m 14.154 ms - 75[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 10.077 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.217 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 25.594 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 51.410 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 63.583 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 89.522 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 46.718 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 62.543 ms - -[0m
+[0mGET /api/campusway-secure-admin/resources [36m304[0m 250.702 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 301.056 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 298.423 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 238.467 ms - 55[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 131.842 ms - -[0m
+[0mGET /api/campusway-secure-admin/resources [36m304[0m 66.093 ms - -[0m
+[0mPOST /api/campusway-secure-admin/resources [33m400[0m 8.609 ms - 41[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 17.173 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 17.021 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.308 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 29.998 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 67.770 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 38.607 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 46.474 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 44.982 ms - 55[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 100.094 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 156.527 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 165.237 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 216.869 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 114.474 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 50.325 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.216 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 89.070 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 108.029 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 72.891 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 34.240 ms - -[0m
+[0mGET /api/campusway-secure-admin/question-bank?page=1&limit=20&search=&subject=&chapter=&difficulty=&status=&has_image=&has_explanation=&quality_score_min= [36m304[0m 53.558 ms - -[0m
+[0mGET /api/campusway-secure-admin/users [36m304[0m 59.891 ms - -[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [36m304[0m 117.856 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [36m304[0m 130.158 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 145.680 ms - 55[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 119.539 ms - -[0m
+[0mGET /api/campusway-secure-admin/question-bank?page=1&limit=20&search=&subject=&chapter=&difficulty=&status=&has_image=&has_explanation=&quality_score_min= [36m304[0m 115.686 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad',
+  clientsForSession: 5
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 115.865 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.214 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 43.742 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 156.862 ms - -[0m
+[0mGET /api/home [32m200[0m 163.764 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.430 ms - -[0m
+[0mGET /api/news/settings [32m200[0m 18.235 ms - 989[0m
+[0mGET /api/news/sources [32m200[0m 21.707 ms - 12[0m
+[0mGET /api/news-v2/widgets [32m200[0m 23.500 ms - 41[0m
+[0mGET /api/settings/public [36m304[0m 62.108 ms - -[0m
+[0mGET /api/news-v2/list?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 108.674 ms - 95[0m
+[0mGET /api/home [32m200[0m 116.401 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.398 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 88.889 ms - -[0m
+[0mGET /api/home [32m200[0m 113.136 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.226 ms - -[0m
+[0mGET /api/auth/oauth/providers [32m200[0m 0.947 ms - 240[0m
+[0mGET /api/settings/public [36m304[0m 114.449 ms - -[0m
+[0mGET /api/home [32m200[0m 123.714 ms - -[0m
+[auth-stream] force-logout broadcast { sessionCount: 1, delivered: 5 }
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 30.567 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 3.297 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 18.008 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 55.570 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiZjE5MTAzZjItYjhmZi00YzlkLTg0OTQtNTM4NTM5ODI0NzYxIiwiaWF0IjoxNzcyNTI5OTcwLCJleHAiOjE3NzI1MzExNzB9.iUejBU9hrTdU-qMp5JSMfAgH_zD9xs-d5u-MtXkUgbs [32m200[0m 4.320 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: 'f19103f2-b8ff-4c9d-8494-538539824761'
+}
+[0mPOST /api/auth/login [32m200[0m 753.101 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114',
+  clientsForSession: 1
+}
+[0mGET /api/home/stream [32m200[0m 0.231 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiODk4NjlhOGQtYjU4YS00MjYwLTg3ZjItYmY2ZTc2NzE1MTE0IiwiaWF0IjoxNzcyNTMwNDIyLCJleHAiOjE3NzI1MzE2MjJ9.6-fsIgJriGeU577rBn39pCfBY_F5Wp_rJ_HK7CmUK34 [32m200[0m 5.321 ms - -[0m
+[0mGET /api/home [32m200[0m 203.444 ms - -[0m
+[0mGET /api/auth/me [32m200[0m 138.345 ms - 858[0m
+[0mGET /api/settings/public [36m304[0m 25.125 ms - -[0m
+[0mGET /api/home [32m200[0m 24.134 ms - -[0m
+[0mGET /api/auth/me [32m200[0m 22.973 ms - 858[0m
+[0mGET /api/auth/me [36m304[0m 59.636 ms - -[0m
+[0mGET /api/student/dashboard-profile [32m200[0m 34.481 ms - 943[0m
+[0mGET /api/student/featured-universities [32m200[0m 33.695 ms - 55[0m
+[0mGET /api/student/upcoming-exams [32m200[0m 53.148 ms - 55[0m
+[0mGET /api/alerts/active [32m200[0m 67.558 ms - 13[0m
+[0mGET /api/student/notifications [32m200[0m 56.501 ms - 55[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114',
+  clientsForSession: 1
+}
+[0mGET /api/student/live-alerts [32m200[0m 60.444 ms - 55[0m
+[0mGET /api/student/exam-history [32m200[0m 90.511 ms - 151[0m
+[0mGET /api/alerts/active [36m304[0m 91.188 ms - -[0m
+[0mGET /api/student/dashboard/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiODk4NjlhOGQtYjU4YS00MjYwLTg3ZjItYmY2ZTc2NzE1MTE0IiwiaWF0IjoxNzcyNTMwNDIyLCJleHAiOjE3NzI1MzE2MjJ9.6-fsIgJriGeU577rBn39pCfBY_F5Wp_rJ_HK7CmUK34 [32m200[0m 66.757 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.232 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiODk4NjlhOGQtYjU4YS00MjYwLTg3ZjItYmY2ZTc2NzE1MTE0IiwiaWF0IjoxNzcyNTMwNDIyLCJleHAiOjE3NzI1MzE2MjJ9.6-fsIgJriGeU577rBn39pCfBY_F5Wp_rJ_HK7CmUK34 [32m200[0m 33.577 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 87.334 ms - -[0m
+[0mGET /api/home [32m200[0m 126.111 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 145.736 ms - -[0m
+[0mGET /api/auth/me [36m304[0m 78.205 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114',
+  clientsForSession: 1
+}
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiODk4NjlhOGQtYjU4YS00MjYwLTg3ZjItYmY2ZTc2NzE1MTE0IiwiaWF0IjoxNzcyNTMwNDIyLCJleHAiOjE3NzI1MzE2MjJ9.6-fsIgJriGeU577rBn39pCfBY_F5Wp_rJ_HK7CmUK34 [32m200[0m 18.804 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114',
+  clientsForSession: 1
+}
+[auth-stream] force-logout broadcast { sessionCount: 1, delivered: 4 }
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 263.777 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 130.296 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 61.143 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiNzI5MWZiOWMtMzY2NC00OTM0LTg2YWItYWU5ZDU3MWY4NmFkIiwiaWF0IjoxNzcyNTMwMDY3LCJleHAiOjE3NzI1MzEyNjd9.spVZlnmSFhQkMZw38b7I6dASVstHFZjVegswe571YPU [32m200[0m 49.205 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '7291fb9c-3664-4934-86ab-ae9d571f86ad'
+}
+[0mPOST /api/auth/login [32m200[0m 776.966 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a807cec4db34f554b8de',
+  sessionId: '89869a8d-b58a-4260-87f2-bf6e76715114'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwN2NlYzRkYjM0ZjU1NGI4ZGUiLCJ1c2VybmFtZSI6Im1jcF9zdHVkZW50XzIwMjYwMzAzMDkyMDU5IiwiZW1haWwiOiJlMmVfc3R1ZGVudF9kZXNrdG9wQGNhbXB1c3dheS5sb2NhbCIsInJvbGUiOiJzdHVkZW50IiwiZnVsbE5hbWUiOiJNQ1AgU3R1ZGVudCIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6ZmFsc2UsImNhbk1hbmFnZVN0dWRlbnRzIjpmYWxzZSwiY2FuVmlld1JlcG9ydHMiOmZhbHNlLCJjYW5EZWxldGVEYXRhIjpmYWxzZSwiY2FuTWFuYWdlRmluYW5jZSI6ZmFsc2UsImNhbk1hbmFnZVBsYW5zIjpmYWxzZSwiY2FuTWFuYWdlVGlja2V0cyI6ZmFsc2UsImNhbk1hbmFnZUJhY2t1cHMiOmZhbHNlLCJjYW5SZXZlYWxQYXNzd29yZHMiOmZhbHNlfSwic2Vzc2lvbklkIjoiODk4NjlhOGQtYjU4YS00MjYwLTg3ZjItYmY2ZTc2NzE1MTE0IiwiaWF0IjoxNzcyNTMwNDIyLCJleHAiOjE3NzI1MzE2MjJ9.6-fsIgJriGeU577rBn39pCfBY_F5Wp_rJ_HK7CmUK34 [32m200[0m 3.759 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.205 ms - -[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '14588382-3e17-4dc3-9ead-368292f6e20c',
+  clientsForSession: 1
+}
+[0mGET /api/auth/me [32m200[0m 394.355 ms - 679[0m
+[0mGET /api/home [32m200[0m 409.491 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 18.799 ms - -[0m
+[0mGET /api/auth/me [32m200[0m 18.678 ms - 679[0m
+[0mGET /api/auth/me [36m304[0m 65.806 ms - -[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [32m200[0m 31.652 ms - 41[0m
+[0mGET /api/campusway-secure-admin/dashboard/summary [32m200[0m 38.363 ms - 465[0m
+[0mGET /api/campusway-secure-admin/users [32m200[0m 73.225 ms - -[0m
+[0mGET /api/campusway-secure-admin/student-groups [32m200[0m 78.837 ms - 55[0m
+[0mGET /api/campusway-secure-admin/support-tickets?status=open&limit=1 [36m304[0m 82.604 ms - -[0m
+[0mGET /api/campusway-secure-admin/universities?page=1&limit=25 [32m200[0m 103.758 ms - 74[0m
+[0mGET /api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200 [32m200[0m 108.391 ms - 68[0m
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '14588382-3e17-4dc3-9ead-368292f6e20c',
+  clientsForSession: 2
+}
+[auth-stream] connected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '14588382-3e17-4dc3-9ead-368292f6e20c',
+  clientsForSession: 3
+}
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '14588382-3e17-4dc3-9ead-368292f6e20c'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiMTQ1ODgzODItM2UxNy00ZGMzLTllYWQtMzY4MjkyZjZlMjBjIiwiaWF0IjoxNzcyNTMwNDM1LCJleHAiOjE3NzI1MzE2MzV9.q8bVdKHMUdaGDzYjHZCkrv7dH6zcOzMAKNFafp4C1vs [32m200[0m 13.000 ms - -[0m
+[0mGET /api/campusway-secure-admin/live/stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiMTQ1ODgzODItM2UxNy00ZGMzLTllYWQtMzY4MjkyZjZlMjBjIiwiaWF0IjoxNzcyNTMwNDM1LCJleHAiOjE3NzI1MzE2MzV9.q8bVdKHMUdaGDzYjHZCkrv7dH6zcOzMAKNFafp4C1vs [32m200[0m 29.912 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.263 ms - -[0m
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiMTQ1ODgzODItM2UxNy00ZGMzLTllYWQtMzY4MjkyZjZlMjBjIiwiaWF0IjoxNzcyNTMwNDM1LCJleHAiOjE3NzI1MzE2MzV9.q8bVdKHMUdaGDzYjHZCkrv7dH6zcOzMAKNFafp4C1vs [32m200[0m 50.180 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '14588382-3e17-4dc3-9ead-368292f6e20c'
+}
+[0mGET /api/auth/session-stream?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWE2YTgwNmNlYzRkYjM0ZjU1NGI4ZGMiLCJ1c2VybmFtZSI6Im1jcF9hZG1pbl8yMDI2MDMwMzA5MjA1OSIsImVtYWlsIjoiZTJlX2FkbWluX2Rlc2t0b3BAY2FtcHVzd2F5LmxvY2FsIiwicm9sZSI6InN1cGVyYWRtaW4iLCJmdWxsTmFtZSI6Ik1DUCBBZG1pbiIsInBlcm1pc3Npb25zIjp7ImNhbkVkaXRFeGFtcyI6dHJ1ZSwiY2FuTWFuYWdlU3R1ZGVudHMiOnRydWUsImNhblZpZXdSZXBvcnRzIjp0cnVlLCJjYW5EZWxldGVEYXRhIjp0cnVlLCJjYW5NYW5hZ2VGaW5hbmNlIjp0cnVlLCJjYW5NYW5hZ2VQbGFucyI6dHJ1ZSwiY2FuTWFuYWdlVGlja2V0cyI6dHJ1ZSwiY2FuTWFuYWdlQmFja3VwcyI6dHJ1ZSwiY2FuUmV2ZWFsUGFzc3dvcmRzIjp0cnVlfSwic2Vzc2lvbklkIjoiMTQ1ODgzODItM2UxNy00ZGMzLTllYWQtMzY4MjkyZjZlMjBjIiwiaWF0IjoxNzcyNTMwNDM1LCJleHAiOjE3NzI1MzE2MzV9.q8bVdKHMUdaGDzYjHZCkrv7dH6zcOzMAKNFafp4C1vs [32m200[0m 52.224 ms - -[0m
+[auth-stream] disconnected {
+  userId: '69a6a806cec4db34f554b8dc',
+  sessionId: '14588382-3e17-4dc3-9ead-368292f6e20c'
+}

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import {
     CheckCircle,
@@ -12,7 +13,7 @@ import {
     Info,
     ArrowLeft
 } from 'lucide-react';
-import { ApiExam, ApiExamCertificate, getExamCertificate, getExamResult } from '../services/api';
+import { ApiExam, getExamCertificate, getExamResult } from '../services/api';
 import { motion } from 'framer-motion';
 
 interface ResultAnswer {
@@ -104,38 +105,26 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10 }: { percen
 
 export default function ExamResultPage() {
     const { examId } = useParams();
-    const [payload, setPayload] = useState<ResultApiResponse | null>(null);
-    const [certificate, setCertificate] = useState<ApiExamCertificate | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data: payload, isLoading: payloadLoading, error: payloadError } = useQuery({
+        queryKey: ['examResult', examId],
+        queryFn: async () => {
+            const res = await getExamResult(examId!);
+            return res.data as ResultApiResponse;
+        },
+        enabled: !!examId,
+    });
 
-    useEffect(() => {
-        if (!examId) return;
-        setLoading(true);
-        getExamResult(examId)
-            .then((res) => {
-                setPayload(res.data as ResultApiResponse);
-            })
-            .catch((err) => {
-                setError(err.response?.data?.message || 'Failed to load result.');
-            })
-            .finally(() => setLoading(false));
-    }, [examId]);
+    const { data: certificate } = useQuery({
+        queryKey: ['examCertificate', examId],
+        queryFn: async () => {
+            const res = await getExamCertificate(examId!);
+            return res.data?.eligible && res.data.certificate ? res.data.certificate : null;
+        },
+        enabled: !!examId && !!payload?.resultPublished,
+    });
 
-    useEffect(() => {
-        if (!examId || !payload?.resultPublished) return;
-        getExamCertificate(examId)
-            .then((res) => {
-                if (res.data?.eligible && res.data.certificate) {
-                    setCertificate(res.data.certificate);
-                } else {
-                    setCertificate(null);
-                }
-            })
-            .catch(() => {
-                setCertificate(null);
-            });
-    }, [examId, payload?.resultPublished]);
+    const loading = payloadLoading;
+    const error = payloadError ? (payloadError as any).response?.data?.message || 'Failed to load result.' : null;
 
     const answers = useMemo(() => {
         if (!payload?.resultPublished) return [];

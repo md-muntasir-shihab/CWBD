@@ -66,6 +66,12 @@ export interface SecurityConfig {
         uploadWindowMs: number;
         uploadMax: number;
     };
+    panic: {
+        readOnlyMode: boolean;
+        disableStudentLogins: boolean;
+        disablePaymentWebhooks: boolean;
+        disableExamStarts: boolean;
+    };
 }
 
 let cache: { data: SecurityConfig; ts: number } | null = null;
@@ -103,6 +109,7 @@ export async function getSecurityConfig(forceRefresh = false): Promise<SecurityC
         examProtection: settings.examProtection,
         logging: settings.logging,
         rateLimit: settings.rateLimit,
+        panic: settings.panic,
     };
 
     cache = { data, ts: Date.now() };

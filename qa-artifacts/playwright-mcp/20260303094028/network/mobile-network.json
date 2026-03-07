@@ -1,0 +1,6956 @@
+[
+  {
+    "ts": "2026-03-03T09:50:31.548Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/"
+  },
+  {
+    "ts": "2026-03-03T09:50:31.548Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@vite/client"
+  },
+  {
+    "ts": "2026-03-03T09:50:31.548Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/main.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:31.548Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@react-refresh"
+  },
+  {
+    "ts": "2026-03-03T09:50:31.635Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/vite/dist/client/env.mjs"
+  },
+  {
+    "ts": "2026-03-03T09:50:31.983Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+  },
+  {
+    "ts": "2026-03-03T09:50:31.984Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:31.984Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.081Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-hot-toast.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.083Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/App.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.285Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/styles/index.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.285Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/lib/firebase.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.285Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-DFQNUVCC.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.286Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.287Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-dom_client.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.287Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Footer.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.287Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Navbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.288Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAuth.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.288Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useTheme.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.288Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/@tanstack_react-query.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.383Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-router-dom.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.397Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/News.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.398Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Exams.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.398Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/SingleNews.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.398Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Services.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.398Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/UniversityDetails.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.398Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Universities.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.398Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/HomeModern.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.398Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamLanding.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.503Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Login.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.589Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Pricing.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Contact.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamResult.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Resources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamTaking.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/CertificateVerify.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Profile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Privacy.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Terms.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/About.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.695Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/OtpVerification.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.831Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSecurity.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.831Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsBanners.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.846Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsReports.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.846Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsCenter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.848Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminHomeSettings.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.848Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsLogs.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.895Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSite.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.895Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.899Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.901Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsConsole.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.928Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ServiceDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.929Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/ForceLogoutModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.932Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/NotFound.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.932Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLayout.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.932Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.932Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentRegister.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.932Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentForgotPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.932Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResetPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.934Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.934Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentApplications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.970Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.970Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.970Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResultDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResults.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentPayments.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentNotifications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentSupport.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useWebsiteSettings.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useHomeLiveUpdates.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:32.971Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/firebase_app.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.038Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-LHDVKITD.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/lucide-react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/ThemeSwitchPro.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-6AL2VBJN.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/services/api.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/InfoHint.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/profile/ProfileCompletionLock.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useExamTimer.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/utils/url.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAntiCheat.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityGrid.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.127Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAutoSave.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/framer-motion.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamHeader.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/QuestionCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSubmitModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_duration.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.130Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.130Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_relativeTime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.130Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/OtpForm.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.130Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-markdown.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.130Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminGuardShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.130Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BannerPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/katex/dist/katex.min.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/react-quill/dist/quill.snow.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SecuritySettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-quill.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ReportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.167Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ResourcesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.200Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ServicesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.200Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SystemLogsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.229Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.229Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminTopbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.230Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardHome.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.230Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionBankPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.336Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FeaturedUniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.336Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExamAnalyticsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.336Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/PasswordPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.336Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ContactPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.336Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SiteSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.336Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AlertsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminProfilePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UsersPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionImporter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentDashboardControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsItemsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BackupsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FinancePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SupportTicketsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/LiveExamMonitorPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsPasswordSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.344Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.345Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsAuditSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.345Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsMediaSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSourcesSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsExportsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/remark-math.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/screenfull.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/student/GlobalAlertGate.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/rehype-katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.347Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-QEBKKXGS.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.348Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/AchievementPopupCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.348Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/axios.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.389Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardConfigPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.585Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SocialLinksManager.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.585Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/CyberToggle.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.586Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.586Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-S4WLQQAR.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.586Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/NotificationsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.586Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/xlsx.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:33.586Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-OC3CHNFP.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.021Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.021Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/components/SimpleRichTextEditor.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.021Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BadgeManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.338Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/logo.png"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.415Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/settings/public"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.417Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/home"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.710Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/sora/v17/xMQ9uFFYT72X5wkB_18qmnndmSdSnh2BAfO5mnuyOo1lfiQwV6-x.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:50:34.710Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.872Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/news"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.880Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.884Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.885Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/sora/v17/xMQ9uFFYT72X5wkB_18qmnndmSdSnh2BAfO5mnuyOo1lfiQwV6-x.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.889Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/main.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.891Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.892Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.892Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-dom_client.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.892Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-hot-toast.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.893Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-DFQNUVCC.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.893Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.893Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-LHDVKITD.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.897Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@vite/client"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.899Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@react-refresh"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.903Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/App.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.903Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/vite/dist/client/env.mjs"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.903Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/lib/firebase.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.913Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-router-dom.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.913Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/@tanstack_react-query.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.915Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/firebase_app.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.915Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-6AL2VBJN.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.926Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useTheme.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.931Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Navbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.931Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/lucide-react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.932Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Footer.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.933Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAuth.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.933Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Universities.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/HomeModern.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.936Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/framer-motion.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/UniversityDetails.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Services.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/styles/index.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.948Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/News.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.948Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/SingleNews.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.948Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamLanding.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.949Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Exams.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.968Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Contact.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.973Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamResult.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.974Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Pricing.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.975Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamTaking.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.976Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Login.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.981Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-markdown.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.981Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-QEBKKXGS.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.981Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-S4WLQQAR.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:45.985Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Resources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.034Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/OtpVerification.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.035Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/About.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.037Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Terms.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.038Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Privacy.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.042Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/CertificateVerify.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.047Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Profile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.048Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.048Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_duration.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.048Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_relativeTime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.056Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminHomeSettings.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.056Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.060Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-quill.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.061Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.062Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-OC3CHNFP.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.067Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsCenter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.080Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsReports.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.081Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsBanners.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.081Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSecurity.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.081Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsLogs.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.081Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSite.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.081Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.082Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.082Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsConsole.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.082Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ServiceDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.083Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/NotFound.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.083Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/ForceLogoutModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.083Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLayout.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.083Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentRegister.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.084Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.084Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentForgotPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.084Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResetPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.085Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.085Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentApplications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.085Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.086Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.086Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.086Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResultDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.087Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResults.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.087Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentPayments.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.087Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentNotifications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.087Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.087Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useWebsiteSettings.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.103Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentSupport.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.104Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useHomeLiveUpdates.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.105Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/ThemeSwitchPro.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.105Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityGrid.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.105Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/utils/url.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.105Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/InfoHint.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.112Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/profile/ProfileCompletionLock.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.112Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useExamTimer.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.112Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAntiCheat.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.113Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAutoSave.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.113Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamHeader.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.113Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.113Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/QuestionCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.115Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/services/api.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.116Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/screenfull.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.116Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/remark-math.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.116Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/rehype-katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.116Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/axios.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.117Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSubmitModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.119Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/OtpForm.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.119Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.119Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/react-quill/dist/quill.snow.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.119Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/katex/dist/katex.min.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.119Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BannerPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.119Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminGuardShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.119Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.122Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardHome.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.122Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.123Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SystemLogsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ReportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.131Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ResourcesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.133Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminTopbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.134Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ServicesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.137Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ContactPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.141Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SiteSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.182Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SecuritySettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.186Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionBankPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.188Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/PasswordPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.189Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.190Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FeaturedUniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.196Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExamAnalyticsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.203Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionImporter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.203Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/xlsx.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.204Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UsersPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.204Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminProfilePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.205Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentDashboardControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.206Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.207Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SupportTicketsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.208Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AlertsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.209Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.213Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/LiveExamMonitorPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.213Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FinancePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.214Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BackupsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.214Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.215Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsItemsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.217Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSourcesSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.217Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsMediaSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.218Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsExportsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.219Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsAuditSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.219Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsPasswordSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.221Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.221Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/student/GlobalAlertGate.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.221Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/AchievementPopupCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.222Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.224Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.225Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/CyberToggle.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.225Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SocialLinksManager.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.227Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardConfigPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.230Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/NotificationsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.232Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BadgeManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.232Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/components/SimpleRichTextEditor.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.233Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.391Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/logo.png"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.541Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/news/settings"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.541Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/news/sources"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.547Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/news-v2/widgets"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.559Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/settings/public"
+  },
+  {
+    "ts": "2026-03-03T09:50:46.587Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/news-v2/list?page=1&limit=15&source=&category=&tag=&q="
+  },
+  {
+    "ts": "2026-03-03T09:50:46.588Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/home"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.036Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/exam-portal"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.044Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.044Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@vite/client"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.052Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/main.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.075Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.075Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.075Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-dom_client.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.075Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-hot-toast.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.075Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-DFQNUVCC.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.075Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.076Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-LHDVKITD.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.076Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.076Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/sora/v17/xMQ9uFFYT72X5wkB_18qmnndmSdSnh2BAfO5mnuyOo1lfiQwV6-x.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.076Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@react-refresh"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.076Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/vite/dist/client/env.mjs"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.076Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/App.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.077Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/lib/firebase.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.077Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/styles/index.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.077Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-router-dom.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.077Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/@tanstack_react-query.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.087Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/firebase_app.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.088Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-6AL2VBJN.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.088Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useTheme.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.088Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAuth.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.088Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Navbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.088Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/lucide-react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.088Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Footer.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.092Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/HomeModern.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.092Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/framer-motion.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.096Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/News.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.096Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Universities.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.100Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Services.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.102Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/UniversityDetails.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.105Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/SingleNews.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.106Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Exams.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.109Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamLanding.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.110Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamTaking.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.111Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamResult.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.111Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Resources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.112Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Contact.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.112Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Pricing.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.112Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-markdown.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.113Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-QEBKKXGS.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.113Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-S4WLQQAR.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.120Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/About.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.120Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/OtpVerification.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.121Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Login.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.121Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Terms.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.122Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Privacy.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.122Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Profile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.123Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.123Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_duration.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.123Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_relativeTime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.126Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/CertificateVerify.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.126Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.126Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminHomeSettings.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.132Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-quill.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.134Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.134Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsCenter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.134Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsReports.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.135Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-OC3CHNFP.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.135Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsBanners.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.146Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSecurity.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.150Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsLogs.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.152Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSite.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.154Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.158Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.159Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsConsole.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.168Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ServiceDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.169Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/NotFound.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.171Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/ForceLogoutModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.172Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLayout.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.174Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.174Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentRegister.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.175Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentForgotPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.175Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResetPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.177Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.177Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.177Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentApplications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.177Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.185Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.185Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResults.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.185Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResultDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.186Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentPayments.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.186Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentNotifications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.190Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.192Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentSupport.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.192Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useWebsiteSettings.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.192Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useHomeLiveUpdates.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.192Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/services/api.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.193Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/axios.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.193Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/ThemeSwitchPro.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.193Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/utils/url.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.193Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityGrid.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.194Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/InfoHint.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.195Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/profile/ProfileCompletionLock.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.197Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useExamTimer.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.200Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAntiCheat.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.200Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAutoSave.ts"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.201Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamHeader.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.201Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/screenfull.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.202Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.204Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/QuestionCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.204Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSubmitModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.205Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/remark-math.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.205Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/rehype-katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.205Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/OtpForm.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.209Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/react-quill/dist/quill.snow.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.212Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/katex/dist/katex.min.css"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.218Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.219Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminTopbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.219Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardHome.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.225Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BannerPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.226Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.226Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ReportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.226Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SystemLogsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.226Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ServicesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.226Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ResourcesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ContactPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SiteSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/PasswordPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FeaturedUniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionBankPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExamAnalyticsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionImporter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.227Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UsersPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.286Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminProfilePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.286Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AlertsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.287Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentDashboardControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.288Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.288Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SecuritySettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.289Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BackupsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.292Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/xlsx.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.295Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.306Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/LiveExamMonitorPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.307Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FinancePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.318Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SupportTicketsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.320Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.321Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminGuardShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.322Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.323Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsItemsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.326Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSourcesSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.327Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsMediaSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.329Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsExportsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.332Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsAuditSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.333Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsPasswordSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.334Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/student/GlobalAlertGate.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/AchievementPopupCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/CyberToggle.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/NotificationsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SocialLinksManager.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardConfigPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BadgeManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/components/SimpleRichTextEditor.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.342Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.443Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/logo.png"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.601Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/settings/public"
+  },
+  {
+    "ts": "2026-03-03T09:50:57.602Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/home"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.248Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/student/login"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.248Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.252Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@vite/client"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.253Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/main.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.253Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@react-refresh"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.253Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.254Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.254Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-dom_client.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.254Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-hot-toast.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.259Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-DFQNUVCC.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.259Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.259Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-LHDVKITD.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.260Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.260Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/sora/v17/xMQ9uFFYT72X5wkB_18qmnndmSdSnh2BAfO5mnuyOo1lfiQwV6-x.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.267Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/vite/dist/client/env.mjs"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.279Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/App.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.304Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-router-dom.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.307Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/@tanstack_react-query.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.332Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-6AL2VBJN.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.332Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/styles/index.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.334Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/lib/firebase.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.335Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/firebase_app.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.352Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useTheme.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.374Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAuth.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.376Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Navbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.377Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/lucide-react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.408Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Footer.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.417Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/HomeModern.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.418Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/framer-motion.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.421Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Universities.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.433Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/UniversityDetails.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.440Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Services.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.445Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/News.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.458Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/SingleNews.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.462Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Exams.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.464Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamLanding.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.471Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamTaking.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.471Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-markdown.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.471Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-QEBKKXGS.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.477Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-S4WLQQAR.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.522Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Resources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.522Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Login.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.522Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Contact.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.522Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamResult.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.533Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Pricing.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.537Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Terms.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.537Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Privacy.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.537Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Profile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.537Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/OtpVerification.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.538Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.539Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_duration.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.540Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_relativeTime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.540Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/CertificateVerify.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.540Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/About.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.540Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminHomeSettings.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.540Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsCenter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.540Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSecurity.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.546Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.547Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-quill.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.547Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.548Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-OC3CHNFP.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.555Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsReports.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.569Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsBanners.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.582Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsLogs.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.605Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSite.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.605Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.614Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.615Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsConsole.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.617Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ServiceDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.617Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/NotFound.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.625Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentRegister.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.625Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/ForceLogoutModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.629Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLayout.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.632Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResetPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.632Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.632Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentForgotPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.636Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.637Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResults.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.637Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.637Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentApplications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.639Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.639Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.648Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentPayments.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.648Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResultDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.648Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentNotifications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.648Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.648Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentSupport.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.649Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useWebsiteSettings.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.649Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/ThemeSwitchPro.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.650Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useHomeLiveUpdates.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.650Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/services/api.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.650Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/utils/url.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.650Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/axios.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.650Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityGrid.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.650Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/InfoHint.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.650Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/profile/ProfileCompletionLock.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.653Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useExamTimer.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.654Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAntiCheat.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.654Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAutoSave.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.654Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamHeader.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.654Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/screenfull.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.657Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.658Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/QuestionCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.658Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/remark-math.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.658Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/rehype-katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.658Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSubmitModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.661Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/OtpForm.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.665Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.665Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminGuardShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.666Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SecuritySettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.668Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/react-quill/dist/quill.snow.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.669Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/katex/dist/katex.min.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.669Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.669Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminTopbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.670Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardHome.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.681Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BannerPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.688Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ReportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.693Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.693Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SystemLogsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.694Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ServicesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.694Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ResourcesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.694Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ContactPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.695Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SiteSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.695Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.695Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/PasswordPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.695Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FeaturedUniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.695Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionBankPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.695Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExamAnalyticsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.695Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionImporter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.696Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UsersPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.697Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminProfilePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.698Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentDashboardControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.698Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.698Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AlertsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.699Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.700Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/LiveExamMonitorPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.703Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FinancePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.709Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SupportTicketsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.710Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BackupsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.710Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsItemsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSourcesSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsMediaSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsExportsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsAuditSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsPasswordSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/student/GlobalAlertGate.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.711Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/AchievementPopupCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.712Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.712Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/xlsx.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.712Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.712Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/CyberToggle.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.713Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SocialLinksManager.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.717Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardConfigPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.717Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/NotificationsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.717Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BadgeManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.717Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/components/SimpleRichTextEditor.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.719Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.911Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/logo.png"
+  },
+  {
+    "ts": "2026-03-03T09:51:08.991Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/auth/oauth/providers"
+  },
+  {
+    "ts": "2026-03-03T09:51:09.214Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/settings/public"
+  },
+  {
+    "ts": "2026-03-03T09:51:09.227Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/home"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.350Z",
+    "status": 200,
+    "method": "POST",
+    "url": "http://127.0.0.1:5263/api/auth/login"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.517Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/student/dashboard"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.549Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.550Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@vite/client"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.550Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/main.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.551Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.552Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.552Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-dom_client.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.552Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-hot-toast.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.553Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-DFQNUVCC.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.554Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.554Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-LHDVKITD.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.554Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.554Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/sora/v17/xMQ9uFFYT72X5wkB_18qmnndmSdSnh2BAfO5mnuyOo1lfiQwV6-x.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.556Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@react-refresh"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.556Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/vite/dist/client/env.mjs"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.556Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/lib/firebase.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.556Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/styles/index.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.556Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/App.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.559Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/firebase_app.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.559Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-router-dom.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.559Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/@tanstack_react-query.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.562Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-6AL2VBJN.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.562Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useTheme.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.562Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAuth.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.564Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Navbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.564Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/lucide-react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.564Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Footer.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.564Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/HomeModern.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.564Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/framer-motion.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.564Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Universities.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.565Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/UniversityDetails.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.573Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/News.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.575Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Services.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.625Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/SingleNews.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.625Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Exams.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.627Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Resources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.627Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamLanding.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.630Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamTaking.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.630Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-markdown.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.631Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamResult.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.631Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-QEBKKXGS.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.631Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-S4WLQQAR.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.644Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Contact.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.645Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Pricing.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.647Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Login.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.647Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/OtpVerification.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.648Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/About.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.649Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Terms.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.654Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Privacy.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.655Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Profile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.655Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.655Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_duration.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.655Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_relativeTime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.658Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/CertificateVerify.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.665Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.665Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminHomeSettings.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.668Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-quill.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.668Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.672Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsCenter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.672Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-OC3CHNFP.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.677Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsReports.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.684Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsBanners.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.709Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.712Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSecurity.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.712Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsLogs.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.712Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSite.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.712Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.713Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ServiceDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.714Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsConsole.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.717Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/NotFound.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.725Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/ForceLogoutModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.728Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLayout.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.729Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentRegister.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.729Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentForgotPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.729Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.732Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.732Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResetPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.732Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.733Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.740Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentApplications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.740Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.782Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResults.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.790Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResultDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.790Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentPayments.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.791Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentNotifications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.791Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.791Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentSupport.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.808Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useWebsiteSettings.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.808Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useHomeLiveUpdates.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.808Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/services/api.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.808Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/ThemeSwitchPro.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.809Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/axios.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.811Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/utils/url.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.811Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityGrid.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.811Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/InfoHint.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.811Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/profile/ProfileCompletionLock.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.811Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useExamTimer.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.811Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAntiCheat.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.812Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAutoSave.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.812Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamHeader.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.812Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/screenfull.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.812Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.812Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/QuestionCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.813Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/remark-math.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.813Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/rehype-katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.813Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSubmitModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.814Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/OtpForm.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.814Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/react-quill/dist/quill.snow.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.815Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/katex/dist/katex.min.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.815Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.815Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminTopbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.815Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardHome.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BannerPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ReportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SystemLogsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ServicesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ResourcesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ContactPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SiteSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.818Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/PasswordPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FeaturedUniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionBankPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExamAnalyticsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionImporter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UsersPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminProfilePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentDashboardControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.819Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.822Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SecuritySettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.822Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AlertsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.822Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.822Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/LiveExamMonitorPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FinancePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SupportTicketsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BackupsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminGuardShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsItemsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSourcesSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsMediaSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsExportsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsAuditSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.823Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsPasswordSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.824Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.824Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/xlsx.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.824Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/student/GlobalAlertGate.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.824Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/AchievementPopupCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.824Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.825Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/CyberToggle.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.825Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SocialLinksManager.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.826Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardConfigPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.827Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BadgeManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.827Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/NotificationsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.827Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.828Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/components/SimpleRichTextEditor.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.828Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:11.931Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/logo.png"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.110Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/settings/public"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.111Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/home"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.129Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/auth/me"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.160Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/auth/me"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.258Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/student/dashboard-profile"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.263Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/alerts/active"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.275Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/student/upcoming-exams"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.276Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/student/featured-universities"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.276Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/student/notifications"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.358Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/student/live-alerts"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.380Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/student/exam-history"
+  },
+  {
+    "ts": "2026-03-03T09:51:12.380Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/alerts/active"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.673Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/login"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.682Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.684Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/main.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.685Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.685Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.686Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-dom_client.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.686Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-hot-toast.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.686Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-DFQNUVCC.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.687Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.687Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-LHDVKITD.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.692Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@vite/client"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.693Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@react-refresh"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.694Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/lib/firebase.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.694Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/App.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.694Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/firebase_app.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.703Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-router-dom.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.703Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/@tanstack_react-query.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.709Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-6AL2VBJN.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.710Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.710Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/sora/v17/xMQ9uFFYT72X5wkB_18qmnndmSdSnh2BAfO5mnuyOo1lfiQwV6-x.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.710Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/vite/dist/client/env.mjs"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.711Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/styles/index.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.715Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useTheme.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.715Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAuth.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.715Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Navbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.716Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/lucide-react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.723Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Footer.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.734Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Universities.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.736Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/HomeModern.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.737Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/framer-motion.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.743Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/UniversityDetails.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.749Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/News.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.749Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Services.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.750Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/SingleNews.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.751Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Exams.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.757Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamTaking.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.759Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-markdown.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.759Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-QEBKKXGS.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.759Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-S4WLQQAR.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.761Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamLanding.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.778Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamResult.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.783Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Resources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.784Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Contact.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.785Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Pricing.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.790Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Login.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.791Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/OtpVerification.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.794Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/CertificateVerify.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.798Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/About.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.798Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Privacy.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.801Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Profile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.803Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.803Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_duration.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.803Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_relativeTime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.803Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Terms.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.804Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminHomeSettings.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.809Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsCenter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.810Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.812Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-quill.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.813Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.814Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-OC3CHNFP.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.814Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsReports.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.817Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsBanners.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.822Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSecurity.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.830Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsLogs.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.837Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSite.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.838Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.842Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.845Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsConsole.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.849Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ServiceDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.853Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/NotFound.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.854Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/ForceLogoutModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.857Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLayout.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.858Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.858Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentRegister.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.859Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentForgotPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.861Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResetPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.865Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.865Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentApplications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.866Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.866Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.866Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.868Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResults.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.870Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.871Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResultDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.871Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentPayments.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.871Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentNotifications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.876Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentSupport.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.876Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useWebsiteSettings.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.879Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useHomeLiveUpdates.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.880Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/ThemeSwitchPro.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.880Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityGrid.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.880Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/utils/url.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.887Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/services/api.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.888Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/InfoHint.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.889Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/profile/ProfileCompletionLock.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.889Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/axios.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.889Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useExamTimer.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.893Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAntiCheat.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAutoSave.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamHeader.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/screenfull.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/QuestionCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/remark-math.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/rehype-katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.894Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSubmitModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.895Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/OtpForm.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.897Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.897Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminGuardShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.897Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/react-quill/dist/quill.snow.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.897Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/katex/dist/katex.min.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.898Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminTopbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.898Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.899Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardHome.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.900Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BannerPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.900Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.901Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ReportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.910Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SystemLogsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.911Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ServicesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.912Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ResourcesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.913Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ContactPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.919Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SiteSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.920Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/PasswordPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.920Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.929Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FeaturedUniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExamAnalyticsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionImporter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminProfilePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionBankPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentDashboardControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.935Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UsersPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.942Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SecuritySettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AlertsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/xlsx.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/LiveExamMonitorPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FinancePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SupportTicketsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BackupsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.944Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSourcesSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsMediaSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsExportsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsAuditSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsPasswordSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/student/GlobalAlertGate.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsItemsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/AchievementPopupCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/CyberToggle.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SocialLinksManager.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardConfigPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.947Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/NotificationsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.948Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.948Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/components/SimpleRichTextEditor.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.948Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BadgeManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:22.948Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:23.040Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/logo.png"
+  },
+  {
+    "ts": "2026-03-03T09:51:23.179Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/settings/public"
+  },
+  {
+    "ts": "2026-03-03T09:51:23.191Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/home"
+  },
+  {
+    "ts": "2026-03-03T09:51:23.214Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/auth/me"
+  },
+  {
+    "ts": "2026-03-03T09:51:23.248Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/auth/me"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.615Z",
+    "status": 200,
+    "method": "POST",
+    "url": "http://127.0.0.1:5263/api/auth/login"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.714Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/campusway-secure-admin"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.714Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.728Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.730Z",
+    "status": 200,
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/sora/v17/xMQ9uFFYT72X5wkB_18qmnndmSdSnh2BAfO5mnuyOo1lfiQwV6-x.woff2"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.730Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@vite/client"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.730Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/main.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.730Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.730Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.730Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-dom_client.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.731Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-hot-toast.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.731Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-DFQNUVCC.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.731Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.731Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-LHDVKITD.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.736Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/@react-refresh"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.737Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/vite/dist/client/env.mjs"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.737Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/App.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.747Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/styles/index.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.748Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/lib/firebase.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.749Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-router-dom.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.749Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/@tanstack_react-query.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.753Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/firebase_app.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.753Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-6AL2VBJN.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.753Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useTheme.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.760Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAuth.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.761Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Navbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.761Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/layout/Footer.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.761Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/lucide-react.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.767Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/HomeModern.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.768Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/framer-motion.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.775Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Universities.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.777Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/UniversityDetails.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.781Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Services.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.788Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/SingleNews.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.795Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/News.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.797Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Exams.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.849Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamLanding.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.888Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Resources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.891Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamTaking.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.893Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-markdown.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.893Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Contact.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.893Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-QEBKKXGS.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.893Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-S4WLQQAR.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.893Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ExamResult.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.901Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Pricing.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.935Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Login.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.937Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Profile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.938Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.939Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_duration.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.939Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/dayjs_plugin_relativeTime.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.942Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/OtpVerification.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.944Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/About.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.944Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Terms.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.945Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/Privacy.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.945Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/CertificateVerify.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.948Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.961Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/react-quill.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.975Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.977Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminHomeSettings.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.977Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/chunk-OC3CHNFP.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.983Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsCenter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.983Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsReports.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.983Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsBanners.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:24.996Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSecurity.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.010Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsLogs.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.010Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsSite.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.010Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/AdminSettingsProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.010Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.012Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/AdminNewsConsole.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.015Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/ServiceDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.019Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/NotFound.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.019Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/ForceLogoutModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.020Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLayout.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.020Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentLogin.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.020Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentRegister.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.026Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentForgotPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.027Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResetPassword.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.027Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.027Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentProfile.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.027Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentApplications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.028Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.029Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentExamDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.030Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentNotifications.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.030Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResources.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.031Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResults.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.031Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentResultDetail.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.031Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentPayments.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.032Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/student/StudentSupport.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.032Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/services/api.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.033Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/axios.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.033Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useWebsiteSettings.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.037Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useHomeLiveUpdates.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.040Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/ThemeSwitchPro.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.042Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/utils/url.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.042Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityGrid.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.046Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/InfoHint.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.046Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/profile/ProfileCompletionLock.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.046Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useExamTimer.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.046Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAntiCheat.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.047Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/hooks/useAutoSave.ts"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.047Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamHeader.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.049Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/screenfull.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.051Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/QuestionCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/remark-math.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/rehype-katex.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/exam/ExamSubmitModal.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/auth/OtpForm.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/react-quill/dist/quill.snow.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/katex/dist/katex.min.css"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.053Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminSidebar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.054Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminTopbar.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.054Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardHome.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BannerPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ReportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SystemLogsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ServicesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ResourcesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ContactPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.055Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SiteSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.056Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FeaturedUniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.056Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExportsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.056Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/PasswordPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.056Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionBankPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.060Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/ExamAnalyticsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.064Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/QuestionImporter.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.071Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/node_modules/.vite/deps/xlsx.js?v=8d36f2e9"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.074Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UsersPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.076Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminProfilePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.076Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentDashboardControlPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.076Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/StudentManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SecuritySettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AlertsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/UniversitiesPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/LiveExamMonitorPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/FinancePanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SupportTicketsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BackupsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/HomeSettingsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminGuardShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsDashboard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsItemsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.079Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSourcesSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsMediaSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsExportsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsAuditSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsPasswordSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsHub.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/student/GlobalAlertGate.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/AchievementPopupCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/university/UniversityCard.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/ui/CyberToggle.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/SocialLinksManager.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/DashboardConfigPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/NotificationsPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/BadgeManagementPanel.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/components/admin/AdminShell.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/components/SimpleRichTextEditor.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.080Z",
+    "status": 304,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/src/pages/admin-news/sections/AdminNewsSettingsSection.tsx"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.224Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/auth/me"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.286Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/settings/public"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.286Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/auth/me"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.405Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/campusway-secure-admin/support-tickets?status=open&limit=1"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.406Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/campusway-secure-admin/dashboard/summary"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.447Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/campusway-secure-admin/student-groups"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.447Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/campusway-secure-admin/exams?view=cards&includeMetrics=true&limit=200"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.537Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/campusway-secure-admin/universities?page=1&limit=25"
+  },
+  {
+    "ts": "2026-03-03T09:51:25.538Z",
+    "status": 200,
+    "method": "GET",
+    "url": "http://127.0.0.1:5263/api/campusway-secure-admin/support-tickets?status=open&limit=1"
+  }
+]

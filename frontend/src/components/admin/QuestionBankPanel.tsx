@@ -14,6 +14,7 @@ import {
     Upload,
     XCircle,
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import QuestionImporter from './QuestionImporter';
 import {
@@ -34,11 +35,27 @@ import {
     type QBankSimilarityMatch,
 } from '../../services/api';
 
+type LanguageMode = 'EN' | 'BN' | 'BOTH';
+
+function readLocalizedEn(
+    value?: { en?: string; bn?: string },
+    fallback?: string,
+): string {
+    return String(value?.en || fallback || '').trim();
+}
+
+function readLocalizedBn(
+    value?: { en?: string; bn?: string },
+    fallback?: string,
+): string {
+    return String(value?.bn || fallback || '').trim();
+}
+
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 md:p-4" onClick={onClose}>
             <div
-                className="w-full max-w-5xl rounded-2xl border border-cyan-500/20 bg-slate-900/90 backdrop-blur-lg max-h-[92vh] overflow-y-auto"
+                className="w-full h-[100dvh] md:h-auto md:max-w-5xl rounded-none md:rounded-2xl border border-cyan-500/20 bg-slate-900/90 backdrop-blur-lg md:max-h-[92vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-700/50 bg-slate-900/90 px-5 py-3">
@@ -66,19 +83,26 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
     );
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [form, setForm] = useState({
-        question_text: initial?.question_text || initial?.question || '',
+        languageMode: (initial?.languageMode || 'EN') as LanguageMode,
+        questionTextEn: readLocalizedEn(initial?.questionText, initial?.question_text || initial?.question || ''),
+        questionTextBn: readLocalizedBn(initial?.questionText),
         subject: initial?.subject || '',
         chapter: initial?.chapter || '',
         class_level: initial?.class_level || '',
         department: initial?.department || '',
         topic: initial?.topic || '',
         difficulty: initial?.difficulty || 'medium',
-        optionA: initial?.optionA || '',
-        optionB: initial?.optionB || '',
-        optionC: initial?.optionC || '',
-        optionD: initial?.optionD || '',
+        optionAEn: initial?.optionsLocalized?.find((item) => item.key === 'A')?.text?.en || initial?.optionA || '',
+        optionABn: readLocalizedBn(initial?.optionsLocalized?.find((item) => item.key === 'A')?.text),
+        optionBEn: initial?.optionsLocalized?.find((item) => item.key === 'B')?.text?.en || initial?.optionB || '',
+        optionBBn: readLocalizedBn(initial?.optionsLocalized?.find((item) => item.key === 'B')?.text),
+        optionCEn: initial?.optionsLocalized?.find((item) => item.key === 'C')?.text?.en || initial?.optionC || '',
+        optionCBn: readLocalizedBn(initial?.optionsLocalized?.find((item) => item.key === 'C')?.text),
+        optionDEn: initial?.optionsLocalized?.find((item) => item.key === 'D')?.text?.en || initial?.optionD || '',
+        optionDBn: readLocalizedBn(initial?.optionsLocalized?.find((item) => item.key === 'D')?.text),
         correctAnswer: (initial?.correct_answer?.[0] || initial?.correctAnswer || 'A').toUpperCase(),
-        explanation: initial?.explanation_text || initial?.explanation || '',
+        explanationEn: readLocalizedEn(initial?.explanationText, initial?.explanation_text || initial?.explanation || ''),
+        explanationBn: readLocalizedBn(initial?.explanationText),
         tags: (initial?.tags || []).join(', '),
         estimated_time: Number(initial?.estimated_time || 60),
         image_url: '',
@@ -86,39 +110,60 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
         status: initial?.status || 'draft',
     });
 
+    const showEnglishFields = form.languageMode !== 'BN';
+    const showBanglaFields = form.languageMode !== 'EN';
+    const activeQuestionText = (showEnglishFields ? form.questionTextEn : '') || form.questionTextBn;
+    const activeExplanationText = (showEnglishFields ? form.explanationEn : '') || form.explanationBn;
+
     const normalizedPayload = useMemo(() => ({
-        question_text: form.question_text,
-        question: form.question_text,
+        languageMode: form.languageMode,
+        question_text: activeQuestionText,
+        question: activeQuestionText,
+        questionText: {
+            en: form.questionTextEn.trim(),
+            bn: form.questionTextBn.trim(),
+        },
         subject: form.subject,
         chapter: form.chapter,
         class_level: form.class_level,
         department: form.department,
         topic: form.topic,
         difficulty: form.difficulty,
-        optionA: form.optionA,
-        optionB: form.optionB,
-        optionC: form.optionC,
-        optionD: form.optionD,
+        optionA: (showEnglishFields ? form.optionAEn : '') || form.optionABn,
+        optionB: (showEnglishFields ? form.optionBEn : '') || form.optionBBn,
+        optionC: (showEnglishFields ? form.optionCEn : '') || form.optionCBn,
+        optionD: (showEnglishFields ? form.optionDEn : '') || form.optionDBn,
+        optionsLocalized: [
+            { key: 'A', text: { en: form.optionAEn.trim(), bn: form.optionABn.trim() } },
+            { key: 'B', text: { en: form.optionBEn.trim(), bn: form.optionBBn.trim() } },
+            { key: 'C', text: { en: form.optionCEn.trim(), bn: form.optionCBn.trim() } },
+            { key: 'D', text: { en: form.optionDEn.trim(), bn: form.optionDBn.trim() } },
+        ],
         correctAnswer: form.correctAnswer,
-        explanation: form.explanation,
+        explanation: activeExplanationText,
+        explanation_text: activeExplanationText,
+        explanationText: {
+            en: form.explanationEn.trim(),
+            bn: form.explanationBn.trim(),
+        },
         estimated_time: form.estimated_time,
         tags: form.tags
             .split(',')
             .map((tag) => tag.trim())
             .filter(Boolean),
         status: form.status,
-    }), [form]);
+    }), [activeExplanationText, activeQuestionText, form, showEnglishFields]);
 
     const runSimilarityCheck = async () => {
-        if (!form.question_text.trim()) return;
+        if (!activeQuestionText.trim()) return;
         setCheckingSimilar(true);
         try {
             const response = await adminSearchSimilarGlobalQuestions({
-                question_text: form.question_text,
-                optionA: form.optionA,
-                optionB: form.optionB,
-                optionC: form.optionC,
-                optionD: form.optionD,
+                question_text: activeQuestionText,
+                optionA: (showEnglishFields ? form.optionAEn : '') || form.optionABn,
+                optionB: (showEnglishFields ? form.optionBEn : '') || form.optionBBn,
+                optionC: (showEnglishFields ? form.optionCEn : '') || form.optionCBn,
+                optionD: (showEnglishFields ? form.optionDEn : '') || form.optionDBn,
                 subject: form.subject,
                 excludeId: initial?._id,
             });
@@ -190,18 +235,69 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
         }
     };
 
+    const getOptionValue = (option: 'A' | 'B' | 'C' | 'D', language: 'En' | 'Bn'): string => {
+        if (option === 'A' && language === 'En') return form.optionAEn;
+        if (option === 'A' && language === 'Bn') return form.optionABn;
+        if (option === 'B' && language === 'En') return form.optionBEn;
+        if (option === 'B' && language === 'Bn') return form.optionBBn;
+        if (option === 'C' && language === 'En') return form.optionCEn;
+        if (option === 'C' && language === 'Bn') return form.optionCBn;
+        if (option === 'D' && language === 'En') return form.optionDEn;
+        return form.optionDBn;
+    };
+
+    const setOptionValue = (option: 'A' | 'B' | 'C' | 'D', language: 'En' | 'Bn', value: string): void => {
+        setForm((prev) => {
+            if (option === 'A' && language === 'En') return { ...prev, optionAEn: value };
+            if (option === 'A' && language === 'Bn') return { ...prev, optionABn: value };
+            if (option === 'B' && language === 'En') return { ...prev, optionBEn: value };
+            if (option === 'B' && language === 'Bn') return { ...prev, optionBBn: value };
+            if (option === 'C' && language === 'En') return { ...prev, optionCEn: value };
+            if (option === 'C' && language === 'Bn') return { ...prev, optionCBn: value };
+            if (option === 'D' && language === 'En') return { ...prev, optionDEn: value };
+            return { ...prev, optionDBn: value };
+        });
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="flex flex-wrap items-center gap-2">
+                {(['EN', 'BN', 'BOTH'] as LanguageMode[]).map((mode) => (
+                    <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, languageMode: mode }))}
+                        className={`rounded-lg px-3 py-1.5 text-xs ${form.languageMode === mode ? 'bg-cyan-500/25 text-cyan-100 border border-cyan-400/40' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}
+                    >
+                        {mode}
+                    </button>
+                ))}
+                <p className="text-[11px] text-slate-400">Language mode</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="md:col-span-2">
-                    <label className="text-xs text-slate-300 mb-1 block">প্রশ্ন</label>
-                    <textarea
-                        value={form.question_text}
-                        onChange={(e) => setForm((prev) => ({ ...prev, question_text: e.target.value }))}
-                        className="w-full h-24 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
-                        required
-                    />
-                </div>
+                {showEnglishFields ? (
+                    <div className={showBanglaFields ? '' : 'md:col-span-2'}>
+                        <label className="text-xs text-slate-300 mb-1 block">Question (EN)</label>
+                        <textarea
+                            value={form.questionTextEn}
+                            onChange={(e) => setForm((prev) => ({ ...prev, questionTextEn: e.target.value }))}
+                            className="w-full h-24 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
+                            required={!showBanglaFields}
+                        />
+                    </div>
+                ) : null}
+                {showBanglaFields ? (
+                    <div className={showEnglishFields ? '' : 'md:col-span-2'}>
+                        <label className="text-xs text-slate-300 mb-1 block">Question (BN)</label>
+                        <textarea
+                            value={form.questionTextBn}
+                            onChange={(e) => setForm((prev) => ({ ...prev, questionTextBn: e.target.value }))}
+                            className="w-full h-24 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
+                            required={!showEnglishFields}
+                        />
+                    </div>
+                ) : null}
                 <div>
                     <label className="text-xs text-slate-300 mb-1 block">বিষয়</label>
                     <input
@@ -257,16 +353,30 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {['A', 'B', 'C', 'D'].map((option) => (
-                    <div key={option}>
-                        <label className="text-xs text-slate-300 mb-1 block">{`অপশন ${option}`}</label>
-                        <input
-                            value={(form as any)[`option${option}`] || ''}
-                            onChange={(e) => setForm((prev) => ({ ...prev, [`option${option}`]: e.target.value } as any))}
-                            className="w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
-                            required={option === 'A' || option === 'B'}
-                        />
+            <div className="space-y-3">
+                {(['A', 'B', 'C', 'D'] as const).map((option) => (
+                    <div key={option} className="rounded-xl border border-slate-700/50 bg-slate-950/30 p-3">
+                        <p className="text-xs font-semibold text-slate-200 mb-2">অপশন {option}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {showEnglishFields ? (
+                                <input
+                                    value={getOptionValue(option, 'En')}
+                                    onChange={(e) => setOptionValue(option, 'En', e.target.value)}
+                                    className="w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
+                                    placeholder={`Option ${option} (EN)`}
+                                    required={(option === 'A' || option === 'B') && !showBanglaFields}
+                                />
+                            ) : null}
+                            {showBanglaFields ? (
+                                <input
+                                    value={getOptionValue(option, 'Bn')}
+                                    onChange={(e) => setOptionValue(option, 'Bn', e.target.value)}
+                                    className="w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
+                                    placeholder={`Option ${option} (BN)`}
+                                    required={(option === 'A' || option === 'B') && !showEnglishFields}
+                                />
+                            ) : null}
+                        </div>
                     </div>
                 ))}
             </div>
@@ -297,13 +407,27 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
                 </div>
             </div>
 
-            <div>
-                <label className="text-xs text-slate-300 mb-1 block">ব্যাখ্যা</label>
-                <textarea
-                    value={form.explanation}
-                    onChange={(e) => setForm((prev) => ({ ...prev, explanation: e.target.value }))}
-                    className="w-full h-20 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {showEnglishFields ? (
+                    <div>
+                        <label className="text-xs text-slate-300 mb-1 block">Explanation (EN)</label>
+                        <textarea
+                            value={form.explanationEn}
+                            onChange={(e) => setForm((prev) => ({ ...prev, explanationEn: e.target.value }))}
+                            className="w-full h-20 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
+                        />
+                    </div>
+                ) : null}
+                {showBanglaFields ? (
+                    <div>
+                        <label className="text-xs text-slate-300 mb-1 block">Explanation (BN)</label>
+                        <textarea
+                            value={form.explanationBn}
+                            onChange={(e) => setForm((prev) => ({ ...prev, explanationBn: e.target.value }))}
+                            className="w-full h-20 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white"
+                        />
+                    </div>
+                ) : null}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -385,7 +509,7 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
                 </div>
             ) : null}
 
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
                 <button
                     type="button"
                     onClick={runSimilarityCheck}
@@ -394,7 +518,7 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
                 >
                     {checkingSimilar ? 'পরীক্ষা হচ্ছে...' : 'ডুপ্লিকেট চেক করুন'}
                 </button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 ml-auto">
                     <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-slate-300">বাতিল</button>
                     <button
                         type="submit"
@@ -410,6 +534,7 @@ function QuestionForm({ initial, onSaved, onClose }: QuestionFormProps) {
 }
 
 export default function QuestionBankPanel() {
+    const queryClient = useQueryClient();
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [questions, setQuestions] = useState<AdminQBankQuestion[]>([]);
@@ -441,6 +566,13 @@ export default function QuestionBankPanel() {
         has_explanation: '',
         quality_score_min: '',
     });
+
+    const invalidateQuestionBankQueries = useCallback(async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['question_bank'] }),
+            queryClient.invalidateQueries({ queryKey: ['question-bank'] }),
+        ]);
+    }, [queryClient]);
 
     const loadQuestions = useCallback(async () => {
         setLoading(true);
@@ -524,13 +656,15 @@ export default function QuestionBankPanel() {
             await adminDeleteGlobalQuestion(id);
             toast.success('প্রশ্ন আর্কাইভ হয়েছে');
             await loadQuestions();
+            await invalidateQuestionBankQueries();
         } catch (error: any) {
             toast.error(error?.response?.data?.message || 'আর্কাইভ করা যায়নি');
         }
     };
 
     return (
-        <div className="space-y-5">
+        <div className={showCreate ? 'space-y-5 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-5' : 'space-y-5'}>
+            <div className="space-y-5 min-w-0">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                 <div>
                     <h2 className="text-xl font-semibold text-white">প্রশ্ন ব্যাংক</h2>
@@ -648,7 +782,98 @@ export default function QuestionBankPanel() {
                 ) : null}
             </div>
 
-            <div className="rounded-2xl border border-slate-700/60 bg-slate-900/50 overflow-hidden">
+            <div className="md:hidden space-y-3">
+                {loading ? (
+                    <div className="rounded-2xl border border-slate-700/60 bg-slate-900/50 p-6 text-center text-slate-400">
+                        <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
+                        লোড হচ্ছে...
+                    </div>
+                ) : questions.length === 0 ? (
+                    <div className="rounded-2xl border border-slate-700/60 bg-slate-900/50 p-6 text-center text-slate-500">
+                        <AlertCircle className="w-5 h-5 mx-auto mb-2" />
+                        কোন প্রশ্ন পাওয়া যায়নি
+                    </div>
+                ) : (
+                    questions.map((question) => (
+                        <article key={question._id} className="rounded-2xl border border-slate-700/60 bg-slate-900/50 p-4 space-y-3">
+                            <div>
+                                <p className="text-white text-sm font-semibold line-clamp-3">{question.questionText?.bn || question.questionText?.en || question.question_text || question.question}</p>
+                                <div className="mt-2 flex gap-1 flex-wrap">
+                                    {(question.tags || []).slice(0, 3).map((tag) => (
+                                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-200">{tag}</span>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2 text-[11px] text-slate-300 sm:grid-cols-2">
+                                <p>{question.subject || '-'}</p>
+                                <p className="text-right">{question.chapter || '-'}</p>
+                                <p>Quality: {Number(question.quality_score || 0).toFixed(1)}</p>
+                                <p className="text-right">Used: {question.usage_count || 0}</p>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                                <button onClick={() => openReview(question._id)} className="p-1.5 rounded bg-slate-800 text-slate-200 hover:text-white" title="রিভিশন">
+                                    <Eye className="w-3.5 h-3.5" />
+                                </button>
+                                {capabilities?.questionEdit ? (
+                                    <button onClick={() => { setSelected(question); setShowCreate(true); }} className="p-1.5 rounded bg-indigo-500/20 text-indigo-200 hover:text-white" title="এডিট">
+                                        <Edit className="w-3.5 h-3.5" />
+                                    </button>
+                                ) : null}
+                                {capabilities?.questionApprove && question.status === 'pending_review' ? (
+                                    <>
+                                        <button
+                                            onClick={async () => {
+                                                await adminApproveGlobalQuestion(question._id, { action: 'approve' });
+                                                toast.success('প্রশ্ন অনুমোদিত হয়েছে');
+                                                await loadQuestions();
+                                                await invalidateQuestionBankQueries();
+                                            }}
+                                            className="p-1.5 rounded bg-emerald-500/20 text-emerald-200 hover:text-white"
+                                            title="Approve"
+                                        >
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                const reason = window.prompt('রিজেক্ট কারণ লিখুন') || '';
+                                                await adminApproveGlobalQuestion(question._id, { action: 'reject', reason });
+                                                toast.success('প্রশ্ন রিজেক্ট হয়েছে');
+                                                await loadQuestions();
+                                                await invalidateQuestionBankQueries();
+                                            }}
+                                            className="p-1.5 rounded bg-rose-500/20 text-rose-200 hover:text-white"
+                                            title="Reject"
+                                        >
+                                            <XCircle className="w-3.5 h-3.5" />
+                                        </button>
+                                    </>
+                                ) : null}
+                                {capabilities?.questionLock ? (
+                                    <button
+                                        onClick={async () => {
+                                            await adminLockGlobalQuestion(question._id, { locked: !Boolean(question.locked), force: true });
+                                            toast.success(question.locked ? 'লক খোলা হয়েছে' : 'লক করা হয়েছে');
+                                            await loadQuestions();
+                                            await invalidateQuestionBankQueries();
+                                        }}
+                                        className={`p-1.5 rounded ${question.locked ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-800 text-slate-300'} hover:text-white`}
+                                        title="Lock"
+                                    >
+                                        <Lock className="w-3.5 h-3.5" />
+                                    </button>
+                                ) : null}
+                                {capabilities?.questionDelete ? (
+                                    <button onClick={() => handleDelete(question._id)} className="p-1.5 rounded bg-rose-500/20 text-rose-200 hover:text-white" title="আর্কাইভ">
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                ) : null}
+                            </div>
+                        </article>
+                    ))
+                )}
+            </div>
+
+            <div className="hidden md:block rounded-2xl border border-slate-700/60 bg-slate-900/50 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-slate-800/60 text-slate-300">
@@ -680,7 +905,7 @@ export default function QuestionBankPanel() {
                                 questions.map((question) => (
                                     <tr key={question._id} className="hover:bg-white/[0.02]">
                                         <td className="p-3">
-                                            <p className="text-white line-clamp-2">{question.question_text || question.question}</p>
+                                            <p className="text-white line-clamp-2">{question.questionText?.bn || question.questionText?.en || question.question_text || question.question}</p>
                                             <div className="mt-1 flex gap-1 flex-wrap">
                                                 {(question.tags || []).slice(0, 3).map((tag) => (
                                                     <span key={tag} className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-200">{tag}</span>
@@ -725,7 +950,8 @@ export default function QuestionBankPanel() {
                                                             onClick={async () => {
                                                                 await adminApproveGlobalQuestion(question._id, { action: 'approve' });
                                                                 toast.success('প্রশ্ন অনুমোদিত হয়েছে');
-                                                                loadQuestions();
+                                                                await loadQuestions();
+                                                                await invalidateQuestionBankQueries();
                                                             }}
                                                             className="p-1.5 rounded bg-emerald-500/20 text-emerald-200 hover:text-white"
                                                             title="Approve"
@@ -737,7 +963,8 @@ export default function QuestionBankPanel() {
                                                                 const reason = window.prompt('রিজেক্ট কারণ লিখুন') || '';
                                                                 await adminApproveGlobalQuestion(question._id, { action: 'reject', reason });
                                                                 toast.success('প্রশ্ন রিজেক্ট হয়েছে');
-                                                                loadQuestions();
+                                                                await loadQuestions();
+                                                                await invalidateQuestionBankQueries();
                                                             }}
                                                             className="p-1.5 rounded bg-rose-500/20 text-rose-200 hover:text-white"
                                                             title="Reject"
@@ -751,7 +978,8 @@ export default function QuestionBankPanel() {
                                                         onClick={async () => {
                                                             await adminLockGlobalQuestion(question._id, { locked: !Boolean(question.locked), force: true });
                                                             toast.success(question.locked ? 'লক খোলা হয়েছে' : 'লক করা হয়েছে');
-                                                            loadQuestions();
+                                                            await loadQuestions();
+                                                            await invalidateQuestionBankQueries();
                                                         }}
                                                         className={`p-1.5 rounded ${question.locked ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-800 text-slate-300'} hover:text-white`}
                                                         title="Lock"
@@ -790,20 +1018,41 @@ export default function QuestionBankPanel() {
                     })}
                 </div>
             ) : null}
+            </div>
 
             {showCreate ? (
-                <Modal title={selected ? 'প্রশ্ন সম্পাদনা' : 'নতুন প্রশ্ন'} onClose={() => { setShowCreate(false); setSelected(null); }}>
+                <div className="hidden lg:block rounded-2xl border border-slate-700/60 bg-slate-900/50 p-4">
+                    <h3 className="text-sm font-semibold text-white mb-3">{selected ? 'প্রশ্ন সম্পাদনা' : 'নতুন প্রশ্ন'}</h3>
                     <QuestionForm
                         initial={selected}
                         onSaved={async () => {
                             await loadQuestions();
+                            await invalidateQuestionBankQueries();
                         }}
                         onClose={() => {
                             setShowCreate(false);
                             setSelected(null);
                         }}
                     />
-                </Modal>
+                </div>
+            ) : null}
+
+            {showCreate ? (
+                <div className="lg:hidden">
+                    <Modal title={selected ? 'প্রশ্ন সম্পাদনা' : 'নতুন প্রশ্ন'} onClose={() => { setShowCreate(false); setSelected(null); }}>
+                        <QuestionForm
+                            initial={selected}
+                            onSaved={async () => {
+                                await loadQuestions();
+                                await invalidateQuestionBankQueries();
+                            }}
+                            onClose={() => {
+                                setShowCreate(false);
+                                setSelected(null);
+                            }}
+                        />
+                    </Modal>
+                </div>
             ) : null}
 
             {showImport ? (
@@ -812,6 +1061,7 @@ export default function QuestionBankPanel() {
                         onClose={() => setShowImport(false)}
                         onImported={() => {
                             loadQuestions();
+                            void invalidateQuestionBankQueries();
                         }}
                     />
                 </Modal>
@@ -821,7 +1071,7 @@ export default function QuestionBankPanel() {
                 <Modal title="রিভিশন ও অডিট" onClose={() => setReviewModal({ question: null, revisions: [] })}>
                     <div className="space-y-3">
                         <div className="rounded-xl border border-slate-700/60 bg-slate-950/50 p-3">
-                            <p className="text-sm text-white">{reviewModal.question.question_text || reviewModal.question.question}</p>
+                            <p className="text-sm text-white">{reviewModal.question.questionText?.bn || reviewModal.question.questionText?.en || reviewModal.question.question_text || reviewModal.question.question}</p>
                             <p className="text-xs text-slate-400 mt-1">Revision: {reviewModal.question.revision_no || '-'}</p>
                         </div>
                         <div className="space-y-2 max-h-72 overflow-auto">
@@ -841,6 +1091,7 @@ export default function QuestionBankPanel() {
                                                 await adminRevertGlobalQuestionRevision(String(reviewModal.question?._id), revisionNo);
                                                 toast.success('রিভিশন রিস্টোর হয়েছে');
                                                 await loadQuestions();
+                                                await invalidateQuestionBankQueries();
                                                 await openReview(String(reviewModal.question?._id));
                                             }}
                                             className="px-3 py-1.5 text-xs rounded-lg bg-indigo-500/20 text-indigo-200 hover:text-white inline-flex items-center gap-1"

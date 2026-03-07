@@ -3,13 +3,16 @@ import { attachHealthTracker, expectPageHealthy } from './helpers';
 
 const publicRoutes = [
     '/',
-    '/services',
+    '/universities',
     '/news',
-    '/exams',
+    '/subscription-plans',
+    '/services',
+    '/exam-portal',
     '/resources',
     '/contact',
     '/login',
-    '/student/login',
+    '/chairman/login',
+    '/__cw_admin__/login',
 ];
 
 test.describe('Public Smoke', () => {

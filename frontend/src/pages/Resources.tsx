@@ -5,7 +5,7 @@ import {
     ChevronLeft, ChevronRight, ExternalLink, CheckCircle, X,
     Headphones, Loader2, AlertCircle,
 } from 'lucide-react';
-import { getResources } from '../services/api';
+import { getResources, trackAnalyticsEvent } from '../services/api';
 import { isExternalUrl, normalizeInternalOrExternalUrl } from '../utils/url';
 
 type ResourceType = 'all' | 'pdf' | 'link' | 'video' | 'audio' | 'image' | 'note';
@@ -57,7 +57,7 @@ const SAMPLE: Resource[] = [
 ];
 
 /* ─── Resource card ─── */
-function ResourceCard({ r, onShare }: { r: Resource; onShare: (r: Resource) => void }) {
+function ResourceCard({ r, onShare, onAction }: { r: Resource; onShare: (r: Resource) => void; onAction: (r: Resource, action: string) => void }) {
     const cfg = TYPE_CONFIG[r.type];
     const Icon = cfg.icon;
     const href = normalizeInternalOrExternalUrl(r.fileUrl || r.externalUrl || '');
@@ -120,6 +120,7 @@ function ResourceCard({ r, onShare }: { r: Resource; onShare: (r: Resource) => v
                     {href ? (
                         <a href={href} target={isExternal ? '_blank' : undefined}
                             rel={isExternal ? 'noopener noreferrer' : undefined}
+                            onClick={() => onAction(r, cfg.action)}
                             className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary dark:text-primary-300 hover:text-accent transition-colors min-h-[34px] px-2 rounded-lg hover:bg-primary/5">
                             {r.type === 'pdf' ? <Download className="w-3 h-3" /> : r.type === 'link' ? <ExternalLink className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                             {cfg.action}
@@ -141,7 +142,7 @@ function ResourceCard({ r, onShare }: { r: Resource; onShare: (r: Resource) => v
 }
 
 /* ─── Featured card (horizontal on desktop, vertical on mobile) ─── */
-function FeaturedCard({ r, onShare }: { r: Resource; onShare: (r: Resource) => void }) {
+function FeaturedCard({ r, onShare, onAction }: { r: Resource; onShare: (r: Resource) => void; onAction: (r: Resource, action: string) => void }) {
     const cfg = TYPE_CONFIG[r.type];
     const Icon = cfg.icon;
     const href = normalizeInternalOrExternalUrl(r.fileUrl || r.externalUrl || '');
@@ -168,6 +169,7 @@ function FeaturedCard({ r, onShare }: { r: Resource; onShare: (r: Resource) => v
                 </button>
                 {href ? (
                     <a href={href} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}
+                        onClick={() => onAction(r, cfg.action)}
                         className="btn-primary py-2.5 px-5 sm:px-3 text-sm sm:text-xs gap-1.5 flex-1 sm:flex-none justify-center">
                         {cfg.action} {r.type === 'link' ? <ExternalLink className="w-4 h-4 sm:w-3 sm:h-3" /> : <Download className="w-4 h-4 sm:w-3 sm:h-3" />}
                     </a>
@@ -252,6 +254,14 @@ export default function ResourcesPage() {
     const handleShare = async (r: Resource) => {
         const url = r.externalUrl || r.fileUrl || window.location.href;
         try { await navigator.clipboard.writeText(url); setToast('Link copied!'); } catch { /* ignore */ }
+    };
+    const handleResourceAction = (r: Resource, action: string) => {
+        void trackAnalyticsEvent({
+            eventName: 'resource_download',
+            module: 'resources',
+            source: 'public',
+            meta: { resourceId: r._id, type: r.type, action },
+        }).catch(() => undefined);
     };
 
     const now = Date.now();
@@ -426,7 +436,7 @@ export default function ResourcesPage() {
                             <h2 className="text-lg font-heading font-bold dark:text-dark-text">Featured Resources</h2>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                            {featured.map(r => <FeaturedCard key={r._id} r={r} onShare={handleShare} />)}
+                            {featured.map(r => <FeaturedCard key={r._id} r={r} onShare={handleShare} onAction={handleResourceAction} />)}
                         </div>
                     </div>
                 )}
@@ -476,7 +486,7 @@ export default function ResourcesPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {paginated.map(r => <ResourceCard key={r._id} r={r} onShare={handleShare} />)}
+                            {paginated.map(r => <ResourceCard key={r._id} r={r} onShare={handleShare} onAction={handleResourceAction} />)}
                         </div>
                     )}
 
