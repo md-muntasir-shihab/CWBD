@@ -1,1 +1,0 @@
-{"version":3,"file":"LiveAlertAck.d.ts","sourceRoot":"","sources":["../../src/models/LiveAlertAck.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAE,QAAQ,EAAU,MAAM,UAAU,CAAC;AAEtD,MAAM,WAAW,aAAc,SAAQ,QAAQ;IAC3C,OAAO,EAAE,QAAQ,CAAC,KAAK,CAAC,QAAQ,CAAC;IACjC,SAAS,EAAE,QAAQ,CAAC,KAAK,CAAC,QAAQ,CAAC;IACnC,KAAK,EAAE,IAAI,CAAC;CACf;;AAWD,wBAAiF"}

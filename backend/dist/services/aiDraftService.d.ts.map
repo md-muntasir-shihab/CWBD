@@ -1,1 +1,0 @@
-{"version":3,"file":"aiDraftService.d.ts","sourceRoot":"","sources":["../../src/services/aiDraftService.ts"],"names":[],"mappings":"AAGA,MAAM,MAAM,YAAY,GAAG;IACzB,QAAQ,EAAE,MAAM,CAAC;IACjB,cAAc,EAAE,MAAM,CAAC;IACvB,UAAU,EAAE,MAAM,CAAC;IACnB,UAAU,EAAE,MAAM,CAAC;IACnB,kBAAkB,EAAE,MAAM,CAAC;CAC5B,CAAC;AA0DF,eAAO,MAAM,sBAAsB,GAAU,OAAO,YAAY;;;;;;;EAkE/D,CAAC"}

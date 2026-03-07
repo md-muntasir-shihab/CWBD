@@ -234,8 +234,10 @@ export async function getUniversities(req: Request, res: Response): Promise<void
             : normalizeSort(sortBy, sortOrder, sort);
         const total = await University.countDocuments(filter);
         const rows = await University.find(filter).sort(sortOption).skip((pageNum - 1) * limitNum).limit(limitNum).lean();
+        const items = rows.map((item) => toCanonicalUniversityRecord(item as unknown as Record<string, unknown>));
         res.json({
-            universities: rows.map((item) => toCanonicalUniversityRecord(item as unknown as Record<string, unknown>)),
+            universities: items,
+            items,
             pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) },
         });
     } catch (error) {

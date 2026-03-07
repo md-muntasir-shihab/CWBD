@@ -113,9 +113,9 @@ function buildApplicationMeta(startRaw: unknown, endRaw: unknown, closingSoonDay
             hasWindow: false,
             statusLabel: 'N/A',
             statusTone: 'text-slate-500 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800/70 dark:border-slate-700',
-            countdown: 'Application: N/A',
+            countdown: 'N/A',
             progress: null as number | null,
-            windowLabel: 'Application: N/A',
+            windowLabel: 'N/A',
         };
     }
 

@@ -2077,7 +2077,7 @@ export interface UniversityListQuery {
     category: string;
     clusterGroup?: string;
     q?: string;
-    sort?: 'deadline' | 'alphabetical';
+    sort?: UniversityCardSort;
     page?: number;
     limit?: number;
 }
