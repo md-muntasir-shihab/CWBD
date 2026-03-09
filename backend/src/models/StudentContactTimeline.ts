@@ -5,14 +5,25 @@ export type StudentContactTimelineType =
     | 'call'
     | 'message'
     | 'support_ticket_link'
-    | 'payment_note';
+    | 'payment_note'
+    | 'account_event'
+    | 'login_event'
+    | 'profile_update'
+    | 'subscription_event'
+    | 'exam_event'
+    | 'notification_event'
+    | 'security_event';
+
+export type TimelineSourceType = 'manual' | 'system';
 
 export interface IStudentContactTimeline extends Document {
     studentId: mongoose.Types.ObjectId;
     type: StudentContactTimelineType;
     content: string;
     linkedId?: mongoose.Types.ObjectId;
-    createdByAdminId: mongoose.Types.ObjectId;
+    createdByAdminId?: mongoose.Types.ObjectId;
+    sourceType: TimelineSourceType;
+    metadata?: Record<string, unknown>;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -27,7 +38,11 @@ const StudentContactTimelineSchema = new Schema<IStudentContactTimeline>(
         },
         type: {
             type: String,
-            enum: ['note', 'call', 'message', 'support_ticket_link', 'payment_note'],
+            enum: [
+                'note', 'call', 'message', 'support_ticket_link', 'payment_note',
+                'account_event', 'login_event', 'profile_update',
+                'subscription_event', 'exam_event', 'notification_event', 'security_event',
+            ],
             required: true,
         },
         content: {
@@ -40,8 +55,13 @@ const StudentContactTimelineSchema = new Schema<IStudentContactTimeline>(
         createdByAdminId: {
             type: Schema.Types.ObjectId,
             ref: 'User',
-            required: true,
         },
+        sourceType: {
+            type: String,
+            enum: ['manual', 'system'],
+            default: 'manual',
+        },
+        metadata: { type: Schema.Types.Mixed, default: {} },
     },
     { timestamps: true, collection: 'student_contact_timeline' }
 );

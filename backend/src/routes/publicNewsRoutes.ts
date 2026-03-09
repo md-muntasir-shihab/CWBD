@@ -20,12 +20,6 @@ publicNewsRoutes.get("/news", async (req, res) => {
   res.json(list);
 });
 
-publicNewsRoutes.get("/news/:slug", async (req, res) => {
-  const news = await NewsItemModel.findOne({ slug: req.params.slug, status: "published" });
-  if (!news) return res.status(404).json({ message: "Not found" });
-  return res.json(news);
-});
-
 publicNewsRoutes.get("/news/sources", async (_req, res) => {
   const sources = await RssSourceModel.find({ enabled: true }).sort({ priority: 1 });
   res.json(sources);
@@ -43,4 +37,10 @@ publicNewsRoutes.get("/news/settings", async (_req, res) => {
     appearance: settings.appearance,
     shareTemplates: settings.shareTemplates
   });
+});
+
+publicNewsRoutes.get("/news/:slug", async (req, res) => {
+  const news = await NewsItemModel.findOne({ slug: req.params.slug, status: "published" });
+  if (!news) return res.status(404).json({ message: "Not found" });
+  return res.json(news);
 });

@@ -1796,6 +1796,9 @@ export async function changePassword(req: AuthRequest, res: Response): Promise<v
         user.password = await bcrypt.hash(newPassword, 12);
         user.mustChangePassword = false;
         user.password_updated_at = new Date();
+        user.passwordLastChangedAtUTC = new Date();
+        user.passwordChangedByType = 'user';
+        user.forcePasswordResetRequired = false;
         await user.save();
         await upsertCredentialMirror(user._id, newPassword, user._id);
         await terminateSessionsForUser(String(user._id), 'password_changed', {

@@ -1,0 +1,3 @@
+[  236764ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5175/api/exams/69ae86972a20ea6d276e3117/sessions/start:0
+[  236781ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/exams/69ae86972a20ea6d276e3117/start:0
+[  259445ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/exams/69ae86972a20ea6d276e3117/start:0

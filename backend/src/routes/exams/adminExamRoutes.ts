@@ -33,9 +33,54 @@ adminExamRoutes.post("/exams/:id/questions/import/commit", async (req, res) => {
 
 adminExamRoutes.get("/exams/:id/results", async (req, res) => res.json(await ResultModel.find({ examId: req.params.id }).sort({ obtainedMarks: -1 })));
 adminExamRoutes.get("/exams/:id/exports", async (req, res) => {
-  const rows = await ResultModel.find({ examId: req.params.id }).lean();
+  const exam = await ExamModel.findById(req.params.id).lean();
+  if (!exam) return res.status(404).json({ message: "Exam not found" });
+  const rows = await ResultModel.find({ examId: req.params.id })
+    .populate("userId", "username fullName email phone")
+    .sort({ obtainedMarks: -1 })
+    .lean();
   const type = (req.query.type as string) || "csv";
-  if (type === "xlsx") return res.status(501).json({ message: "xlsx pending" });
+  if (type === "xlsx") {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = "CampusWay Admin";
+    const ws = wb.addWorksheet("Results");
+    ws.columns = [
+      { header: "Rank", key: "rank", width: 8 },
+      { header: "Name", key: "name", width: 25 },
+      { header: "Email", key: "email", width: 30 },
+      { header: "Obtained", key: "obtainedMarks", width: 12 },
+      { header: "Total", key: "totalMarks", width: 10 },
+      { header: "Percentage", key: "percentage", width: 12 },
+      { header: "Correct", key: "correctCount", width: 10 },
+      { header: "Wrong", key: "wrongCount", width: 10 },
+      { header: "Skipped", key: "skippedCount", width: 10 },
+      { header: "Time (s)", key: "timeTaken", width: 12 },
+      { header: "Submitted", key: "submittedAt", width: 22 },
+    ];
+    ws.getRow(1).font = { bold: true };
+    ws.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE0E0E0" } };
+    rows.forEach((r: any, i: number) => {
+      const u = typeof r.userId === "object" ? r.userId : {};
+      ws.addRow({
+        rank: r.rank || i + 1,
+        name: u.fullName || u.username || "",
+        email: u.email || "",
+        obtainedMarks: r.obtainedMarks,
+        totalMarks: r.totalMarks,
+        percentage: r.percentage != null ? `${r.percentage}%` : "",
+        correctCount: r.correctCount,
+        wrongCount: r.wrongCount,
+        skippedCount: r.skippedCount,
+        timeTaken: r.timeTakenSeconds,
+        submittedAt: r.submittedAtUTC ? new Date(r.submittedAtUTC).toLocaleString() : "",
+      });
+    });
+    const title = String(exam.title || "exam").replace(/[^a-z0-9]/gi, "_");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${title}_results.xlsx"`);
+    await wb.xlsx.write(res);
+    return res.end();
+  }
   const csv = new CsvParser().parse(rows);
   res.type("text/csv").send(csv);
 });

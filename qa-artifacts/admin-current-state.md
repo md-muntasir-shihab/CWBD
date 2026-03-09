@@ -1,0 +1,1089 @@
+- generic [ref=e621]:
+  - complementary [ref=e622]:
+    - link "CampusWay Admin Panel" [ref=e624] [cursor=pointer]:
+      - /url: /__cw_admin__/dashboard
+      - img [ref=e626]
+      - generic [ref=e628]:
+        - paragraph [ref=e629]: CampusWay
+        - paragraph [ref=e630]: Admin Panel
+    - button "Collapse sidebar" [ref=e631] [cursor=pointer]:
+      - img [ref=e632]
+    - navigation [ref=e634]:
+      - link "Dashboard" [ref=e636] [cursor=pointer]:
+        - /url: /__cw_admin__/dashboard
+        - img [ref=e637]
+        - generic [ref=e642]: Dashboard
+      - button "Website Control" [ref=e644] [cursor=pointer]:
+        - img [ref=e645]
+        - generic [ref=e648]: Website Control
+        - img [ref=e649]
+      - button "Universities" [ref=e652] [cursor=pointer]:
+        - img [ref=e653]
+        - generic [ref=e656]: Universities
+        - img [ref=e657]
+      - button "News Management" [ref=e660] [cursor=pointer]:
+        - img [ref=e661]
+        - generic [ref=e664]: News Management
+        - img [ref=e665]
+      - link "Exams" [ref=e668] [cursor=pointer]:
+        - /url: /__cw_admin__/exams
+        - img [ref=e669]
+        - generic [ref=e671]: Exams
+      - button "Question Bank" [ref=e673] [cursor=pointer]:
+        - img [ref=e674]
+        - generic [ref=e676]: Question Bank
+        - img [ref=e677]
+      - generic [ref=e679]:
+        - button "Student Management" [ref=e680] [cursor=pointer]:
+          - img [ref=e681]
+          - generic [ref=e686]: Student Management
+          - img [ref=e687]
+        - generic [ref=e689]:
+          - link "All Students" [ref=e690] [cursor=pointer]:
+            - /url: /__cw_admin__/students
+            - img [ref=e691]
+            - generic [ref=e703]: All Students
+          - link "Student Groups" [ref=e704] [cursor=pointer]:
+            - /url: /__cw_admin__/student-groups
+            - img [ref=e705]
+            - generic [ref=e708]: Student Groups
+          - link "Students CRM" [ref=e709] [cursor=pointer]:
+            - /url: /__cw_admin__/students-v2
+            - img [ref=e710]
+            - generic [ref=e715]: Students CRM
+          - link "Groups V2" [ref=e716] [cursor=pointer]:
+            - /url: /__cw_admin__/student-groups-v2
+            - img [ref=e717]
+            - generic [ref=e720]: Groups V2
+          - link "Notification Center" [ref=e721] [cursor=pointer]:
+            - /url: /__cw_admin__/notification-center
+            - img [ref=e722]
+            - generic [ref=e725]: Notification Center
+          - link "Student Settings" [ref=e726] [cursor=pointer]:
+            - /url: /__cw_admin__/settings/student-settings
+            - img [ref=e727]
+            - generic [ref=e728]: Student Settings
+      - button "Subscription & Payments" [ref=e730] [cursor=pointer]:
+        - img [ref=e731]
+        - generic [ref=e733]: Subscription & Payments
+        - img [ref=e734]
+      - button "Resources" [ref=e737] [cursor=pointer]:
+        - img [ref=e738]
+        - generic [ref=e740]: Resources
+        - img [ref=e741]
+      - button "Support & Communication" [ref=e744] [cursor=pointer]:
+        - img [ref=e745]
+        - generic [ref=e752]: Support & Communication
+        - img [ref=e753]
+      - button "Campaign Platform" [ref=e756] [cursor=pointer]:
+        - img [ref=e757]
+        - generic [ref=e760]: Campaign Platform
+        - img [ref=e761]
+      - button "Data Hub" [ref=e764] [cursor=pointer]:
+        - img [ref=e765]
+        - generic [ref=e769]: Data Hub
+        - img [ref=e770]
+      - button "Finance Center" [ref=e773] [cursor=pointer]:
+        - img [ref=e774]
+        - generic [ref=e777]: Finance Center
+        - img [ref=e778]
+      - button "Security & Logs" [ref=e781] [cursor=pointer]:
+        - img [ref=e782]
+        - generic [ref=e784]: Security & Logs
+        - img [ref=e785]
+      - link "Admin Profile" [ref=e788] [cursor=pointer]:
+        - /url: /__cw_admin__/settings/admin-profile
+        - img [ref=e789]
+        - generic [ref=e792]: Admin Profile
+    - generic [ref=e793]:
+      - generic [ref=e794]:
+        - generic [ref=e795]: S
+        - generic [ref=e796]:
+          - paragraph [ref=e797]: Super Admin
+          - paragraph [ref=e798]: admin@campusway.com
+      - button "Sign Out" [ref=e799] [cursor=pointer]:
+        - img [ref=e800]
+        - generic [ref=e803]: Sign Out
+  - main [ref=e804]:
+    - generic [ref=e806]:
+      - generic [ref=e808]:
+        - paragraph [ref=e809]: Admin / Students
+        - heading "Students" [level=1] [ref=e810]
+      - generic [ref=e811]:
+        - button "Dark mode" [ref=e812] [cursor=pointer]:
+          - img [ref=e813]
+        - button "Notifications" [ref=e815] [cursor=pointer]:
+          - img [ref=e816]
+        - button "S Super Admin" [ref=e819] [cursor=pointer]:
+          - generic [ref=e820]: S
+          - generic [ref=e821]: Super Admin
+    - generic [ref=e822]:
+      - paragraph [ref=e823]: Manage students, imports, and profile state in one place.
+      - generic [ref=e824]:
+        - generic [ref=e825]:
+          - generic [ref=e826]:
+            - heading "Student Management" [level=1] [ref=e827]
+            - paragraph [ref=e828]: Manage enrollments, batches, and subscription plans
+          - generic [ref=e829]:
+            - button "Students" [ref=e830] [cursor=pointer]
+            - button "Groups" [ref=e831] [cursor=pointer]
+            - button "Subscription Plans" [ref=e832] [cursor=pointer]
+        - generic [ref=e833]:
+          - generic [ref=e834]:
+            - img [ref=e836]
+            - generic [ref=e839]:
+              - paragraph [ref=e840]: Total Students
+              - heading "50" [level=3] [ref=e841]
+          - generic [ref=e842]:
+            - img [ref=e844]
+            - generic [ref=e847]:
+              - paragraph [ref=e848]: Active
+              - heading "49" [level=3] [ref=e849]
+          - generic [ref=e850]:
+            - img [ref=e852]
+            - generic [ref=e855]:
+              - paragraph [ref=e856]: Pending Pay
+              - heading "21" [level=3] [ref=e857]
+          - generic [ref=e858]:
+            - img [ref=e860]
+            - generic [ref=e864]:
+              - paragraph [ref=e865]: Suspended
+              - heading "1" [level=3] [ref=e866]
+        - generic [ref=e867]:
+          - generic [ref=e868]:
+            - img [ref=e869]
+            - textbox "Search students..." [ref=e872]
+          - generic [ref=e873]:
+            - button "Export" [ref=e874] [cursor=pointer]:
+              - img [ref=e875]
+              - text: Export
+            - button "Template" [ref=e878] [cursor=pointer]:
+              - img [ref=e879]
+              - text: Template
+            - button "Import Wizard" [ref=e882] [cursor=pointer]:
+              - img [ref=e883]
+              - text: Import Wizard
+            - button "Add Student" [ref=e886] [cursor=pointer]:
+              - img [ref=e887]
+              - text: Add Student
+        - generic [ref=e888]:
+          - generic [ref=e889]:
+            - generic [ref=e890]:
+              - paragraph [ref=e891]: Total
+              - paragraph [ref=e892]: "50"
+            - generic [ref=e893]:
+              - paragraph [ref=e894]: Active
+              - paragraph [ref=e895]: "49"
+            - generic [ref=e896]:
+              - paragraph [ref=e897]: Profile < 70
+              - paragraph [ref=e898]: "45"
+            - generic [ref=e899]:
+              - paragraph [ref=e900]: Payment Pending
+              - paragraph [ref=e901]: "21"
+            - generic [ref=e902]:
+              - paragraph [ref=e903]: Suspended
+              - paragraph [ref=e904]: "0"
+          - generic [ref=e905]:
+            - combobox [ref=e906]:
+              - 'option "HSC Batch: All" [selected]'
+              - option "2022"
+              - option "2023"
+              - option "2024"
+              - option "2025"
+            - combobox [ref=e907]:
+              - 'option "SSC Batch: All" [selected]'
+              - option "2020"
+              - option "2021"
+              - option "2022"
+              - option "2023"
+            - combobox [ref=e908]:
+              - 'option "Department: All" [selected]'
+              - option "arts"
+              - option "commerce"
+              - option "science"
+            - combobox [ref=e909]:
+              - 'option "Status: All" [selected]'
+              - option "Active"
+              - option "Pending"
+              - option "Suspended"
+              - option "Blocked"
+            - combobox [ref=e910]:
+              - 'option "Profile Score: All" [selected]'
+              - option "Below 70"
+              - option "70 and above"
+            - combobox [ref=e911]:
+              - 'option "Payment: All" [selected]'
+              - option "Pending"
+              - option "Paid"
+              - option "No Due"
+            - combobox [ref=e912]:
+              - 'option "Group: All" [selected]'
+              - option "Demo Group 1772455611853"
+              - option "Demo Group 1772455700753"
+              - option "Demo Group 1772455808545"
+              - option "Demo Group 1772455965230"
+              - option "Imported Group 1772455808545"
+              - option "Imported Group 1772455965230"
+              - option "Imported Group 1772456908595"
+            - combobox [ref=e913]:
+              - 'option "Plan: All" [selected]'
+              - option "Demo Plan"
+              - option "Admission Pro"
+              - option "Medical Elite"
+              - option "Silver Plan"
+            - generic [ref=e914]:
+              - textbox "Start Date" [ref=e915]
+              - generic [ref=e916]: to
+              - textbox "End Date" [ref=e917]
+        - generic [ref=e918]:
+          - generic [ref=e919]:
+            - button "Select student" [ref=e921] [cursor=pointer]:
+              - img [ref=e922]
+            - generic [ref=e925]:
+              - button [ref=e926] [cursor=pointer]:
+                - img [ref=e927]
+              - button "Renew Subscription" [ref=e930] [cursor=pointer]:
+                - img [ref=e931]
+              - button "Reveal Password" [ref=e934] [cursor=pointer]:
+                - img [ref=e935]
+            - generic [ref=e938]:
+              - generic [ref=e939]: T
+              - generic [ref=e940]:
+                - generic [ref=e941]:
+                  - heading "Test Student" [level=3] [ref=e942]
+                  - img [ref=e943]
+                - paragraph [ref=e945]: teststudent@campusway.com
+                - generic [ref=e946]:
+                  - generic [ref=e947]: "@test_student"
+                  - generic [ref=e948]: "ID: CW-181683-7467"
+                - generic [ref=e949]:
+                  - generic [ref=e950]: active
+                  - generic [ref=e951]: Profile 65%
+                  - generic [ref=e952]: Payment clear
+                  - generic [ref=e953]: "Batch: 2023"
+                  - generic [ref=e954]: commerce
+            - generic [ref=e955]:
+              - generic [ref=e956]:
+                - paragraph [ref=e957]: Subscription Plan
+                - paragraph [ref=e958]: Demo Plan
+              - generic [ref=e959]:
+                - paragraph [ref=e960]: Expiry
+                - paragraph [ref=e961]: 3/9/2027
+              - generic [ref=e962]:
+                - paragraph [ref=e963]: Pending Due
+                - paragraph [ref=e964]: BDT 0
+              - generic [ref=e965]:
+                - paragraph [ref=e966]: Exams
+                - paragraph [ref=e967]: 0 attempts
+            - generic [ref=e968]:
+              - button "+ Edit Groups" [ref=e969] [cursor=pointer]
+              - button "History" [ref=e970] [cursor=pointer]
+          - generic [ref=e971]:
+            - button "Select student" [ref=e973] [cursor=pointer]:
+              - img [ref=e974]
+            - generic [ref=e977]:
+              - button [ref=e978] [cursor=pointer]:
+                - img [ref=e979]
+              - button "Renew Subscription" [ref=e982] [cursor=pointer]:
+                - img [ref=e983]
+              - button "Reveal Password" [ref=e986] [cursor=pointer]:
+                - img [ref=e987]
+            - generic [ref=e990]:
+              - generic [ref=e991]: a
+              - generic [ref=e992]:
+                - generic [ref=e993]:
+                  - heading "asfa" [level=3] [ref=e994]
+                  - img [ref=e995]
+                - paragraph [ref=e997]: wijova7246@7novels.com
+                - generic [ref=e998]:
+                  - generic [ref=e999]: "@asfsa"
+                  - generic [ref=e1000]: "ID: 6456456464"
+                - generic [ref=e1001]:
+                  - generic [ref=e1002]: active
+                  - generic [ref=e1003]: Profile 65%
+                  - generic [ref=e1004]: Payment paid
+                  - generic [ref=e1005]: "Batch: 2022"
+                  - generic [ref=e1006]: science
+            - generic [ref=e1007]:
+              - generic [ref=e1008]:
+                - paragraph [ref=e1009]: Subscription Plan
+                - paragraph [ref=e1010]: Demo Plan
+              - generic [ref=e1011]:
+                - paragraph [ref=e1012]: Expiry
+                - paragraph [ref=e1013]: 3/9/2027
+              - generic [ref=e1014]:
+                - paragraph [ref=e1015]: Pending Due
+                - paragraph [ref=e1016]: BDT 0
+              - generic [ref=e1017]:
+                - paragraph [ref=e1018]: Exams
+                - paragraph [ref=e1019]: 0 attempts
+            - generic [ref=e1020]:
+              - button "+ Edit Groups" [ref=e1021] [cursor=pointer]
+              - button "History" [ref=e1022] [cursor=pointer]
+          - generic [ref=e1023]:
+            - button "Select student" [ref=e1025] [cursor=pointer]:
+              - img [ref=e1026]
+            - generic [ref=e1029]:
+              - button [ref=e1030] [cursor=pointer]:
+                - img [ref=e1031]
+              - button "Renew Subscription" [ref=e1034] [cursor=pointer]:
+                - img [ref=e1035]
+              - button "Reveal Password" [ref=e1038] [cursor=pointer]:
+                - img [ref=e1039]
+            - generic [ref=e1042]:
+              - generic [ref=e1043]: E
+              - generic [ref=e1044]:
+                - generic [ref=e1045]:
+                  - heading "E2E Finance Student 1772614344673" [level=3] [ref=e1046]
+                  - img [ref=e1047]
+                - paragraph [ref=e1049]: e2e_finance_1772614344673@campusway.local
+                - generic [ref=e1050]:
+                  - generic [ref=e1051]: "@e2e_fin_stu_344673"
+                  - generic [ref=e1052]: "ID: CW-345142-8984"
+                - generic [ref=e1053]:
+                  - generic [ref=e1054]: active
+                  - generic [ref=e1055]: Profile 65%
+                  - generic [ref=e1056]: Payment clear
+                  - generic [ref=e1057]: "Batch: 2025"
+                  - generic [ref=e1058]: arts
+            - generic [ref=e1059]:
+              - generic [ref=e1060]:
+                - paragraph [ref=e1061]: Subscription Plan
+                - paragraph [ref=e1062]: Demo Plan
+              - generic [ref=e1063]:
+                - paragraph [ref=e1064]: Expiry
+                - paragraph [ref=e1065]: 3/9/2027
+              - generic [ref=e1066]:
+                - paragraph [ref=e1067]: Pending Due
+                - paragraph [ref=e1068]: BDT 0
+              - generic [ref=e1069]:
+                - paragraph [ref=e1070]: Exams
+                - paragraph [ref=e1071]: 0 attempts
+            - generic [ref=e1072]:
+              - button "+ Edit Groups" [ref=e1073] [cursor=pointer]
+              - button "History" [ref=e1074] [cursor=pointer]
+          - generic [ref=e1075]:
+            - button "Select student" [ref=e1077] [cursor=pointer]:
+              - img [ref=e1078]
+            - generic [ref=e1081]:
+              - button [ref=e1082] [cursor=pointer]:
+                - img [ref=e1083]
+              - button "Renew Subscription" [ref=e1086] [cursor=pointer]:
+                - img [ref=e1087]
+              - button "Reveal Password" [ref=e1090] [cursor=pointer]:
+                - img [ref=e1091]
+            - generic [ref=e1094]:
+              - generic [ref=e1095]: E
+              - generic [ref=e1096]:
+                - generic [ref=e1097]:
+                  - heading "E2E Finance Student 1772569977685" [level=3] [ref=e1098]
+                  - img [ref=e1099]
+                - paragraph [ref=e1101]: e2e_finance_1772569977685@campusway.local
+                - generic [ref=e1102]:
+                  - generic [ref=e1103]: "@e2e_fin_stu_977685"
+                  - generic [ref=e1104]: "ID: CW-978091-8738"
+                - generic [ref=e1105]:
+                  - generic [ref=e1106]: active
+                  - generic [ref=e1107]: Profile 65%
+                  - generic [ref=e1108]: Payment pending
+                  - generic [ref=e1109]: "Batch: 2024"
+                  - generic [ref=e1110]: commerce
+            - generic [ref=e1111]:
+              - generic [ref=e1112]:
+                - paragraph [ref=e1113]: Subscription Plan
+                - paragraph [ref=e1114]: Demo Plan
+              - generic [ref=e1115]:
+                - paragraph [ref=e1116]: Expiry
+                - paragraph [ref=e1117]: 3/9/2027
+              - generic [ref=e1118]:
+                - paragraph [ref=e1119]: Pending Due
+                - paragraph [ref=e1120]: BDT 1,150
+              - generic [ref=e1121]:
+                - paragraph [ref=e1122]: Exams
+                - paragraph [ref=e1123]: 0 attempts
+            - generic [ref=e1124]:
+              - button "+ Edit Groups" [ref=e1125] [cursor=pointer]
+              - button "History" [ref=e1126] [cursor=pointer]
+          - generic [ref=e1127]:
+            - button "Select student" [ref=e1129] [cursor=pointer]:
+              - img [ref=e1130]
+            - generic [ref=e1133]:
+              - button [ref=e1134] [cursor=pointer]:
+                - img [ref=e1135]
+              - button "Renew Subscription" [ref=e1138] [cursor=pointer]:
+                - img [ref=e1139]
+              - button "Reveal Password" [ref=e1142] [cursor=pointer]:
+                - img [ref=e1143]
+            - generic [ref=e1146]:
+              - generic [ref=e1147]: E
+              - generic [ref=e1148]:
+                - generic [ref=e1149]:
+                  - heading "E2E Finance Student 1772568656183" [level=3] [ref=e1150]
+                  - img [ref=e1151]
+                - paragraph [ref=e1153]: e2e_finance_1772568656183@campusway.local
+                - generic [ref=e1154]:
+                  - generic [ref=e1155]: "@e2e_fin_stu_656183"
+                  - generic [ref=e1156]: "ID: CW-656652-6061"
+                - generic [ref=e1157]:
+                  - generic [ref=e1158]: active
+                  - generic [ref=e1159]: Profile 65%
+                  - generic [ref=e1160]: Payment pending
+                  - generic [ref=e1161]: "Batch: 2023"
+                  - generic [ref=e1162]: science
+            - generic [ref=e1163]:
+              - generic [ref=e1164]:
+                - paragraph [ref=e1165]: Subscription Plan
+                - paragraph [ref=e1166]: Demo Plan
+              - generic [ref=e1167]:
+                - paragraph [ref=e1168]: Expiry
+                - paragraph [ref=e1169]: 3/9/2027
+              - generic [ref=e1170]:
+                - paragraph [ref=e1171]: Pending Due
+                - paragraph [ref=e1172]: BDT 1,150
+              - generic [ref=e1173]:
+                - paragraph [ref=e1174]: Exams
+                - paragraph [ref=e1175]: 0 attempts
+            - generic [ref=e1176]:
+              - button "+ Edit Groups" [ref=e1177] [cursor=pointer]
+              - button "History" [ref=e1178] [cursor=pointer]
+          - generic [ref=e1179]:
+            - button "Select student" [ref=e1181] [cursor=pointer]:
+              - img [ref=e1182]
+            - generic [ref=e1185]:
+              - button [ref=e1186] [cursor=pointer]:
+                - img [ref=e1187]
+              - button "Renew Subscription" [ref=e1190] [cursor=pointer]:
+                - img [ref=e1191]
+              - button "Reveal Password" [ref=e1194] [cursor=pointer]:
+                - img [ref=e1195]
+            - generic [ref=e1198]:
+              - generic [ref=e1199]: E
+              - generic [ref=e1200]:
+                - generic [ref=e1201]:
+                  - heading "E2E Finance Student 1772541557636" [level=3] [ref=e1202]
+                  - img [ref=e1203]
+                - paragraph [ref=e1205]: e2e_finance_1772541557636@campusway.local
+                - generic [ref=e1206]:
+                  - generic [ref=e1207]: "@e2e_fin_stu_557636"
+                  - generic [ref=e1208]: "ID: CW-558118-795"
+                - generic [ref=e1209]:
+                  - generic [ref=e1210]: active
+                  - generic [ref=e1211]: Profile 65%
+                  - generic [ref=e1212]: Payment clear
+                  - generic [ref=e1213]: "Batch: 2022"
+                  - generic [ref=e1214]: arts
+            - generic [ref=e1215]:
+              - generic [ref=e1216]:
+                - paragraph [ref=e1217]: Subscription Plan
+                - paragraph [ref=e1218]: Demo Plan
+              - generic [ref=e1219]:
+                - paragraph [ref=e1220]: Expiry
+                - paragraph [ref=e1221]: 3/9/2027
+              - generic [ref=e1222]:
+                - paragraph [ref=e1223]: Pending Due
+                - paragraph [ref=e1224]: BDT 0
+              - generic [ref=e1225]:
+                - paragraph [ref=e1226]: Exams
+                - paragraph [ref=e1227]: 0 attempts
+            - generic [ref=e1228]:
+              - button "+ Edit Groups" [ref=e1229] [cursor=pointer]
+              - button "History" [ref=e1230] [cursor=pointer]
+          - generic [ref=e1231]:
+            - button "Select student" [ref=e1233] [cursor=pointer]:
+              - img [ref=e1234]
+            - generic [ref=e1237]:
+              - button [ref=e1238] [cursor=pointer]:
+                - img [ref=e1239]
+              - button "Renew Subscription" [ref=e1242] [cursor=pointer]:
+                - img [ref=e1243]
+              - button "Reveal Password" [ref=e1246] [cursor=pointer]:
+                - img [ref=e1247]
+            - generic [ref=e1250]:
+              - generic [ref=e1251]: E
+              - generic [ref=e1252]:
+                - generic [ref=e1253]:
+                  - heading "E2E Finance Student 1772541499751" [level=3] [ref=e1254]
+                  - img [ref=e1255]
+                - paragraph [ref=e1257]: e2e_finance_1772541499751@campusway.local
+                - generic [ref=e1258]:
+                  - generic [ref=e1259]: "@e2e_fin_stu_499751"
+                  - generic [ref=e1260]: "ID: CW-500426-6573"
+                - generic [ref=e1261]:
+                  - generic [ref=e1262]: active
+                  - generic [ref=e1263]: Profile 65%
+                  - generic [ref=e1264]: Payment clear
+                  - generic [ref=e1265]: "Batch: 2025"
+                  - generic [ref=e1266]: commerce
+            - generic [ref=e1267]:
+              - generic [ref=e1268]:
+                - paragraph [ref=e1269]: Subscription Plan
+                - paragraph [ref=e1270]: Demo Plan
+              - generic [ref=e1271]:
+                - paragraph [ref=e1272]: Expiry
+                - paragraph [ref=e1273]: 3/9/2027
+              - generic [ref=e1274]:
+                - paragraph [ref=e1275]: Pending Due
+                - paragraph [ref=e1276]: BDT 0
+              - generic [ref=e1277]:
+                - paragraph [ref=e1278]: Exams
+                - paragraph [ref=e1279]: 0 attempts
+            - generic [ref=e1280]:
+              - button "+ Edit Groups" [ref=e1281] [cursor=pointer]
+              - button "History" [ref=e1282] [cursor=pointer]
+          - generic [ref=e1283]:
+            - button "Select student" [ref=e1285] [cursor=pointer]:
+              - img [ref=e1286]
+            - generic [ref=e1289]:
+              - button [ref=e1290] [cursor=pointer]:
+                - img [ref=e1291]
+              - button "Renew Subscription" [ref=e1294] [cursor=pointer]:
+                - img [ref=e1295]
+              - button "Reveal Password" [ref=e1298] [cursor=pointer]:
+                - img [ref=e1299]
+            - generic [ref=e1302]:
+              - generic [ref=e1303]: E
+              - generic [ref=e1304]:
+                - generic [ref=e1305]:
+                  - heading "E2E Finance Student 1772541427945" [level=3] [ref=e1306]
+                  - img [ref=e1307]
+                - paragraph [ref=e1309]: e2e_finance_1772541427945@campusway.local
+                - generic [ref=e1310]:
+                  - generic [ref=e1311]: "@e2e_fin_stu_427945"
+                  - generic [ref=e1312]: "ID: CW-428350-8839"
+                - generic [ref=e1313]:
+                  - generic [ref=e1314]: active
+                  - generic [ref=e1315]: Profile 65%
+                  - generic [ref=e1316]: Payment clear
+                  - generic [ref=e1317]: "Batch: 2024"
+                  - generic [ref=e1318]: science
+            - generic [ref=e1319]:
+              - generic [ref=e1320]:
+                - paragraph [ref=e1321]: Subscription Plan
+                - paragraph [ref=e1322]: Demo Plan
+              - generic [ref=e1323]:
+                - paragraph [ref=e1324]: Expiry
+                - paragraph [ref=e1325]: 3/9/2027
+              - generic [ref=e1326]:
+                - paragraph [ref=e1327]: Pending Due
+                - paragraph [ref=e1328]: BDT 0
+              - generic [ref=e1329]:
+                - paragraph [ref=e1330]: Exams
+                - paragraph [ref=e1331]: 0 attempts
+            - generic [ref=e1332]:
+              - button "+ Edit Groups" [ref=e1333] [cursor=pointer]
+              - button "History" [ref=e1334] [cursor=pointer]
+          - generic [ref=e1335]:
+            - button "Select student" [ref=e1337] [cursor=pointer]:
+              - img [ref=e1338]
+            - generic [ref=e1341]:
+              - button [ref=e1342] [cursor=pointer]:
+                - img [ref=e1343]
+              - button "Renew Subscription" [ref=e1346] [cursor=pointer]:
+                - img [ref=e1347]
+              - button "Reveal Password" [ref=e1350] [cursor=pointer]:
+                - img [ref=e1351]
+            - generic [ref=e1354]:
+              - generic [ref=e1355]: E
+              - generic [ref=e1356]:
+                - generic [ref=e1357]:
+                  - heading "E2E Finance Student 1772541202547" [level=3] [ref=e1358]
+                  - img [ref=e1359]
+                - paragraph [ref=e1361]: e2e_finance_1772541202547@campusway.local
+                - generic [ref=e1362]:
+                  - generic [ref=e1363]: "@e2e_fin_stu_202547"
+                  - generic [ref=e1364]: "ID: CW-203014-3813"
+                - generic [ref=e1365]:
+                  - generic [ref=e1366]: active
+                  - generic [ref=e1367]: Profile 65%
+                  - generic [ref=e1368]: Payment clear
+                  - generic [ref=e1369]: "Batch: 2023"
+                  - generic [ref=e1370]: arts
+            - generic [ref=e1371]:
+              - generic [ref=e1372]:
+                - paragraph [ref=e1373]: Subscription Plan
+                - paragraph [ref=e1374]: Demo Plan
+              - generic [ref=e1375]:
+                - paragraph [ref=e1376]: Expiry
+                - paragraph [ref=e1377]: 3/9/2027
+              - generic [ref=e1378]:
+                - paragraph [ref=e1379]: Pending Due
+                - paragraph [ref=e1380]: BDT 0
+              - generic [ref=e1381]:
+                - paragraph [ref=e1382]: Exams
+                - paragraph [ref=e1383]: 0 attempts
+            - generic [ref=e1384]:
+              - button "+ Edit Groups" [ref=e1385] [cursor=pointer]
+              - button "History" [ref=e1386] [cursor=pointer]
+          - generic [ref=e1387]:
+            - button "Select student" [ref=e1389] [cursor=pointer]:
+              - img [ref=e1390]
+            - generic [ref=e1393]:
+              - button [ref=e1394] [cursor=pointer]:
+                - img [ref=e1395]
+              - button "Renew Subscription" [ref=e1398] [cursor=pointer]:
+                - img [ref=e1399]
+              - button "Reveal Password" [ref=e1402] [cursor=pointer]:
+                - img [ref=e1403]
+            - generic [ref=e1406]:
+              - generic [ref=e1407]: E
+              - generic [ref=e1408]:
+                - generic [ref=e1409]:
+                  - heading "E2E Finance Student 1772456468956" [level=3] [ref=e1410]
+                  - img [ref=e1411]
+                - paragraph [ref=e1413]: e2e_finance_1772456468956@campusway.local
+                - generic [ref=e1414]:
+                  - generic [ref=e1415]: "@e2e_fin_stu_468956"
+                  - generic [ref=e1416]: "ID: CW-469375-6585"
+                - generic [ref=e1417]:
+                  - generic [ref=e1418]: active
+                  - generic [ref=e1419]: Profile 65%
+                  - generic [ref=e1420]: Payment pending
+                  - generic [ref=e1421]: "Batch: 2022"
+                  - generic [ref=e1422]: commerce
+            - generic [ref=e1423]:
+              - generic [ref=e1424]:
+                - paragraph [ref=e1425]: Subscription Plan
+                - paragraph [ref=e1426]: Demo Plan
+              - generic [ref=e1427]:
+                - paragraph [ref=e1428]: Expiry
+                - paragraph [ref=e1429]: 3/9/2027
+              - generic [ref=e1430]:
+                - paragraph [ref=e1431]: Pending Due
+                - paragraph [ref=e1432]: BDT 1,150
+              - generic [ref=e1433]:
+                - paragraph [ref=e1434]: Exams
+                - paragraph [ref=e1435]: 0 attempts
+            - generic [ref=e1436]:
+              - button "+ Edit Groups" [ref=e1437] [cursor=pointer]
+              - button "History" [ref=e1438] [cursor=pointer]
+          - generic [ref=e1439]:
+            - button "Select student" [ref=e1441] [cursor=pointer]:
+              - img [ref=e1442]
+            - generic [ref=e1445]:
+              - button [ref=e1446] [cursor=pointer]:
+                - img [ref=e1447]
+              - button "Renew Subscription" [ref=e1450] [cursor=pointer]:
+                - img [ref=e1451]
+              - button "Reveal Password" [ref=e1454] [cursor=pointer]:
+                - img [ref=e1455]
+            - generic [ref=e1458]:
+              - generic [ref=e1459]: E
+              - generic [ref=e1460]:
+                - generic [ref=e1461]:
+                  - heading "E2E Finance Student 1772456220380" [level=3] [ref=e1462]
+                  - img [ref=e1463]
+                - paragraph [ref=e1465]: e2e_finance_1772456220380@campusway.local
+                - generic [ref=e1466]:
+                  - generic [ref=e1467]: "@e2e_fin_stu_220380"
+                  - generic [ref=e1468]: "ID: CW-220788-7065"
+                - generic [ref=e1469]:
+                  - generic [ref=e1470]: active
+                  - generic [ref=e1471]: Profile 65%
+                  - generic [ref=e1472]: Payment pending
+                  - generic [ref=e1473]: "Batch: 2025"
+                  - generic [ref=e1474]: science
+            - generic [ref=e1475]:
+              - generic [ref=e1476]:
+                - paragraph [ref=e1477]: Subscription Plan
+                - paragraph [ref=e1478]: Demo Plan
+              - generic [ref=e1479]:
+                - paragraph [ref=e1480]: Expiry
+                - paragraph [ref=e1481]: 3/9/2027
+              - generic [ref=e1482]:
+                - paragraph [ref=e1483]: Pending Due
+                - paragraph [ref=e1484]: BDT 1,150
+              - generic [ref=e1485]:
+                - paragraph [ref=e1486]: Exams
+                - paragraph [ref=e1487]: 0 attempts
+            - generic [ref=e1488]:
+              - button "+ Edit Groups" [ref=e1489] [cursor=pointer]
+              - button "History" [ref=e1490] [cursor=pointer]
+          - generic [ref=e1491]:
+            - button "Select student" [ref=e1493] [cursor=pointer]:
+              - img [ref=e1494]
+            - generic [ref=e1497]:
+              - button [ref=e1498] [cursor=pointer]:
+                - img [ref=e1499]
+              - button "Renew Subscription" [ref=e1502] [cursor=pointer]:
+                - img [ref=e1503]
+              - button "Reveal Password" [ref=e1506] [cursor=pointer]:
+                - img [ref=e1507]
+            - generic [ref=e1510]:
+              - generic [ref=e1511]: D
+              - generic [ref=e1512]:
+                - generic [ref=e1513]:
+                  - heading "Demo Out Group 1772455965230" [level=3] [ref=e1514]
+                  - img [ref=e1515]
+                - paragraph [ref=e1517]: demo_out_1772455965230@campusway.local
+                - generic [ref=e1518]:
+                  - generic [ref=e1519]: "@demo_out_965230"
+                  - generic [ref=e1520]: "ID: CW-966514-7057"
+                - generic [ref=e1521]:
+                  - generic [ref=e1522]: active
+                  - generic [ref=e1523]: Profile 95%
+                  - generic [ref=e1524]: Payment clear
+                  - generic [ref=e1525]: "Batch: 2024"
+                  - generic [ref=e1526]: arts
+            - generic [ref=e1527]:
+              - generic [ref=e1528]:
+                - paragraph [ref=e1529]: Subscription Plan
+                - paragraph [ref=e1530]: Demo Plan
+              - generic [ref=e1531]:
+                - paragraph [ref=e1532]: Expiry
+                - paragraph [ref=e1533]: 3/9/2027
+              - generic [ref=e1534]:
+                - paragraph [ref=e1535]: Pending Due
+                - paragraph [ref=e1536]: BDT 0
+              - generic [ref=e1537]:
+                - paragraph [ref=e1538]: Exams
+                - paragraph [ref=e1539]: 0 attempts
+            - generic [ref=e1540]:
+              - button "+ Edit Groups" [ref=e1541] [cursor=pointer]
+              - button "History" [ref=e1542] [cursor=pointer]
+          - generic [ref=e1543]:
+            - button "Select student" [ref=e1545] [cursor=pointer]:
+              - img [ref=e1546]
+            - generic [ref=e1549]:
+              - button [ref=e1550] [cursor=pointer]:
+                - img [ref=e1551]
+              - button "Renew Subscription" [ref=e1554] [cursor=pointer]:
+                - img [ref=e1555]
+              - button "Reveal Password" [ref=e1558] [cursor=pointer]:
+                - img [ref=e1559]
+            - generic [ref=e1562]:
+              - generic [ref=e1563]: D
+              - generic [ref=e1564]:
+                - generic [ref=e1565]:
+                  - heading "Demo In Group 1772455965230" [level=3] [ref=e1566]
+                  - img [ref=e1567]
+                - paragraph [ref=e1569]: demo_in_1772455965230@campusway.local
+                - generic [ref=e1570]:
+                  - generic [ref=e1571]: "@demo_in_965230"
+                  - generic [ref=e1572]: "ID: CW-966107-8328"
+                - generic [ref=e1573]:
+                  - generic [ref=e1574]: active
+                  - generic [ref=e1575]: Profile 95%
+                  - generic [ref=e1576]: Payment clear
+                  - generic [ref=e1577]: "Batch: 2023"
+                  - generic [ref=e1578]: commerce
+            - generic [ref=e1579]:
+              - generic [ref=e1580]:
+                - paragraph [ref=e1581]: Subscription Plan
+                - paragraph [ref=e1582]: Demo Plan
+              - generic [ref=e1583]:
+                - paragraph [ref=e1584]: Expiry
+                - paragraph [ref=e1585]: 3/9/2027
+              - generic [ref=e1586]:
+                - paragraph [ref=e1587]: Pending Due
+                - paragraph [ref=e1588]: BDT 0
+              - generic [ref=e1589]:
+                - paragraph [ref=e1590]: Exams
+                - paragraph [ref=e1591]: 0 attempts
+            - generic [ref=e1592]:
+              - generic [ref=e1593]: Demo Group 1772455965230
+              - button "+ Edit Groups" [ref=e1594] [cursor=pointer]
+              - button "History" [ref=e1595] [cursor=pointer]
+          - generic [ref=e1596]:
+            - button "Select student" [ref=e1598] [cursor=pointer]:
+              - img [ref=e1599]
+            - generic [ref=e1602]:
+              - button [ref=e1603] [cursor=pointer]:
+                - img [ref=e1604]
+              - button "Renew Subscription" [ref=e1607] [cursor=pointer]:
+                - img [ref=e1608]
+              - button "Reveal Password" [ref=e1611] [cursor=pointer]:
+                - img [ref=e1612]
+            - generic [ref=e1615]:
+              - generic [ref=e1616]: D
+              - generic [ref=e1617]:
+                - generic [ref=e1618]:
+                  - heading "Demo Out Group 1772455808545" [level=3] [ref=e1619]
+                  - img [ref=e1620]
+                - paragraph [ref=e1622]: demo_out_1772455808545@campusway.local
+                - generic [ref=e1623]:
+                  - generic [ref=e1624]: "@demo_out_808545"
+                  - generic [ref=e1625]: "ID: CW-809821-4470"
+                - generic [ref=e1626]:
+                  - generic [ref=e1627]: active
+                  - generic [ref=e1628]: Profile 65%
+                  - generic [ref=e1629]: Payment clear
+                  - generic [ref=e1630]: "Batch: 2022"
+                  - generic [ref=e1631]: science
+            - generic [ref=e1632]:
+              - generic [ref=e1633]:
+                - paragraph [ref=e1634]: Subscription Plan
+                - paragraph [ref=e1635]: Demo Plan
+              - generic [ref=e1636]:
+                - paragraph [ref=e1637]: Expiry
+                - paragraph [ref=e1638]: 3/9/2027
+              - generic [ref=e1639]:
+                - paragraph [ref=e1640]: Pending Due
+                - paragraph [ref=e1641]: BDT 0
+              - generic [ref=e1642]:
+                - paragraph [ref=e1643]: Exams
+                - paragraph [ref=e1644]: 0 attempts
+            - generic [ref=e1645]:
+              - button "+ Edit Groups" [ref=e1646] [cursor=pointer]
+              - button "History" [ref=e1647] [cursor=pointer]
+          - generic [ref=e1648]:
+            - button "Select student" [ref=e1650] [cursor=pointer]:
+              - img [ref=e1651]
+            - generic [ref=e1654]:
+              - button [ref=e1655] [cursor=pointer]:
+                - img [ref=e1656]
+              - button "Renew Subscription" [ref=e1659] [cursor=pointer]:
+                - img [ref=e1660]
+              - button "Reveal Password" [ref=e1663] [cursor=pointer]:
+                - img [ref=e1664]
+            - generic [ref=e1667]:
+              - generic [ref=e1668]: D
+              - generic [ref=e1669]:
+                - generic [ref=e1670]:
+                  - heading "Demo In Group 1772455808545" [level=3] [ref=e1671]
+                  - img [ref=e1672]
+                - paragraph [ref=e1674]: demo_in_1772455808545@campusway.local
+                - generic [ref=e1675]:
+                  - generic [ref=e1676]: "@demo_in_808545"
+                  - generic [ref=e1677]: "ID: CW-809422-7306"
+                - generic [ref=e1678]:
+                  - generic [ref=e1679]: active
+                  - generic [ref=e1680]: Profile 65%
+                  - generic [ref=e1681]: Payment clear
+                  - generic [ref=e1682]: "Batch: 2025"
+                  - generic [ref=e1683]: arts
+            - generic [ref=e1684]:
+              - generic [ref=e1685]:
+                - paragraph [ref=e1686]: Subscription Plan
+                - paragraph [ref=e1687]: Demo Plan
+              - generic [ref=e1688]:
+                - paragraph [ref=e1689]: Expiry
+                - paragraph [ref=e1690]: 3/9/2027
+              - generic [ref=e1691]:
+                - paragraph [ref=e1692]: Pending Due
+                - paragraph [ref=e1693]: BDT 0
+              - generic [ref=e1694]:
+                - paragraph [ref=e1695]: Exams
+                - paragraph [ref=e1696]: 0 attempts
+            - generic [ref=e1697]:
+              - generic [ref=e1698]: Demo Group 1772455808545
+              - button "+ Edit Groups" [ref=e1699] [cursor=pointer]
+              - button "History" [ref=e1700] [cursor=pointer]
+          - generic [ref=e1701]:
+            - button "Select student" [ref=e1703] [cursor=pointer]:
+              - img [ref=e1704]
+            - generic [ref=e1707]:
+              - button [ref=e1708] [cursor=pointer]:
+                - img [ref=e1709]
+              - button "Renew Subscription" [ref=e1712] [cursor=pointer]:
+                - img [ref=e1713]
+              - button "Reveal Password" [ref=e1716] [cursor=pointer]:
+                - img [ref=e1717]
+            - generic [ref=e1720]:
+              - generic [ref=e1721]: D
+              - generic [ref=e1722]:
+                - generic [ref=e1723]:
+                  - heading "Demo Out Group 1772455700753" [level=3] [ref=e1724]
+                  - img [ref=e1725]
+                - paragraph [ref=e1727]: demo_out_1772455700753@campusway.local
+                - generic [ref=e1728]:
+                  - generic [ref=e1729]: "@demo_out_700753"
+                  - generic [ref=e1730]: "ID: CW-701994-8057"
+                - generic [ref=e1731]:
+                  - generic [ref=e1732]: active
+                  - generic [ref=e1733]: Profile 65%
+                  - generic [ref=e1734]: Payment clear
+                  - generic [ref=e1735]: "Batch: 2024"
+                  - generic [ref=e1736]: commerce
+            - generic [ref=e1737]:
+              - generic [ref=e1738]:
+                - paragraph [ref=e1739]: Subscription Plan
+                - paragraph [ref=e1740]: Demo Plan
+              - generic [ref=e1741]:
+                - paragraph [ref=e1742]: Expiry
+                - paragraph [ref=e1743]: 3/9/2027
+              - generic [ref=e1744]:
+                - paragraph [ref=e1745]: Pending Due
+                - paragraph [ref=e1746]: BDT 0
+              - generic [ref=e1747]:
+                - paragraph [ref=e1748]: Exams
+                - paragraph [ref=e1749]: 0 attempts
+            - generic [ref=e1750]:
+              - button "+ Edit Groups" [ref=e1751] [cursor=pointer]
+              - button "History" [ref=e1752] [cursor=pointer]
+          - generic [ref=e1753]:
+            - button "Select student" [ref=e1755] [cursor=pointer]:
+              - img [ref=e1756]
+            - generic [ref=e1759]:
+              - button [ref=e1760] [cursor=pointer]:
+                - img [ref=e1761]
+              - button "Renew Subscription" [ref=e1764] [cursor=pointer]:
+                - img [ref=e1765]
+              - button "Reveal Password" [ref=e1768] [cursor=pointer]:
+                - img [ref=e1769]
+            - generic [ref=e1772]:
+              - generic [ref=e1773]: D
+              - generic [ref=e1774]:
+                - generic [ref=e1775]:
+                  - heading "Demo In Group 1772455700753" [level=3] [ref=e1776]
+                  - img [ref=e1777]
+                - paragraph [ref=e1779]: demo_in_1772455700753@campusway.local
+                - generic [ref=e1780]:
+                  - generic [ref=e1781]: "@demo_in_700753"
+                  - generic [ref=e1782]: "ID: CW-701598-4768"
+                - generic [ref=e1783]:
+                  - generic [ref=e1784]: active
+                  - generic [ref=e1785]: Profile 65%
+                  - generic [ref=e1786]: Payment clear
+                  - generic [ref=e1787]: "Batch: 2023"
+                  - generic [ref=e1788]: science
+            - generic [ref=e1789]:
+              - generic [ref=e1790]:
+                - paragraph [ref=e1791]: Subscription Plan
+                - paragraph [ref=e1792]: Demo Plan
+              - generic [ref=e1793]:
+                - paragraph [ref=e1794]: Expiry
+                - paragraph [ref=e1795]: 3/9/2027
+              - generic [ref=e1796]:
+                - paragraph [ref=e1797]: Pending Due
+                - paragraph [ref=e1798]: BDT 0
+              - generic [ref=e1799]:
+                - paragraph [ref=e1800]: Exams
+                - paragraph [ref=e1801]: 0 attempts
+            - generic [ref=e1802]:
+              - generic [ref=e1803]: Demo Group 1772455700753
+              - button "+ Edit Groups" [ref=e1804] [cursor=pointer]
+              - button "History" [ref=e1805] [cursor=pointer]
+          - generic [ref=e1806]:
+            - button "Select student" [ref=e1808] [cursor=pointer]:
+              - img [ref=e1809]
+            - generic [ref=e1812]:
+              - button [ref=e1813] [cursor=pointer]:
+                - img [ref=e1814]
+              - button "Renew Subscription" [ref=e1817] [cursor=pointer]:
+                - img [ref=e1818]
+              - button "Reveal Password" [ref=e1821] [cursor=pointer]:
+                - img [ref=e1822]
+            - generic [ref=e1825]:
+              - generic [ref=e1826]: D
+              - generic [ref=e1827]:
+                - generic [ref=e1828]:
+                  - heading "Demo Out Group 1772455611853" [level=3] [ref=e1829]
+                  - img [ref=e1830]
+                - paragraph [ref=e1832]: demo_out_1772455611853@campusway.local
+                - generic [ref=e1833]:
+                  - generic [ref=e1834]: "@demo_out_611853"
+                  - generic [ref=e1835]: "ID: CW-613120-8987"
+                - generic [ref=e1836]:
+                  - generic [ref=e1837]: active
+                  - generic [ref=e1838]: Profile 65%
+                  - generic [ref=e1839]: Payment clear
+                  - generic [ref=e1840]: "Batch: 2022"
+                  - generic [ref=e1841]: arts
+            - generic [ref=e1842]:
+              - generic [ref=e1843]:
+                - paragraph [ref=e1844]: Subscription Plan
+                - paragraph [ref=e1845]: Demo Plan
+              - generic [ref=e1846]:
+                - paragraph [ref=e1847]: Expiry
+                - paragraph [ref=e1848]: 3/9/2027
+              - generic [ref=e1849]:
+                - paragraph [ref=e1850]: Pending Due
+                - paragraph [ref=e1851]: BDT 0
+              - generic [ref=e1852]:
+                - paragraph [ref=e1853]: Exams
+                - paragraph [ref=e1854]: 0 attempts
+            - generic [ref=e1855]:
+              - button "+ Edit Groups" [ref=e1856] [cursor=pointer]
+              - button "History" [ref=e1857] [cursor=pointer]
+          - generic [ref=e1858]:
+            - button "Select student" [ref=e1860] [cursor=pointer]:
+              - img [ref=e1861]
+            - generic [ref=e1864]:
+              - button [ref=e1865] [cursor=pointer]:
+                - img [ref=e1866]
+              - button "Renew Subscription" [ref=e1869] [cursor=pointer]:
+                - img [ref=e1870]
+              - button "Reveal Password" [ref=e1873] [cursor=pointer]:
+                - img [ref=e1874]
+            - generic [ref=e1877]:
+              - generic [ref=e1878]: D
+              - generic [ref=e1879]:
+                - generic [ref=e1880]:
+                  - heading "Demo In Group 1772455611853" [level=3] [ref=e1881]
+                  - img [ref=e1882]
+                - paragraph [ref=e1884]: demo_in_1772455611853@campusway.local
+                - generic [ref=e1885]:
+                  - generic [ref=e1886]: "@demo_in_611853"
+                  - generic [ref=e1887]: "ID: CW-612718-2913"
+                - generic [ref=e1888]:
+                  - generic [ref=e1889]: active
+                  - generic [ref=e1890]: Profile 65%
+                  - generic [ref=e1891]: Payment clear
+                  - generic [ref=e1892]: "Batch: 2025"
+                  - generic [ref=e1893]: commerce
+            - generic [ref=e1894]:
+              - generic [ref=e1895]:
+                - paragraph [ref=e1896]: Subscription Plan
+                - paragraph [ref=e1897]: Demo Plan
+              - generic [ref=e1898]:
+                - paragraph [ref=e1899]: Expiry
+                - paragraph [ref=e1900]: 3/9/2027
+              - generic [ref=e1901]:
+                - paragraph [ref=e1902]: Pending Due
+                - paragraph [ref=e1903]: BDT 0
+              - generic [ref=e1904]:
+                - paragraph [ref=e1905]: Exams
+                - paragraph [ref=e1906]: 0 attempts
+            - generic [ref=e1907]:
+              - generic [ref=e1908]: Demo Group 1772455611853
+              - button "+ Edit Groups" [ref=e1909] [cursor=pointer]
+              - button "History" [ref=e1910] [cursor=pointer]
+          - generic [ref=e1911]:
+            - button "Select student" [ref=e1913] [cursor=pointer]:
+              - img [ref=e1914]
+            - generic [ref=e1917]:
+              - button [ref=e1918] [cursor=pointer]:
+                - img [ref=e1919]
+              - button "Renew Subscription" [ref=e1922] [cursor=pointer]:
+                - img [ref=e1923]
+              - button "Reveal Password" [ref=e1926] [cursor=pointer]:
+                - img [ref=e1927]
+            - generic [ref=e1930]:
+              - generic [ref=e1931]: D
+              - generic [ref=e1932]:
+                - generic [ref=e1933]:
+                  - heading "Demo Out Group 1772455459710" [level=3] [ref=e1934]
+                  - img [ref=e1935]
+                - paragraph [ref=e1937]: demo_out_1772455459710@campusway.local
+                - generic [ref=e1938]:
+                  - generic [ref=e1939]: "@demo_out_459710"
+                  - generic [ref=e1940]: "ID: CW-461028-425"
+                - generic [ref=e1941]:
+                  - generic [ref=e1942]: active
+                  - generic [ref=e1943]: Profile 65%
+                  - generic [ref=e1944]: Payment clear
+                  - generic [ref=e1945]: "Batch: 2024"
+                  - generic [ref=e1946]: science
+            - generic [ref=e1947]:
+              - generic [ref=e1948]:
+                - paragraph [ref=e1949]: Subscription Plan
+                - paragraph [ref=e1950]: Demo Plan
+              - generic [ref=e1951]:
+                - paragraph [ref=e1952]: Expiry
+                - paragraph [ref=e1953]: 3/9/2027
+              - generic [ref=e1954]:
+                - paragraph [ref=e1955]: Pending Due
+                - paragraph [ref=e1956]: BDT 0
+              - generic [ref=e1957]:
+                - paragraph [ref=e1958]: Exams
+                - paragraph [ref=e1959]: 0 attempts
+            - generic [ref=e1960]:
+              - button "+ Edit Groups" [ref=e1961] [cursor=pointer]
+              - button "History" [ref=e1962] [cursor=pointer]
+        - generic [ref=e1963]:
+          - paragraph [ref=e1964]: Showing page 1 of 3
+          - generic [ref=e1965]:
+            - button [disabled] [ref=e1966]:
+              - img [ref=e1967]
+            - button [ref=e1969] [cursor=pointer]:
+              - img [ref=e1970]

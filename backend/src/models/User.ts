@@ -38,6 +38,13 @@ export interface IUser extends Document {
     profile_photo?: string;
     mustChangePassword: boolean;
     passwordResetRequired: boolean;
+    passwordSetByAdminId?: mongoose.Types.ObjectId;
+    passwordLastChangedAtUTC?: Date;
+    passwordChangedByType?: 'admin' | 'user';
+    forcePasswordResetRequired: boolean;
+    accountInfoLastSentAtUTC?: Date;
+    accountInfoLastSentChannels?: string[];
+    credentialsLastResentAtUTC?: Date;
     loginAttempts: number;
     lockUntil?: Date;
     twoFactorEnabled: boolean;
@@ -115,6 +122,13 @@ const UserSchema = new Schema<IUser>(
         profile_photo: { type: String, trim: true },
         mustChangePassword: { type: Boolean, default: false },
         passwordResetRequired: { type: Boolean, default: false },
+        passwordSetByAdminId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+        passwordLastChangedAtUTC: { type: Date, default: null },
+        passwordChangedByType: { type: String, enum: ['admin', 'user', null], default: null },
+        forcePasswordResetRequired: { type: Boolean, default: false },
+        accountInfoLastSentAtUTC: { type: Date, default: null },
+        accountInfoLastSentChannels: { type: [String], default: [] },
+        credentialsLastResentAtUTC: { type: Date, default: null },
         loginAttempts: { type: Number, default: 0 },
         lockUntil: { type: Date },
         twoFactorEnabled: { type: Boolean, default: false },

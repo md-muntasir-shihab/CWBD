@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import {
     BellRing,
     BarChart3,
+    BookOpen,
     Home,
     Image,
     ScrollText,
@@ -21,6 +22,7 @@ const settingsCards = [
     { title: 'Analytics', description: 'Toggle event tracking and analytics privacy controls.', icon: BarChart3, to: '/__cw_admin__/settings/analytics' },
     { title: 'Banner Manager', description: 'Control banner settings, campaign blocks, and News fallback media.', icon: Image, to: '/__cw_admin__/settings/banner-manager' },
     { title: 'News Settings', description: 'Configure news appearance, AI, share templates, and workflow controls.', icon: Settings, to: '/__cw_admin__/settings/news-settings' },
+    { title: 'Resource Settings', description: 'Configure the resources page title, featured section, and view tracking.', icon: BookOpen, to: '/__cw_admin__/settings/resource-settings' },
     { title: 'Security Center', description: 'Authentication, session, and security policy controls.', icon: Shield, to: '/__cw_admin__/settings/security-center' },
     { title: 'System Logs', description: 'Review audit and system-level logs from one place.', icon: ScrollText, to: '/__cw_admin__/settings/system-logs' },
     { title: 'Site Settings', description: 'Global branding, contact, social links, and metadata controls.', icon: Settings, to: '/__cw_admin__/settings/site-settings' },

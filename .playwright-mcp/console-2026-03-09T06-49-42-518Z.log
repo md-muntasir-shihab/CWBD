@@ -1,0 +1,96 @@
+[  451428ms] TypeError: log.actor_id?.slice is not a function
+    at http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:112:127
+    at Array.map (<anonymous>)
+    at FinanceAuditLogPage (http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:86:120)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+[  451425ms] [WARNING] %s
+
+%s
+ An error occurred in the <FinanceAuditLogPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965
+[  459200ms] TypeError: log.actor_id?.slice is not a function
+    at http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:112:127
+    at Array.map (<anonymous>)
+    at FinanceAuditLogPage (http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:86:120)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+[  459197ms] [WARNING] %s
+
+%s
+ An error occurred in the <FinanceAuditLogPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965
+[  461384ms] TypeError: log.actor_id?.slice is not a function
+    at http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:112:127
+    at Array.map (<anonymous>)
+    at FinanceAuditLogPage (http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:86:120)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+[  461381ms] [WARNING] %s
+
+%s
+ An error occurred in the <FinanceAuditLogPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965
+[  465546ms] TypeError: log.actor_id?.slice is not a function
+    at http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:112:127
+    at Array.map (<anonymous>)
+    at FinanceAuditLogPage (http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:86:120)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+[  465543ms] [WARNING] %s
+
+%s
+ An error occurred in the <FinanceAuditLogPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965
+[  467327ms] TypeError: log.actor_id?.slice is not a function
+    at http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:112:127
+    at Array.map (<anonymous>)
+    at FinanceAuditLogPage (http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:86:120)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+[  467325ms] [WARNING] %s
+
+%s
+ An error occurred in the <FinanceAuditLogPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965
+[  471116ms] TypeError: log.actor_id?.slice is not a function
+    at http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:112:127
+    at Array.map (<anonymous>)
+    at FinanceAuditLogPage (http://localhost:5175/src/components/admin/finance/FinanceAuditLogPage.tsx?t=1773038444595:86:120)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+[  471113ms] [WARNING] %s
+
+%s
+ An error occurred in the <FinanceAuditLogPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965

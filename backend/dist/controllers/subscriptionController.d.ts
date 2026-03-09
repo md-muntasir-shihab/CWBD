@@ -1,0 +1,28 @@
+import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
+export declare function getPublicSubscriptionPlans(req: Request, res: Response): Promise<void>;
+export declare function getPublicSubscriptionPlanById(req: Request, res: Response): Promise<void>;
+export declare function getMySubscription(req: AuthRequest, res: Response): Promise<void>;
+export declare function requestSubscriptionPayment(req: AuthRequest, res: Response): Promise<void>;
+export declare function uploadSubscriptionProof(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetSubscriptionPlans(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetSubscriptionPlanById(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminCreateSubscriptionPlan(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminUpdateSubscriptionPlan(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminDeleteSubscriptionPlan(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminToggleSubscriptionPlan(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminReorderSubscriptionPlans(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminAssignSubscription(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminLegacyAssignStudentSubscription(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminSuspendSubscription(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminExportSubscriptions(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminExportSubscriptionPlans(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminToggleSubscriptionPlanFeatured(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetSubscriptionSettings(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminUpdateSubscriptionSettings(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetUserSubscriptions(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminCreateUserSubscription(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminActivateUserSubscription(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminExpireUserSubscription(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminSuspendUserSubscriptionById(req: AuthRequest, res: Response): Promise<void>;
+//# sourceMappingURL=subscriptionController.d.ts.map

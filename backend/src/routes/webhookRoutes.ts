@@ -7,6 +7,7 @@ import PaymentWebhookEvent from '../models/PaymentWebhookEvent';
 import { broadcastFinanceEvent } from '../realtime/financeStream';
 import { getPanicSettings } from '../services/securityCenterService';
 import { logger } from '../utils/logger';
+import { createIncomeFromPayment } from '../services/financeCenterService';
 
 const router = Router();
 
@@ -185,6 +186,29 @@ router.post('/sslcommerz/ipn', async (req: Request, res: Response) => {
             });
 
             logger.info('[Webhook] Payment marked as PAID', req, { tran_id, paymentId: String(payment._id) });
+
+            // ── Auto-post income to Finance Center ──
+            try {
+                const sourceType = payment.entryType === 'subscription' ? 'subscription_payment'
+                    : payment.entryType === 'exam_fee' ? 'exam_payment'
+                    : 'manual_income';
+                await createIncomeFromPayment({
+                    paymentId: String(payment._id),
+                    studentId: String(payment.studentId),
+                    amount: Number(payment.amount),
+                    method: String(payment.method || 'gateway'),
+                    sourceType,
+                    accountCode: sourceType === 'subscription_payment' ? '4100' : sourceType === 'exam_payment' ? '4200' : '4900',
+                    categoryLabel: sourceType === 'subscription_payment' ? 'Subscription Revenue' : sourceType === 'exam_payment' ? 'Exam Fee Revenue' : 'Other Income',
+                    description: `Auto-posted from payment ${tran_id}`,
+                    adminId: String(payment.recordedBy || payment.studentId),
+                    planId: payment.subscriptionPlanId ? String(payment.subscriptionPlanId) : undefined,
+                    examId: payment.examId ? String(payment.examId) : undefined,
+                    paidAtUTC: payment.date || new Date(),
+                });
+            } catch (fcErr) {
+                logger.error('[Webhook] Finance auto-post failed', req, { tran_id, error: String(fcErr) });
+            }
         } else if (status === 'FAILED' || status === 'CANCELLED') {
             payment.status = 'failed';
             payment.paymentDetails = payload;

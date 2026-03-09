@@ -1,0 +1,35 @@
+[  304035ms] Error: Objects are not valid as a React child (found: object with keys {body}). If you meant to render a collection of children, use an array instead.
+    at throwOnInvalidObjectTypeImpl (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:4598:15)
+    at throwOnInvalidObjectType (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:4606:13)
+    at reconcileChildFibersImpl (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5217:13)
+    at http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5237:35
+    at reconcileChildren (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7182:53)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8701:104)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12408:13)
+[  304035ms] [WARNING] %s
+
+%s
+ An error occurred in the <div> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965
+[  427753ms] [ERROR] Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information. 
+
+Check the render method of `SocialLinksManager`.  @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18617
+[  515691ms] TypeError: Cannot read properties of undefined (reading 'length')
+    at ExportCenter (http://localhost:5175/src/pages/admin/datahub/DataHubPage.tsx?t=1773057343054:303:27)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:11827:37)
+[  515691ms] [WARNING] %s
+
+%s
+ An error occurred in the <ExportCenter> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:6965

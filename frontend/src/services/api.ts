@@ -363,13 +363,23 @@ export interface AdminSubscriptionPlan {
 export type SubscriptionPlanPublic = AdminSubscriptionPlan;
 
 export interface UserSubscriptionStatus {
-    status: 'active' | 'expired' | 'pending' | 'suspended';
-    planName: string;
-    expiresAtUTC: string | null;
-    planId: string | null;
-    isActive: boolean;
+    status: 'active' | 'expired' | 'pending' | 'none' | 'suspended';
+    planName?: string;
+    expiresAtUTC?: string | null;
+    daysLeft?: number | null;
+    planId?: string | null;
+    isActive?: boolean;
     startAtUTC?: string | null;
     subscription?: Record<string, unknown>;
+}
+
+export interface SubscriptionPlansPublicSettings {
+    pageTitle?: string;
+    pageSubtitle?: string;
+    headerBannerUrl?: string | null;
+    defaultPlanBannerUrl?: string | null;
+    currencyLabel?: string;
+    showFeaturedFirst?: boolean;
 }
 
 export interface SubscriptionAssignmentPayload {
@@ -642,6 +652,12 @@ export interface HomeSettingsConfig {
         contactInfo: { email: string; phone: string; address: string };
         legalLinks: HomeLinkItem[];
     };
+    campaignBanners?: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        autoRotateInterval: number;
+    };
     ui: {
         animationLevel: HomeAnimationLevel;
     };
@@ -832,6 +848,23 @@ export interface HomeApiResponse {
         mobileImageUrl?: string;
         linkUrl?: string;
         altText?: string;
+    }>;
+    sectionOrder?: Array<{
+        id: string;
+        title: string;
+        order: number;
+    }>;
+    contentBlocksForHome?: Array<{
+        _id: string;
+        type: string;
+        title?: string;
+        body?: string;
+        imageUrl?: string;
+        ctaLabel?: string;
+        ctaUrl?: string;
+        placements: string[];
+        priority?: number;
+        dismissible?: boolean;
     }>;
     socialLinks: {
         facebook?: string;
@@ -1640,6 +1673,7 @@ export interface StudentDashboardProfileSection {
     welcomeMessage: string;
     guardian_phone_verification_status: 'unverified' | 'pending' | 'verified';
     guardian_phone_verified_at: string | null;
+    missingFields: string[];
     subscription: {
         isActive: boolean;
         planName: string;
@@ -1874,6 +1908,16 @@ export interface StudentDashboardConfig {
     enableBadges: boolean;
     enableProgressCharts: boolean;
     featuredOrderingMode: 'manual' | 'adaptive';
+    profileGatingMessage?: string;
+    renewalCtaText?: string;
+    renewalCtaUrl?: string;
+    enableRecommendations?: boolean;
+    enableLeaderboard?: boolean;
+    enableWeakTopics?: boolean;
+    enableWatchlist?: boolean;
+    maxAlertsVisible?: number;
+    maxExamsVisible?: number;
+    sections?: Record<string, { visible: boolean; label: string; order: number }>;
     celebrationRules?: {
         enabled: boolean;
         windowDays: number;
@@ -1886,6 +1930,202 @@ export interface StudentDashboardConfig {
         maxShowsPerDay: number;
     };
     updatedAt?: string;
+}
+
+/* ── Student Dashboard Full (Premium) ── */
+export interface DashboardSectionConfig {
+    visible: boolean;
+    label: string;
+    order: number;
+}
+
+export interface DashboardQuickStatus {
+    profileScore: number;
+    subscriptionStatus: 'active' | 'expired';
+    paymentStatus: 'paid' | 'pending';
+    upcomingExamsCount: number;
+    completedExamsCount: number;
+    unreadAlertsCount: number;
+}
+
+export interface DashboardPaymentSummary {
+    totalPaid: number;
+    pendingAmount: number;
+    pendingCount: number;
+    pendingDue: number;
+    lastPayment: {
+        amount: number;
+        method: string;
+        date: string;
+        transactionId: string;
+        reference: string;
+    } | null;
+    recentItems: Array<{
+        _id: string;
+        amount: number;
+        method: string;
+        status: string;
+        date: string;
+        paidAt?: string;
+        entryType: string;
+        reference: string;
+    }>;
+}
+
+export interface DashboardWeakTopic {
+    subject: string;
+    accuracy: number;
+    totalAttempts: number;
+    correctCount: number;
+    isWeak: boolean;
+}
+
+export interface DashboardLeaderboardEntry {
+    rank: number;
+    studentId: string;
+    name: string;
+    avatar: string;
+    avgPercentage: number;
+    attempts: number;
+    isMe: boolean;
+}
+
+export interface DashboardImportantDate {
+    type: string;
+    label: string;
+    date: string;
+    urgency: 'critical' | 'high' | 'normal';
+}
+
+export interface DashboardPersonalizedCta {
+    id: string;
+    text: string;
+    url: string;
+    priority: number;
+    variant: 'warning' | 'info' | 'danger' | 'success';
+}
+
+export interface DashboardResourceItem {
+    _id: string;
+    title: string;
+    description: string;
+    type: string;
+    category: string;
+    fileUrl: string;
+    thumbnailUrl: string;
+    isFeatured: boolean;
+}
+
+export interface DashboardSupportSummary {
+    openTickets: number;
+    recentTickets: Array<{
+        _id: string;
+        ticketNo: string;
+        subject: string;
+        status: string;
+        priority: string;
+        createdAt: string;
+    }>;
+}
+
+export interface DashboardWatchlistSummary {
+    universities: number;
+    resources: number;
+    exams: number;
+    news: number;
+    total: number;
+    recentItems: Array<{
+        _id: string;
+        itemType: string;
+        itemId: string;
+        savedAt: string;
+    }>;
+}
+
+export interface StudentDashboardFullResponse {
+    header: StudentDashboardProfileSection;
+    quickStatus: DashboardQuickStatus;
+    subscription: {
+        isActive: boolean;
+        planName: string;
+        expiryDate: string | null;
+    };
+    payments: DashboardPaymentSummary;
+    alerts: {
+        items: StudentLiveAlertItem[];
+        totalCount: number;
+    };
+    notifications: {
+        items: StudentNotificationItem[];
+        totalCount: number;
+    };
+    exams: {
+        live: StudentUpcomingExam[];
+        upcoming: StudentUpcomingExam[];
+        missed: StudentUpcomingExam[];
+        totalUpcoming: number;
+    };
+    results: {
+        recent: StudentExamHistoryItem[];
+        progress: StudentExamHistoryResponse['progress'];
+        badges: StudentBadgeItem[];
+    };
+    weakTopics: {
+        topics: DashboardWeakTopic[];
+        weakCount: number;
+        hasData: boolean;
+    };
+    leaderboard: {
+        topPerformers: DashboardLeaderboardEntry[];
+        myRank: number | null;
+        myAvgPercentage: number | null;
+    };
+    watchlist: DashboardWatchlistSummary;
+    resources: {
+        items: DashboardResourceItem[];
+    };
+    support: DashboardSupportSummary;
+    security: {
+        lastLogin: string;
+        twoFactorEnabled: boolean;
+    };
+    importantDates: DashboardImportantDate[];
+    dailyFocus: {
+        nextExam: string | null;
+        nextDeadline: string | null;
+        recommendedAction: string;
+    };
+    personalizedCtas: DashboardPersonalizedCta[];
+    sections: Record<string, DashboardSectionConfig>;
+    config: {
+        enableRealtime: boolean;
+        enableBadges: boolean;
+        enableProgressCharts: boolean;
+        enableRecommendations: boolean;
+        enableLeaderboard: boolean;
+        enableWeakTopics: boolean;
+        enableWatchlist: boolean;
+        profileGatingMessage: string;
+        renewalCtaText: string;
+        renewalCtaUrl: string;
+        celebrationRules?: StudentDashboardConfig['celebrationRules'];
+    };
+    lastUpdatedAt: string;
+}
+
+export interface WatchlistItem {
+    _id: string;
+    itemType: 'university' | 'resource' | 'exam' | 'news';
+    itemId: string;
+    savedAt: string;
+    title: string;
+    meta: Record<string, unknown>;
+}
+
+export interface WatchlistResponse {
+    items: WatchlistItem[];
+    summary: { universities: number; resources: number; exams: number; news: number; total: number };
+    lastUpdatedAt: string;
 }
 
 export interface AdminBadgeItem {
@@ -2110,7 +2350,7 @@ export const getHome = getHomeSystem;
 export const getHomeStats = () => api.get('/stats');
 export const getHomeStreamUrl = () => resolveApiUrl('/home/stream');
 export const getPublicSubscriptionPlans = () =>
-    api.get<{ items: SubscriptionPlanPublic[]; lastUpdatedAt: string }>('/subscription-plans');
+    api.get<{ items: SubscriptionPlanPublic[]; settings?: SubscriptionPlansPublicSettings; lastUpdatedAt?: string }>('/subscription-plans');
 export const getPublicSubscriptionPlanById = (id: string) =>
     api.get<{ item: SubscriptionPlanPublic }>(`/subscription-plans/${id}`);
 export const getMySubscriptionStatus = () =>
@@ -2182,6 +2422,15 @@ export const getStudentNotices = () => api.get<{ items: StudentNoticeItem[] }>('
 export const getStudentSupportTickets = () => api.get<{ items: StudentSupportTicketItem[] }>('/student/support-tickets');
 export const createStudentSupportTicket = (data: { subject: string; message: string; priority?: 'low' | 'medium' | 'high' | 'urgent' }) =>
     api.post<{ item: StudentSupportTicketItem; message: string }>('/student/support-tickets', data);
+
+/* ── Student Dashboard Full (Premium) ── */
+export const getStudentDashboardFull = () => api.get<StudentDashboardFullResponse>('/student/dashboard-full');
+export const getStudentWatchlist = (type?: string) =>
+    api.get<WatchlistResponse>('/student/watchlist', { params: type ? { type } : {} });
+export const toggleStudentWatchlistItem = (data: { itemType: string; itemId: string }) =>
+    api.post<{ saved: boolean; message: string }>('/student/watchlist/toggle', data);
+export const getStudentWatchlistCheck = (itemType: string, itemId: string) =>
+    api.get<{ saved: boolean }>('/student/watchlist/check', { params: { itemType, itemId } });
 export const getStudentDashboardStreamUrl = (token?: string) => {
     const authToken = token || readAccessToken();
     const query = authToken ? `?token=${encodeURIComponent(authToken)}` : '';
@@ -3707,6 +3956,16 @@ export const adminUpdateResource = (id: string, data: Record<string, unknown>) =
     api.put(`/${ADMIN_PATH}/resources/${id}`, data);
 export const adminDeleteResource = (id: string) =>
     api.delete(`/${ADMIN_PATH}/resources/${id}`);
+export const adminToggleResourcePublish = (id: string) =>
+    api.patch(`/${ADMIN_PATH}/resources/${id}/toggle-publish`);
+export const adminToggleResourceFeatured = (id: string) =>
+    api.patch(`/${ADMIN_PATH}/resources/${id}/toggle-featured`);
+export const adminGetResourceSettings = () =>
+    api.get(`/${ADMIN_PATH}/resource-settings`);
+export const adminUpdateResourceSettings = (data: Record<string, unknown>) =>
+    api.put(`/${ADMIN_PATH}/resource-settings`, data);
+export const getResourceBySlug = (slug: string) =>
+    api.get(`/resources/${encodeURIComponent(slug)}`);
 
 /* â”€â”€ Admin â€” Contact Messages â”€â”€ */
 export const adminGetContactMessages = (params: Record<string, string | number> = {}) =>
@@ -3755,6 +4014,13 @@ export const adminUpdateHomeSettings = (patch: Partial<HomeSettingsConfig>) =>
     api.put<{ message: string; homeSettings: HomeSettingsConfig; updatedAt?: string }>(`/${ADMIN_PATH}/home-settings`, patch);
 export const adminResetHomeSettingsSection = (section: keyof HomeSettingsConfig | string) =>
     api.post<{ message: string; section: string; value: unknown; updatedAt?: string }>(`/${ADMIN_PATH}/home-settings/reset-section`, { section });
+/* ── Admin – Home Config (Section Order) ── */
+export interface HomeConfigSection { id: string; title: string; isActive: boolean; order: number; config?: Record<string, unknown> }
+export interface HomeConfigResponse { _id?: string; sections: HomeConfigSection[]; activeTheme?: string; selectedUniversityCategories?: string[]; highlightCategoryIds?: string[] }
+export const adminGetHomeConfig = () => api.get<HomeConfigResponse>(`/${ADMIN_PATH}/home-config`);
+export const adminUpdateHomeConfig = (data: Partial<HomeConfigResponse>) =>
+    api.put<HomeConfigResponse>(`/${ADMIN_PATH}/home-config`, data);
+
 export const adminGetSettingsSite = () => api.get(`/${ADMIN_PATH}/settings/site`);
 export const adminUpdateSettingsSite = (data: FormData) => api.put(`/${ADMIN_PATH}/settings/site`, data);
 export const adminGetDashboardSummary = () => api.get<AdminDashboardSummary>(`/${ADMIN_PATH}/dashboard/summary`);

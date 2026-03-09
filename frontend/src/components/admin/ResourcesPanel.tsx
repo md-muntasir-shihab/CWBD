@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
     Plus,
@@ -9,14 +10,16 @@ import {
     Star,
     Copy,
     Eye,
+    EyeOff,
     Download,
     Tag,
     CalendarDays,
     Hash,
     Link as LinkIcon,
     FileText,
+    Settings,
 } from 'lucide-react';
-import { adminGetResources, adminCreateResource, adminUpdateResource, adminDeleteResource } from '../../services/api';
+import { adminGetResources, adminCreateResource, adminUpdateResource, adminDeleteResource, adminToggleResourcePublish, adminToggleResourceFeatured } from '../../services/api';
 
 type ResourceType = 'pdf' | 'link' | 'video' | 'audio' | 'image' | 'note';
 
@@ -94,6 +97,7 @@ const toSafeNumber = (value: string, fallback = 0): number => {
 };
 
 export default function ResourcesPanel() {
+    const navigate = useNavigate();
     const [resources, setResources] = useState<ResourceRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -210,6 +214,24 @@ export default function ResourcesPanel() {
         }
     };
 
+    const onTogglePublish = async (id: string) => {
+        try {
+            await adminToggleResourcePublish(id);
+            void fetch();
+        } catch {
+            toast.error('Toggle failed');
+        }
+    };
+
+    const onToggleFeatured = async (id: string) => {
+        try {
+            await adminToggleResourceFeatured(id);
+            void fetch();
+        } catch {
+            toast.error('Toggle failed');
+        }
+    };
+
     const copyLink = (resource: ResourceRecord) => {
         const url = resource.externalUrl || resource.fileUrl || `${window.location.origin}/resources`;
         void navigator.clipboard.writeText(url);
@@ -258,6 +280,13 @@ export default function ResourcesPanel() {
                         className="p-2 bg-white/5 text-slate-400 hover:text-white rounded-xl"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                        onClick={() => navigate('/__cw_admin__/settings/resource-settings')}
+                        title="Resource Settings"
+                        className="p-2 bg-white/5 text-slate-400 hover:text-white rounded-xl"
+                    >
+                        <Settings className="w-4 h-4" />
                     </button>
                 </div>
             </div>
@@ -551,12 +580,20 @@ export default function ResourcesPanel() {
                                 )}
                             </div>
 
-                            <div className="pt-3 border-t border-indigo-500/10 grid grid-cols-3 gap-2">
+                            <div className="pt-3 border-t border-indigo-500/10 grid grid-cols-5 gap-2">
                                 <button onClick={() => openEdit(resource)} className="rounded-xl bg-indigo-500/15 text-indigo-200 text-xs font-semibold py-2 hover:bg-indigo-500/25 flex items-center justify-center gap-1">
                                     <Edit className="w-3.5 h-3.5" /> Edit
                                 </button>
                                 <button onClick={() => copyLink(resource)} className="rounded-xl bg-cyan-500/15 text-cyan-200 text-xs font-semibold py-2 hover:bg-cyan-500/25 flex items-center justify-center gap-1">
                                     <Copy className="w-3.5 h-3.5" /> Copy
+                                </button>
+                                <button onClick={() => void onTogglePublish(resource._id)} title={resource.isPublic ? 'Set Private' : 'Set Public'} className={`rounded-xl text-xs font-semibold py-2 flex items-center justify-center gap-1 ${resource.isPublic ? 'bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25' : 'bg-slate-500/15 text-slate-300 hover:bg-slate-500/25'}`}>
+                                    {resource.isPublic ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                    {resource.isPublic ? 'Pub' : 'Priv'}
+                                </button>
+                                <button onClick={() => void onToggleFeatured(resource._id)} title={resource.isFeatured ? 'Unfeature' : 'Feature'} className={`rounded-xl text-xs font-semibold py-2 flex items-center justify-center gap-1 ${resource.isFeatured ? 'bg-amber-500/15 text-amber-300 hover:bg-amber-500/25' : 'bg-slate-500/15 text-slate-300 hover:bg-slate-500/25'}`}>
+                                    <Star className={`w-3.5 h-3.5 ${resource.isFeatured ? 'fill-amber-400' : ''}`} />
+                                    {resource.isFeatured ? 'Feat' : 'Pin'}
                                 </button>
                                 <button onClick={() => void onDelete(resource._id)} className="rounded-xl bg-red-500/15 text-red-200 text-xs font-semibold py-2 hover:bg-red-500/25 flex items-center justify-center gap-1">
                                     <Trash2 className="w-3.5 h-3.5" /> Delete

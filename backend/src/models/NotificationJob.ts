@@ -6,6 +6,7 @@ export type NotificationJobTarget = 'single' | 'group' | 'filter' | 'selected';
 export type NotificationJobStatus = 'queued' | 'processing' | 'done' | 'failed' | 'partial';
 
 export interface INotificationJob extends Document {
+    campaignName?: string;
     type: NotificationJobType;
     channel: NotificationJobChannel;
     target: NotificationJobTarget;
@@ -13,14 +14,26 @@ export interface INotificationJob extends Document {
     targetGroupId?: mongoose.Types.ObjectId;
     targetStudentIds?: mongoose.Types.ObjectId[];
     targetFilterJson?: string;
+    audienceType?: string;
+    audienceRef?: string;
     templateKey: string;
+    templateIds?: mongoose.Types.ObjectId[];
     payloadOverrides?: Record<string, string>;
+    customBody?: string;
+    selectedFieldMap?: Record<string, boolean>;
+    recipientMode?: string;
+    guardianTargeted: boolean;
     status: NotificationJobStatus;
     scheduledAtUTC?: Date;
     processedAtUTC?: Date;
     totalTargets: number;
     sentCount: number;
     failedCount: number;
+    estimatedCost: number;
+    actualCost: number;
+    triggerKey?: string;
+    duplicatePreventionKey?: string;
+    quietHoursApplied: boolean;
     createdByAdminId: mongoose.Types.ObjectId;
     errorMessage?: string;
     createdAt: Date;
@@ -29,6 +42,7 @@ export interface INotificationJob extends Document {
 
 const NotificationJobSchema = new Schema<INotificationJob>(
     {
+        campaignName: { type: String, trim: true },
         type: {
             type: String,
             enum: ['scheduled', 'bulk', 'triggered'],
@@ -49,8 +63,15 @@ const NotificationJobSchema = new Schema<INotificationJob>(
         targetGroupId: { type: Schema.Types.ObjectId, ref: 'StudentGroup' },
         targetStudentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         targetFilterJson: { type: String },
+        audienceType: { type: String, trim: true },
+        audienceRef: { type: String, trim: true },
         templateKey: { type: String, required: true, trim: true, uppercase: true },
+        templateIds: [{ type: Schema.Types.ObjectId, ref: 'NotificationTemplate' }],
         payloadOverrides: { type: Schema.Types.Mixed },
+        customBody: { type: String },
+        selectedFieldMap: { type: Schema.Types.Mixed },
+        recipientMode: { type: String, trim: true },
+        guardianTargeted: { type: Boolean, default: false },
         status: {
             type: String,
             enum: ['queued', 'processing', 'done', 'failed', 'partial'],
@@ -62,6 +83,11 @@ const NotificationJobSchema = new Schema<INotificationJob>(
         totalTargets: { type: Number, default: 0, min: 0 },
         sentCount: { type: Number, default: 0, min: 0 },
         failedCount: { type: Number, default: 0, min: 0 },
+        estimatedCost: { type: Number, default: 0, min: 0 },
+        actualCost: { type: Number, default: 0, min: 0 },
+        triggerKey: { type: String, trim: true, uppercase: true },
+        duplicatePreventionKey: { type: String, trim: true, sparse: true },
+        quietHoursApplied: { type: Boolean, default: false },
         createdByAdminId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         errorMessage: { type: String },
     },

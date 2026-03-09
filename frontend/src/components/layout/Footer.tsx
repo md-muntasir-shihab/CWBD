@@ -37,7 +37,7 @@ export default function Footer() {
         : [
             { label: 'Home', url: '/' },
             { label: 'Universities', url: '/universities' },
-            { label: 'Exams', url: '/exam-portal' },
+            { label: 'Exams', url: '/exams' },
             { label: 'News', url: '/news' },
             { label: 'Resources', url: '/resources' },
             { label: 'Contact', url: '/contact' },

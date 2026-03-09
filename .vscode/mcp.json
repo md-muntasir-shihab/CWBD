@@ -1,0 +1,43 @@
+{
+  "inputs": [
+    {
+      "id": "coderabbit-api-key",
+      "type": "promptString",
+      "description": "CodeRabbit API Key",
+      "password": true,
+      "default": "cr-f0345f3297aa7efc339471b39c16db295d4e964edb647133d7f03979c4"
+    }
+  ],
+  "servers": {
+    "puppeteer": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-puppeteer"]
+    },
+    "coderabbit": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@coderabbitai/coderabbit-mcp"],
+      "env": {
+        "CODERABBIT_API_KEY": "${input:coderabbit-api-key}"
+      }
+    },
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "f:/CampusWay"
+      ]
+    },
+    "mongodb": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mongodb-mcp-server"],
+      "env": {
+        "MDB_MCP_CONNECTION_STRING": "mongodb://localhost:27017"
+      }
+    }
+  }
+}

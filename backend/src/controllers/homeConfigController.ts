@@ -4,17 +4,18 @@ import { broadcastHomeStreamEvent } from '../realtime/homeStream';
 
 // Default layout if none exists
 const DEFAULT_SECTIONS = [
-    { id: 'hero', title: 'Hero Banner', isActive: true, order: 0 },
-    { id: 'stats', title: 'Quick Stats', isActive: true, order: 1 },
-    { id: 'search', title: 'Search & Filters', isActive: true, order: 2 },
-    { id: 'closing_soon', title: 'Closing Soon', isActive: true, order: 3 },
-    { id: 'exams_today', title: 'Exams Today', isActive: true, order: 4 },
-    { id: 'categories', title: 'Category Tabs', isActive: true, order: 5 },
-    { id: 'featured', title: 'Featured Carousel', isActive: true, order: 6 },
-    { id: 'grid', title: 'University Grid', isActive: true, order: 7 },
-    { id: 'trending', title: 'Trending', isActive: true, order: 8 },
-    { id: 'services', title: 'Services Banner', isActive: true, order: 9 },
-    { id: 'news', title: 'News Strip', isActive: true, order: 10 }
+    { id: 'search', title: 'Search Bar', isActive: true, order: 0 },
+    { id: 'hero', title: 'Hero Banner', isActive: true, order: 1 },
+    { id: 'campaign_banners', title: 'Campaign Banners', isActive: true, order: 2 },
+    { id: 'featured', title: 'Featured Universities', isActive: true, order: 3 },
+    { id: 'category_filter', title: 'Category & Cluster Filter', isActive: true, order: 4 },
+    { id: 'deadlines', title: 'Admission Deadlines', isActive: true, order: 5 },
+    { id: 'upcoming_exams', title: 'Upcoming Exams', isActive: true, order: 6 },
+    { id: 'online_exam_preview', title: 'Online Exam Preview', isActive: true, order: 7 },
+    { id: 'news', title: 'Latest News', isActive: true, order: 8 },
+    { id: 'resources', title: 'Resources Preview', isActive: true, order: 9 },
+    { id: 'content_blocks', title: 'Global CTA / Content Block', isActive: true, order: 10 },
+    { id: 'stats', title: 'Quick Stats', isActive: true, order: 11 },
 ];
 
 export const getHomeConfig = async (req: Request, res: Response): Promise<void> => {

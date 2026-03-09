@@ -380,9 +380,10 @@ async function handleShare(news: ApiNews, channel: 'whatsapp' | 'facebook' | 'me
                                             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-300">
                                                 {settings.appearance.showSourceIcons && (
                                                     <img
-                                                        src={news.sourceIconUrl || settings.defaultSourceIconUrl || getArticleImage(news, settings)}
+                                                        src={news.sourceIconUrl || settings.defaultSourceIconUrl || '/logo.png'}
                                                         alt={news.sourceName || 'Source'}
                                                         className="h-4 w-4 rounded-full object-cover"
+                                                        onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }}
                                                     />
                                                 )}
                                                 <span className="inline-flex items-center gap-1">

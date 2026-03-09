@@ -4,6 +4,7 @@ import User from '../models/User';
 import ActiveSession from '../models/ActiveSession';
 import { StudentSettingsModel } from '../models/StudentSettings';
 import { sendNotificationToStudent } from '../services/notificationProviderService';
+import { triggerAutoSend } from '../services/notificationOrchestrationService';
 import { logger } from '../utils/logger';
 
 // Map reminder day count to template key
@@ -240,6 +241,14 @@ async function runSubscriptionExpiryCheck(): Promise<void> {
   }
 
   logger.info('[subscriptionExpiryCron] Run complete');
+
+  // 4. Trigger automatic audience-based notifications for subscription state changes
+  try {
+    await triggerAutoSend('subscription_expired', 'system');
+    logger.info('[subscriptionExpiryCron] triggerAutoSend(subscription_expired) dispatched');
+  } catch (err) {
+    logger.error('[subscriptionExpiryCron] triggerAutoSend failed', undefined, { error: String(err) });
+  }
 }
 
 export function startSubscriptionExpiryCron(): void {

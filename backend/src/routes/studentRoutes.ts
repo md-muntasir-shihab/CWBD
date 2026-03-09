@@ -31,6 +31,17 @@ import {
     getLeaderboard,
     studentSubmitPaymentProof,
 } from '../controllers/studentHubController';
+import {
+    getStudentDashboardFull,
+    getStudentDashboardSectionsConfig,
+} from '../controllers/studentDashboardFullController';
+import {
+    getStudentWatchlist,
+    toggleWatchlistItem,
+    getWatchlistSummary,
+    checkWatchlistStatus,
+} from '../controllers/studentWatchlistController';
+import { getStudentWeakTopics } from '../controllers/weakTopicController';
 
 const router = Router();
 
@@ -73,5 +84,18 @@ router.get('/leaderboard', getLeaderboard);
 // Application Routes
 router.get('/applications', getStudentApplications);
 router.post('/applications', createStudentApplication);
+
+// Dashboard Full (premium aggregated endpoint)
+router.get('/dashboard-full', getStudentDashboardFull);
+router.get('/dashboard-sections-config', getStudentDashboardSectionsConfig);
+
+// Watchlist Routes
+router.get('/watchlist', getStudentWatchlist);
+router.post('/watchlist/toggle', toggleWatchlistItem);
+router.get('/watchlist/summary', getWatchlistSummary);
+router.get('/watchlist/check', checkWatchlistStatus);
+
+// Weak Topics
+router.get('/me/weak-topics', getStudentWeakTopics);
 
 export default router;

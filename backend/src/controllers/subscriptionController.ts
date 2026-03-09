@@ -5,6 +5,8 @@ import User from '../models/User';
 import SubscriptionPlan from '../models/SubscriptionPlan';
 import UserSubscription from '../models/UserSubscription';
 import ManualPayment from '../models/ManualPayment';
+import WebsiteSettings from '../models/WebsiteSettings';
+import SubscriptionSettings from '../models/SubscriptionSettings';
 import { AuthRequest } from '../middlewares/auth';
 
 type ExportType = 'csv' | 'xlsx';
@@ -59,6 +61,7 @@ function planToDto(plan: Record<string, unknown>) {
         : (priceBDT <= 0 ? 'free' : 'paid');
 
     return {
+        id: String(plan._id || ''),
         _id: String(plan._id || ''),
         code: safeString(plan.code),
         name: safeString(plan.name, 'Subscription Plan'),
@@ -140,13 +143,41 @@ async function syncUserSubscriptionCache(payload: {
     });
 }
 
+async function ensureSubscriptionSettings() {
+    let settings = await SubscriptionSettings.findOne().lean();
+    if (settings) return settings;
+    const created = await SubscriptionSettings.create({});
+    return created.toObject();
+}
+
 export async function getPublicSubscriptionPlans(req: Request, res: Response): Promise<void> {
     try {
-        const plans = await SubscriptionPlan.find({ $or: [{ enabled: true }, { isActive: true }] })
-            .sort({ displayOrder: 1, sortOrder: 1, priority: 1, code: 1 })
-            .lean();
+        const [plans, websiteSettings, subscriptionSettings] = await Promise.all([
+            SubscriptionPlan.find({ $or: [{ enabled: true }, { isActive: true }] })
+                .sort({ displayOrder: 1, sortOrder: 1, priority: 1, code: 1 })
+                .lean(),
+            WebsiteSettings.findOne().lean(),
+            ensureSubscriptionSettings(),
+        ]);
+
         const items = plans.map((plan) => planToDto(plan as unknown as Record<string, unknown>));
-        res.json({ items, lastUpdatedAt: new Date().toISOString() });
+        const settings = {
+            pageTitle: safeString(subscriptionSettings?.pageTitle || websiteSettings?.subscriptionPageTitle, 'Subscription Plans'),
+            pageSubtitle: safeString(subscriptionSettings?.pageSubtitle || websiteSettings?.subscriptionPageSubtitle, 'Choose free or paid plans to unlock premium exam access.'),
+            headerBannerUrl: safeString(subscriptionSettings?.headerBannerUrl) || null,
+            defaultPlanBannerUrl: safeString(subscriptionSettings?.defaultPlanBannerUrl || websiteSettings?.subscriptionDefaultBannerUrl) || null,
+            currencyLabel: safeString(subscriptionSettings?.currencyLabel || websiteSettings?.pricingUi?.currencyCode, 'BDT'),
+            showFeaturedFirst: subscriptionSettings?.showFeaturedFirst !== false,
+        };
+
+        const featuredFirstItems = settings.showFeaturedFirst
+            ? [...items].sort((a, b) => {
+                if (Boolean(a.isFeatured) !== Boolean(b.isFeatured)) return a.isFeatured ? -1 : 1;
+                return Number(a.displayOrder || 0) - Number(b.displayOrder || 0);
+            })
+            : items;
+
+        res.json({ items: featuredFirstItems, settings });
     } catch (error) {
         console.error('getPublicSubscriptionPlans error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -188,14 +219,17 @@ export async function getMySubscription(req: AuthRequest, res: Response): Promis
         if (!latest) {
             const cache = user?.subscription || {};
             const expiresAtUTC = cache.expiryDate ? new Date(String(cache.expiryDate)) : null;
-            const isActive = Boolean(cache.isActive && expiresAtUTC && expiresAtUTC.getTime() > Date.now());
+            const nowMs = Date.now();
+            const isActive = Boolean(cache.isActive && expiresAtUTC && expiresAtUTC.getTime() > nowMs);
+            const hasAnyPlanName = Boolean(String(cache.planName || cache.plan || '').trim());
+            const daysLeft = isActive && expiresAtUTC
+                ? Math.max(0, Math.ceil((expiresAtUTC.getTime() - nowMs) / 86400000))
+                : null;
             res.json({
-                status: isActive ? 'active' : (cache.planCode || cache.plan ? 'expired' : 'pending'),
-                planName: String(cache.planName || cache.plan || ''),
+                status: isActive ? 'active' : (hasAnyPlanName ? 'expired' : 'none'),
+                planName: hasAnyPlanName ? String(cache.planName || cache.plan || '') : undefined,
                 expiresAtUTC: expiresAtUTC ? expiresAtUTC.toISOString() : null,
-                planId: null,
-                isActive,
-                startAtUTC: cache.startDate ? new Date(String(cache.startDate)).toISOString() : null,
+                daysLeft,
             });
             return;
         }
@@ -204,15 +238,19 @@ export async function getMySubscription(req: AuthRequest, res: Response): Promis
             ? planToDto(latest.planId as unknown as Record<string, unknown>)
             : null;
         const expiresAtUTC = latest.expiresAtUTC ? new Date(latest.expiresAtUTC) : null;
-        const isActive = latest.status === 'active' && !!expiresAtUTC && expiresAtUTC.getTime() > Date.now();
+        const nowMs = Date.now();
+        const activeWindow = !!expiresAtUTC && expiresAtUTC.getTime() > nowMs;
+        const normalizedStatus = latest.status === 'pending'
+            ? 'pending'
+            : (latest.status === 'active' && activeWindow ? 'active' : (latest.status === 'active' ? 'expired' : (latest.status === 'expired' ? 'expired' : (latest.status === 'suspended' ? 'pending' : 'none'))));
+        const daysLeft = normalizedStatus === 'active' && expiresAtUTC
+            ? Math.max(0, Math.ceil((expiresAtUTC.getTime() - nowMs) / 86400000))
+            : null;
         res.json({
-            status: latest.status,
-            planName: plan?.name || '',
+            status: normalizedStatus,
+            planName: plan?.name || undefined,
             expiresAtUTC: expiresAtUTC ? expiresAtUTC.toISOString() : null,
-            planId: plan?._id || null,
-            isActive,
-            startAtUTC: latest.startAtUTC ? new Date(latest.startAtUTC).toISOString() : null,
-            subscription: latest,
+            daysLeft,
         });
     } catch (error) {
         console.error('getMySubscription error:', error);
@@ -865,6 +903,227 @@ export async function adminExportSubscriptionPlans(req: AuthRequest, res: Respon
         sendExport(res, type, 'subscription_plans_export', exportRows);
     } catch (error) {
         console.error('adminExportSubscriptionPlans error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminToggleSubscriptionPlanFeatured(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const id = String(req.params.id || '');
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ message: 'Invalid plan id' });
+            return;
+        }
+        const plan = await SubscriptionPlan.findById(id);
+        if (!plan) {
+            res.status(404).json({ message: 'Subscription plan not found' });
+            return;
+        }
+        plan.isFeatured = !Boolean(plan.isFeatured);
+        await plan.save();
+        res.json({ item: planToDto(plan.toObject() as unknown as Record<string, unknown>), message: plan.isFeatured ? 'Plan marked as featured' : 'Plan unfeatured' });
+    } catch (error) {
+        console.error('adminToggleSubscriptionPlanFeatured error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminGetSubscriptionSettings(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const settings = await ensureSubscriptionSettings();
+        res.json({ settings });
+    } catch (error) {
+        console.error('adminGetSubscriptionSettings error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminUpdateSubscriptionSettings(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const body = (req.body || {}) as Record<string, unknown>;
+        const settings = await ensureSubscriptionSettings();
+        const update: Record<string, unknown> = {
+            pageTitle: safeString(body.pageTitle, safeString(settings.pageTitle, 'Subscription Plans')),
+            pageSubtitle: safeString(body.pageSubtitle, safeString(settings.pageSubtitle, 'Choose free or paid plans to unlock premium exam access.')),
+            headerBannerUrl: safeString(body.headerBannerUrl, safeString(settings.headerBannerUrl)) || null,
+            defaultPlanBannerUrl: safeString(body.defaultPlanBannerUrl, safeString(settings.defaultPlanBannerUrl)) || null,
+            currencyLabel: safeString(body.currencyLabel, safeString(settings.currencyLabel, 'BDT')),
+            showFeaturedFirst: toBoolean(body.showFeaturedFirst, settings.showFeaturedFirst !== false),
+            allowFreePlans: toBoolean(body.allowFreePlans, toBoolean(settings.allowFreePlans, true)),
+            lastEditedByAdminId: req.user?._id && mongoose.Types.ObjectId.isValid(String(req.user._id))
+                ? new mongoose.Types.ObjectId(String(req.user._id))
+                : null,
+        };
+
+        const updated = await SubscriptionSettings.findByIdAndUpdate(String(settings._id), update, { new: true, runValidators: true }).lean();
+        res.json({ settings: updated, message: 'Subscription settings updated' });
+    } catch (error) {
+        console.error('adminUpdateSubscriptionSettings error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminGetUserSubscriptions(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const status = safeString(req.query.status).toLowerCase();
+        const q = safeString(req.query.q).toLowerCase();
+        const planId = safeString(req.query.planId);
+        const page = Math.max(1, safeNumber(req.query.page, 1));
+        const limit = Math.min(200, Math.max(1, safeNumber(req.query.limit, 20)));
+
+        const filter: Record<string, unknown> = {};
+        if (status && ['active', 'expired', 'pending', 'suspended'].includes(status)) filter.status = status;
+        if (planId && mongoose.Types.ObjectId.isValid(planId)) filter.planId = new mongoose.Types.ObjectId(planId);
+
+        const rows = await UserSubscription.find(filter)
+            .sort({ updatedAt: -1, createdAt: -1 })
+            .populate('userId', 'username email full_name')
+            .populate('planId', 'name code durationDays')
+            .lean();
+
+        const nowMs = Date.now();
+        const shaped = rows.map((row: any) => {
+            const expiresAt = row.expiresAtUTC ? new Date(row.expiresAtUTC) : null;
+            const daysLeft = expiresAt ? Math.ceil((expiresAt.getTime() - nowMs) / 86400000) : null;
+            return {
+                ...row,
+                daysLeft,
+            };
+        }).filter((row: any) => {
+            if (!q) return true;
+            const username = safeString(row.userId?.username).toLowerCase();
+            const email = safeString(row.userId?.email).toLowerCase();
+            const fullName = safeString(row.userId?.full_name).toLowerCase();
+            const planName = safeString(row.planId?.name).toLowerCase();
+            return username.includes(q) || email.includes(q) || fullName.includes(q) || planName.includes(q);
+        });
+
+        const total = shaped.length;
+        const start = (page - 1) * limit;
+        const items = shaped.slice(start, start + limit);
+
+        res.json({
+            items,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.max(1, Math.ceil(total / limit)),
+            },
+        });
+    } catch (error) {
+        console.error('adminGetUserSubscriptions error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminCreateUserSubscription(req: AuthRequest, res: Response): Promise<void> {
+    req.params.id = req.params.id || '';
+    await adminAssignSubscription(req, res);
+}
+
+export async function adminActivateUserSubscription(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const id = String(req.params.id || '');
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ message: 'Invalid subscription id' });
+            return;
+        }
+
+        const record = await UserSubscription.findById(id);
+        if (!record) {
+            res.status(404).json({ message: 'Subscription not found' });
+            return;
+        }
+
+        const plan = await SubscriptionPlan.findById(record.planId).lean();
+        const planDto = plan ? planToDto(plan as unknown as Record<string, unknown>) : null;
+        const startAtUTC = new Date();
+        const durationDays = Math.max(1, safeNumber(planDto?.durationDays, 30));
+        const expiresAtUTC = new Date(startAtUTC.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+        record.status = 'active';
+        record.startAtUTC = startAtUTC;
+        record.expiresAtUTC = expiresAtUTC;
+        record.activatedByAdminId = req.user?._id && mongoose.Types.ObjectId.isValid(String(req.user._id))
+            ? new mongoose.Types.ObjectId(String(req.user._id))
+            : record.activatedByAdminId;
+        await record.save();
+
+        await syncUserSubscriptionCache({
+            userId: String(record.userId),
+            plan: plan as unknown as Record<string, unknown> | null,
+            status: 'active',
+            startAtUTC,
+            expiresAtUTC,
+        });
+
+        res.json({ message: 'Subscription activated', item: record });
+    } catch (error) {
+        console.error('adminActivateUserSubscription error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminExpireUserSubscription(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const id = String(req.params.id || '');
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ message: 'Invalid subscription id' });
+            return;
+        }
+        const record = await UserSubscription.findById(id);
+        if (!record) {
+            res.status(404).json({ message: 'Subscription not found' });
+            return;
+        }
+        record.status = 'expired';
+        record.expiresAtUTC = new Date();
+        await record.save();
+
+        const plan = await SubscriptionPlan.findById(record.planId).lean();
+        await syncUserSubscriptionCache({
+            userId: String(record.userId),
+            plan: plan as unknown as Record<string, unknown> | null,
+            status: 'expired',
+            startAtUTC: record.startAtUTC,
+            expiresAtUTC: record.expiresAtUTC,
+        });
+
+        res.json({ message: 'Subscription expired', item: record });
+    } catch (error) {
+        console.error('adminExpireUserSubscription error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminSuspendUserSubscriptionById(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const id = String(req.params.id || '');
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ message: 'Invalid subscription id' });
+            return;
+        }
+        const record = await UserSubscription.findById(id);
+        if (!record) {
+            res.status(404).json({ message: 'Subscription not found' });
+            return;
+        }
+        record.status = 'suspended';
+        await record.save();
+
+        const plan = await SubscriptionPlan.findById(record.planId).lean();
+        await syncUserSubscriptionCache({
+            userId: String(record.userId),
+            plan: plan as unknown as Record<string, unknown> | null,
+            status: 'suspended',
+            startAtUTC: record.startAtUTC,
+            expiresAtUTC: record.expiresAtUTC,
+        });
+
+        res.json({ message: 'Subscription suspended', item: record });
+    } catch (error) {
+        console.error('adminSuspendUserSubscriptionById error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }

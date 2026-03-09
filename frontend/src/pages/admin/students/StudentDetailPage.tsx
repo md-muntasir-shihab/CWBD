@@ -8,6 +8,11 @@ import {
   getNotificationLogs, sendNotification, getTemplates,
   getContactTimeline, addTimelineEntry, deleteTimelineEntry,
 } from '../../../api/adminStudentApi';
+import {
+  getStudentSecurity, adminSetPassword, resendAccountInfo,
+  toggleForceReset, revokeStudentSessions,
+  type StudentSecurityMeta,
+} from '../../../api/adminStudentSecurityApi';
 
 type Toast = { show: boolean; message: string; type: 'success' | 'error' };
 type Tab = 'profile' | 'subscription' | 'notifications' | 'timeline' | 'security';
@@ -422,25 +427,7 @@ export default function StudentDetailPage() {
         )}
 
         {/* SECURITY TAB */}
-        {activeTab === 'security' && (
-          <div className="space-y-6 max-w-md">
-            <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Account Flags</h3>
-              {([['Status', String(s.status ?? '')], ['Password Reset Required', s.passwordResetRequired ? 'Yes' : 'No'], ['Must Change Password', s.mustChangePassword ? 'Yes' : 'No']] as [string, string][]).map(([label, val]) => (
-                <div key={label} className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">{label}</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{val}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-col gap-3">
-              <button onClick={() => { setResetPwModal(true); setNewPw(''); }} className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700">Force Reset Password</button>
-              <button onClick={handleSuspendToggle} className={`px-4 py-2 text-sm rounded-lg ${isSusp ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white`}>
-                {isSusp ? 'Activate Account' : 'Suspend Account'}
-              </button>
-            </div>
-          </div>
-        )}
+        {activeTab === 'security' && <SecurityTabContent studentId={id!} student={s} isSusp={isSusp} showToast={showToast} onResetPw={() => { setResetPwModal(true); setNewPw(''); }} onSuspendToggle={handleSuspendToggle} qc={qc} />}
       </div>
 
       {/* Assign Plan Modal */}
@@ -525,5 +512,164 @@ export default function StudentDetailPage() {
         </div>
       </Modal>
     </AdminGuardShell>
+  );
+}
+
+/* ─── Enhanced Security Tab ───────────────────────── */
+function SecurityTabContent({
+  studentId, student, isSusp, showToast, onResetPw, onSuspendToggle, qc,
+}: {
+  studentId: string;
+  student: Record<string, unknown>;
+  isSusp: boolean;
+  showToast: (m: string, t?: 'success' | 'error') => void;
+  onResetPw: () => void;
+  onSuspendToggle: () => void;
+  qc: ReturnType<typeof useQueryClient>;
+}) {
+  const [setPasswordForm, setSetPasswordForm] = useState({ password: '', sendSms: true, sendEmail: false });
+  const [showSetPwModal, setShowSetPwModal] = useState(false);
+
+  const { data: securityData } = useQuery({
+    queryKey: ['student-security', studentId],
+    queryFn: () => getStudentSecurity(studentId),
+    enabled: !!studentId,
+  });
+  const sec = (securityData?.data ?? securityData ?? {}) as Partial<StudentSecurityMeta>;
+
+  const handleAdminSetPassword = async () => {
+    try {
+      await adminSetPassword(studentId, { password: setPasswordForm.password, sendSms: setPasswordForm.sendSms, sendEmail: setPasswordForm.sendEmail });
+      showToast('Password set successfully');
+      setShowSetPwModal(false);
+      setSetPasswordForm({ password: '', sendSms: true, sendEmail: false });
+      qc.invalidateQueries({ queryKey: ['student-security', studentId] });
+    } catch {
+      showToast('Failed to set password', 'error');
+    }
+  };
+
+  const handleResendInfo = async () => {
+    try {
+      await resendAccountInfo(studentId, { channels: ['sms'] });
+      showToast('Account info resent');
+      qc.invalidateQueries({ queryKey: ['student-security', studentId] });
+    } catch {
+      showToast('Failed to resend', 'error');
+    }
+  };
+
+  const handleToggleForceReset = async () => {
+    try {
+      await toggleForceReset(studentId, { enabled: !sec.forcePasswordResetRequired });
+      showToast(sec.forcePasswordResetRequired ? 'Force reset disabled' : 'Force reset enabled');
+      qc.invalidateQueries({ queryKey: ['student-security', studentId] });
+      qc.invalidateQueries({ queryKey: ['admin-student', studentId] });
+    } catch {
+      showToast('Failed to toggle', 'error');
+    }
+  };
+
+  const handleRevokeSessions = async () => {
+    try {
+      await revokeStudentSessions(studentId);
+      showToast('All sessions revoked');
+      qc.invalidateQueries({ queryKey: ['student-security', studentId] });
+    } catch {
+      showToast('Failed to revoke sessions', 'error');
+    }
+  };
+
+  const fmtDate = (d?: string | null) => d ? new Date(d).toLocaleString() : 'Never';
+
+  return (
+    <div className="space-y-6 max-w-xl">
+      {/* Account Status & Flags */}
+      <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl space-y-3">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Account Status</h3>
+        {([
+          ['Status', String(student.status ?? '')],
+          ['Password Reset Required', sec.forcePasswordResetRequired ? 'Yes' : 'No'],
+          ['Password Last Changed', fmtDate(sec.passwordLastChangedAtUTC as string | undefined)],
+          ['Changed By', sec.passwordChangedByType ?? 'N/A'],
+          ['Password Set By Admin', sec.passwordSetByAdminId ? 'Yes' : 'No'],
+        ] as [string, string][]).map(([label, val]) => (
+          <div key={label} className="flex justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">{label}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{val}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Credential Delivery Info */}
+      <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl space-y-3">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Credential Delivery</h3>
+        {([
+          ['Account Info Last Sent', fmtDate(sec.accountInfoLastSentAtUTC as string | undefined)],
+          ['Channels Used', sec.accountInfoLastSentChannels?.join(', ') || 'None'],
+          ['Credentials Last Resent', fmtDate(sec.credentialsLastResentAtUTC as string | undefined)],
+        ] as [string, string][]).map(([label, val]) => (
+          <div key={label} className="flex justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">{label}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{val}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Security Actions */}
+      <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl space-y-3">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <button onClick={() => setShowSetPwModal(true)} className="px-4 py-2.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+            Set Password
+          </button>
+          <button onClick={onResetPw} className="px-4 py-2.5 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium">
+            Force Reset Password
+          </button>
+          <button onClick={handleResendInfo} className="px-4 py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            Resend Credentials
+          </button>
+          <button onClick={handleToggleForceReset} className={`px-4 py-2.5 text-sm rounded-lg font-medium text-white ${sec.forcePasswordResetRequired ? 'bg-gray-600 hover:bg-gray-700' : 'bg-amber-600 hover:bg-amber-700'}`}>
+            {sec.forcePasswordResetRequired ? 'Disable Force Reset' : 'Enable Force Reset'}
+          </button>
+          <button onClick={handleRevokeSessions} className="px-4 py-2.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+            Revoke All Sessions
+          </button>
+          <button onClick={onSuspendToggle} className={`px-4 py-2.5 text-sm rounded-lg font-medium text-white ${isSusp ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>
+            {isSusp ? 'Activate Account' : 'Suspend Account'}
+          </button>
+        </div>
+      </div>
+
+      {/* Set Password Modal */}
+      {showSetPwModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Admin Set Password</h3>
+              <button onClick={() => setShowSetPwModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">New Password</label>
+                <input type="password" value={setPasswordForm.password} onChange={e => setSetPasswordForm(p => ({ ...p, password: e.target.value }))} className={inp()} placeholder="Enter password" />
+              </div>
+              <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input type="checkbox" checked={setPasswordForm.sendSms} onChange={e => setSetPasswordForm(p => ({ ...p, sendSms: e.target.checked }))} className="rounded border-gray-300" />
+                Send password via SMS
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input type="checkbox" checked={setPasswordForm.sendEmail} onChange={e => setSetPasswordForm(p => ({ ...p, sendEmail: e.target.checked }))} className="rounded border-gray-300" />
+                Send password via Email
+              </label>
+              <div className="flex gap-2 justify-end pt-2">
+                <button onClick={() => setShowSetPwModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">Cancel</button>
+                <button onClick={handleAdminSetPassword} disabled={!setPasswordForm.password.trim()} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg disabled:opacity-40">Set Password</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

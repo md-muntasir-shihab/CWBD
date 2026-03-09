@@ -11,6 +11,7 @@ export const PERMISSION_MODULES = [
     'students_groups',
     'subscription_plans',
     'payments',
+    'finance_center',
     'resources',
     'support_center',
     'reports_analytics',
@@ -78,6 +79,7 @@ const ADMIN_MODULES: PermissionModule[] = [
     'students_groups',
     'subscription_plans',
     'payments',
+    'finance_center',
     'support_center',
     'reports_analytics',
     'security_logs',
@@ -122,6 +124,7 @@ const roleMatrixBase: RolePermissionMatrix = {
     finance_agent: (() => {
         const map = emptyModuleMap();
         allow(map, 'payments', ['view', 'create', 'edit', 'approve', 'export', 'bulk']);
+        allow(map, 'finance_center', ['view', 'create', 'edit', 'approve', 'export', 'bulk']);
         allow(map, 'reports_analytics', ['view', 'export']);
         return map;
     })(),
@@ -167,6 +170,15 @@ export const LEGACY_PERMISSION_BRIDGE: Partial<
         approve: 'canManageStudents',
     },
     payments: {
+        view: 'canManageFinance',
+        create: 'canManageFinance',
+        edit: 'canManageFinance',
+        delete: 'canManageFinance',
+        approve: 'canManageFinance',
+        export: 'canManageFinance',
+        bulk: 'canManageFinance',
+    },
+    finance_center: {
         view: 'canManageFinance',
         create: 'canManageFinance',
         edit: 'canManageFinance',

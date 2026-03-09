@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import DOMPurify from 'dompurify';
 import {
     ArrowLeft,
     CalendarDays,
@@ -305,7 +306,7 @@ export default function SingleNewsPage() {
                         ) : null}
                         <div
                             className="prose prose-slate max-w-none dark:prose-invert prose-headings:font-bold prose-img:rounded-xl"
-                            dangerouslySetInnerHTML={{ __html: newsItem.fullContent || newsItem.content || '' }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(newsItem.fullContent || newsItem.content || '') }}
                         />
 
                         {newsItem.tags?.length ? (

@@ -1,0 +1,6 @@
+[  737513ms] [ERROR] Failed to load resource: the server responded with a status of 500 (OK) @ http://localhost:5175/api/home/stream:0
+[  739520ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/home/stream:0
+[  741539ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/home/stream:0
+[  747589ms] [ERROR] Failed to load resource: the server responded with a status of 500 (OK) @ http://localhost:5175/api/home/stream:0
+[  749610ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/home/stream:0
+[  751621ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/home/stream:0

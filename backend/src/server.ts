@@ -14,14 +14,19 @@ import publicRoutes from './routes/publicRoutes';
 import adminRoutes from './routes/adminRoutes';
 import studentRoutes from './routes/studentRoutes';
 import webhookRoutes from './routes/webhookRoutes';
+import { studentExamRoutes } from './routes/exams/studentExamRoutes';
 import { runDefaultSetup } from './setup/defaultSetup';
 import { startExamCronJobs } from './cron/examJobs';
 import { startModernExamCronJobs } from './cron/modernExamJobs';
 import { startStudentDashboardCronJobs } from './cron/dashboardJobs';
+import { startFinanceRecurringCronJobs } from './cron/financeRecurringJobs';
+import { seedDefaultChartOfAccounts } from './services/financeSeedService';
 import { startNewsV2CronJobs } from './cron/newsJobs';
 import { startRetentionCronJobs } from './cron/retentionJobs';
 import { startSubscriptionExpiryCron } from './cron/subscriptionExpiryCron';
 import adminStudentMgmtRoutes from './routes/adminStudentMgmtRoutes';
+import adminNotificationRoutes from './routes/adminNotificationRoutes';
+import adminStudentSecurityRoutes from './routes/adminStudentSecurityRoutes';
 import { enforceSiteAccess } from './middlewares/securityGuards';
 import { sanitizeRequestPayload } from './middlewares/requestSanitizer';
 import { adminRateLimiter } from './middlewares/securityRateLimit';
@@ -203,9 +208,14 @@ app.use(`/api/${ADMIN_SECRET_PATH}`, adminRoutes);
 app.use('/api/admin', adminRateLimiter);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminStudentMgmtRoutes);
+app.use('/api/admin', adminNotificationRoutes);
+app.use('/api/admin', adminStudentSecurityRoutes);
 
 // Student API
 app.use('/api/student', studentRoutes);
+
+// Modern exam routes (session-based)
+app.use('/api', studentExamRoutes);
 
 // Webhooks
 app.use('/api/webhooks', webhookRoutes);
@@ -278,6 +288,10 @@ async function start() {
     startNewsV2CronJobs();
     startRetentionCronJobs();
     startSubscriptionExpiryCron();
+    startFinanceRecurringCronJobs();
+
+    // Seed default Chart-of-Account entries (idempotent)
+    await seedDefaultChartOfAccounts();
 
     app.listen(PORT, () => {
         console.log(`🚀 CampusWay Backend running on port ${PORT}`);

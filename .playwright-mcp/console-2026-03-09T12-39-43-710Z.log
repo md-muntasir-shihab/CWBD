@@ -1,0 +1,13 @@
+[   40498ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/exams:0
+[   90344ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/exams/69ab2365f1457f5c3f47e908/start:0
+[   90353ms] AxiosError: Request failed with status code 403
+    at settle (http://localhost:5175/node_modules/.vite/deps/axios.js?v=5213783b:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:5175/node_modules/.vite/deps/axios.js?v=5213783b:1638:7)
+    at Axios.request (http://localhost:5175/node_modules/.vite/deps/axios.js?v=5213783b:2255:41)
+    at async handleExternalStart (http://localhost:5175/src/pages/exams/ExamsListPage.tsx:163:24)
+[  566698ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/exams/69ae86972a20ea6d276e3117/sessions/start:0
+[  566726ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/exams/69ae86972a20ea6d276e3117/sessions/start:0
+[  568850ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/auth/login:0
+[  573010ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/exams/69ae86972a20ea6d276e3117:0
+[  574019ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/exams/69ae86972a20ea6d276e3117:0
+[  641022ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/auth/login:0

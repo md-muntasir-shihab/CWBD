@@ -200,6 +200,12 @@ export interface HomeSettingsShape {
         };
         legalLinks: HomeLinkItem[];
     };
+    campaignBanners: {
+        enabled: boolean;
+        title: string;
+        subtitle: string;
+        autoRotateInterval: number;
+    };
     ui: {
         animationLevel: HomeAnimationLevel;
     };
@@ -439,6 +445,12 @@ export function createHomeSettingsDefaults(): HomeSettingsShape {
                 { label: 'Privacy', url: '/privacy' },
             ],
         },
+        campaignBanners: {
+            enabled: true,
+            title: 'Promotions & Campaigns',
+            subtitle: 'Latest offers and announcements',
+            autoRotateInterval: 5000,
+        },
         ui: {
             animationLevel: 'normal',
         },
@@ -631,6 +643,12 @@ const homeSettingsSchema = new Schema<IHomeSettings>(
                 address: { type: String, default: 'Dhaka, Bangladesh' },
             },
             legalLinks: { type: [linkItemSchema], default: () => [] },
+        },
+        campaignBanners: {
+            enabled: { type: Boolean, default: true },
+            title: { type: String, default: 'Promotions & Campaigns' },
+            subtitle: { type: String, default: 'Latest offers and announcements' },
+            autoRotateInterval: { type: Number, default: 5000, min: 2000, max: 15000 },
         },
         ui: {
             animationLevel: {

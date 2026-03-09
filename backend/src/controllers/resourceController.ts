@@ -79,3 +79,38 @@ export async function incrementResourceDownload(req: Request, res: Response): Pr
         res.status(500).json({ message: 'Server error' });
     }
 }
+
+export async function getPublicResourceBySlug(req: Request, res: Response): Promise<void> {
+    try {
+        const now = new Date();
+        const resource = await Resource.findOne({
+            slug: req.params.slug,
+            isPublic: true,
+            $or: [{ expiryDate: { $exists: false } }, { expiryDate: null }, { expiryDate: { $gt: now } }],
+        }).lean();
+
+        if (!resource) {
+            res.status(404).json({ message: 'Resource not found' });
+            return;
+        }
+
+        // Fire-and-forget view increment
+        Resource.findByIdAndUpdate(resource._id, { $inc: { views: 1 } }).catch(() => undefined);
+
+        // Fetch up to 4 related resources from same category
+        const relatedResources = await Resource.find({
+            _id: { $ne: resource._id },
+            category: resource.category,
+            isPublic: true,
+            $or: [{ expiryDate: { $exists: false } }, { expiryDate: null }, { expiryDate: { $gt: now } }],
+        })
+            .sort({ publishDate: -1 })
+            .limit(4)
+            .lean();
+
+        res.json({ resource, relatedResources });
+    } catch (err) {
+        console.error('getPublicResourceBySlug error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}

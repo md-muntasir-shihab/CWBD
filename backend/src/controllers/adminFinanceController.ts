@@ -14,6 +14,7 @@ import { AuthRequest } from '../middlewares/auth';
 import { addFinanceStreamClient, broadcastFinanceEvent } from '../realtime/financeStream';
 import { getRuntimeSettingsSnapshot } from '../services/runtimeSettingsService';
 import { getClientIp } from '../utils/requestMeta';
+import { createIncomeFromPayment } from '../services/financeCenterService';
 
 type DateRange = { from?: Date; to?: Date };
 
@@ -164,6 +165,29 @@ async function settleSuccessfulPayment(
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+    }
+
+    // ── Auto-post income to Finance Center ──
+    try {
+        const sourceType = payment.entryType === 'subscription' ? 'subscription_payment'
+            : payment.entryType === 'exam_fee' ? 'exam_payment'
+            : 'manual_income';
+        await createIncomeFromPayment({
+            paymentId: String(payment._id),
+            studentId: String(payment.studentId),
+            amount: Number(payment.amount),
+            method: String(payment.method || 'manual'),
+            sourceType,
+            accountCode: sourceType === 'subscription_payment' ? '4100' : sourceType === 'exam_payment' ? '4200' : '4900',
+            categoryLabel: sourceType === 'subscription_payment' ? 'Subscription Revenue' : sourceType === 'exam_payment' ? 'Exam Fee Revenue' : 'Other Income',
+            description: `Auto-posted from admin payment ${String(payment._id)}`,
+            adminId: actorId ? String(actorId) : String(payment.recordedBy || payment.studentId),
+            planId: payment.subscriptionPlanId ? String(payment.subscriptionPlanId) : undefined,
+            examId: payment.examId ? String(payment.examId) : undefined,
+            paidAtUTC: payment.date || new Date(),
+        });
+    } catch (fcErr) {
+        console.error('[settleSuccessfulPayment] Finance auto-post failed:', fcErr);
     }
 }
 

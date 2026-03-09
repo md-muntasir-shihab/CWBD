@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, Search, TriangleAlert } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { RefreshCw, Search, SlidersHorizontal, TriangleAlert, X } from 'lucide-react';
 import UniversityGrid from '../components/university/UniversityGrid';
 import {
-    getPublicHomeSettings,
-    getUniversities,
-    getUniversityCategories,
-    type ApiUniversity,
-    type HomeSettingsConfig,
-    type UniversityCategorySummary,
-    type UniversityCardSort,
-} from '../services/api';
+    useUniversityCategories,
+    useUniversities,
+    usePublicHomeSettings,
+} from '../hooks/useUniversityQueries';
+import type { ApiUniversity, UniversityCategorySummary, UniversityCardSort } from '../services/api';
 
 function normalizeUniversity(item: ApiUniversity): Record<string, unknown> {
     return {
@@ -45,56 +43,180 @@ function sortCategories(items: UniversityCategorySummary[]): UniversityCategoryS
     return [...items].sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
 }
 
-function unpackUniversityList(payload: unknown): ApiUniversity[] {
-    const data = payload as {
-        universities?: ApiUniversity[];
-        items?: ApiUniversity[];
-        data?: ApiUniversity[];
-    };
-    if (Array.isArray(data?.universities)) return data.universities;
-    if (Array.isArray(data?.items)) return data.items;
-    if (Array.isArray(data?.data)) return data.data;
-    return [];
+/* ── Mobile Bottom Sheet for Filters ── */
+function FilterBottomSheet({
+    open,
+    onClose,
+    search,
+    setSearch,
+    sort,
+    setSort,
+    clusters,
+    selectedCluster,
+    setSelectedCluster,
+}: {
+    open: boolean;
+    onClose: () => void;
+    search: string;
+    setSearch: (v: string) => void;
+    sort: UniversityCardSort;
+    setSort: (v: UniversityCardSort) => void;
+    clusters: string[];
+    selectedCluster: string;
+    setSelectedCluster: (v: string) => void;
+}) {
+    const backdropRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (open) document.body.style.overflow = 'hidden';
+        else document.body.style.overflow = '';
+        return () => { document.body.style.overflow = ''; };
+    }, [open]);
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <>
+                    <motion.div
+                        ref={backdropRef}
+                        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                    />
+                    <motion.div
+                        className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-card-border bg-white p-5 shadow-elevated dark:border-dark-border dark:bg-dark-surface"
+                        initial={{ y: '100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '100%' }}
+                        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                    >
+                        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-300 dark:bg-dark-border" />
+
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-heading font-bold text-text dark:text-dark-text">Filters</h3>
+                            <button type="button" onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border" aria-label="Close filters">
+                                <X className="h-5 w-5 text-text-muted" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                            {/* Search */}
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50 mb-1.5 block">
+                                    Search
+                                </label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+                                    <input
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder="Search by name or short form..."
+                                        className="input-field h-11 pl-10 w-full"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Cluster Group */}
+                            {clusters.length > 0 && (
+                                <div>
+                                    <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50 mb-1.5 block">
+                                        Cluster Group
+                                    </label>
+                                    <select
+                                        value={selectedCluster}
+                                        onChange={(e) => setSelectedCluster(e.target.value)}
+                                        className="input-field h-11 w-full"
+                                    >
+                                        <option value="">All Clusters</option>
+                                        {clusters.map((c) => (
+                                            <option key={c} value={c}>{c}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Sort */}
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50 mb-1.5 block">
+                                    Sort By
+                                </label>
+                                <select
+                                    value={sort}
+                                    onChange={(e) => setSort(e.target.value as UniversityCardSort)}
+                                    className="input-field h-11 w-full"
+                                >
+                                    <option value="closing_soon">Closing Soon</option>
+                                    <option value="exam_soon">Exam Soon</option>
+                                    <option value="name_asc">Name (A → Z)</option>
+                                    <option value="name_desc">Name (Z → A)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="btn-primary w-full mt-5"
+                        >
+                            Apply Filters
+                        </button>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    );
 }
 
 export default function UniversitiesPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const categoryFromUrl = searchParams.get('category') || '';
+
     const [search, setSearch] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl || 'all');
     const [selectedCluster, setSelectedCluster] = useState('');
     const [sort, setSort] = useState<UniversityCardSort>('closing_soon');
+    const [filterOpen, setFilterOpen] = useState(false);
 
-    const homeSettingsQuery = useQuery<HomeSettingsConfig>({
-        queryKey: ['home-settings-public'],
-        queryFn: async () => (await getPublicHomeSettings()).data.homeSettings,
-        staleTime: 60_000,
-        refetchInterval: 90_000,
-    });
-
-    const categoriesQuery = useQuery<UniversityCategorySummary[]>({
-        queryKey: ['universityCategories'],
-        queryFn: async () => (await getUniversityCategories()).data.categories || [],
-        staleTime: 60_000,
-        refetchInterval: 90_000,
-    });
+    const homeSettingsQuery = usePublicHomeSettings();
+    const categoriesQuery = useUniversityCategories();
 
     const categories = useMemo(() => sortCategories(categoriesQuery.data || []), [categoriesQuery.data]);
     const defaultCategoryFromAdmin = String(homeSettingsQuery.data?.universityDashboard?.defaultCategory || '').trim();
     const showAllCategories = Boolean(homeSettingsQuery.data?.universityDashboard?.showAllCategories);
 
+    // Set initial category from URL ?category= or admin default
+    const initializedRef = useRef(false);
+    useEffect(() => {
+        if (!categories.length || initializedRef.current) return;
+        initializedRef.current = true;
+        if (categoryFromUrl) {
+            const match = categories.find((c) => c.categoryName === categoryFromUrl);
+            if (match) { setSelectedCategory(match.categoryName); return; }
+        }
+        if (defaultCategoryFromAdmin && !showAllCategories) {
+            const match = categories.find((c) => c.categoryName === defaultCategoryFromAdmin);
+            if (match) { setSelectedCategory(match.categoryName); return; }
+        }
+        if (categories[0]) setSelectedCategory(categories[0].categoryName);
+    }, [categories, categoryFromUrl, defaultCategoryFromAdmin, showAllCategories]);
+
+    // Keep category in URL in sync
+    const handleCategoryChange = useCallback((cat: string) => {
+        setSelectedCategory(cat);
+        setSelectedCluster('');
+        setSearchParams({ category: cat }, { replace: true });
+    }, [setSearchParams]);
+
+    // If selected category doesn't exist, fallback
     useEffect(() => {
         if (!categories.length) return;
         const isAll = !selectedCategory || selectedCategory.trim().toLowerCase() === 'all';
-        if (isAll) {
-            if (defaultCategoryFromAdmin && !showAllCategories) {
-                const match = categories.find((c) => c.categoryName === defaultCategoryFromAdmin);
-                if (match) { setSelectedCategory(match.categoryName); return; }
-            }
-            if (categories[0]) setSelectedCategory(categories[0].categoryName);
-            return;
-        }
+        if (isAll) return;
         const exists = categories.some((c) => c.categoryName === selectedCategory);
-        if (!exists) setSelectedCategory(categories[0]?.categoryName ?? '');
-    }, [categories, selectedCategory, defaultCategoryFromAdmin, showAllCategories]);
+        if (!exists && categories[0]) setSelectedCategory(categories[0].categoryName);
+    }, [categories, selectedCategory]);
 
     const activeCategory = selectedCategory || 'all';
     const activeCategoryMeta = useMemo(
@@ -111,64 +233,93 @@ export default function UniversitiesPage() {
         if (!clusters.includes(selectedCluster)) setSelectedCluster('');
     }, [clusters, selectedCluster]);
 
-    const universitiesQuery = useQuery<ApiUniversity[]>({
-        queryKey: [
-            'universities',
-            { category: activeCategory, clusterGroup: selectedCluster, q: search.trim(), sort },
-        ],
-        enabled: Boolean(activeCategory && activeCategory.toLowerCase() !== 'all'),
-        queryFn: async () => {
-            const params: Record<string, string | number> = { page: 1, limit: 300, sort };
-            if (search.trim()) params.q = search.trim();
-            if (selectedCluster) params.clusterGroup = selectedCluster;
-            const response = await getUniversities({ ...params, category: activeCategory });
-            return unpackUniversityList(response.data);
-        },
-        staleTime: 60_000,
-        refetchInterval: 90_000,
+    const universitiesQuery = useUniversities({
+        category: activeCategory,
+        clusterGroup: selectedCluster || undefined,
+        q: search.trim() || undefined,
+        sort,
     });
 
     const mappedItems = useMemo(
         () => (universitiesQuery.data || []).map((item) => normalizeUniversity(item)),
         [universitiesQuery.data],
     );
-    const animationLevel = homeSettingsQuery.data?.ui.animationLevel || 'minimal';
+    const animationLevel = homeSettingsQuery.data?.ui?.animationLevel || 'minimal';
     const cardConfig = homeSettingsQuery.data?.universityCardConfig;
+    const hasActiveFilters = Boolean(search.trim() || selectedCluster);
 
     return (
-        <div className="section-container py-8 overflow-x-hidden">
+        <div className="section-container py-6 sm:py-8 overflow-x-hidden">
+            {/* Page title */}
             <div className="mb-4">
-                <h1 className="text-3xl font-heading font-extrabold text-text dark:text-dark-text">Universities</h1>
-                <p className="mt-1 text-sm text-text-muted dark:text-dark-text/70">
-                    Universities are always grouped by category. Search and sort apply within the selected category.
+                <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-text dark:text-dark-text">Universities</h1>
+                <p className="mt-1 text-xs sm:text-sm text-text-muted dark:text-dark-text/70">
+                    Browse universities grouped by category. Tap a category to filter.
                 </p>
             </div>
 
-            <div className="sticky top-16 z-20 rounded-2xl border border-card-border/70 bg-white/90 p-3 shadow-sm backdrop-blur dark:border-dark-border/70 dark:bg-slate-900/90">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                    <div className="flex flex-1 flex-col gap-1.5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50">
-                            Search Universities
+            {/* Sticky filter bar */}
+            <div className="sticky top-14 sm:top-16 z-20 -mx-4 sm:mx-0 rounded-none sm:rounded-2xl border-y sm:border border-card-border/70 bg-white/95 p-3 shadow-sm backdrop-blur dark:border-dark-border/70 dark:bg-slate-900/95">
+                {/* Category tabs - horizontal scroll */}
+                {categories.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide -mx-1 px-1" role="tablist">
+                        {categories.map((item) => (
+                            <button
+                                key={item.categoryName}
+                                type="button"
+                                role="tab"
+                                aria-selected={activeCategory === item.categoryName}
+                                onClick={() => handleCategoryChange(item.categoryName)}
+                                className={`tab-pill whitespace-nowrap flex-shrink-0 text-xs sm:text-sm ${activeCategory === item.categoryName ? 'tab-pill-active' : 'tab-pill-inactive'}`}
+                                data-testid="university-category-tab"
+                                data-category={item.categoryName}
+                            >
+                                {item.categoryName}
+                                <span className="ml-1 text-xs opacity-70">({item.count})</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Desktop inline filters - hidden on mobile */}
+                <div className="hidden md:flex gap-3 mt-3 items-end">
+                    <div className="flex-1">
+                        <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50 mb-1 block">
+                            Search
                         </label>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
                             <input
                                 value={search}
-                                onChange={(event) => setSearch(event.target.value)}
+                                onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search by name or short form..."
-                                className="input-field h-11 pl-10"
+                                className="input-field h-10 pl-10"
                             />
                         </div>
                     </div>
-
-                    <div className="flex flex-col gap-1.5 md:w-64">
-                        <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50">
+                    {clusters.length > 0 && (
+                        <div className="w-52">
+                            <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50 mb-1 block">
+                                Cluster Group
+                            </label>
+                            <select
+                                value={selectedCluster}
+                                onChange={(e) => setSelectedCluster(e.target.value)}
+                                className="input-field h-10"
+                            >
+                                <option value="">All Clusters</option>
+                                {clusters.map((c) => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        </div>
+                    )}
+                    <div className="w-48">
+                        <label className="text-xs font-bold uppercase tracking-wider text-text-muted dark:text-dark-text/50 mb-1 block">
                             Sort By
                         </label>
                         <select
                             value={sort}
-                            onChange={(event) => setSort(event.target.value as UniversityCardSort)}
-                            className="input-field h-11"
+                            onChange={(e) => setSort(e.target.value as UniversityCardSort)}
+                            className="input-field h-10"
                         >
                             <option value="closing_soon">Closing Soon</option>
                             <option value="exam_soon">Exam Soon</option>
@@ -178,53 +329,36 @@ export default function UniversitiesPage() {
                     </div>
                 </div>
 
-                {categories.length > 0 && (
-                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide" role="tablist">
-                        {categories.map((item) => (
-                            <button
-                                key={item.categoryName}
-                                type="button"
-                                role="tab"
-                                aria-selected={activeCategory === item.categoryName}
-                                onClick={() => { setSelectedCategory(item.categoryName); setSelectedCluster(''); }}
-                                className={`tab-pill whitespace-nowrap ${activeCategory === item.categoryName ? 'tab-pill-active' : 'tab-pill-inactive'}`}
-                                data-testid="university-category-tab"
-                                data-category={item.categoryName}
-                            >
-                                {item.categoryName} ({item.count})
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {clusters.length > 0 && (
-                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {/* Mobile filter button */}
+                <div className="md:hidden mt-2.5 flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setFilterOpen(true)}
+                        className="btn-outline text-xs h-9 gap-1.5 flex-shrink-0"
+                        aria-label="Open filter panel"
+                    >
+                        <SlidersHorizontal className="h-3.5 w-3.5" />
+                        Filters
+                        {hasActiveFilters && (
+                            <span className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                                !
+                            </span>
+                        )}
+                    </button>
+                    {hasActiveFilters && (
                         <button
                             type="button"
-                            onClick={() => setSelectedCluster('')}
-                            className={`tab-pill whitespace-nowrap ${selectedCluster === '' ? 'tab-pill-active' : 'tab-pill-inactive'}`}
-                            data-testid="university-cluster-tab"
-                            data-cluster="all"
+                            onClick={() => { setSearch(''); setSelectedCluster(''); }}
+                            className="text-xs text-text-muted hover:text-danger"
                         >
-                            All Clusters
+                            Clear
                         </button>
-                        {clusters.map((cluster) => (
-                            <button
-                                key={cluster}
-                                type="button"
-                                onClick={() => setSelectedCluster(cluster)}
-                                className={`tab-pill whitespace-nowrap ${selectedCluster === cluster ? 'tab-pill-active' : 'tab-pill-inactive'}`}
-                                data-testid="university-cluster-tab"
-                                data-cluster={cluster}
-                            >
-                                {cluster}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
-            <div className="mt-6">
+            {/* University grid */}
+            <div className="mt-5 sm:mt-6">
                 {universitiesQuery.isError ? (
                     <div className="mb-4 card-flat p-4 text-sm">
                         <p className="inline-flex items-center gap-2 font-semibold text-danger">
@@ -250,6 +384,19 @@ export default function UniversitiesPage() {
                     sort={sort}
                 />
             </div>
+
+            {/* Mobile bottom sheet */}
+            <FilterBottomSheet
+                open={filterOpen}
+                onClose={() => setFilterOpen(false)}
+                search={search}
+                setSearch={setSearch}
+                sort={sort}
+                setSort={setSort}
+                clusters={clusters}
+                selectedCluster={selectedCluster}
+                setSelectedCluster={setSelectedCluster}
+            />
         </div>
     );
 }

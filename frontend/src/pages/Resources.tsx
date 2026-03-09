@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     FileText, Link2, Video, Download, Eye, Search, Filter,
     BookOpen, Image, StickyNote, Star, Share2,
@@ -13,6 +14,7 @@ type SortKey = 'latest' | 'downloads' | 'views';
 
 interface Resource {
     _id: string; title: string; description: string;
+    slug?: string;
     type: Exclude<ResourceType, 'all'>; category: string; tags: string[];
     fileUrl?: string; externalUrl?: string; thumbnailUrl?: string;
     isPublic: boolean; isFeatured: boolean;
@@ -38,26 +40,8 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 const PAGE_SIZE = 12;
 
-/* ─── Sample fallback ─── */
-const SAMPLE: Resource[] = [
-    { _id: '1', title: 'Admission Test Question Bank 2025', description: 'Complete collection of previous year admission test questions from all major universities with detailed solutions and answer keys.', type: 'pdf', category: 'Question Banks', tags: ['DU', 'BUET', 'RU'], isPublic: true, isFeatured: true, views: 1250, downloads: 890, publishDate: '2026-01-15', fileUrl: '#' },
-    { _id: '2', title: 'University Admission Official Portal', description: 'Official link to the national university admission portal for online registration, application tracking, and result downloads.', type: 'link', category: 'Official Links', tags: ['NU', 'Admission'], isPublic: true, isFeatured: false, views: 2340, downloads: 0, publishDate: '2026-01-10', externalUrl: '#' },
-    { _id: '3', title: 'Math Crash Course for Admission Prep', description: 'Comprehensive video series covering all math topics required for university admission exams — from basics to advanced calculus.', type: 'video', category: 'Study Materials', tags: ['Math', 'Video'], isPublic: true, isFeatured: true, views: 5600, downloads: 0, publishDate: '2026-01-08', externalUrl: '#' },
-    { _id: '4', title: 'English Grammar Quick Notes', description: 'Essential English grammar rules and shortcuts for admission test preparation, including tense, voice, narration, and transformation.', type: 'pdf', category: 'Study Materials', tags: ['English', 'Grammar'], isPublic: true, isFeatured: false, views: 980, downloads: 750, publishDate: '2025-12-20', fileUrl: '#' },
-    { _id: '5', title: 'GK & Current Affairs Guide 2026', description: 'Updated general knowledge and current affairs compilation for all admission exams, covering events up to Feb 2026.', type: 'pdf', category: 'Study Materials', tags: ['GK', 'Current Affairs'], isPublic: true, isFeatured: false, views: 1120, downloads: 620, publishDate: '2026-02-01', fileUrl: '#' },
-    { _id: '6', title: 'Admission Preparation Expert Tips', description: 'Expert tips and strategies for cracking university admission tests — time management, smart preparation, and exam tactics.', type: 'video', category: 'Tips & Tricks', tags: ['Tips', 'Strategy'], isPublic: true, isFeatured: true, views: 3200, downloads: 0, publishDate: '2026-01-25', externalUrl: '#' },
-    { _id: '7', title: 'Physics Formula Sheet', description: 'Quick reference sheet for all important physics formulas needed for science unit admission tests — mechanics, waves, optics, and more.', type: 'pdf', category: 'Study Materials', tags: ['Physics', 'Science'], isPublic: true, isFeatured: false, views: 760, downloads: 540, publishDate: '2025-12-10', fileUrl: '#' },
-    { _id: '8', title: 'Chemistry Diagram Collection', description: 'Visual diagrams and molecular structures for organic chemistry topics — essential for science unit exams.', type: 'image', category: 'Study Materials', tags: ['Chemistry', 'Diagrams'], isPublic: true, isFeatured: false, views: 420, downloads: 310, publishDate: '2025-12-05', fileUrl: '#' },
-    { _id: '9', title: 'DU Admission Process Explained', description: 'Step-by-step notes on the Dhaka University application process, including payment, photo upload, and admit card download.', type: 'note', category: 'Tips & Tricks', tags: ['DU', 'Process'], isPublic: true, isFeatured: false, views: 890, downloads: 0, publishDate: '2026-01-18' },
-    { _id: '10', title: 'Exam Preparation Audio Podcast', description: 'Listen to expert discussions on the best strategies to prepare for university admission tests while commuting or relaxing.', type: 'audio', category: 'Tips & Tricks', tags: ['Podcast', 'Audio'], isPublic: true, isFeatured: false, views: 340, downloads: 210, publishDate: '2026-01-05', externalUrl: '#' },
-    { _id: '11', title: 'Government Scholarship 2026 Info', description: 'Complete information about government scholarship programs available to university admission candidates this year.', type: 'link', category: 'Scholarships', tags: ['Scholarship', 'Govt'], isPublic: true, isFeatured: true, views: 1800, downloads: 0, publishDate: '2026-02-05', externalUrl: '#' },
-    { _id: '12', title: 'Biology Quick Revision Notes', description: 'Concise biology revision notes covering all major topics tested in medical and science unit admission tests.', type: 'pdf', category: 'Study Materials', tags: ['Biology', 'Medical'], isPublic: true, isFeatured: false, views: 670, downloads: 480, publishDate: '2025-12-15', fileUrl: '#' },
-    { _id: '13', title: 'DU GA Unit Admit Card Guide', description: 'Step-by-step guide on downloading the admit card for Dhaka University GA unit exam, with direct links and troubleshooting tips.', type: 'note', category: 'Admit Cards', tags: ['DU', 'Admit Card'], isPublic: true, isFeatured: false, views: 2100, downloads: 0, publishDate: '2026-02-10' },
-    { _id: '14', title: 'HSC Result & SSC Verification Tips', description: 'How to verify and prepare your academic result transcripts for university admission applications — common errors and fixes.', type: 'pdf', category: 'Tips & Tricks', tags: ['HSC', 'SSC', 'Documents'], isPublic: true, isFeatured: false, views: 550, downloads: 420, publishDate: '2026-01-28', fileUrl: '#' },
-];
-
 /* ─── Resource card ─── */
-function ResourceCard({ r, onShare, onAction }: { r: Resource; onShare: (r: Resource) => void; onAction: (r: Resource, action: string) => void }) {
+function ResourceCard({ r, onShare, onAction, onNavigate }: { r: Resource; onShare: (r: Resource) => void; onAction: (r: Resource, action: string) => void; onNavigate?: (r: Resource) => void }) {
     const cfg = TYPE_CONFIG[r.type];
     const Icon = cfg.icon;
     const href = normalizeInternalOrExternalUrl(r.fileUrl || r.externalUrl || '');
@@ -81,7 +65,7 @@ function ResourceCard({ r, onShare, onAction }: { r: Resource; onShare: (r: Reso
                     <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1 ${cfg.badge}`}>
                         {cfg.label}
                     </span>
-                    <h3 className="text-sm font-semibold dark:text-dark-text line-clamp-2 leading-snug">{r.title}</h3>
+                    <h3 onClick={() => onNavigate?.(r)} className="text-sm font-semibold dark:text-dark-text line-clamp-2 leading-snug cursor-pointer hover:text-primary transition-colors">{r.title}</h3>
                 </div>
             </div>
 
@@ -142,7 +126,7 @@ function ResourceCard({ r, onShare, onAction }: { r: Resource; onShare: (r: Reso
 }
 
 /* ─── Featured card (horizontal on desktop, vertical on mobile) ─── */
-function FeaturedCard({ r, onShare, onAction }: { r: Resource; onShare: (r: Resource) => void; onAction: (r: Resource, action: string) => void }) {
+function FeaturedCard({ r, onShare, onAction, onNavigate }: { r: Resource; onShare: (r: Resource) => void; onAction: (r: Resource, action: string) => void; onNavigate?: (r: Resource) => void }) {
     const cfg = TYPE_CONFIG[r.type];
     const Icon = cfg.icon;
     const href = normalizeInternalOrExternalUrl(r.fileUrl || r.externalUrl || '');
@@ -160,7 +144,7 @@ function FeaturedCard({ r, onShare, onAction }: { r: Resource; onShare: (r: Reso
                     </span>
                     <span className="text-[10px] text-text-muted dark:text-dark-text/50 sm:ml-auto order-last sm:order-none w-full sm:w-auto mt-1 sm:mt-0">{r.category}</span>
                 </div>
-                <h3 className="text-base sm:text-sm font-bold dark:text-dark-text line-clamp-2 sm:line-clamp-1">{r.title}</h3>
+                <h3 onClick={() => onNavigate?.(r)} className="text-base sm:text-sm font-bold dark:text-dark-text line-clamp-2 sm:line-clamp-1 cursor-pointer hover:text-primary transition-colors">{r.title}</h3>
                 <p className="text-xs text-text-muted dark:text-dark-text/60 line-clamp-3 sm:line-clamp-1 mt-1 leading-relaxed">{r.description}</p>
             </div>
             <div className="flex items-center gap-3 mt-3 sm:mt-0 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-end pt-3 sm:pt-0 border-t sm:border-0 border-card-border dark:border-dark-border">
@@ -213,6 +197,7 @@ function Toast({ msg, onDismiss }: { msg: string; onDismiss: () => void }) {
 
 /* ─── Main Page ─── */
 export default function ResourcesPage() {
+    const navigate = useNavigate();
     const [resources, setResources] = useState<Resource[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -229,18 +214,16 @@ export default function ResourcesPage() {
         getResources()
             .then((res: { data?: { resources?: Resource[] } }) => {
                 if (res.data && Array.isArray(res.data.resources)) {
-                    console.log(`Successfully fetched ${res.data.resources.length} live resources`);
                     setResources(res.data.resources);
                     setError(false);
                 } else {
-                    console.warn('Backend returned unexpected data structure for resources:', res.data);
-                    setResources(SAMPLE);
+                    setResources([]);
                     setError(true);
                 }
             })
             .catch((err) => {
                 console.error('Network or server error while fetching resources:', err);
-                setResources(SAMPLE);
+                setResources([]);
                 setError(true);
             })
             .finally(() => setLoading(false));
@@ -262,6 +245,9 @@ export default function ResourcesPage() {
             source: 'public',
             meta: { resourceId: r._id, type: r.type, action },
         }).catch(() => undefined);
+    };
+    const handleNavigate = (r: Resource) => {
+        if (r.slug) navigate(`/resources/${r.slug}`);
     };
 
     const now = Date.now();
@@ -436,7 +422,7 @@ export default function ResourcesPage() {
                             <h2 className="text-lg font-heading font-bold dark:text-dark-text">Featured Resources</h2>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                            {featured.map(r => <FeaturedCard key={r._id} r={r} onShare={handleShare} onAction={handleResourceAction} />)}
+                            {featured.map(r => <FeaturedCard key={r._id} r={r} onShare={handleShare} onAction={handleResourceAction} onNavigate={handleNavigate} />)}
                         </div>
                     </div>
                 )}
@@ -486,7 +472,7 @@ export default function ResourcesPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {paginated.map(r => <ResourceCard key={r._id} r={r} onShare={handleShare} onAction={handleResourceAction} />)}
+                            {paginated.map(r => <ResourceCard key={r._id} r={r} onShare={handleShare} onAction={handleResourceAction} onNavigate={handleNavigate} />)}
                         </div>
                     )}
 

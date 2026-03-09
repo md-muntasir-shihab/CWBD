@@ -8,6 +8,7 @@ import University from '../models/University';
 import Notification from '../models/Notification';
 import StudentDashboardConfig from '../models/StudentDashboardConfig';
 import StudentBadge from '../models/StudentBadge';
+import { computeStudentProfileScore } from './studentProfileScoreService';
 import StudentApplication from '../models/StudentApplication';
 import StudentDueLedger from '../models/StudentDueLedger';
 import { getExamCardMetrics } from './examCardMetricsService';
@@ -148,7 +149,8 @@ export async function getStudentDashboardHeader(studentId: string) {
         throw new Error('Student not found');
     }
 
-    const completion = Number(profile.profile_completion_percentage || 0);
+    const scoreResult = computeStudentProfileScore(profile as unknown as Record<string, unknown>, user as unknown as Record<string, unknown>);
+    const completion = scoreResult.score;
     const messageTemplate = String(config?.welcomeMessageTemplate || 'স্বাগতম, {{name}}!');
     const welcomeMessage = messageTemplate
         .replace('{{name}}', String(profile.full_name || user.full_name || user.username))
@@ -202,7 +204,7 @@ export async function getStudentDashboardHeader(studentId: string) {
         subscription: {
             isActive: Boolean(subscription.isActive),
             planName: subscription.planName || subscription.plan || '',
-            expiryDate: subscription.expiryDate || null,
+            expiryDate: subscription.expiryDate ? new Date(subscription.expiryDate as string | Date).toISOString() : null,
         },
         guardian_phone_verification_status: profile.guardianPhoneVerificationStatus || 'unverified',
         guardian_phone_verified_at: profile.guardianPhoneVerifiedAt || null,
@@ -216,6 +218,18 @@ export async function getStudentDashboardHeader(studentId: string) {
             college_address: profile.college_address || '',
             dob: profile.dob || null,
         },
+        missingFields: ((): string[] => {
+            const missing: string[] = [];
+            if (!profile.profile_photo_url && !(user as Record<string, unknown>).profile_photo) missing.push('Profile Photo');
+            if (!profile.phone && !profile.phone_number) missing.push('Phone Number');
+            if (!profile.guardian_phone) missing.push('Guardian Phone');
+            if (!profile.dob) missing.push('Date of Birth');
+            if (!profile.ssc_batch) missing.push('SSC Batch');
+            if (!profile.hsc_batch) missing.push('HSC Batch');
+            if (!profile.department) missing.push('Department');
+            if (!profile.college_name) missing.push('College Name');
+            return missing;
+        })(),
         config: {
             enableRealtime: Boolean(config?.enableRealtime),
             enableDeviceLock: Boolean(config?.enableDeviceLock),

@@ -14,6 +14,8 @@ import { ExamRunnerPage } from './pages/exams/ExamRunnerPage';
 import { ExamResultPage } from './pages/exams/ExamResultPage';
 import { ExamSolutionsPage } from './pages/exams/ExamSolutionsPage';
 import ResourcesPage from './pages/Resources';
+import ResourceDetail from './pages/ResourceDetail';
+import AdminSettingsResourcesPage from './pages/AdminSettingsResources';
 import ContactPage from './pages/Contact';
 import SubscriptionPlansPage from './pages/SubscriptionPlans';
 import SubscriptionPlanDetailPage from './pages/SubscriptionPlanDetail';
@@ -32,6 +34,7 @@ import AdminUniversitySettingsPage from './pages/AdminUniversitySettings';
 import AdminSettingsCenterPage from './pages/AdminSettingsCenter';
 import AdminSettingsReportsPage from './pages/AdminSettingsReports';
 import AdminSettingsBannersPage from './pages/AdminSettingsBanners';
+import AdminCampaignBannersPage from './pages/AdminCampaignBanners';
 import AdminSettingsSecurityPage from './pages/AdminSettingsSecurity';
 import AdminSettingsLogsPage from './pages/AdminSettingsLogs';
 import AdminSettingsSitePage from './pages/AdminSettingsSite';
@@ -41,6 +44,19 @@ import AdminSettingsAnalyticsPage from './pages/AdminSettingsAnalytics';
 import AdminSettingsNewsPage from './pages/AdminSettingsNews';
 import AdminReportsPage from './pages/AdminReports';
 import AdminNewsConsole from './pages/admin-news/AdminNewsConsole';
+import FinanceLayout from './components/admin/finance/FinanceLayout';
+import FinanceDashboardPage from './components/admin/finance/FinanceDashboardPage';
+import FinanceTransactionsPage from './components/admin/finance/FinanceTransactionsPage';
+import FinanceInvoicesPage from './components/admin/finance/FinanceInvoicesPage';
+import FinanceBudgetsPage from './components/admin/finance/FinanceBudgetsPage';
+import FinanceRecurringPage from './components/admin/finance/FinanceRecurringPage';
+import FinanceVendorsPage from './components/admin/finance/FinanceVendorsPage';
+import FinanceRefundsPage from './components/admin/finance/FinanceRefundsPage';
+import FinanceExportPage from './components/admin/finance/FinanceExportPage';
+import FinanceImportPage from './components/admin/finance/FinanceImportPage';
+import FinanceAuditLogPage from './components/admin/finance/FinanceAuditLogPage';
+import FinanceSettingsPage from './components/admin/finance/FinanceSettingsPage';
+import FinanceExpensesPage from './components/admin/finance/FinanceExpensesPage';
 import {
     AdminDashboardPage,
     AdminUniversitiesPage,
@@ -48,7 +64,6 @@ import {
     AdminQuestionBankPage,
     AdminStudentsPage,
     AdminStudentGroupsPage,
-    AdminPaymentsPage,
     AdminResourcesPage,
     AdminSupportCenterPage,
     AdminStudentsMgmtPage,
@@ -56,7 +71,11 @@ import {
     AdminStudentGroupsV2Page,
     AdminNotificationCenterPage,
     AdminStudentSettingsPage,
+    AdminContactPage,
+    AdminSubscriptionsV2Page,
 } from './pages/AdminCorePages';
+import CampaignConsolePage from './pages/admin/campaigns/CampaignConsolePage';
+import DataHubPage from './pages/admin/datahub/DataHubPage';
 import NotFoundPage from './pages/NotFound';
 import ForceLogoutModal from './components/auth/ForceLogoutModal';
 import ChairmanLoginPage from './pages/chairman/ChairmanLogin';
@@ -114,6 +133,7 @@ function resolveRouteTitle(pathname: string, siteName: string, defaultTitle: str
     if (pathname === '/news') return withSite('News');
     if (pathname === '/exam-portal' || pathname === '/exams/landing' || pathname === '/exams') return withSite('Exams');
     if (pathname === '/resources') return withSite('Resources');
+    if (pathname.startsWith('/resources/')) return null;
     if (pathname === '/contact') return withSite('Contact');
     if (pathname === '/pricing') return withSite('Subscription Plans');
     if (pathname === '/subscription-plans') return withSite('Subscription Plans');
@@ -252,6 +272,7 @@ export default function App() {
                                 <Route path="/exam/result/:examId" element={<LegacyExamResultRedirect />} />
                                 <Route path="/certificate/verify/:certificateId" element={<CertificateVerifyPage />} />
                                 <Route path="/resources" element={<ResourcesPage />} />
+                                <Route path="/resources/:slug" element={<ResourceDetail />} />
                                 <Route path="/contact" element={<ContactPage />} />
                                 <Route path="/pricing" element={<Navigate to="/subscription-plans" replace />} />
                                 <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
@@ -280,26 +301,46 @@ export default function App() {
                                 <Route path={adminUi('news/*')} element={<AdminNewsConsole />} />
                                 <Route path={ADMIN_PATHS.exams} element={<AdminExamsPage />} />
                                 <Route path={ADMIN_PATHS.questionBank} element={<AdminQuestionBankPage />} />
+                                <Route path={adminUi('question-bank/*')} element={<AdminQuestionBankPage />} />
                                 <Route path={ADMIN_PATHS.students} element={<AdminStudentsPage />} />
                                 <Route path={ADMIN_PATHS.studentGroups} element={<AdminStudentGroupsPage />} />
                                 <Route path={adminUi('subscription-plans')} element={<AdminSubscriptionPlansPage />} />
                                 <Route path={adminUi('subscription-plans/new')} element={<AdminSubscriptionPlansPage />} />
                                 <Route path={adminUi('subscription-plans/:id/edit')} element={<AdminSubscriptionPlansPage />} />
+                                <Route path={ADMIN_PATHS.subscriptionsV2} element={<AdminSubscriptionsV2Page />} />
                                 <Route path={ADMIN_PATHS.resources} element={<AdminResourcesPage />} />
                                 <Route path={ADMIN_PATHS.supportCenter} element={<AdminSupportCenterPage />} />
-                                <Route path={ADMIN_PATHS.payments} element={<AdminPaymentsPage />} />
+                                <Route path={ADMIN_PATHS.contact} element={<AdminContactPage />} />
+                                <Route path={ADMIN_PATHS.payments} element={<Navigate to={adminUi('finance/transactions')} replace />} />
+                                <Route path={adminUi('finance')} element={<Navigate to={adminUi('finance/dashboard')} replace />} />
+                                <Route path={adminUi('finance/*')} element={<FinanceLayout />}>
+                                    <Route path="dashboard" element={<FinanceDashboardPage />} />
+                                    <Route path="transactions" element={<FinanceTransactionsPage />} />
+                                    <Route path="invoices" element={<FinanceInvoicesPage />} />
+                                    <Route path="expenses" element={<FinanceExpensesPage />} />
+                                    <Route path="budgets" element={<FinanceBudgetsPage />} />
+                                    <Route path="recurring" element={<FinanceRecurringPage />} />
+                                    <Route path="vendors" element={<FinanceVendorsPage />} />
+                                    <Route path="refunds" element={<FinanceRefundsPage />} />
+                                    <Route path="export" element={<FinanceExportPage />} />
+                                    <Route path="import" element={<FinanceImportPage />} />
+                                    <Route path="audit-log" element={<FinanceAuditLogPage />} />
+                                    <Route path="settings" element={<FinanceSettingsPage />} />
+                                </Route>
                                 <Route path={adminUi('reports')} element={<AdminReportsPage />} />
                                 <Route path={adminUi('settings')} element={<AdminSettingsCenterPage />} />
                                 <Route path={adminUi('settings/home-control')} element={<AdminHomeSettingsPage />} />
                                 <Route path={adminUi('settings/university-settings')} element={<AdminUniversitySettingsPage />} />
                                 <Route path={adminUi('settings/site-settings')} element={<AdminSettingsSitePage />} />
                                 <Route path={adminUi('settings/banner-manager')} element={<AdminSettingsBannersPage />} />
+                                <Route path={adminUi('campaign-banners')} element={<AdminCampaignBannersPage />} />
                                 <Route path={adminUi('settings/security-center')} element={<AdminSettingsSecurityPage />} />
                                 <Route path={adminUi('settings/system-logs')} element={<AdminSettingsLogsPage />} />
                                 <Route path={adminUi('settings/reports')} element={<AdminSettingsReportsPage />} />
                                 <Route path={adminUi('settings/notifications')} element={<AdminSettingsNotificationsPage />} />
                                 <Route path={adminUi('settings/analytics')} element={<AdminSettingsAnalyticsPage />} />
                                 <Route path={adminUi('settings/news-settings')} element={<AdminSettingsNewsPage />} />
+                                <Route path={adminUi('settings/resource-settings')} element={<AdminSettingsResourcesPage />} />
                                 <Route path={adminUi('settings/admin-profile')} element={<AdminSettingsProfilePage />} />
                                 <Route path={adminUi('settings/home')} element={<Navigate to={adminUi('settings/home-control')} replace />} />
                                 <Route path={adminUi('settings/site')} element={<Navigate to={adminUi('settings/site-settings')} replace />} />
@@ -312,6 +353,16 @@ export default function App() {
                                 <Route path={adminUi('students-v2/:id')} element={<AdminStudentDetailPage />} />
                                 <Route path={adminUi('student-groups-v2')} element={<AdminStudentGroupsV2Page />} />
                                 <Route path={adminUi('notification-center')} element={<AdminNotificationCenterPage />} />
+                                {/* Campaign Platform */}
+                                <Route path={ADMIN_PATHS.campaignsDashboard} element={<CampaignConsolePage />} />
+                                <Route path={ADMIN_PATHS.campaignsList} element={<CampaignConsolePage />} />
+                                <Route path={ADMIN_PATHS.campaignsNew} element={<CampaignConsolePage />} />
+                                <Route path={ADMIN_PATHS.campaignsTemplates} element={<CampaignConsolePage />} />
+                                <Route path={ADMIN_PATHS.campaignsSettings} element={<CampaignConsolePage />} />
+                                <Route path={ADMIN_PATHS.campaignsLogs} element={<CampaignConsolePage />} />
+                                {/* Data Hub */}
+                                <Route path={ADMIN_PATHS.dataHub} element={<DataHubPage />} />
+                                <Route path={ADMIN_PATHS.dataHubHistory} element={<DataHubPage />} />
                                 <Route path={adminUi('settings/student-settings')} element={<AdminStudentSettingsPage />} />
                                 {Object.entries(LEGACY_ADMIN_PATH_REDIRECTS).map(([legacyPath, targetPath]) => (
                                     <Route key={legacyPath} path={legacyPath} element={<Navigate to={targetPath} replace />} />

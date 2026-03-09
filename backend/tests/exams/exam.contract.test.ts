@@ -23,6 +23,7 @@ async function createTestUser(overrides: Record<string, unknown> = {}) {
         email: "test@campus.com",
         role: "student",
         profileScore: 80,
+        passwordHash: "$2b$10$placeholder",
         ...overrides,
     });
     return { _id: doc._id, userId: uid };
@@ -38,6 +39,7 @@ async function createTestExam(overrides: Record<string, unknown> = {}) {
         durationMinutes: 30,
         examWindowStartUTC: now.toISOString(),
         examWindowEndUTC: future.toISOString(),
+        resultPublishAtUTC: future.toISOString(),
         status: "live",
         paymentRequired: false,
         subscriptionRequired: false,
@@ -57,7 +59,7 @@ async function createTestExam(overrides: Record<string, unknown> = {}) {
     });
 }
 
-async function seedQuestionsForExam(examId: string, count = 3) {
+async function seedQuestionsForExam(examId: string, count = 3, overrides: Record<string, unknown> = {}) {
     const questions = [];
     for (let i = 0; i < count; i++) {
         questions.push(
@@ -73,8 +75,9 @@ async function seedQuestionsForExam(examId: string, count = 3) {
                 ],
                 correctKey: "B",
                 marks: 1,
-                negativeMarks: 0,
+                negativeMarks: null,
                 orderIndex: i,
+                ...overrides,
             }),
         );
     }
@@ -128,6 +131,7 @@ describe("Exam access gating", () => {
         await ExamSessionModel.create({
             examId: exam._id,
             userId: user.userId,
+            attemptNo: 1,
             status: "submitted",
             questionOrder: [],
             optionOrderMap: {},
@@ -271,7 +275,7 @@ describe("Exam submit and results", () => {
         const result1 = await submitSession(String(exam._id), sessionId, user.userId);
         const result2 = await submitSession(String(exam._id), sessionId, user.userId);
 
-        expect(result1.submittedAtUTC).toBe(result2.submittedAtUTC);
+        expect(String(result1.submittedAtUTC)).toBe(String(result2.submittedAtUTC));
 
         const results = await ResultModel.find({ sessionId });
         expect(results).toHaveLength(1);

@@ -21,7 +21,7 @@ import {
 } from '../controllers/authController';
 import { getUniversities, getUniversityBySlug, getUniversityCategories } from '../controllers/universityController';
 import { getFeaturedUniversityClusters, getPublicUniversityClusterMembers } from '../controllers/universityClusterController';
-import { getPublicResources, incrementResourceView, incrementResourceDownload } from '../controllers/resourceController';
+import { getPublicResources, incrementResourceView, incrementResourceDownload, getPublicResourceBySlug } from '../controllers/resourceController';
 import { getActiveBanners } from '../controllers/bannerController';
 import { getHomeConfig } from '../controllers/homeConfigController';
 import { getSiteSettings } from '../controllers/cmsController';
@@ -101,6 +101,18 @@ import {
 } from '../controllers/cmsController';
 import { getPublicSocialLinks } from '../controllers/socialLinksController';
 import { getPublicAnalyticsSettings, trackEvent } from '../controllers/analyticsController';
+import {
+    getPublicHelpCenter,
+    searchPublicHelpArticles,
+    getPublicHelpArticle,
+    submitHelpArticleFeedback,
+} from '../controllers/helpCenterController';
+import {
+    getPublicContentBlocks,
+    trackContentBlockImpression,
+    trackContentBlockClick,
+} from '../controllers/contentBlockController';
+import { getPublicSystemStatus } from '../controllers/securityAlertController';
 
 const router = Router();
 const examAccessMiddlewares = [authenticate, requireAuthStudent] as const;
@@ -139,6 +151,7 @@ router.get('/banners/active', getActiveBanners);
 router.get('/home-config', getHomeConfig);
 /* ── Public — Resources ── */
 router.get('/resources', getPublicResources);
+router.get('/resources/:slug', getPublicResourceBySlug);
 router.post('/resources/:id/view', incrementResourceView);
 router.post('/resources/:id/download', incrementResourceDownload);
 router.get('/universities/:slug', getUniversityBySlug);
@@ -178,6 +191,20 @@ router.get('/news-v2/:slug', getPublicNewsV2BySlug);
 router.post('/news-v2/share/track', trackPublicNewsV2Share);
 router.post('/news/share/track', trackPublicNewsV2Share);
 router.post('/events/track', optionalAuthenticate, trackEvent);
+
+/* ── Public — Help Center ── */
+router.get('/help-center', getPublicHelpCenter);
+router.get('/help-center/search', searchPublicHelpArticles);
+router.get('/help-center/:slug', getPublicHelpArticle);
+router.post('/help-center/:slug/feedback', submitHelpArticleFeedback);
+
+/* ── Public — Content Blocks ── */
+router.get('/content-blocks', getPublicContentBlocks);
+router.post('/content-blocks/:id/impression', trackContentBlockImpression);
+router.post('/content-blocks/:id/click', trackContentBlockClick);
+
+/* ── Public — System Status ── */
+router.get('/system/status', getPublicSystemStatus as any);
 
 /* ── Public — Services ── */
 router.get('/services', getServices);

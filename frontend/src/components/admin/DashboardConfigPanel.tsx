@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { RefreshCw, Save } from 'lucide-react';
+import { RefreshCw, Save, LayoutDashboard } from 'lucide-react';
 import { StudentDashboardConfig, adminGetStudentDashboardConfig, adminUpdateStudentDashboardConfig } from '../../services/api';
 import CyberToggle from '../ui/CyberToggle';
 
@@ -16,6 +16,27 @@ const defaultCelebrationRules: NonNullable<StudentDashboardConfig['celebrationRu
     maxShowsPerDay: 2,
 };
 
+const SECTION_KEYS: Array<{ key: string; label: string }> = [
+    { key: 'quickStatus', label: 'Quick Status Cards' },
+    { key: 'profileCompletion', label: 'Profile Completion' },
+    { key: 'subscription', label: 'Subscription Card' },
+    { key: 'payment', label: 'Payment Summary' },
+    { key: 'alerts', label: 'Alerts & Notifications' },
+    { key: 'exams', label: 'My Exams' },
+    { key: 'results', label: 'Results & Performance' },
+    { key: 'weakTopics', label: 'Weak Topics' },
+    { key: 'leaderboard', label: 'Leaderboard Snapshot' },
+    { key: 'watchlist', label: 'Saved / Watchlist' },
+    { key: 'resources', label: 'Resources For You' },
+    { key: 'support', label: 'Support Shortcuts' },
+    { key: 'accountSecurity', label: 'Account & Security' },
+    { key: 'importantDates', label: 'Important Dates' },
+];
+
+const defaultSections = Object.fromEntries(
+    SECTION_KEYS.map(({ key, label }, i) => [key, { visible: true, label, order: i + 1 }])
+);
+
 const defaultConfig: StudentDashboardConfig = {
     welcomeMessageTemplate: 'Welcome, {{name}}!',
     profileCompletionThreshold: 60,
@@ -25,6 +46,16 @@ const defaultConfig: StudentDashboardConfig = {
     enableBadges: true,
     enableProgressCharts: true,
     featuredOrderingMode: 'manual',
+    profileGatingMessage: 'Complete your profile to unlock exams and full access.',
+    renewalCtaText: 'Renew Now',
+    renewalCtaUrl: '/subscription-plans',
+    enableRecommendations: true,
+    enableLeaderboard: true,
+    enableWeakTopics: true,
+    enableWatchlist: true,
+    maxAlertsVisible: 5,
+    maxExamsVisible: 6,
+    sections: defaultSections,
     celebrationRules: defaultCelebrationRules,
 };
 
@@ -41,12 +72,17 @@ export default function DashboardConfigPanel() {
         setLoading(true);
         try {
             const res = await adminGetStudentDashboardConfig();
+            const remote = res.data.config || {};
             setConfig({
                 ...defaultConfig,
-                ...(res.data.config || {}),
+                ...remote,
+                sections: {
+                    ...defaultSections,
+                    ...(remote.sections || {}),
+                },
                 celebrationRules: {
                     ...defaultCelebrationRules,
-                    ...((res.data.config || {}).celebrationRules || {}),
+                    ...((remote).celebrationRules || {}),
                 },
             });
         } catch (error: any) {
@@ -58,6 +94,19 @@ export default function DashboardConfigPanel() {
 
     const update = (key: keyof StudentDashboardConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const updateSection = (sectionKey: string, visible: boolean) => {
+        setConfig((prev) => ({
+            ...prev,
+            sections: {
+                ...(prev.sections || defaultSections),
+                [sectionKey]: {
+                    ...(prev.sections?.[sectionKey] || defaultSections[sectionKey]),
+                    visible,
+                },
+            },
+        }));
     };
 
     const updateCelebration = (key: keyof NonNullable<StudentDashboardConfig['celebrationRules']>, value: unknown) => {
@@ -81,6 +130,16 @@ export default function DashboardConfigPanel() {
                 enableBadges: config.enableBadges,
                 enableProgressCharts: config.enableProgressCharts,
                 featuredOrderingMode: config.featuredOrderingMode,
+                profileGatingMessage: config.profileGatingMessage,
+                renewalCtaText: config.renewalCtaText,
+                renewalCtaUrl: config.renewalCtaUrl,
+                enableRecommendations: config.enableRecommendations,
+                enableLeaderboard: config.enableLeaderboard,
+                enableWeakTopics: config.enableWeakTopics,
+                enableWatchlist: config.enableWatchlist,
+                maxAlertsVisible: config.maxAlertsVisible,
+                maxExamsVisible: config.maxExamsVisible,
+                sections: config.sections,
                 celebrationRules: config.celebrationRules,
             });
             toast.success('Dashboard config updated');
@@ -99,11 +158,12 @@ export default function DashboardConfigPanel() {
     const rules = config.celebrationRules || defaultCelebrationRules;
 
     return (
-        <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/65 p-5 space-y-5">
+        <div className="rounded-2xl border border-indigo-500/10 bg-slate-900/65 p-5 space-y-6">
+            {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-white font-bold">Dashboard Config</h3>
-                    <p className="text-xs text-slate-500">Profile gate remains fixed at 60% in this release.</p>
+                    <p className="text-xs text-slate-500">Control every aspect of the student dashboard.</p>
                 </div>
                 <button
                     type="button"
@@ -116,46 +176,131 @@ export default function DashboardConfigPanel() {
                 </button>
             </div>
 
-            <div>
-                <label className="text-xs text-slate-400 block mb-1">Welcome Message Template</label>
-                <input
-                    value={config.welcomeMessageTemplate}
-                    onChange={(e) => update('welcomeMessageTemplate', e.target.value)}
-                    placeholder="Welcome, {{name}}!"
-                    className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
-                />
+            {/* Welcome Message & Ordering */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <label className="text-xs text-slate-400 block mb-1">Welcome Message Template</label>
+                    <input
+                        value={config.welcomeMessageTemplate}
+                        onChange={(e) => update('welcomeMessageTemplate', e.target.value)}
+                        placeholder="Welcome, {{name}}!"
+                        className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
+                    />
+                </div>
+                <div>
+                    <label className="text-xs text-slate-400 block mb-1">Featured Ordering Mode</label>
+                    <select
+                        value={config.featuredOrderingMode}
+                        onChange={(e) => update('featuredOrderingMode', e.target.value as 'manual' | 'adaptive')}
+                        className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
+                    >
+                        <option value="manual">Manual</option>
+                        <option value="adaptive">Adaptive</option>
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <label className="text-xs text-slate-400 block mb-1">Featured Ordering Mode</label>
-                <select
-                    value={config.featuredOrderingMode}
-                    onChange={(e) => update('featuredOrderingMode', e.target.value as 'manual' | 'adaptive')}
-                    className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
-                >
-                    <option value="manual">Manual</option>
-                    <option value="adaptive">Adaptive</option>
-                </select>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {[
-                    ['enableRealtime', 'Enable Realtime (SSE)'],
-                    ['enableDeviceLock', 'Enable Device Lock'],
-                    ['enableCheatFlags', 'Enable Cheat Flags'],
-                    ['enableBadges', 'Enable Badges'],
-                    ['enableProgressCharts', 'Enable Progress Charts'],
-                ].map(([key, label]) => (
-                    <div key={key} className="rounded-xl border border-indigo-500/10 bg-slate-950/65 px-3 py-2.5">
-                        <CyberToggle
-                            checked={Boolean(config[key as keyof StudentDashboardConfig])}
-                            onChange={(value) => update(key as keyof StudentDashboardConfig, value)}
-                            label={label}
+            {/* Profile Gate & CTA Texts */}
+            <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Profile Gate & Renewal CTA</h4>
+                <div>
+                    <label className="text-xs text-slate-400 block mb-1">Profile Gate Message</label>
+                    <input
+                        value={config.profileGatingMessage || ''}
+                        onChange={(e) => update('profileGatingMessage', e.target.value)}
+                        placeholder="Complete your profile to unlock exams."
+                        className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
+                    />
+                </div>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <div>
+                        <label className="text-xs text-slate-400 block mb-1">Renewal CTA Text</label>
+                        <input
+                            value={config.renewalCtaText || ''}
+                            onChange={(e) => update('renewalCtaText', e.target.value)}
+                            placeholder="Renew Now"
+                            className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
                         />
                     </div>
-                ))}
+                    <div>
+                        <label className="text-xs text-slate-400 block mb-1">Renewal CTA URL</label>
+                        <input
+                            value={config.renewalCtaUrl || ''}
+                            onChange={(e) => update('renewalCtaUrl', e.target.value)}
+                            placeholder="/subscription-plans"
+                            className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
+                        />
+                    </div>
+                </div>
             </div>
 
+            {/* Counts */}
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div>
+                    <label className="text-xs text-slate-400 block mb-1">Max Alerts Visible</label>
+                    <input
+                        type="number" min={1} max={20}
+                        value={config.maxAlertsVisible ?? 5}
+                        onChange={(e) => update('maxAlertsVisible', Number(e.target.value))}
+                        className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
+                    />
+                </div>
+                <div>
+                    <label className="text-xs text-slate-400 block mb-1">Max Exams Visible</label>
+                    <input
+                        type="number" min={1} max={20}
+                        value={config.maxExamsVisible ?? 6}
+                        onChange={(e) => update('maxExamsVisible', Number(e.target.value))}
+                        className="w-full rounded-xl bg-slate-950/65 border border-indigo-500/15 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500/40"
+                    />
+                </div>
+            </div>
+
+            {/* Core Feature Toggles */}
+            <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Core Features</h4>
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    {[
+                        ['enableRealtime', 'Enable Realtime (SSE)'],
+                        ['enableDeviceLock', 'Enable Device Lock'],
+                        ['enableCheatFlags', 'Enable Cheat Flags'],
+                        ['enableBadges', 'Enable Badges & Gamification'],
+                        ['enableProgressCharts', 'Enable Progress Charts'],
+                        ['enableLeaderboard', 'Enable Leaderboard'],
+                        ['enableWeakTopics', 'Enable Weak Topics'],
+                        ['enableWatchlist', 'Enable Watchlist / Saved'],
+                        ['enableRecommendations', 'Enable Resource Recommendations'],
+                    ].map(([key, label]) => (
+                        <div key={key} className="rounded-xl border border-indigo-500/10 bg-slate-950/65 px-3 py-2.5">
+                            <CyberToggle
+                                checked={Boolean(config[key as keyof StudentDashboardConfig])}
+                                onChange={(value) => update(key as keyof StudentDashboardConfig, value)}
+                                label={label}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Section Visibility Toggles */}
+            <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <LayoutDashboard className="w-3.5 h-3.5" /> Section Visibility
+                </h4>
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    {SECTION_KEYS.map(({ key, label }) => (
+                        <div key={key} className="rounded-xl border border-slate-700/50 bg-slate-950/65 px-3 py-2.5">
+                            <CyberToggle
+                                checked={Boolean((config.sections ?? defaultSections)[key]?.visible !== false)}
+                                onChange={(value) => updateSection(key, value)}
+                                label={label}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Celebration Rules */}
             <div className="rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-4 space-y-4">
                 <h4 className="text-sm font-semibold text-fuchsia-200">Celebration Popup Rules</h4>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -169,9 +314,7 @@ export default function DashboardConfigPanel() {
                     <div>
                         <label className="text-xs text-slate-300">Minimum Score (%)</label>
                         <input
-                            type="number"
-                            min={0}
-                            max={100}
+                            type="number" min={0} max={100}
                             value={rules.minPercentage}
                             onChange={(e) => updateCelebration('minPercentage', Number(e.target.value || 0))}
                             className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
@@ -180,8 +323,7 @@ export default function DashboardConfigPanel() {
                     <div>
                         <label className="text-xs text-slate-300">Maximum Rank</label>
                         <input
-                            type="number"
-                            min={1}
+                            type="number" min={1}
                             value={rules.maxRank}
                             onChange={(e) => updateCelebration('maxRank', Number(e.target.value || 1))}
                             className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
@@ -190,8 +332,7 @@ export default function DashboardConfigPanel() {
                     <div>
                         <label className="text-xs text-slate-300">Window (days)</label>
                         <input
-                            type="number"
-                            min={1}
+                            type="number" min={1}
                             value={rules.windowDays}
                             onChange={(e) => updateCelebration('windowDays', Number(e.target.value || 1))}
                             className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
@@ -200,8 +341,7 @@ export default function DashboardConfigPanel() {
                     <div>
                         <label className="text-xs text-slate-300">Show Duration (sec)</label>
                         <input
-                            type="number"
-                            min={3}
+                            type="number" min={3}
                             value={rules.showForSec}
                             onChange={(e) => updateCelebration('showForSec', Number(e.target.value || 10))}
                             className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"
@@ -222,8 +362,7 @@ export default function DashboardConfigPanel() {
                     <div>
                         <label className="text-xs text-slate-300">Max Shows / Day</label>
                         <input
-                            type="number"
-                            min={1}
+                            type="number" min={1}
                             value={rules.maxShowsPerDay}
                             onChange={(e) => updateCelebration('maxShowsPerDay', Number(e.target.value || 1))}
                             className="mt-1 w-full rounded-lg bg-slate-950/65 border border-white/10 px-3 py-2 text-sm text-white"

@@ -16,6 +16,8 @@ import {
     mergeHomeSettings,
 } from '../services/homeSettingsService';
 import UniversitySettingsModel from '../models/UniversitySettings';
+import ContentBlock from '../models/ContentBlock';
+import HomeConfig from '../models/HomeConfig';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -810,7 +812,7 @@ export const getAggregatedHomeData = async (req: AuthRequest, res: Response): Pr
         const newsLimit = getSafeMax(homeSettings.newsPreview.maxItems, 4, 1, 12);
         const resourcesLimit = getSafeMax(homeSettings.resourcesPreview.maxItems, 4, 1, 12);
 
-        const [newsPreview, resourcesPreview] = await Promise.all([
+        const [newsPreview, resourcesPreview, homeContentBlocks, homeConfigDoc] = await Promise.all([
             News.find({ isPublished: true, status: 'published' })
                 .sort({ publishDate: -1, createdAt: -1 })
                 .limit(newsLimit)
@@ -821,6 +823,18 @@ export const getAggregatedHomeData = async (req: AuthRequest, res: Response): Pr
                 .limit(resourcesLimit)
                 .select('title description type fileUrl externalUrl thumbnailUrl category isFeatured publishDate')
                 .lean(),
+            ContentBlock.find({
+                isEnabled: true,
+                placements: { $in: ['HOME_TOP', 'HOME_MID', 'HOME_BOTTOM'] },
+                $and: [
+                    { $or: [{ startAtUTC: { $exists: false } }, { startAtUTC: null }, { startAtUTC: { $lte: now } }] },
+                    { $or: [{ endAtUTC: { $exists: false } }, { endAtUTC: null }, { endAtUTC: { $gte: now } }] },
+                ],
+            })
+                .sort({ priority: -1, createdAt: -1 })
+                .limit(6)
+                .lean(),
+            HomeConfig.findOne().lean(),
         ]);
 
         const planIdSet = new Set(homeSettings.subscriptionBanner.planIdsToShow || []);
@@ -902,6 +916,38 @@ export const getAggregatedHomeData = async (req: AuthRequest, res: Response): Pr
             socialLinks: globalSettings.socialLinks,
         };
 
+        const DEFAULT_SECTIONS = [
+            { id: 'search', title: 'Search Bar', isActive: true, order: 0 },
+            { id: 'hero', title: 'Hero Banner', isActive: true, order: 1 },
+            { id: 'campaign_banners', title: 'Campaign Banners', isActive: true, order: 2 },
+            { id: 'featured', title: 'Featured Universities', isActive: true, order: 3 },
+            { id: 'category_filter', title: 'Category & Cluster Filter', isActive: true, order: 4 },
+            { id: 'deadlines', title: 'Admission Deadlines', isActive: true, order: 5 },
+            { id: 'upcoming_exams', title: 'Upcoming Exams', isActive: true, order: 6 },
+            { id: 'online_exam_preview', title: 'Online Exam Preview', isActive: true, order: 7 },
+            { id: 'news', title: 'Latest News', isActive: true, order: 8 },
+            { id: 'resources', title: 'Resources Preview', isActive: true, order: 9 },
+            { id: 'content_blocks', title: 'Global CTA / Content Block', isActive: true, order: 10 },
+            { id: 'stats', title: 'Quick Stats', isActive: true, order: 11 },
+        ];
+        const sectionOrder = (homeConfigDoc?.sections || DEFAULT_SECTIONS)
+            .filter((s: any) => s.isActive !== false)
+            .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
+            .map((s: any) => ({ id: s.id, title: s.title, order: s.order }));
+
+        const contentBlocksForHome = (homeContentBlocks || []).map((block: any) => ({
+            _id: block._id,
+            type: block.type,
+            title: block.title,
+            body: block.body,
+            imageUrl: block.imageUrl,
+            ctaLabel: block.ctaLabel,
+            ctaUrl: block.ctaUrl,
+            placements: block.placements,
+            priority: block.priority,
+            dismissible: block.dismissible,
+        }));
+
         res.json({
             homeSettings,
             globalSettings,
@@ -941,6 +987,8 @@ export const getAggregatedHomeData = async (req: AuthRequest, res: Response): Pr
             homeAdsBanners: campaignBannersActive,
             campaignBannersActive,
             socialLinks: globalSettings.socialLinks,
+            sectionOrder,
+            contentBlocksForHome,
         });
     } catch (error) {
         console.error('Error fetching strict home data:', error);

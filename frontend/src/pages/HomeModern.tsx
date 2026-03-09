@@ -1,989 +1,646 @@
-
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
-    ArrowRight,
-    CalendarClock,
-    ChevronLeft,
-    ChevronRight,
-    Clock3,
-    ExternalLink,
-    FileText,
-    Radio,
-    Search,
+    Search, Megaphone, AlertCircle,
+    GraduationCap, CalendarClock, ClipboardCheck, Newspaper,
+    BookOpen, BarChart3, Layers
 } from 'lucide-react';
-import {
-    getPublicExamList,
-    getHome,
-    type ApiUniversityCardPreview,
-    type HomeApiResponse,
-    type HomeExamWidgetItem,
-    type PublicExamListItem,
-} from '../services/api';
 import UniversityCard from '../components/university/UniversityCard';
-import { isExternalUrl, normalizeExternalUrl, normalizeInternalOrExternalUrl } from '../utils/url';
+import SectionHeader from '../components/home/SectionHeader';
+import PremiumCarousel from '../components/home/PremiumCarousel';
+import HomeSkeleton from '../components/home/SectionSkeleton';
+import EmptySection from '../components/home/EmptySection';
+import SectionErrorBoundary from '../components/home/SectionErrorBoundary';
+import DeadlineCard from '../components/home/cards/DeadlineCard';
+import UpcomingExamCard from '../components/home/cards/UpcomingExamCard';
+import CampaignBannerCard from '../components/home/cards/CampaignBannerCard';
+import OnlineExamCard from '../components/home/cards/OnlineExamCard';
+import NewsCard from '../components/home/cards/NewsCard';
+import ResourceCard from '../components/home/cards/ResourceCard';
+import { getHome, type HomeApiResponse, type ApiUniversityCardPreview, type HomeExamWidgetItem, type ApiNews } from '../services/api';
 
-type UniversityCategoryEntry = {
-    categoryName: string;
-    count: number;
-    clusterGroups: string[];
-};
-
-type CampaignBanner = {
-    _id: string;
-    title?: string;
-    subtitle?: string;
-    imageUrl: string;
-    mobileImageUrl?: string;
-    linkUrl?: string;
-    altText?: string;
-};
-
-type ResourcePreviewItem = {
-    _id: string;
-    title: string;
-    description?: string;
-    type?: string;
-    fileUrl?: string;
-    externalUrl?: string;
-    thumbnailUrl?: string;
-    category?: string;
-    isFeatured?: boolean;
-    publishDate?: string;
-};
-
-function toSafeInternalOrExternal(raw?: string, fallback = '/'): string {
-    return normalizeInternalOrExternalUrl(raw) || fallback;
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+interface SectionOrderItem { id: string; title: string; order: number }
+interface ContentBlockItem {
+    _id: string; type: string; title?: string; body?: string;
+    imageUrl?: string; ctaLabel?: string; ctaUrl?: string;
+    placements: string[]; priority?: number; dismissible?: boolean;
 }
 
-function toSafeExternal(raw?: string): string {
-    return normalizeExternalUrl(raw) || '';
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+function matchesCategoryAndCluster(
+    uni: ApiUniversityCardPreview,
+    selectedCategory: string,
+    selectedCluster: string,
+): boolean {
+    if (selectedCategory && uni.category !== selectedCategory) return false;
+    if (selectedCluster && uni.clusterGroup !== selectedCluster) return false;
+    return true;
 }
 
-function formatDate(value?: string): string {
-    if (!value) return 'N/A';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'N/A';
-    return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
+/* ------------------------------------------------------------------ */
+/*  Shared UI primitives                                               */
+/* ------------------------------------------------------------------ */
+const fadeInUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
+
+function SectionWrap({ children, className = '' }: { children: ReactNode; className?: string }) {
+    return (
+        <motion.section
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className={`w-full ${className}`}
+        >
+            {children}
+        </motion.section>
+    );
 }
 
-function bySearch(text: string, searchLower: string): boolean {
-    if (!searchLower) return true;
-    return text.toLowerCase().includes(searchLower);
-}
-
-function dedupeExams(items: HomeExamWidgetItem[]): HomeExamWidgetItem[] {
-    const map = new Map<string, HomeExamWidgetItem>();
-    for (const item of items) {
-        const key = String(item.id || `${item.title}-${item.startDate}`);
-        if (!map.has(key)) {
-            map.set(key, item);
-        }
-    }
-    return Array.from(map.values());
-}
-
-function toCount(value: unknown, fallback: number): number {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return fallback;
-    return Math.max(0, Math.floor(parsed));
-}
-
-function SmartActionLink({
-    to,
-    label,
-    className,
-    testId,
-}: {
-    to?: string;
-    label: string;
-    className: string;
-    testId?: string;
+function SmartActionLink({ href, children, className = '' }: {
+    href: string; children: ReactNode; className?: string;
 }) {
-    const safe = toSafeInternalOrExternal(to, '/');
-    if (isExternalUrl(safe)) {
+    const isExternal = /^https?:\/\//.test(href);
+    if (isExternal) {
         return (
-            <a
-                href={safe}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid={testId}
-                className={className}
-            >
-                {label}
+            <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+                {children}
             </a>
         );
     }
-
-    return (
-        <Link to={safe} data-testid={testId} className={className}>
-            {label}
-        </Link>
-    );
+    return <Link to={href} className={className}>{children}</Link>;
 }
 
-function scrollCarousel(trackRef: RefObject<HTMLDivElement | null>, direction: 'prev' | 'next') {
-    const track = trackRef.current;
-    if (!track) return;
-    const amount = Math.max(300, Math.floor(track.clientWidth * 0.86));
-    track.scrollBy({
-        left: direction === 'next' ? amount : -amount,
-        behavior: 'smooth',
-    });
+function SectionRenderer({ renderer }: { renderer: () => ReactNode }) {
+    return <>{renderer()}</>;
 }
 
-function CarouselControls({
-    onPrev,
-    onNext,
-    label,
-}: {
-    onPrev: () => void;
-    onNext: () => void;
-    label: string;
-}) {
-    return (
-        <div className="flex items-center gap-2">
-            <button
-                type="button"
-                aria-label={`${label} previous`}
-                onClick={onPrev}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-card-border text-text-muted transition hover:-translate-y-0.5 hover:border-primary hover:text-primary dark:border-dark-border dark:text-dark-text/70"
-            >
-                <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-                type="button"
-                aria-label={`${label} next`}
-                onClick={onNext}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-card-border text-text-muted transition hover:-translate-y-0.5 hover:border-primary hover:text-primary dark:border-dark-border dark:text-dark-text/70"
-            >
-                <ChevronRight className="h-4 w-4" />
-            </button>
-        </div>
-    );
-}
+/* ------------------------------------------------------------------ */
+/*  Default section order                                              */
+/* ------------------------------------------------------------------ */
+const DEFAULT_ORDER: SectionOrderItem[] = [
+    { id: 'search', title: 'Search', order: 0 },
+    { id: 'hero', title: 'Hero Banner', order: 1 },
+    { id: 'campaign_banners', title: 'Campaign Banners', order: 2 },
+    { id: 'featured', title: 'Featured Universities', order: 3 },
+    { id: 'category_filter', title: 'Category Filter', order: 4 },
+    { id: 'deadlines', title: 'Admission Deadlines', order: 5 },
+    { id: 'upcoming_exams', title: 'Upcoming Exams', order: 6 },
+    { id: 'online_exam_preview', title: 'Online Exam Preview', order: 7 },
+    { id: 'news', title: 'Latest News', order: 8 },
+    { id: 'resources', title: 'Resources', order: 9 },
+    { id: 'content_blocks', title: 'Content Blocks', order: 10 },
+    { id: 'stats', title: 'Quick Stats', order: 11 },
+];
 
-function HomeSkeleton() {
-    return (
-        <div className="pb-10" data-testid="home-page-root">
-            <section className="section-container mt-4 sticky top-16 z-30" data-testid="home-section-search">
-                <div className="card-flat h-16 animate-pulse" />
-            </section>
-            {[
-                'home-section-hero',
-                'home-section-campaign-banners',
-                'home-section-featured-universities',
-                'home-section-deadlines',
-                'home-section-upcoming-exams',
-                'home-section-online-exams',
-                'home-section-news-preview',
-                'home-section-resources-preview',
-            ].map((id) => (
-                <section key={id} className="section-container mt-6" data-testid={id}>
-                    <div className="card-flat h-48 animate-pulse" />
-                </section>
-            ))}
-        </div>
-    );
-}
-
-export default function HomeModernPage() {
-    const [search, setSearch] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [selectedCluster, setSelectedCluster] = useState('all');
-    const [categoryInteracted, setCategoryInteracted] = useState(false);
-    const campaignTrackRef = useRef<HTMLDivElement | null>(null);
-    const featuredTrackRef = useRef<HTMLDivElement | null>(null);
-    const deadlineTrackRef = useRef<HTMLDivElement | null>(null);
-    const examSoonTrackRef = useRef<HTMLDivElement | null>(null);
-    const onlineExamTrackRef = useRef<HTMLDivElement | null>(null);
-    const newsTrackRef = useRef<HTMLDivElement | null>(null);
-    const resourcesTrackRef = useRef<HTMLDivElement | null>(null);
-
-    const homeQuery = useQuery<HomeApiResponse>({
+/* ================================================================== */
+/*  MAIN COMPONENT                                                     */
+/* ================================================================== */
+export default function HomeModern() {
+    /* ---------- data ---------- */
+    const { data, isLoading, isError } = useQuery<HomeApiResponse>({
         queryKey: ['home'],
-        queryFn: async () => (await getHome()).data,
+        queryFn: () => getHome().then(r => r.data),
         staleTime: 60_000,
         refetchInterval: 90_000,
-        retry: 1,
     });
 
-    const payload = homeQuery.data;
+    /* ---------- state ---------- */
+    const [search, setSearch] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedCluster, setSelectedCluster] = useState('');
+    const [categoryInteracted, setCategoryInteracted] = useState(false);
 
-    const homeSettings = payload?.homeSettings;
-    const searchPlaceholder = homeSettings?.hero?.searchPlaceholder || 'Search universities, exams, news...';
+    /* ---------- derived ---------- */
+    const hs = data?.homeSettings;
+    const categories = data?.universityCategories ?? [];
+    const uniSettings = data?.uniSettings;
 
-    const campaignBanners: CampaignBanner[] = payload?.campaignBannersActive || [];
-    const categoriesRaw: UniversityCategoryEntry[] = payload?.universityCategories || [];
-
-    const featuredUniversities: ApiUniversityCardPreview[] = payload?.featuredUniversities || [];
-    const deadlineUniversities: ApiUniversityCardPreview[] = payload?.deadlineUniversities || [];
-    const upcomingExamUniversities: ApiUniversityCardPreview[] = payload?.upcomingExamUniversities || [];
-
-    const onlineFromAlias = payload?.onlineExamsPreview;
-    const onlineItems = useMemo(() => {
-        const aliasItems = Array.isArray(onlineFromAlias?.items) ? onlineFromAlias.items : [];
-        if (aliasItems.length > 0) return dedupeExams(aliasItems);
-        const legacyItems = [
-            ...(payload?.examsWidget?.liveNow || []),
-            ...(payload?.examsWidget?.upcoming || []),
-        ];
-        return dedupeExams(legacyItems);
-    }, [onlineFromAlias?.items, payload?.examsWidget?.liveNow, payload?.examsWidget?.upcoming]);
-
-    const publicExamListQuery = useQuery<{ items: PublicExamListItem[] }>({
-        queryKey: ['home-online-exam-public-list'],
-        queryFn: async () => (await getPublicExamList({ page: 1, limit: 120 })).data,
-        staleTime: 60_000,
-        retry: 1,
-    });
-
-    const onlineExamBannerById = useMemo(() => {
-        const map = new Map<string, string>();
-        const items = publicExamListQuery.data?.items || [];
-        for (const item of items) {
-            const key = String(item.id || '');
-            const banner = String(item.bannerImageUrl || '').trim();
-            if (key && banner) map.set(key, banner);
+    /* Set default category from backend */
+    useEffect(() => {
+        if (!categoryInteracted && categories.length > 0 && !selectedCategory) {
+            const defaultCat = uniSettings?.defaultCategory || hs?.universityPreview?.defaultActiveCategory || '';
+            if (defaultCat && categories.some(c => c.categoryName === defaultCat)) {
+                setSelectedCategory(defaultCat);
+            }
         }
-        return map;
-    }, [publicExamListQuery.data?.items]);
+    }, [categories, categoryInteracted, selectedCategory, uniSettings, hs]);
 
-    const newsItems = payload?.newsPreviewItems || payload?.newsPreview || [];
-    const resourceItems: ResourcePreviewItem[] = payload?.resourcePreviewItems || payload?.resourcesPreview || [];
-
-    const categoryFilters = useMemo(() => {
-        const total = categoriesRaw.reduce((sum, item) => sum + Number(item.count || 0), 0);
-        const normalized = categoriesRaw.map((item) => ({
-            key: item.categoryName,
-            label: item.categoryName,
-            count: Number(item.count || 0),
-            clusterGroups: Array.isArray(item.clusterGroups)
-                ? item.clusterGroups.filter(Boolean)
-                : [],
-        }));
-        return [
-            { key: 'all', label: 'All', count: total, clusterGroups: [] as string[] },
-            ...normalized,
-        ];
-    }, [categoriesRaw]);
-
-    const defaultCategory = payload?.uniSettings?.defaultCategory
-        || homeSettings?.universityPreview?.defaultActiveCategory
-        || 'all';
-
-    useEffect(() => {
-        const keys = new Set(categoryFilters.map((item) => item.key));
-        setSelectedCategory((prev) => {
-            if (keys.has(prev)) return prev;
-            return keys.has(defaultCategory) ? defaultCategory : 'all';
+    /* Highlighted categories sorted first */
+    const sortedCategories = useMemo(() => {
+        const highlighted = hs?.highlightedCategories ?? [];
+        return [...categories].sort((a, b) => {
+            const aHl = highlighted.find(h => h.category === a.categoryName);
+            const bHl = highlighted.find(h => h.category === b.categoryName);
+            if (aHl && !bHl) return -1;
+            if (!aHl && bHl) return 1;
+            if (aHl && bHl) return aHl.order - bHl.order;
+            return 0;
         });
-    }, [categoryFilters, defaultCategory]);
+    }, [categories, hs]);
 
-    useEffect(() => {
-        setSelectedCluster('all');
-    }, [selectedCategory]);
+    const currentClusters = useMemo(() => {
+        if (!selectedCategory) return [];
+        const cat = categories.find(c => c.categoryName === selectedCategory);
+        return cat?.clusterGroups ?? [];
+    }, [selectedCategory, categories]);
 
-    const selectedCategoryMeta = categoryFilters.find((item) => item.key === selectedCategory);
-    const activeClusterGroups = selectedCategoryMeta?.clusterGroups || [];
+    /* Filtered university lists */
+    const filteredFeatured = useMemo(() => {
+        const sl = search.toLowerCase().trim();
+        return (data?.featuredUniversities ?? []).filter(u =>
+            matchesCategoryAndCluster(u, selectedCategory, selectedCluster)
+            && (!sl || u.name.toLowerCase().includes(sl) || u.shortForm?.toLowerCase().includes(sl)),
+        );
+    }, [data?.featuredUniversities, selectedCategory, selectedCluster, search]);
 
-    const clusterFilterEnabled = Boolean(homeSettings?.universityPreview?.enableClusterFilter)
-        && (payload?.uniSettings?.enableClusterFilterOnHome !== false)
-        && selectedCategory !== 'all'
-        && activeClusterGroups.length > 0;
+    const filteredDeadline = useMemo(() => {
+        const sl = search.toLowerCase().trim();
+        return (data?.deadlineUniversities ?? []).filter(u =>
+            matchesCategoryAndCluster(u, selectedCategory, selectedCluster)
+            && (!sl || u.name.toLowerCase().includes(sl) || u.shortForm?.toLowerCase().includes(sl)),
+        );
+    }, [data?.deadlineUniversities, selectedCategory, selectedCluster, search]);
 
-    const searchLower = search.trim().toLowerCase();
+    const filteredUpcoming = useMemo(() => {
+        const sl = search.toLowerCase().trim();
+        return (data?.upcomingExamUniversities ?? []).filter(u =>
+            matchesCategoryAndCluster(u, selectedCategory, selectedCluster)
+            && (!sl || u.name.toLowerCase().includes(sl) || u.shortForm?.toLowerCase().includes(sl)),
+        );
+    }, [data?.upcomingExamUniversities, selectedCategory, selectedCluster, search]);
 
-    const matchesCategoryAndCluster = (item: ApiUniversityCardPreview): boolean => {
-        if (selectedCategory !== 'all' && item.category !== selectedCategory) return false;
-        if (clusterFilterEnabled && selectedCluster !== 'all' && String(item.clusterGroup || '') !== selectedCluster) return false;
-        return true;
-    };
+    const sectionOrder = useMemo<SectionOrderItem[]>(() => {
+        if (data?.sectionOrder && data.sectionOrder.length > 0) {
+            return [...data.sectionOrder].sort((a, b) => a.order - b.order);
+        }
+        return DEFAULT_ORDER;
+    }, [data?.sectionOrder]);
 
-    const matchesUniversityFilter = (item: ApiUniversityCardPreview): boolean => {
-        if (!matchesCategoryAndCluster(item)) return false;
-        const haystack = `${item.name} ${item.shortForm} ${item.category} ${String(item.clusterGroup || '')}`;
-        return bySearch(haystack, searchLower);
-    };
+    const contentBlocks = data?.contentBlocksForHome ?? [];
+    const newsItems = data?.newsPreviewItems ?? data?.newsPreview ?? [];
+    const resourceItems = data?.resourcePreviewItems ?? data?.resourcesPreview ?? [];
+    const campaignBanners = data?.campaignBannersActive ?? [];
+    const onlineExams = data?.onlineExamsPreview;
+    const stats = data?.stats;
+    const cardConfig = hs?.universityCardConfig;
+    const animLevel = hs?.ui?.animationLevel ?? 'minimal';
 
-    const hasAnyUniversityData = featuredUniversities.length > 0
-        || deadlineUniversities.length > 0
-        || upcomingExamUniversities.length > 0;
+    /* ================================================================ */
+    /*  SECTION RENDERERS                                                */
+    /* ================================================================ */
 
-    const hasSelectedCategoryData = [...featuredUniversities, ...deadlineUniversities, ...upcomingExamUniversities]
-        .some(matchesCategoryAndCluster);
-
-    useEffect(() => {
-        if (categoryInteracted) return;
-        if (selectedCategory === 'all') return;
-        if (hasSelectedCategoryData) return;
-        if (!hasAnyUniversityData) return;
-        setSelectedCategory('all');
-    }, [categoryInteracted, selectedCategory, hasSelectedCategoryData, hasAnyUniversityData]);
-
-    const deadlineLimit = toCount(homeSettings?.universityPreview?.maxDeadlineItems, 6);
-    const examLimit = toCount(homeSettings?.universityPreview?.maxExamItems, 6);
-    const newsLimit = toCount(homeSettings?.newsPreview?.maxItems, 4);
-    const resourceLimit = toCount(homeSettings?.resourcesPreview?.maxItems, 4);
-
-    const featuredLimit = toCount(homeSettings?.universityPreview?.maxFeaturedItems, 12);
-
-    const filteredFeaturedUniversities = featuredUniversities
-        .filter(matchesUniversityFilter)
-        .slice(0, featuredLimit);
-
-    const filteredDeadlineUniversities = deadlineUniversities
-        .filter(matchesUniversityFilter)
-        .slice(0, deadlineLimit);
-
-    const filteredUpcomingExamUniversities = upcomingExamUniversities
-        .filter(matchesUniversityFilter)
-        .slice(0, examLimit);
-
-    const filteredNews = newsItems
-        .filter((item) => bySearch(`${item.title} ${item.shortSummary || ''} ${item.shortDescription || ''}`, searchLower))
-        .slice(0, newsLimit);
-
-    const filteredResources = resourceItems
-        .filter((item) => bySearch(`${item.title} ${item.description || ''} ${item.type || ''}`, searchLower))
-        .slice(0, resourceLimit);
-
-    const onlineLoggedIn = Boolean(onlineFromAlias?.loggedIn ?? payload?.subscriptionBannerState?.loggedIn ?? false);
-    const onlineHasPlan = Boolean(onlineFromAlias?.hasActivePlan ?? payload?.subscriptionBannerState?.hasActivePlan ?? false);
-
-    const contactAdminUrl = homeSettings?.subscriptionBanner?.secondaryCTA?.url || '/contact';
-    const sectionVisibility = homeSettings?.sectionVisibility;
-    const showHeroSection = sectionVisibility?.hero !== false;
-    const showSearchBar = showHeroSection && homeSettings?.hero?.showSearch !== false;
-    const showCampaignBanners = sectionVisibility?.adsSection !== false;
-    const showUniversityArea = sectionVisibility?.universityDashboard !== false && homeSettings?.universityPreview?.enabled !== false;
-    const showOnlineExams = sectionVisibility?.examsWidget !== false && homeSettings?.examsWidget?.enabled !== false;
-    const showNewsPreview = sectionVisibility?.newsPreview !== false && homeSettings?.newsPreview?.enabled !== false;
-    const showResourcesPreview = sectionVisibility?.resourcesPreview !== false && homeSettings?.resourcesPreview?.enabled !== false;
-
-    if (homeQuery.isLoading) {
-        return <HomeSkeleton />;
-    }
-
-    if (homeQuery.isError || !payload) {
+    /* 1 ─ Search */
+    function renderSearch() {
+        if (hs?.hero?.showSearch === false) return null;
+        const placeholder = hs?.hero?.searchPlaceholder || 'Search universities, news, exams…';
         return (
-            <div className="section-container py-10" data-testid="home-page-root">
-                <div className="card-flat border border-rose-500/20 p-5">
-                    <p className="text-sm text-rose-400">Unable to load Home data right now.</p>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            void homeQuery.refetch();
-                        }}
-                        className="btn-outline mt-3 text-sm"
-                    >
-                        Retry
-                    </button>
+            <div className="sticky top-0 z-30 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm">
+                <div className="max-w-3xl mx-auto px-4 py-3">
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400 group-focus-within:text-[var(--primary)] transition-colors" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder={placeholder}
+                            aria-label="Search universities, news, exams and resources"
+                            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800/80 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 border border-transparent focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all shadow-card focus:shadow-card-hover"
+                        />
+                    </div>
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className="pb-10" data-testid="home-page-root">
-            {showSearchBar ? (
-                <section className="section-container mt-4 sticky top-16 z-30" data-testid="home-section-search">
-                    <div className="card-flat border border-card-border/70 bg-surface/95 p-3 backdrop-blur dark:border-dark-border/70 dark:bg-dark-surface/95">
-                        <label className="relative block">
-                            <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted dark:text-dark-text/60" />
-                            <input
-                                value={search}
-                                onChange={(event) => setSearch(event.target.value)}
-                                placeholder={searchPlaceholder}
-                                className="input-field min-h-[44px] pl-10"
-                            />
-                        </label>
-                    </div>
-                </section>
-            ) : null}
-
-            {showHeroSection ? (
-                <motion.section
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.22 }}
-                    className="section-container mt-6"
-                    data-testid="home-section-hero"
-                >
-                    <div className="relative overflow-hidden rounded-3xl border border-card-border/70 bg-gradient-to-br from-primary/20 via-cyan-500/10 to-transparent p-6 shadow-xl dark:border-dark-border/70">
-                        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary/80">
-                                    {homeSettings?.hero?.pillText || 'CampusWay'}
-                                </p>
-                                <h1 className="mt-2 text-2xl font-black leading-tight text-text dark:text-dark-text sm:text-3xl lg:text-4xl">
-                                    {homeSettings?.hero?.title || 'Bangladesh University Admission Hub'}
-                                </h1>
-                                <p className="mt-3 max-w-2xl text-sm text-text-muted dark:text-dark-text/75 sm:text-base">
-                                    {homeSettings?.hero?.subtitle || 'Track admissions, online exams, news, and resources from one dashboard.'}
-                                </p>
-                                <div className="mt-5 flex flex-wrap gap-3">
-                                    <SmartActionLink
-                                        to={homeSettings?.hero?.primaryCTA?.url || '/universities'}
-                                        label={homeSettings?.hero?.primaryCTA?.label || 'Explore Universities'}
-                                        className="btn-primary inline-flex min-h-[44px] items-center gap-2 px-4 text-sm"
-                                        testId="home-hero-primary-cta"
-                                    />
-                                    <SmartActionLink
-                                        to={homeSettings?.hero?.secondaryCTA?.url || '/exams'}
-                                        label={homeSettings?.hero?.secondaryCTA?.label || 'View Exams'}
-                                        className="btn-outline inline-flex min-h-[44px] items-center gap-2 px-4 text-sm"
-                                    />
-                                </div>
-                            </div>
-                            <div className="hidden lg:block">
-                                {homeSettings?.hero?.heroImageUrl ? (
-                                    <img
-                                        src={homeSettings.hero.heroImageUrl}
-                                        alt={homeSettings.hero.title || 'Hero banner'}
-                                        className="h-52 w-80 rounded-2xl object-cover"
-                                    />
-                                ) : null}
-                            </div>
+    /* 2 ─ Hero Banner */
+    function renderHero() {
+        if (!hs?.sectionVisibility?.hero) return null;
+        const hero = hs.hero;
+        if (!hero) return null;
+        return (
+            <SectionWrap>
+                <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-[var(--primary)] via-blue-600 to-purple-700 text-white mx-4 md:mx-0 max-h-[420px]">
+                    {hero.heroImageUrl && (
+                        <img src={hero.heroImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay" />
+                    )}
+                    <div className="relative z-10 px-6 py-10 md:px-12 md:py-14 max-w-3xl">
+                        {hero.pillText && (
+                            <motion.span
+                                initial={{ opacity: 0, y: -8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="inline-block px-4 py-1.5 mb-4 text-xs font-semibold rounded-full bg-white/15 backdrop-blur-sm border border-white/20"
+                            >
+                                {hero.pillText}
+                            </motion.span>
+                        )}
+                        <h1 className="font-heading text-2xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-3 drop-shadow-sm">
+                            {hero.title}
+                        </h1>
+                        {hero.subtitle && (
+                            <p className="text-sm md:text-base text-white/80 mb-8 max-w-lg leading-relaxed">{hero.subtitle}</p>
+                        )}
+                        <div className="flex flex-wrap gap-3">
+                            {hero.primaryCTA?.label && hero.primaryCTA?.url && (
+                                <SmartActionLink href={hero.primaryCTA.url}
+                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[var(--primary)] font-semibold text-sm hover:bg-blue-50 transition-colors shadow-elevated">
+                                    {hero.primaryCTA.label}
+                                </SmartActionLink>
+                            )}
+                            {hero.secondaryCTA?.label && hero.secondaryCTA?.url && (
+                                <SmartActionLink href={hero.secondaryCTA.url}
+                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/30 text-white font-medium text-sm hover:bg-white/10 transition-colors backdrop-blur-sm">
+                                    {hero.secondaryCTA.label}
+                                </SmartActionLink>
+                            )}
                         </div>
                     </div>
-                </motion.section>
-            ) : null}
-
-            {showCampaignBanners ? (
-                <section className="section-container mt-8" data-testid="home-section-campaign-banners">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                        <h2 className="section-title text-2xl">{homeSettings?.adsSection?.title || 'Campaign Banners'}</h2>
-                        <p className="section-subtitle">Active campaigns managed from admin schedule and banner controls.</p>
-                    </div>
-                    {campaignBanners.length > 1 ? (
-                        <CarouselControls
-                            label="campaign banners"
-                            onPrev={() => scrollCarousel(campaignTrackRef, 'prev')}
-                            onNext={() => scrollCarousel(campaignTrackRef, 'next')}
-                        />
-                    ) : null}
                 </div>
-                {campaignBanners.length ? (
-                    <div ref={campaignTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2">
-                        <div className="flex min-w-max snap-x snap-mandatory gap-4">
-                            {campaignBanners.map((banner, index) => {
-                                const safeLink = toSafeInternalOrExternal(banner.linkUrl, '');
-                                const isExternal = safeLink ? isExternalUrl(safeLink) : false;
-                                const cardContent = (
-                                    <>
-                                        <img
-                                            src={banner.imageUrl}
-                                            alt={banner.altText || banner.title || 'Campaign banner'}
-                                            className="h-full w-full object-cover"
-                                        />
-                                        {(banner.title || banner.subtitle) ? (
-                                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-white">
-                                                {banner.title ? <p className="text-sm font-semibold">{banner.title}</p> : null}
-                                                {banner.subtitle ? <p className="text-xs text-white/80">{banner.subtitle}</p> : null}
-                                            </div>
-                                        ) : null}
-                                    </>
-                                );
+            </SectionWrap>
+        );
+    }
 
+    /* 3 ─ Campaign Banners */
+    function renderCampaignBanners() {
+        if (hs?.sectionVisibility?.adsSection === false) return null;
+        if (!campaignBanners.length) return null;
+        if (hs?.campaignBanners && hs.campaignBanners.enabled === false) return null;
+        const cbConfig = hs?.campaignBanners;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader
+                        title={cbConfig?.title || 'Promotions & Campaigns'}
+                        subtitle={cbConfig?.subtitle || 'Latest offers and announcements'}
+                        icon={Megaphone}
+                    />
+                    <PremiumCarousel autoRotate autoRotateInterval={cbConfig?.autoRotateInterval || 5000}>
+                        {campaignBanners.map(banner => (
+                            <CampaignBannerCard key={banner._id} banner={banner} />
+                        ))}
+                    </PremiumCarousel>
+                </div>
+            </SectionWrap>
+        );
+    }
+
+    /* 4 ─ Featured Universities */
+    function renderFeatured() {
+        if (hs?.sectionVisibility?.universityDashboard === false) return null;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader title="Featured Universities" subtitle="Hand-picked for you" icon={GraduationCap} viewAllHref="/universities" />
+                    {filteredFeatured.length > 0 ? (
+                        <PremiumCarousel>
+                            {filteredFeatured.map(uni => (
+                                <div key={uni.id} className="snap-start shrink-0 w-[85vw] sm:w-[70vw] md:w-[45%] lg:w-[32%]">
+                                    <UniversityCard university={uni} config={cardConfig} animationLevel={animLevel} actionVariant="default" />
+                                </div>
+                            ))}
+                        </PremiumCarousel>
+                    ) : (
+                        <EmptySection icon={GraduationCap} message="No featured universities match your filter" />
+                    )}
+                </div>
+            </SectionWrap>
+        );
+    }
+
+    /* 5 ─ Category + Cluster Filter */
+    function renderCategoryFilter() {
+        if (!categories.length) return null;
+        const enableCluster = uniSettings?.enableClusterFilterOnHome !== false && hs?.universityPreview?.enableClusterFilter !== false;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader title="Browse by Category" subtitle="Find universities that match your profile" icon={Layers} />
+                    {/* Category chips */}
+                    <div className="relative">
+                        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+                            <button
+                                onClick={() => { setSelectedCategory(''); setSelectedCluster(''); setCategoryInteracted(true); }}
+                                className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                                    !selectedCategory
+                                        ? 'bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/25'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                                }`}>
+                                All
+                            </button>
+                            {sortedCategories.map(cat => {
+                                const isActive = selectedCategory === cat.categoryName;
+                                const highlighted = hs?.highlightedCategories?.find(h => h.category === cat.categoryName);
                                 return (
-                                    <motion.div
-                                        key={banner._id}
-                                        initial={{ opacity: 0, y: 14 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true, amount: 0.2 }}
-                                        transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
-                                        whileHover={{ y: -4, scale: 1.01 }}
-                                        className="shrink-0 snap-start"
-                                    >
-                                        {safeLink ? (
-                                    isExternal ? (
-                                        <a
-                                            href={toSafeExternal(safeLink)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="group relative block h-48 w-[320px] overflow-hidden rounded-2xl border border-card-border/70 shadow-sm transition-transform hover:-translate-y-1 dark:border-dark-border/70"
-                                        >
-                                            {cardContent}
-                                        </a>
-                                    ) : (
-                                        <Link
-                                            key={banner._id}
-                                            to={safeLink}
-                                            className="group relative block h-48 w-[320px] overflow-hidden rounded-2xl border border-card-border/70 shadow-sm transition-transform hover:-translate-y-1 dark:border-dark-border/70"
-                                        >
-                                            {cardContent}
-                                        </Link>
-                                    )
-                                ) : (
-                                    <article
-                                        className="relative h-48 w-[320px] overflow-hidden rounded-2xl border border-card-border/70 shadow-sm dark:border-dark-border/70"
-                                    >
-                                        {cardContent}
-                                    </article>
-                                )}
-                                    </motion.div>
+                                    <button key={cat.categoryName}
+                                        onClick={() => {
+                                            setSelectedCategory(isActive ? '' : cat.categoryName);
+                                            setSelectedCluster('');
+                                            setCategoryInteracted(true);
+                                        }}
+                                        className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                                            isActive
+                                                ? 'bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/25'
+                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                                        }`}>
+                                        {cat.categoryName}
+                                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20' : 'bg-gray-200/80 dark:bg-gray-700'}`}>
+                                            {cat.count}
+                                        </span>
+                                        {highlighted?.badgeText && (
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-900 font-bold animate-pulse">{highlighted.badgeText}</span>
+                                        )}
+                                    </button>
                                 );
                             })}
                         </div>
+                        {/* Fade edge on mobile */}
+                        <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-gray-50 dark:from-gray-950 pointer-events-none md:hidden" />
                     </div>
-                ) : (
-                    <div className="card-flat p-5 text-sm text-text-muted dark:text-dark-text/70">No active campaign banners.</div>
-                )}
-                </section>
-            ) : null}
-
-            {showUniversityArea && filteredFeaturedUniversities.length > 0 ? (
-                <section className="section-container mt-8" data-testid="home-section-featured-universities">
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                        <div>
-                            <h2 className="section-title text-2xl">Featured Universities</h2>
-                            <p className="section-subtitle">Curated and ordered by admin — managed under University Settings.</p>
-                        </div>
-                        {filteredFeaturedUniversities.length > 1 ? (
-                            <CarouselControls
-                                label="featured universities"
-                                onPrev={() => scrollCarousel(featuredTrackRef, 'prev')}
-                                onNext={() => scrollCarousel(featuredTrackRef, 'next')}
-                            />
-                        ) : null}
-                    </div>
-                    <div ref={featuredTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2" data-testid="home-featured-grid">
-                        <div className="flex min-w-max snap-x snap-mandatory gap-5">
-                            {filteredFeaturedUniversities.map((university, index) => (
-                                <motion.div
-                                    key={university.id}
-                                    initial={{ opacity: 0, y: 14 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true, amount: 0.2 }}
-                                    transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
-                                    whileHover={{ y: -4, scale: 1.01 }}
-                                    className="w-[330px] shrink-0 snap-start md:w-[380px] lg:w-[420px]"
-                                >
-                                    <UniversityCard
-                                        university={university}
-                                        config={homeSettings?.universityCardConfig}
-                                        actionVariant="default"
-                                    />
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            ) : null}
-
-            {showUniversityArea ? (
-                <section className="section-container mt-8" data-testid="home-section-deadlines">
-                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <h2 className="section-title text-2xl">Admission Application Deadlines</h2>
-                        <p className="section-subtitle">Universities closing within the admin-defined deadline window.</p>
-                    </div>
-                </div>
-
-                <div className="mb-4 flex flex-wrap gap-2">
-                    {categoryFilters.map((item) => (
-                        <button
-                            key={item.key}
-                            type="button"
-                            onClick={() => {
-                                setCategoryInteracted(true);
-                                setSelectedCategory(item.key);
-                            }}
-                            className={`min-h-[44px] rounded-full border px-4 text-sm font-medium transition-colors ${selectedCategory === item.key
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-card-border text-text-muted hover:border-primary/50 hover:text-primary dark:border-dark-border dark:text-dark-text/70'
-                                }`}
+                    {/* Cluster chips */}
+                    {enableCluster && currentClusters.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            className="flex gap-2 overflow-x-auto pb-2 mt-1 scrollbar-hide"
                         >
-                            {item.label} ({item.count})
-                        </button>
-                    ))}
-                </div>
-
-                {clusterFilterEnabled ? (
-                    <div className="mb-6 flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setSelectedCluster('all')}
-                            className={`min-h-[44px] rounded-full border px-4 text-sm font-medium transition-colors ${selectedCluster === 'all'
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-card-border text-text-muted hover:border-primary/50 hover:text-primary dark:border-dark-border dark:text-dark-text/70'
-                                }`}
-                        >
-                            All Clusters
-                        </button>
-                        {activeClusterGroups.map((cluster) => (
                             <button
-                                key={cluster}
-                                type="button"
-                                onClick={() => setSelectedCluster(cluster)}
-                                className={`min-h-[44px] rounded-full border px-4 text-sm font-medium transition-colors ${selectedCluster === cluster
-                                    ? 'border-primary bg-primary/10 text-primary'
-                                    : 'border-card-border text-text-muted hover:border-primary/50 hover:text-primary dark:border-dark-border dark:text-dark-text/70'
-                                    }`}
-                            >
-                                {cluster}
+                                onClick={() => setSelectedCluster('')}
+                                className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                                    !selectedCluster
+                                        ? 'bg-purple-600 text-white shadow-sm'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                                }`}>
+                                All Clusters
                             </button>
-                        ))}
-                    </div>
-                ) : null}
-
-                <div className="mb-3 flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-bold text-text dark:text-dark-text">Deadline Universities</h3>
-                    {filteredDeadlineUniversities.length > 1 ? (
-                        <CarouselControls
-                            label="deadline universities"
-                            onPrev={() => scrollCarousel(deadlineTrackRef, 'prev')}
-                            onNext={() => scrollCarousel(deadlineTrackRef, 'next')}
-                        />
-                    ) : null}
-                </div>
-                {filteredDeadlineUniversities.length ? (
-                    <div ref={deadlineTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2" data-testid="home-deadline-grid">
-                        <div className="flex min-w-max snap-x snap-mandatory gap-5">
-                            {filteredDeadlineUniversities.map((university, index) => (
-                                <motion.div
-                                    key={university.id}
-                                    initial={{ opacity: 0, y: 14 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true, amount: 0.2 }}
-                                    transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
-                                    whileHover={{ y: -4, scale: 1.01 }}
-                                    className="w-[330px] shrink-0 snap-start md:w-[380px] lg:w-[420px]"
-                                >
-                                    <UniversityCard
-                                        university={university}
-                                        config={homeSettings?.universityCardConfig}
-                                        actionVariant="deadline"
-                                    />
-                                </motion.div>
+                            {currentClusters.map(cl => (
+                                <button key={cl}
+                                    onClick={() => setSelectedCluster(selectedCluster === cl ? '' : cl)}
+                                    className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                                        selectedCluster === cl
+                                            ? 'bg-purple-600 text-white shadow-sm'
+                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                                    }`}>
+                                    {cl}
+                                </button>
                             ))}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="card-flat p-5 text-sm text-text-muted dark:text-dark-text/70">No universities match the current deadline filter.</div>
-                )}
-                </section>
-            ) : null}
-
-            {showUniversityArea ? (
-                <section className="section-container mt-8" data-testid="home-section-upcoming-exams">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                        <h2 className="section-title text-2xl">Upcoming Exams</h2>
-                        <p className="section-subtitle">Universities with exam dates inside the admin-defined exam window.</p>
-                    </div>
-                    {filteredUpcomingExamUniversities.length > 1 ? (
-                        <CarouselControls
-                            label="upcoming exam universities"
-                            onPrev={() => scrollCarousel(examSoonTrackRef, 'prev')}
-                            onNext={() => scrollCarousel(examSoonTrackRef, 'next')}
-                        />
-                    ) : null}
+                        </motion.div>
+                    )}
                 </div>
-                {filteredUpcomingExamUniversities.length ? (
-                    <div ref={examSoonTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2" data-testid="home-exam-soon-grid">
-                        <div className="flex min-w-max snap-x snap-mandatory gap-5">
-                            {filteredUpcomingExamUniversities.map((university, index) => (
-                                <motion.div
-                                    key={university.id}
-                                    initial={{ opacity: 0, y: 14 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true, amount: 0.2 }}
-                                    transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
-                                    whileHover={{ y: -4, scale: 1.01 }}
-                                    className="w-[330px] shrink-0 snap-start md:w-[380px] lg:w-[420px]"
-                                >
-                                    <UniversityCard
-                                        university={university}
-                                        config={homeSettings?.universityCardConfig}
-                                        actionVariant="exam"
-                                    />
-                                </motion.div>
+            </SectionWrap>
+        );
+    }
+
+    /* 6 ─ Admission Deadlines */
+    function renderDeadlines() {
+        if (hs?.sectionVisibility?.closingExamWidget === false) return null;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader title="Application Deadlines" subtitle="Don't miss your chance to apply" icon={CalendarClock} viewAllHref="/universities" viewAllLabel="See all" />
+                    {filteredDeadline.length > 0 ? (
+                        <PremiumCarousel>
+                            {filteredDeadline.map(uni => (
+                                <DeadlineCard key={uni.id} university={uni} />
                             ))}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="card-flat p-5 text-sm text-text-muted dark:text-dark-text/70">No upcoming exam universities match this filter.</div>
-                )}
-                </section>
-            ) : null}
-
-            {showOnlineExams ? (
-                <section className="section-container mt-8" data-testid="home-section-online-exams">
-                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <h2 className="section-title text-2xl">Online Exam Preview</h2>
-                        <p className="section-subtitle">Locked until login and active subscription. Attend opens only for allowed exams.</p>
-                    </div>
-                    {onlineItems.length > 1 ? (
-                        <CarouselControls
-                            label="online exam preview"
-                            onPrev={() => scrollCarousel(onlineExamTrackRef, 'prev')}
-                            onNext={() => scrollCarousel(onlineExamTrackRef, 'next')}
-                        />
-                    ) : null}
+                        </PremiumCarousel>
+                    ) : (
+                        <EmptySection icon={CalendarClock} message="No upcoming deadlines in this category" />
+                    )}
                 </div>
+            </SectionWrap>
+        );
+    }
 
-                {onlineItems.length ? (
-                    <div ref={onlineExamTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2" data-testid="home-online-exams-carousel">
-                        <div className="flex min-w-max snap-x snap-mandatory gap-4">
-                        {onlineItems.map((exam, index) => {
-                            const examUrl = toSafeInternalOrExternal(exam.joinUrl || `/exam/${exam.id}`, `/exam/${exam.id}`);
-                            const isAttendEnabled = onlineLoggedIn && onlineHasPlan && (!exam.isLocked || exam.canJoin);
-                            const bannerUrl = onlineExamBannerById.get(String(exam.id)) || '';
-                            const requiresSubscription = exam.lockReason === 'subscription_required' || !onlineHasPlan;
-                            return (
-                                <motion.div
-                                    key={exam.id}
-                                    initial={{ opacity: 0, y: 14 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true, amount: 0.2 }}
-                                    transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
-                                    whileHover={{ y: -4, scale: 1.01 }}
-                                    className="w-[330px] shrink-0 snap-start md:w-[380px] lg:w-[420px]"
-                                >
-                                <article className="card-flat h-full overflow-hidden border border-card-border/70 dark:border-dark-border/70">
-                                    <div className="relative h-36 overflow-hidden border-b border-card-border/60 dark:border-dark-border/60">
-                                        {bannerUrl ? (
-                                            <img src={bannerUrl} alt={exam.title} className="h-full w-full object-cover" />
-                                        ) : (
-                                            <div className="h-full w-full bg-gradient-to-br from-primary/30 via-cyan-500/20 to-transparent" />
-                                        )}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
-                                        <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2 py-1 text-[11px] font-semibold text-white">
-                                            {exam.status || 'scheduled'}
-                                        </div>
-                                        {requiresSubscription ? (
-                                            <div className="absolute right-3 top-3 rounded-full bg-primary/90 px-2 py-1 text-[11px] font-semibold text-white">
-                                                Subscription Required
-                                            </div>
-                                        ) : null}
-                                    </div>
-
-                                    <div className="p-4">
-                                        <div className="min-w-0">
-                                            <h3 className="line-clamp-2 text-base font-semibold text-text dark:text-dark-text">
-                                                <span className="mr-2 text-primary">#{exam.id}</span>
-                                                {exam.title}
-                                            </h3>
-                                            <p className="mt-1 text-sm text-text-muted dark:text-dark-text/70">{exam.subject || 'N/A'}</p>
-                                            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-text-muted dark:text-dark-text/65">
-                                                <span className="inline-flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" />{formatDate(exam.startDate)}</span>
-                                                <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />{exam.durationMinutes ? `${exam.durationMinutes} min` : 'N/A'}</span>
-                                                <span className="inline-flex items-center gap-1"><Radio className="h-3.5 w-3.5" />{exam.status || 'scheduled'}</span>
-                                            </div>
-                                            {requiresSubscription ? (
-                                                <p className="mt-3 text-xs font-medium text-amber-300/90">
-                                                    An active subscription is required to attend this exam.
-                                                </p>
-                                            ) : null}
-                                        </div>
-
-                                        <div className="mt-4 flex flex-wrap gap-2">
-                                            {!onlineLoggedIn ? (
-                                                <>
-                                                    <Link to="/login" className="btn-primary inline-flex min-h-[44px] items-center px-4 text-sm">Login</Link>
-                                                    <Link to="/subscription-plans" className="btn-outline inline-flex min-h-[44px] items-center px-4 text-sm">See Plans</Link>
-                                                </>
-                                            ) : null}
-
-                                            {onlineLoggedIn && !onlineHasPlan ? (
-                                                <>
-                                                    <Link to="/subscription-plans" className="btn-primary inline-flex min-h-[44px] items-center px-4 text-sm">Subscribe</Link>
-                                                    <SmartActionLink
-                                                        to={contactAdminUrl}
-                                                        label="Contact Admin"
-                                                        className="btn-outline inline-flex min-h-[44px] items-center px-4 text-sm"
-                                                    />
-                                                </>
-                                            ) : null}
-                                            {onlineLoggedIn && onlineHasPlan ? (
-                                                isAttendEnabled ? (
-                                                    isExternalUrl(examUrl) ? (
-                                                        <a
-                                                            href={toSafeExternal(examUrl)}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="btn-primary inline-flex min-h-[44px] items-center gap-1 px-4 text-sm"
-                                                        >
-                                                            Attend
-                                                            <ExternalLink className="h-4 w-4" />
-                                                        </a>
-                                                    ) : (
-                                                        <Link to={examUrl} className="btn-primary inline-flex min-h-[44px] items-center px-4 text-sm">Attend</Link>
-                                                    )
-                                                ) : (
-                                                    <SmartActionLink
-                                                        to={contactAdminUrl}
-                                                        label="Contact Admin"
-                                                        className="btn-outline inline-flex min-h-[44px] items-center px-4 text-sm"
-                                                    />
-                                                )
-                                            ) : null}
-                                        </div>
-                                    </div>
-                                </article>
-                                </motion.div>
-                            );
-                        })}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="card-flat p-5 text-sm text-text-muted dark:text-dark-text/70">No online exams available.</div>
-                )}
-                </section>
-            ) : null}
-
-            {showNewsPreview ? (
-                <section className="section-container mt-8" data-testid="home-section-news-preview">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                        <h2 className="section-title text-2xl">{homeSettings?.newsPreview?.title || 'Latest News'}</h2>
-                        <p className="section-subtitle">{homeSettings?.newsPreview?.subtitle || 'Recent published updates.'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {filteredNews.length > 1 ? (
-                            <CarouselControls
-                                label="latest news"
-                                onPrev={() => scrollCarousel(newsTrackRef, 'prev')}
-                                onNext={() => scrollCarousel(newsTrackRef, 'next')}
-                            />
-                        ) : null}
-                        <SmartActionLink
-                            to={homeSettings?.newsPreview?.ctaUrl || '/news'}
-                            label={homeSettings?.newsPreview?.ctaLabel || 'View all'}
-                            className="btn-outline inline-flex min-h-[44px] items-center gap-2 px-4 text-sm"
-                            testId="home-news-view-all"
-                        />
-                    </div>
+    /* 7 ─ Upcoming Exams */
+    function renderUpcomingExams() {
+        if (hs?.sectionVisibility?.examsWidget === false) return null;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader title="Upcoming Exams" subtitle="Prepare and plan ahead" icon={CalendarClock} viewAllHref="/universities" viewAllLabel="See all" />
+                    {filteredUpcoming.length > 0 ? (
+                        <PremiumCarousel>
+                            {filteredUpcoming.map(uni => (
+                                <UpcomingExamCard key={uni.id} university={uni} />
+                            ))}
+                        </PremiumCarousel>
+                    ) : (
+                        <EmptySection icon={CalendarClock} message="No upcoming exams in this category" />
+                    )}
                 </div>
-                {filteredNews.length ? (
-                    <div ref={newsTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2" data-testid="home-news-carousel">
-                        <div className="flex min-w-max snap-x snap-mandatory gap-4">
-                        {filteredNews.map((item, index) => (
-                            <motion.article
-                                key={item._id}
-                                initial={{ opacity: 0, y: 14 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.2 }}
-                                transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
-                                whileHover={{ y: -4, scale: 1.01 }}
-                                className="card-flat h-full w-[330px] shrink-0 snap-start overflow-hidden border border-card-border/70 dark:border-dark-border/70 md:w-[380px] lg:w-[420px]"
-                            >
-                                <div className="h-40 bg-slate-200/40 dark:bg-dark-surface/60">
-                                    {(item.coverImageUrl || item.featuredImage || item.thumbnailImage) ? (
-                                        <img
-                                            src={item.coverImageUrl || item.featuredImage || item.thumbnailImage || ''}
-                                            alt={item.title}
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : null}
-                                </div>
-                                <div className="p-4">
-                                    <p className="text-xs text-text-muted dark:text-dark-text/65">{formatDate(item.publishDate || item.createdAt)}</p>
-                                    <h3 className="mt-1 line-clamp-2 text-base font-semibold text-text dark:text-dark-text">{item.title}</h3>
-                                    <p className="mt-2 line-clamp-2 text-sm text-text-muted dark:text-dark-text/70">{item.shortSummary || item.shortDescription || 'N/A'}</p>
-                                    <Link
-                                        to={item.slug ? `/news/${item.slug}` : '/news'}
-                                        className="mt-3 inline-flex min-h-[44px] items-center gap-1 text-sm font-medium text-primary"
-                                    >
-                                        Read more
-                                        <ArrowRight className="h-4 w-4" />
-                                    </Link>
-                                </div>
-                            </motion.article>
+            </SectionWrap>
+        );
+    }
+
+    /* 8 ─ Online Exam Preview */
+    function renderOnlineExamPreview() {
+        if (hs?.sectionVisibility?.examsWidget === false) return null;
+        if (!onlineExams) return null;
+        const items: HomeExamWidgetItem[] = (
+            onlineExams.items?.length
+                ? onlineExams.items
+                : [...(onlineExams.liveNow ?? []), ...(onlineExams.upcoming ?? [])]
+        ).slice(0, 6);
+        if (!items.length) return null;
+
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader title="Online Exams" subtitle="Test your preparation" icon={ClipboardCheck} viewAllHref="/exams" />
+                    <PremiumCarousel>
+                        {items.map(exam => (
+                            <OnlineExamCard key={exam.id} exam={exam} />
                         ))}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="card-flat p-5 text-sm text-text-muted dark:text-dark-text/70">No news items available.</div>
-                )}
-                </section>
-            ) : null}
-
-            {showResourcesPreview ? (
-                <section className="section-container mt-8" data-testid="home-section-resources-preview">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                        <h2 className="section-title text-2xl">{homeSettings?.resourcesPreview?.title || 'Resources Preview'}</h2>
-                        <p className="section-subtitle">{homeSettings?.resourcesPreview?.subtitle || 'Learning resources curated by admin.'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {filteredResources.length > 1 ? (
-                            <CarouselControls
-                                label="resources preview"
-                                onPrev={() => scrollCarousel(resourcesTrackRef, 'prev')}
-                                onNext={() => scrollCarousel(resourcesTrackRef, 'next')}
-                            />
-                        ) : null}
-                        <SmartActionLink
-                            to={homeSettings?.resourcesPreview?.ctaUrl || '/resources'}
-                            label={homeSettings?.resourcesPreview?.ctaLabel || 'View all'}
-                            className="btn-outline inline-flex min-h-[44px] items-center gap-2 px-4 text-sm"
-                            testId="home-resources-view-all"
-                        />
-                    </div>
+                    </PremiumCarousel>
                 </div>
-                {filteredResources.length ? (
-                    <div ref={resourcesTrackRef} className="-mx-1 overflow-x-auto scroll-smooth px-1 pb-2" data-testid="home-resources-carousel">
-                        <div className="flex min-w-max snap-x snap-mandatory gap-4">
-                        {filteredResources.map((item, index) => {
-                            const target = toSafeInternalOrExternal(item.externalUrl || item.fileUrl || '/resources', '/resources');
-                            const external = isExternalUrl(target);
-                            return (
-                                <motion.article
-                                    key={item._id}
-                                    initial={{ opacity: 0, y: 14 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true, amount: 0.2 }}
-                                    transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
-                                    whileHover={{ y: -4, scale: 1.01 }}
-                                    className="card-flat h-full w-[330px] shrink-0 snap-start border border-card-border/70 p-4 dark:border-dark-border/70 md:w-[380px] lg:w-[420px]"
-                                >
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p className="text-xs uppercase tracking-[0.12em] text-text-muted dark:text-dark-text/60">{item.type || 'resource'}</p>
-                                            <h3 className="mt-1 line-clamp-2 text-base font-semibold text-text dark:text-dark-text">{item.title}</h3>
-                                        </div>
-                                        <FileText className="h-4 w-4 text-primary" />
-                                    </div>
-                                    <p className="mt-2 line-clamp-2 text-sm text-text-muted dark:text-dark-text/70">{item.description || 'N/A'}</p>
+            </SectionWrap>
+        );
+    }
 
-                                    {external ? (
-                                        <a
-                                            href={toSafeExternal(target)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="mt-3 inline-flex min-h-[44px] items-center gap-1 text-sm font-medium text-primary"
-                                        >
-                                            Open
-                                            <ExternalLink className="h-4 w-4" />
-                                        </a>
-                                    ) : (
-                                        <Link to={target} className="mt-3 inline-flex min-h-[44px] items-center gap-1 text-sm font-medium text-primary">
-                                            Open
-                                            <ArrowRight className="h-4 w-4" />
-                                        </Link>
+    /* 9 ─ News Preview */
+    function renderNewsPreview() {
+        if (hs?.sectionVisibility?.newsPreview === false) return null;
+        if (!newsItems.length) return null;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader title="Latest News" subtitle="Admission updates & announcements" icon={Newspaper} viewAllHref="/news" />
+                    <PremiumCarousel>
+                        {newsItems.map((item: ApiNews) => (
+                            <NewsCard key={item._id} item={item} />
+                        ))}
+                    </PremiumCarousel>
+                </div>
+            </SectionWrap>
+        );
+    }
+
+    /* 10 ─ Resources Preview */
+    function renderResourcesPreview() {
+        if (hs?.sectionVisibility?.resourcesPreview === false) return null;
+        if (!resourceItems.length) return null;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <SectionHeader title="Resources" subtitle="Guides, downloads & study materials" icon={BookOpen} viewAllHref="/resources" />
+                    <PremiumCarousel>
+                        {resourceItems.map(res => (
+                            <ResourceCard key={res._id} resource={res} />
+                        ))}
+                    </PremiumCarousel>
+                </div>
+            </SectionWrap>
+        );
+    }
+
+    /* 11 ─ Content Blocks */
+    function renderContentBlocks() {
+        if (!contentBlocks.length) return null;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0 space-y-4">
+                    {contentBlocks.map((block: ContentBlockItem) => {
+                        if (block.type === 'cta_strip' || block.type === 'campaign_card') {
+                            return (
+                                <motion.div key={block._id} whileHover={{ scale: 1.005 }}
+                                    className="rounded-2xl overflow-hidden bg-gradient-to-r from-[var(--primary)] to-purple-600 text-white p-6 md:p-8 flex flex-col md:flex-row items-center gap-5 shadow-elevated">
+                                    {block.imageUrl && <img src={block.imageUrl} alt="" className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover shrink-0 ring-2 ring-white/20" />}
+                                    <div className="flex-1 text-center md:text-left">
+                                        {block.title && <h3 className="font-heading font-bold text-lg md:text-xl mb-1">{block.title}</h3>}
+                                        {block.body && <p className="text-sm text-white/75 line-clamp-2">{block.body}</p>}
+                                    </div>
+                                    {block.ctaLabel && block.ctaUrl && (
+                                        <SmartActionLink href={block.ctaUrl}
+                                            className="shrink-0 px-6 py-3 rounded-xl bg-white text-[var(--primary)] font-semibold text-sm hover:bg-blue-50 transition-colors shadow-elevated">
+                                            {block.ctaLabel}
+                                        </SmartActionLink>
                                     )}
-                                </motion.article>
+                                </motion.div>
                             );
-                        })}
+                        }
+                        if (block.type === 'notice_ribbon' || block.type === 'info_banner') {
+                            return (
+                                <div key={block._id}
+                                    className="rounded-2xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/20 p-4 md:p-5 flex items-start gap-3 shadow-card">
+                                    <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/40 shrink-0">
+                                        <Megaphone className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        {block.title && <p className="font-semibold text-sm text-amber-900 dark:text-amber-200 mb-0.5">{block.title}</p>}
+                                        {block.body && <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">{block.body}</p>}
+                                    </div>
+                                    {block.ctaLabel && block.ctaUrl && (
+                                        <SmartActionLink href={block.ctaUrl}
+                                            className="shrink-0 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors">
+                                            {block.ctaLabel} →
+                                        </SmartActionLink>
+                                    )}
+                                </div>
+                            );
+                        }
+                        /* hero_card or generic fallback */
+                        return (
+                            <motion.div key={block._id} whileHover={{ y: -2 }}
+                                className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col md:flex-row items-center gap-5">
+                                {block.imageUrl && <img src={block.imageUrl} alt="" className="w-full md:w-44 h-36 md:h-32 rounded-xl object-cover shrink-0" />}
+                                <div className="flex-1">
+                                    {block.title && <h3 className="font-heading font-bold text-base text-gray-900 dark:text-white mb-1">{block.title}</h3>}
+                                    {block.body && <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed">{block.body}</p>}
+                                </div>
+                                {block.ctaLabel && block.ctaUrl && (
+                                    <SmartActionLink href={block.ctaUrl}
+                                        className="shrink-0 px-5 py-2.5 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-card">
+                                        {block.ctaLabel}
+                                    </SmartActionLink>
+                                )}
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            </SectionWrap>
+        );
+    }
+
+    /* 12 ─ Quick Stats */
+    function renderStats() {
+        if (hs?.sectionVisibility?.stats === false) return null;
+        if (!stats?.items?.length) return null;
+        const enabled = stats.items.filter(s => s.enabled);
+        if (!enabled.length) return null;
+        return (
+            <SectionWrap>
+                <div className="px-4 md:px-0">
+                    <div className="rounded-2xl bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700 p-6 md:p-10 shadow-card">
+                        <SectionHeader title={hs?.stats?.title || 'Platform Overview'} subtitle={hs?.stats?.subtitle || 'CampusWay at a glance'} icon={BarChart3} />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {enabled.map(stat => (
+                                <motion.div key={stat.key} whileHover={{ scale: 1.03 }}
+                                    className="text-center p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50">
+                                    <p className="text-2xl md:text-3xl font-extrabold text-[var(--primary)]">
+                                        {(stat.value ?? 0).toLocaleString()}
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 font-medium">{stat.label}</p>
+                                </motion.div>
+                            ))}
                         </div>
                     </div>
-                ) : (
-                    <div className="card-flat p-5 text-sm text-text-muted dark:text-dark-text/70">No resources available.</div>
-                )}
-                </section>
-            ) : null}
+                </div>
+            </SectionWrap>
+        );
+    }
+
+    /* ================================================================ */
+    /*  Section renderer map                                             */
+    /* ================================================================ */
+    const sectionRenderers: Record<string, () => ReactNode> = {
+        search: renderSearch,
+        hero: renderHero,
+        campaign_banners: renderCampaignBanners,
+        featured: renderFeatured,
+        category_filter: renderCategoryFilter,
+        deadlines: renderDeadlines,
+        upcoming_exams: renderUpcomingExams,
+        online_exam_preview: renderOnlineExamPreview,
+        news: renderNewsPreview,
+        resources: renderResourcesPreview,
+        content_blocks: renderContentBlocks,
+        stats: renderStats,
+    };
+
+    /* ================================================================ */
+    /*  RENDER                                                           */
+    /* ================================================================ */
+    if (isLoading) return <HomeSkeleton />;
+    if (isError || !data) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-gray-500 dark:text-gray-400">
+                <AlertCircle className="w-12 h-12 mb-3 opacity-40" />
+                <p className="text-lg font-heading font-semibold">Failed to load home</p>
+                <p className="text-sm mt-1">Please try again later.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-gray-50 dark:bg-gray-950 transition-colors">
+            <div className="max-w-7xl mx-auto space-y-8 md:space-y-12 pb-16">
+                {sectionOrder.map(section => {
+                    const renderer = sectionRenderers[section.id];
+                    if (!renderer) return null;
+                    return (
+                        <SectionErrorBoundary key={section.id}>
+                            <SectionRenderer renderer={renderer} />
+                        </SectionErrorBoundary>
+                    );
+                })}
+            </div>
         </div>
     );
 }
-

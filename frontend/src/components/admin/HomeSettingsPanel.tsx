@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Eye, ImageUp, RefreshCw, RotateCcw, Save } from 'lucide-react';
+import { Eye, GripVertical, ImageUp, RefreshCw, RotateCcw, Save } from 'lucide-react';
 import {
     adminGetHomeSettings,
     adminGetHomeSettingsDefaults,
@@ -9,9 +9,12 @@ import {
     adminGetUniversities,
     adminGetUniversityCategories,
     adminUploadNewsMedia,
+    adminGetHomeConfig,
     adminResetHomeSettingsSection,
+    adminUpdateHomeConfig,
     adminUpdateHomeSettings,
     getHome,
+    type HomeConfigSection,
     type AdminSubscriptionPlan,
     type HomeApiResponse,
     type HomeSettingsConfig,
@@ -39,6 +42,7 @@ const sectionHelp: Record<SectionKey, string> = {
     newsPreview: 'News preview labels and item cap.',
     resourcesPreview: 'Resources preview labels and item cap.',
     socialStrip: 'Social/community strip headline and CTA label.',
+    campaignBanners: 'Campaign banner carousel auto-rotation and labeling.',
     adsSection: 'Scrollable ad section on Home page.',
     footer: 'Global footer visibility and content.',
     ui: 'Animation behavior: off/minimal/normal.',
@@ -425,6 +429,116 @@ function mergeDefined<T>(base: T, patch: unknown): T {
     return next as T;
 }
 
+/* ============================================================== */
+/*  Section Reorder Panel (uses HomeConfig API)                    */
+/* ============================================================== */
+function SectionReorderPanel() {
+    const queryClient = useQueryClient();
+    const [sections, setSections] = useState<HomeConfigSection[]>([]);
+    const [dragIdx, setDragIdx] = useState<number | null>(null);
+
+    const configQuery = useQuery({
+        queryKey: ['admin-home-config'],
+        queryFn: async () => (await adminGetHomeConfig()).data,
+    });
+
+    useEffect(() => {
+        if (configQuery.data?.sections?.length) {
+            setSections([...configQuery.data.sections].sort((a, b) => a.order - b.order));
+        }
+    }, [configQuery.data]);
+
+    const saveMut = useMutation({
+        mutationFn: async (updated: HomeConfigSection[]) => {
+            const reordered = updated.map((s, i) => ({ ...s, order: i }));
+            return (await adminUpdateHomeConfig({ sections: reordered })).data;
+        },
+        onSuccess: () => {
+            toast.success('Section order saved');
+            queryClient.invalidateQueries({ queryKey: ['admin-home-config'] });
+            queryClient.invalidateQueries({ queryKey: ['home'] });
+        },
+        onError: () => toast.error('Failed to save section order'),
+    });
+
+    const move = (idx: number, dir: -1 | 1) => {
+        const target = idx + dir;
+        if (target < 0 || target >= sections.length) return;
+        const next = [...sections];
+        [next[idx], next[target]] = [next[target], next[idx]];
+        setSections(next.map((s, i) => ({ ...s, order: i })));
+    };
+
+    const toggleActive = (idx: number) => {
+        setSections(prev => prev.map((s, i) => i === idx ? { ...s, isActive: !s.isActive } : s));
+    };
+
+    if (configQuery.isLoading) {
+        return (
+            <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-5">
+                <div className="flex justify-center py-6"><RefreshCw className="w-5 h-5 text-indigo-400 animate-spin" /></div>
+            </section>
+        );
+    }
+
+    return (
+        <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-5">
+            <div className="flex items-center justify-between mb-4">
+                <div>
+                    <h3 className="text-sm font-bold text-white">Home Section Order</h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Drag or use arrows to reorder sections. Toggle to enable/disable.</p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => saveMut.mutate(sections)}
+                    disabled={saveMut.isPending}
+                    className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white text-xs px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 disabled:opacity-60"
+                >
+                    {saveMut.isPending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    Save Order
+                </button>
+            </div>
+            <div className="space-y-1.5">
+                {sections.map((section, idx) => (
+                    <div
+                        key={section.id}
+                        draggable
+                        onDragStart={() => setDragIdx(idx)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => {
+                            if (dragIdx === null || dragIdx === idx) return;
+                            const next = [...sections];
+                            const [moved] = next.splice(dragIdx, 1);
+                            next.splice(idx, 0, moved);
+                            setSections(next.map((s, i) => ({ ...s, order: i })));
+                            setDragIdx(null);
+                        }}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 cursor-grab active:cursor-grabbing transition-colors ${
+                            section.isActive
+                                ? 'border-indigo-500/20 bg-slate-950/50'
+                                : 'border-slate-700/30 bg-slate-950/20 opacity-50'
+                        }`}
+                    >
+                        <GripVertical className="w-4 h-4 text-slate-500 shrink-0" />
+                        <span className="text-[10px] text-slate-500 w-5">{idx + 1}</span>
+                        <span className="text-sm text-white flex-1">{section.title}</span>
+                        <button type="button" onClick={() => move(idx, -1)} disabled={idx === 0}
+                            className="text-[10px] px-1.5 py-0.5 rounded border border-indigo-500/20 text-indigo-300 disabled:opacity-30">▲</button>
+                        <button type="button" onClick={() => move(idx, 1)} disabled={idx === sections.length - 1}
+                            className="text-[10px] px-1.5 py-0.5 rounded border border-indigo-500/20 text-indigo-300 disabled:opacity-30">▼</button>
+                        <label className="shrink-0 cursor-pointer">
+                            <input type="checkbox" checked={section.isActive} onChange={() => toggleActive(idx)} className="sr-only peer" />
+                            <div className={`w-8 h-4.5 rounded-full transition-colors ${section.isActive ? 'bg-indigo-500' : 'bg-slate-700'} relative`}>
+                                <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform ${section.isActive ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                            </div>
+                        </label>
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+}
+
 export default function HomeSettingsPanel() {
     const queryClient = useQueryClient();
     const [draft, setDraftState] = useState<HomeSettingsConfig | null>(null);
@@ -695,6 +809,8 @@ export default function HomeSettingsPanel() {
                         </button>
                     </div>
                 </div>
+
+                <SectionReorderPanel />
 
                 <section className="bg-slate-900/60 rounded-2xl border border-indigo-500/10 p-5">
                     <SectionHeader title="Section Visibility" section="sectionVisibility" onReset={resetSection} resetting={resettingSection === 'sectionVisibility'} />

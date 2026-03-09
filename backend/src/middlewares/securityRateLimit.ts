@@ -201,3 +201,31 @@ export async function subscriptionActionRateLimiter(req: Request, res: Response,
         next();
     }
 }
+
+export async function financeExportRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        if (shouldBypassRateLimit(req)) { next(); return; }
+        const userScope = (req as { user?: { _id?: string } }).user?._id || getClientIp(req);
+        const key = `finance_export:${String(userScope)}`;
+        const result = consume(key, 10, 60 * 1000); // 10 per minute
+        if (!result.allowed) {
+            limiterResponse(res, 'Too many export requests. Please wait before retrying.', result.retryAfterSec);
+            return;
+        }
+        next();
+    } catch { next(); }
+}
+
+export async function financeImportRateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        if (shouldBypassRateLimit(req)) { next(); return; }
+        const userScope = (req as { user?: { _id?: string } }).user?._id || getClientIp(req);
+        const key = `finance_import:${String(userScope)}`;
+        const result = consume(key, 5, 60 * 1000); // 5 per minute
+        if (!result.allowed) {
+            limiterResponse(res, 'Too many import requests. Please wait before retrying.', result.retryAfterSec);
+            return;
+        }
+        next();
+    } catch { next(); }
+}

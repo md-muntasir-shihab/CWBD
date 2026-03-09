@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import { AuthRequest } from '../middlewares/auth';
 import Exam from '../models/Exam';
 import Question from '../models/Question';
+import { ExamQuestionModel } from '../models/examQuestion.model';
 import ExamResult from '../models/ExamResult';
 import ExamSession from '../models/ExamSession';
 import ExamEvent from '../models/ExamEvent';
@@ -103,6 +104,46 @@ function normalizeExamPayload(body: Record<string, unknown>): Record<string, unk
     if (payload.scheduleEnd && !payload.endDate) {
         payload.endDate = payload.scheduleEnd;
     }
+
+    /* ── New admin panel field-name mappings ── */
+    if (payload.examWindowStartUTC && !payload.startDate) {
+        payload.startDate = payload.examWindowStartUTC;
+    }
+    if (payload.examWindowEndUTC && !payload.endDate) {
+        payload.endDate = payload.examWindowEndUTC;
+    }
+    if (payload.durationMinutes !== undefined && payload.duration === undefined) {
+        payload.duration = Number(payload.durationMinutes || 30);
+    }
+    if (payload.resultPublishAtUTC && !payload.resultPublishDate) {
+        payload.resultPublishDate = payload.resultPublishAtUTC;
+    }
+    if (payload.examCategory && !payload.group_category) {
+        payload.group_category = payload.examCategory;
+    }
+    if (payload.shuffleQuestions !== undefined && payload.randomizeQuestions === undefined) {
+        payload.randomizeQuestions = Boolean(payload.shuffleQuestions);
+    }
+    if (payload.shuffleOptions !== undefined && payload.randomizeOptions === undefined) {
+        payload.randomizeOptions = Boolean(payload.shuffleOptions);
+    }
+    if (payload.negativeMarkingEnabled !== undefined && payload.negativeMarking === undefined) {
+        payload.negativeMarking = Boolean(payload.negativeMarkingEnabled);
+    }
+    if (payload.negativePerWrong !== undefined && payload.negativeMarkValue === undefined) {
+        payload.negativeMarkValue = Number(payload.negativePerWrong || 0);
+    }
+    if (payload.answerChangeLimit !== undefined && payload.answerEditLimitPerQuestion === undefined) {
+        payload.answerEditLimitPerQuestion = payload.answerChangeLimit === null ? undefined : Number(payload.answerChangeLimit);
+    }
+    if (payload.showTimer !== undefined && payload.showRemainingTime === undefined) {
+        payload.showRemainingTime = Boolean(payload.showTimer);
+    }
+
+    /* ── Defaults for required fields the new form omits ── */
+    if (payload.totalQuestions === undefined) payload.totalQuestions = 0;
+    if (payload.totalMarks === undefined) payload.totalMarks = 0;
+
     if (!payload.resultPublishDate && payload.endDate) {
         payload.resultPublishDate = payload.endDate;
     }
@@ -506,6 +547,11 @@ export async function adminDeleteExam(req: AuthRequest, res: Response): Promise<
 
 export async function adminPublishExam(req: AuthRequest, res: Response): Promise<void> {
     try {
+        const questionCount = await Question.countDocuments({ examId: req.params.id });
+        if (questionCount === 0) {
+            res.status(400).json({ message: 'Cannot publish an exam with no questions. Add at least one question first.' });
+            return;
+        }
         const exam = await Exam.findByIdAndUpdate(req.params.id, { isPublished: true }, { new: true });
         if (!exam) { res.status(404).json({ message: 'Exam not found' }); return; }
         broadcastStudentDashboardEvent({ type: 'exam_updated', meta: { action: 'publish', examId: String(exam._id) } });
@@ -663,6 +709,18 @@ export async function adminForceSubmit(req: AuthRequest, res: Response): Promise
     }
 }
 
+export async function adminGetExamResults(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const results = await ExamResult.find({ exam: req.params.examId })
+            .populate('student', 'fullName username email phone')
+            .sort({ obtainedMarks: -1 })
+            .lean();
+        res.json({ results, count: results.length });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
 export async function adminPublishResult(req: AuthRequest, res: Response): Promise<void> {
     try {
         const exam = await Exam.findByIdAndUpdate(
@@ -707,18 +765,57 @@ export async function adminEvaluateResult(req: AuthRequest, res: Response): Prom
 export async function adminGetQuestions(req: AuthRequest, res: Response): Promise<void> {
     try {
         const { examId } = req.params;
-        const questions = await Question.find({ exam: examId }).sort({ order: 1 }).lean();
-        res.json({ questions, count: questions.length });
+        // Legacy questions (Question model — "questions" collection)
+        const legacyQuestions = await Question.find({ exam: examId }).sort({ order: 1 }).lean();
+        // QB-attached questions (ExamQuestionModel — "exam_questions" collection)
+        const bankQuestions = await ExamQuestionModel.find({ examId }).sort({ orderIndex: 1 }).lean();
+        // Normalize bank questions to match legacy shape for frontend
+        const normalizedBank = bankQuestions.map((bq: any) => ({
+            ...bq,
+            exam: examId,
+            question: bq.question_en,
+            question_en: bq.question_en,
+            optionA: bq.options?.[0]?.text_en ?? '',
+            optionB: bq.options?.[1]?.text_en ?? '',
+            optionC: bq.options?.[2]?.text_en ?? '',
+            optionD: bq.options?.[3]?.text_en ?? '',
+            correctAnswer: bq.correctKey,
+            correctKey: bq.correctKey,
+            order: bq.orderIndex ?? 999,
+            explanation: bq.explanation_en ?? '',
+            fromBank: true,
+        }));
+        const allQuestions = [...legacyQuestions, ...normalizedBank];
+        res.json({ questions: allQuestions, count: allQuestions.length });
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
+}
+
+function normalizeQuestionPayload(body: Record<string, unknown>): Record<string, unknown> {
+    const p = { ...body };
+    // Map frontend field names → Question model field names
+    if (p.question_en !== undefined && p.question === undefined) p.question = p.question_en;
+    if (p.question_bn !== undefined && !p.questionText) p.questionText = { en: String(p.question_en ?? ''), bn: String(p.question_bn ?? '') };
+    if (p.optionA_en !== undefined && p.optionA === undefined) p.optionA = p.optionA_en;
+    if (p.optionB_en !== undefined && p.optionB === undefined) p.optionB = p.optionB_en;
+    if (p.optionC_en !== undefined && p.optionC === undefined) p.optionC = p.optionC_en;
+    if (p.optionD_en !== undefined && p.optionD === undefined) p.optionD = p.optionD_en;
+    if (p.correctKey !== undefined && p.correctAnswer === undefined) p.correctAnswer = p.correctKey;
+    if (p.orderIndex !== undefined && p.order === undefined) p.order = p.orderIndex;
+    if (p.explanation_en !== undefined && p.explanation === undefined) p.explanation = p.explanation_en;
+    if (!p.questionType) p.questionType = 'mcq';
+    if (p.difficulty === undefined) p.difficulty = 'medium';
+    if (p.active === undefined) p.active = true;
+    return p;
 }
 
 export async function adminCreateQuestion(req: AuthRequest, res: Response): Promise<void> {
     try {
         const { examId } = req.params;
         const count = await Question.countDocuments({ exam: examId });
-        const question = await Question.create({ ...req.body, exam: examId, order: count + 1 });
+        const payload = normalizeQuestionPayload(req.body);
+        const question = await Question.create({ ...payload, exam: examId, order: payload.order ?? count + 1 });
         // Update totalQuestions count on exam
         await Exam.findByIdAndUpdate(examId, { $inc: { totalQuestions: 1 } });
         res.status(201).json({ question, message: 'Question created.' });
@@ -729,7 +826,8 @@ export async function adminCreateQuestion(req: AuthRequest, res: Response): Prom
 
 export async function adminUpdateQuestion(req: AuthRequest, res: Response): Promise<void> {
     try {
-        const question = await Question.findByIdAndUpdate(req.params.questionId, req.body, { new: true });
+        const payload = normalizeQuestionPayload(req.body);
+        const question = await Question.findByIdAndUpdate(req.params.questionId, payload, { new: true });
         if (!question) { res.status(404).json({ message: 'Question not found' }); return; }
         res.json({ question, message: 'Question updated.' });
     } catch (err) {

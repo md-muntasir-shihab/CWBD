@@ -3,6 +3,7 @@ import News from '../models/News';
 import Service from '../models/Service';
 import ServicePageConfig from '../models/ServicePageConfig';
 import Resource from '../models/Resource';
+import ResourceSettings from '../models/ResourceSettings';
 import ContactMessage from '../models/ContactMessage';
 import SiteSettings from '../models/Settings';
 import slugify from 'slugify';
@@ -459,6 +460,11 @@ export async function adminCreateResource(req: Request, res: Response): Promise<
     try {
         const data = req.body;
         if (!data.title || !data.type) { res.status(400).json({ message: 'Title and type are required' }); return; }
+        // Auto-generate slug from title
+        let slug = slugify(String(data.title), { lower: true, strict: true });
+        const existing = await Resource.findOne({ slug });
+        if (existing) slug = `${slug}-${Date.now()}`;
+        data.slug = slug;
         const resource = await Resource.create(data);
         broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'resources', action: 'create', resourceId: String(resource._id) } });
         res.status(201).json({ resource, message: 'Resource created' });
@@ -488,6 +494,69 @@ export async function adminDeleteResource(req: Request, res: Response): Promise<
         res.json({ message: 'Resource deleted' });
     } catch (err) {
         console.error('adminDeleteResource error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminToggleResourcePublish(req: Request, res: Response): Promise<void> {
+    try {
+        const resource = await Resource.findById(req.params.id);
+        if (!resource) { res.status(404).json({ message: 'Resource not found' }); return; }
+        resource.isPublic = !resource.isPublic;
+        await resource.save();
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'resources', action: 'toggle-publish', resourceId: String(resource._id) } });
+        res.json({ resource, message: `Resource marked as ${resource.isPublic ? 'public' : 'private'}` });
+    } catch (err) {
+        console.error('adminToggleResourcePublish error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminToggleResourceFeatured(req: Request, res: Response): Promise<void> {
+    try {
+        const resource = await Resource.findById(req.params.id);
+        if (!resource) { res.status(404).json({ message: 'Resource not found' }); return; }
+        resource.isFeatured = !resource.isFeatured;
+        await resource.save();
+        broadcastHomeStreamEvent({ type: 'home-updated', meta: { section: 'resources', action: 'toggle-featured', resourceId: String(resource._id) } });
+        res.json({ resource, message: `Resource ${resource.isFeatured ? 'featured' : 'unfeatured'}` });
+    } catch (err) {
+        console.error('adminToggleResourceFeatured error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminGetResourceSettings(_req: Request, res: Response): Promise<void> {
+    try {
+        const existing = await ResourceSettings.findOne();
+        if (!existing) {
+            const created = await ResourceSettings.create({});
+            res.json({ settings: created.toObject() });
+            return;
+        }
+        res.json({ settings: existing.toObject() });
+    } catch (err) {
+        console.error('adminGetResourceSettings error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function adminUpdateResourceSettings(req: Request, res: Response): Promise<void> {
+    try {
+        const input = (req.body || {}) as Record<string, unknown>;
+        const allowedKeys = new Set(['pageTitle', 'pageSubtitle', 'defaultThumbnailUrl', 'showFeatured', 'trackingEnabled']);
+        const safeUpdate: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(input)) {
+            if (allowedKeys.has(k)) safeUpdate[k] = v;
+        }
+        const settings = await ResourceSettings.findOneAndUpdate(
+            {},
+            { $set: safeUpdate },
+            { new: true, upsert: true, runValidators: true },
+        );
+        res.json({ settings, message: 'Resource settings updated' });
+    } catch (err) {
+        console.error('adminUpdateResourceSettings error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 }

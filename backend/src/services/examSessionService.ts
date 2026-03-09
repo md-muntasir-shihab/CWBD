@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import mongoose from "mongoose";
 import { AnswerModel } from "../models/answer.model";
 import { ExamModel } from "../models/exam.model";
 import { ExamQuestionModel } from "../models/examQuestion.model";
@@ -28,7 +28,7 @@ export const startSession = async (examId: string, userId: string, reqMeta: { ip
   );
 
   const session = await ExamSessionModel.create({
-    _id: randomUUID(),
+    _id: new mongoose.Types.ObjectId(),
     examId,
     userId,
     attemptNo,
@@ -100,7 +100,7 @@ export const saveSessionAnswers = async (examId: string, sessionId: string, user
   for (const row of payload.answers || []) {
     const prev = await AnswerModel.findOne({ sessionId, questionId: row.questionId, userId });
     const oldSelected = prev?.selectedKey ?? null;
-    const willChange = oldSelected !== row.selectedKey;
+    const willChange = oldSelected !== null && oldSelected !== row.selectedKey;
     const nextChangeCount = (prev?.changeCount || 0) + (willChange ? 1 : 0);
     if ((exam.answerChangeLimit ?? null) !== null && nextChangeCount > (exam.answerChangeLimit as number)) continue;
 

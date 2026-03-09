@@ -1,0 +1,5 @@
+[  157113ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/campusway-secure-admin/fc/budgets:0
+[  157126ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/campusway-secure-admin/fc/budgets:0
+[  157137ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/campusway-secure-admin/fc/budgets:0
+[  157191ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/campusway-secure-admin/fc/recurring-rules:0
+[  157203ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/campusway-secure-admin/fc/recurring-rules:0

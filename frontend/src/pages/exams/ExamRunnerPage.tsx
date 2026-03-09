@@ -415,8 +415,10 @@ export const ExamRunnerPage = () => {
             setShowRulesSheet(false);
             setSubmitError(null);
             setAutoSubmitFailed(false);
-        } catch {
-            toast.error("Unable to start exam session.");
+        } catch (err: unknown) {
+            const axErr = err as { response?: { data?: { message?: string } } };
+            const msg = axErr?.response?.data?.message || "Unable to start exam session.";
+            toast.error(msg);
         }
     };
 

@@ -6,31 +6,32 @@ import {
     LayoutDashboard, GraduationCap, BookOpen, Image, Upload,
     BarChart3, Home, Settings, ScrollText, LogOut, Shield, X,
     ChevronLeft, ChevronRight, Newspaper, FolderOpen,
-    Mail, UserCog, Download, Star, User, AlertCircle, MonitorPlay,
+    Mail, UserCog, Download, User, AlertCircle, MonitorPlay,
     Wallet, LifeBuoy, Database, CreditCard, SlidersHorizontal,
-    Users, Bell, CreditCard as SubCard, ClipboardList
+    Users, Bell, CreditCard as SubCard, ClipboardList, Megaphone
 } from 'lucide-react';
 
 export const ADMIN_NAV = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, route: '/__cw_admin__/dashboard' },
-    { id: 'universities', label: 'Universities', icon: GraduationCap, route: '/__cw_admin__/universities' },
-    { id: 'featured', label: 'Featured List', icon: Star, route: '/__cw_admin__/featured' },
     {
-        id: 'student-dashboard-control',
-        label: 'Student Dashboard Control',
-        icon: Shield,
-        route: '/__cw_admin__/student-dashboard-control',
+        id: 'home-control',
+        label: 'Home Control',
+        icon: Home,
+        route: '/__cw_admin__/settings/home-control',
         children: [
-            { id: 'exams', label: 'Exams', icon: BookOpen, route: '/__cw_admin__/exams' },
-            { id: 'live-monitor', label: 'Live Monitor', icon: MonitorPlay, route: '/__cw_admin__/live-monitor' },
-            { id: 'question-bank', label: 'Question Bank', icon: BookOpen, route: '/__cw_admin__/question-bank' },
-            { id: 'alerts', label: 'Live Alerts', icon: AlertCircle, route: '/__cw_admin__/alerts' },
-            { id: 'student-management', label: 'Student Management', icon: UserCog, route: '/__cw_admin__/students' },
-            { id: 'students-v2', label: 'Students CRM', icon: Users, route: '/__cw_admin__/students-v2' },
-            { id: 'student-groups-v2', label: 'Student Groups', icon: ClipboardList, route: '/__cw_admin__/student-groups-v2' },
-            { id: 'subscriptions-v2', label: 'Subscriptions', icon: SubCard, route: '/__cw_admin__/subscriptions-v2' },
-            { id: 'notification-center', label: 'Notification Center', icon: Bell, route: '/__cw_admin__/notification-center' },
-            { id: 'subscription-plans', label: 'Subscription Plans', icon: CreditCard, route: '/__cw_admin__/subscription-plans' },
+            { id: 'home-settings', label: 'Home Settings', icon: Home, route: '/__cw_admin__/settings/home-control' },
+            { id: 'banners', label: 'Banner Management', icon: Image, route: '/__cw_admin__/settings/banner-manager' },
+            { id: 'campaign-banners', label: 'Campaign Banner', icon: Megaphone, route: '/__cw_admin__/campaign-banners' },
+        ]
+    },
+    {
+        id: 'universities',
+        label: 'Universities',
+        icon: GraduationCap,
+        route: '/__cw_admin__/universities',
+        children: [
+            { id: 'university-list', label: 'All Universities', icon: GraduationCap, route: '/__cw_admin__/universities' },
+            { id: 'university-settings', label: 'University Settings', icon: SlidersHorizontal, route: '/__cw_admin__/settings/university-settings' },
         ]
     },
 
@@ -53,25 +54,59 @@ export const ADMIN_NAV = [
         ]
     },
     { id: 'resources', label: 'Resources', icon: FolderOpen, route: '/__cw_admin__/resources' },
-    { id: 'banners', label: 'Banners', icon: Image, route: '/__cw_admin__/settings/banner-manager' },
-    { id: 'home-control', label: 'Home Control', icon: Home, route: '/__cw_admin__/settings/home-control' },
-    { id: 'university-settings', label: 'University Settings', icon: SlidersHorizontal, route: '/__cw_admin__/settings/university-settings' },
+
+    { type: 'header', label: 'Academics & Students' },
+    {
+        id: 'exams',
+        label: 'Exams',
+        icon: BookOpen,
+        route: '/__cw_admin__/exams',
+        children: [
+            { id: 'exam-list', label: 'All Exams', icon: BookOpen, route: '/__cw_admin__/exams' },
+            { id: 'question-bank', label: 'Question Bank', icon: BookOpen, route: '/__cw_admin__/question-bank' },
+            { id: 'live-monitor', label: 'Live Monitor', icon: MonitorPlay, route: '/__cw_admin__/live-monitor' },
+            { id: 'alerts', label: 'Live Alerts', icon: AlertCircle, route: '/__cw_admin__/alerts' },
+        ]
+    },
+    {
+        id: 'students',
+        label: 'Students',
+        icon: Users,
+        route: '/__cw_admin__/students',
+        children: [
+            { id: 'student-management', label: 'All Students', icon: UserCog, route: '/__cw_admin__/students' },
+            { id: 'student-groups', label: 'Student Groups', icon: ClipboardList, route: '/__cw_admin__/student-groups' },
+            { id: 'students-v2', label: 'Students CRM', icon: Users, route: '/__cw_admin__/students-v2' },
+            { id: 'student-groups-v2', label: 'Groups V2', icon: ClipboardList, route: '/__cw_admin__/student-groups-v2' },
+            { id: 'notification-center', label: 'Notification Center', icon: Bell, route: '/__cw_admin__/notification-center' },
+            { id: 'student-settings', label: 'Student Settings', icon: SlidersHorizontal, route: '/__cw_admin__/settings/student-settings' },
+        ]
+    },
+    { id: 'subscription-plans', label: 'Subscription Plans', icon: CreditCard, route: '/__cw_admin__/subscription-plans' },
+    { id: 'subscriptions-v2', label: 'Subscriptions', icon: SubCard, route: '/__cw_admin__/subscriptions-v2' },
 
     { type: 'header', label: 'System' },
     { id: 'contact', label: 'Contact Messages', icon: Mail, route: '/__cw_admin__/contact' },
     { id: 'file-upload', label: 'Bulk Import', icon: Upload, route: '/__cw_admin__/file-upload' },
-    { id: 'finance', label: 'Accounts & Finance', icon: Wallet, route: '/__cw_admin__/payments' },
+    { id: 'finance', label: 'Accounts & Finance', icon: Wallet, route: '/__cw_admin__/finance/dashboard' },
     { id: 'support-tickets', label: 'Support Tickets', icon: LifeBuoy, route: '/__cw_admin__/support-center' },
-    { id: 'backups', label: 'Backups', icon: Database, route: '/__cw_admin__/backups' },
-    { id: 'reports', label: 'Reports', icon: BarChart3, route: '/__cw_admin__/reports' },
+    {
+        id: 'settings',
+        label: 'Site Settings',
+        icon: Settings,
+        route: '/__cw_admin__/settings/site-settings',
+        children: [
+            { id: 'site-general', label: 'General Settings', icon: Settings, route: '/__cw_admin__/settings/site-settings' },
+            { id: 'security', label: 'Security Center', icon: Shield, route: '/__cw_admin__/settings/security-center' },
+            { id: 'reports', label: 'Reports', icon: BarChart3, route: '/__cw_admin__/reports' },
+            { id: 'logs', label: 'System Logs', icon: ScrollText, route: '/__cw_admin__/settings/system-logs' },
+        ]
+    },
+    { id: 'settings-center', label: 'Settings Center', icon: Settings, route: '/__cw_admin__/settings' },
     { id: 'users', label: 'Users & Roles', icon: UserCog, route: '/__cw_admin__/users' },
     { id: 'admin-profile', label: 'Admin Profile', icon: User, route: '/__cw_admin__/settings/admin-profile' },
     { id: 'exports', label: 'Data Export', icon: Download, route: '/__cw_admin__/exports' },
-    { id: 'settings', label: 'Site Settings', icon: Settings, route: '/__cw_admin__/settings/site-settings' },
-    { id: 'settings-center', label: 'Settings Center', icon: Settings, route: '/__cw_admin__/settings' },
-    { id: 'security', label: 'Security Center', icon: Shield, route: '/__cw_admin__/settings/security-center' },
-    { id: 'student-settings', label: 'Student Settings', icon: SlidersHorizontal, route: '/__cw_admin__/settings/student-settings' },
-    { id: 'logs', label: 'System Logs', icon: ScrollText, route: '/__cw_admin__/settings/system-logs' },
+    { id: 'backups', label: 'Backups', icon: Database, route: '/__cw_admin__/backups' },
 ];
 
 interface AdminSidebarProps {
@@ -91,9 +126,7 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
     const navigate = useNavigate();
     const location = useLocation();
-    const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-        'student-dashboard-control': true
-    });
+    const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
     const [openTicketsCount, setOpenTicketsCount] = useState(0);
 
     useEffect(() => {
@@ -131,11 +164,11 @@ export default function AdminSidebar({
         const r = user?.role || 'student';
 
         const isAllowed = (id: string) => {
-            if (['settings', 'settings-center', 'security', 'users', 'exports', 'file-upload', 'logs'].includes(id) && !['superadmin', 'admin'].includes(r)) return false;
+            if (['settings', 'settings-center', 'security', 'site-general', 'users', 'exports', 'file-upload', 'logs'].includes(id) && !['superadmin', 'admin'].includes(r)) return false;
             if (id === 'backups' && !['superadmin', 'admin'].includes(r)) return false;
-            if (['student-management', 'subscription-plans'].includes(id) && !['superadmin', 'admin', 'moderator'].includes(r)) return false;
-            if (['contact', 'featured', 'student-dashboard-control', 'finance', 'support-tickets'].includes(id) && !['superadmin', 'admin', 'moderator'].includes(r)) return false;
-            if (['universities', 'exams', 'question-bank', 'news', 'resources', 'banners', 'alerts', 'home-control', 'university-settings', 'reports'].includes(id) || id.startsWith('news')
+            if (['student-management', 'subscription-plans', 'student-groups'].includes(id) && !['superadmin', 'admin', 'moderator'].includes(r)) return false;
+            if (['contact', 'finance', 'support-tickets'].includes(id) && !['superadmin', 'admin', 'moderator'].includes(r)) return false;
+            if ((['universities', 'exams', 'exam-list', 'question-bank', 'news', 'resources', 'home-control', 'home-settings', 'banners', 'campaign-banners', 'university-list', 'university-settings', 'reports', 'students'].includes(id) || id.startsWith('news'))
                 && !['superadmin', 'admin', 'moderator', 'editor'].includes(r)) return false;
             return true;
         };
@@ -150,6 +183,26 @@ export default function AdminSidebar({
 
         return item;
     }).filter(Boolean) as any[];
+
+    useEffect(() => {
+        // Keep the parent expanded whenever the current route belongs to one of its children.
+        setExpandedMenus((prev) => {
+            const next = { ...prev };
+            for (const item of filteredNav) {
+                if (item.type === 'header' || !item.children) continue;
+                const shouldExpand = item.children.some((child: any) => (
+                    child.id === activeTab ||
+                    child.id === activeTabFromPath ||
+                    location.pathname === child.route ||
+                    location.pathname.startsWith(`${child.route}/`)
+                ));
+                if (shouldExpand) {
+                    next[item.id] = true;
+                }
+            }
+            return next;
+        });
+    }, [activeTab, activeTabFromPath, filteredNav, location.pathname]);
 
     return (
         <>
@@ -215,7 +268,19 @@ export default function AdminSidebar({
                         return (
                             <div key={item.id} className="space-y-1">
                                 <button
-                                    onClick={() => hasChildren ? toggleMenu(item.id!) : navClick(item.id!, item.route)}
+                                    onClick={() => {
+                                        if (!hasChildren) {
+                                            navClick(item.id!, item.route);
+                                            return;
+                                        }
+                                        if (collapsed) {
+                                            // In collapsed desktop mode, open the rail first so children are not "lost".
+                                            setCollapsed(false);
+                                            setExpandedMenus((prev) => ({ ...prev, [item.id!]: true }));
+                                            return;
+                                        }
+                                        toggleMenu(item.id!);
+                                    }}
                                     title={collapsed ? item.label : undefined}
                                     className={`
                                         w-full flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200

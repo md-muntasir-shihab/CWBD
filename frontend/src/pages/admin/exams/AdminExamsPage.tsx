@@ -31,7 +31,7 @@ import {
     publishExamResults,
     listAdminPayments,
     verifyPayment,
-    templateUrls,
+    downloadQuestionTemplate,
 } from '../../../api/adminExamApi';
 import {
     adminDownloadExamResultImportTemplate,
@@ -177,7 +177,21 @@ export function AdminExamsPage() {
     const openEdit = useCallback(async (examId: string) => {
         setSelectedExamId(examId);
         try {
-            const data = await getAdminExam(examId);
+            const raw = await getAdminExam(examId);
+            const data: Record<string, unknown> = { ...raw };
+            const toLocalDT = (v: unknown) => v ? String(v).replace(/Z$/, '').slice(0, 16) : '';
+            // Normalize legacy Exam.ts field names → form field names
+            if (data.startDate && !data.examWindowStartUTC) data.examWindowStartUTC = toLocalDT(data.startDate);
+            if (data.endDate && !data.examWindowEndUTC) data.examWindowEndUTC = toLocalDT(data.endDate);
+            if (data.duration !== undefined && data.durationMinutes === undefined) data.durationMinutes = data.duration;
+            if (data.resultPublishDate && !data.resultPublishAtUTC) data.resultPublishAtUTC = toLocalDT(data.resultPublishDate);
+            if (data.group_category && !data.examCategory) data.examCategory = data.group_category;
+            if (data.randomizeQuestions !== undefined && data.shuffleQuestions === undefined) data.shuffleQuestions = data.randomizeQuestions;
+            if (data.randomizeOptions !== undefined && data.shuffleOptions === undefined) data.shuffleOptions = data.randomizeOptions;
+            if (data.negativeMarking !== undefined && data.negativeMarkingEnabled === undefined) data.negativeMarkingEnabled = data.negativeMarking;
+            if (data.negativeMarkValue !== undefined && data.negativePerWrong === undefined) data.negativePerWrong = data.negativeMarkValue;
+            if (data.answerEditLimitPerQuestion !== undefined && data.answerChangeLimit === undefined) data.answerChangeLimit = data.answerEditLimitPerQuestion;
+            if (data.showRemainingTime !== undefined && data.showTimer === undefined) data.showTimer = data.showRemainingTime;
             setFormData(data);
         } catch {
             toast.error('Failed to load exam');
@@ -346,7 +360,7 @@ export function AdminExamsPage() {
                         {renderFormField('Subject', 'subject')}
                         {renderFormField('Category', 'examCategory')}
                         {renderFormField('Duration (min)', 'durationMinutes', 'number')}
-                        {renderFormField('Status', 'status', 'select', ['draft', 'live', 'upcoming', 'ended', 'archived'])}
+                        {renderFormField('Status', 'status', 'select', ['draft', 'scheduled', 'live', 'closed'])}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {renderFormField('Description (EN)', 'description', 'textarea')}
@@ -418,9 +432,16 @@ export function AdminExamsPage() {
                         <ChevronLeft className="mr-1 h-4 w-4" />Back
                     </button>
                     <div className="flex gap-2">
-                        <a href={templateUrls.questions(selectedExamId)} className="btn-secondary">
+                        <button type="button" disabled={busy} onClick={async () => {
+                            setBusy(true);
+                            try {
+                                const response = await downloadQuestionTemplate(selectedExamId);
+                                saveBlob(response.data as Blob, 'questions_template.xlsx');
+                            } catch { toast.error('Failed to download template.'); }
+                            finally { setBusy(false); }
+                        }} className="btn-secondary">
                             <Download className="mr-1.5 h-4 w-4" />Template
-                        </a>
+                        </button>
                     </div>
                 </div>
                 <h2 className="text-xl font-bold text-text dark:text-dark-text">Questions ({questions.length})</h2>
@@ -488,11 +509,28 @@ export function AdminExamsPage() {
                         <div key={String(q._id)} className="admin-panel-bg flex flex-wrap items-start gap-3 rounded-xl p-4">
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">{idx + 1}</span>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm text-text dark:text-dark-text">{String(q.question_bn || q.question_en || 'No text')}</p>
-                                <p className="text-xs text-text-muted mt-1">Correct: {String(q.correctKey)} &middot; Marks: {String(q.marks)}</p>
+                                <p className="text-sm text-text dark:text-dark-text">{String(q.question_bn || q.question_en || q.question || 'No text')}</p>
+                                <p className="text-xs text-text-muted mt-1">Correct: {String(q.correctKey ?? q.correctAnswer ?? '-')} &middot; Marks: {String(q.marks)}</p>
                             </div>
                             <div className="flex gap-1">
-                                <button type="button" onClick={() => { setEditingQuestionId(String(q._id)); setQuestionForm(q); }} className="btn-ghost"><Edit3 className="h-4 w-4" /></button>
+                                <button type="button" onClick={() => {
+                                    setEditingQuestionId(String(q._id));
+                                    setQuestionForm({
+                                        ...defaultQuestionFields,
+                                        question_en: q.question_en || q.question || '',
+                                        question_bn: q.question_bn || '',
+                                        optionA_en: q.optionA_en || q.optionA || '',
+                                        optionB_en: q.optionB_en || q.optionB || '',
+                                        optionC_en: q.optionC_en || q.optionC || '',
+                                        optionD_en: q.optionD_en || q.optionD || '',
+                                        correctKey: q.correctKey || q.correctAnswer || 'A',
+                                        marks: q.marks ?? 1,
+                                        negativeMarks: q.negativeMarks ?? 0,
+                                        explanation_en: q.explanation_en || q.explanation || '',
+                                        explanation_bn: q.explanation_bn || '',
+                                        orderIndex: q.orderIndex ?? q.order ?? 0,
+                                    });
+                                }} className="btn-ghost"><Edit3 className="h-4 w-4" /></button>
                                 <button type="button" onClick={() => { if (window.confirm('Delete?')) deleteQuestionMutation.mutate(String(q._id)); }} className="btn-ghost text-danger"><Trash2 className="h-4 w-4" /></button>
                             </div>
                         </div>

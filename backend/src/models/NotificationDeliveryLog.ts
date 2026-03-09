@@ -4,7 +4,9 @@ export type DeliveryLogStatus = 'sent' | 'failed' | 'queued';
 
 export interface INotificationDeliveryLog extends Document {
     jobId: mongoose.Types.ObjectId;
+    campaignId?: mongoose.Types.ObjectId;
     studentId: mongoose.Types.ObjectId;
+    guardianTargeted: boolean;
     channel: 'sms' | 'email';
     providerUsed: string;
     to: string;
@@ -12,6 +14,8 @@ export interface INotificationDeliveryLog extends Document {
     providerMessageId?: string;
     errorMessage?: string;
     sentAtUTC?: Date;
+    costAmount: number;
+    retryCount: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -19,7 +23,9 @@ export interface INotificationDeliveryLog extends Document {
 const NotificationDeliveryLogSchema = new Schema<INotificationDeliveryLog>(
     {
         jobId: { type: Schema.Types.ObjectId, ref: 'NotificationJob', required: true, index: true },
+        campaignId: { type: Schema.Types.ObjectId, ref: 'NotificationJob', default: null },
         studentId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        guardianTargeted: { type: Boolean, default: false },
         channel: {
             type: String,
             enum: ['sms', 'email'],
@@ -37,6 +43,8 @@ const NotificationDeliveryLogSchema = new Schema<INotificationDeliveryLog>(
         providerMessageId: { type: String, trim: true },
         errorMessage: { type: String },
         sentAtUTC: { type: Date },
+        costAmount: { type: Number, default: 0, min: 0 },
+        retryCount: { type: Number, default: 0, min: 0 },
     },
     { timestamps: true, collection: 'notification_delivery_logs' }
 );

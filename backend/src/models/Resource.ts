@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IResource extends Document {
     title: string;
+    slug?: string;
     description: string;
     type: 'pdf' | 'link' | 'video' | 'audio' | 'image' | 'note';
     category: string;
@@ -22,6 +23,7 @@ export interface IResource extends Document {
 
 const ResourceSchema = new Schema<IResource>({
     title: { type: String, required: true, trim: true },
+    slug: { type: String, sparse: true, index: true },
     description: { type: String },
     type: { type: String, enum: ['pdf', 'link', 'video', 'audio', 'image', 'note'], required: true },
     category: { type: String, default: 'General' },
@@ -39,5 +41,6 @@ const ResourceSchema = new Schema<IResource>({
 }, { timestamps: true });
 
 ResourceSchema.index({ type: 1, category: 1 });
+ResourceSchema.index({ slug: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model<IResource>('Resource', ResourceSchema);

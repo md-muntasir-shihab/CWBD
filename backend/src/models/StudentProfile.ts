@@ -11,6 +11,7 @@ export interface IStudentProfile extends Document {
     phone?: string;
     phone_number?: string;
     guardian_phone?: string;
+    guardian_email?: string;
     guardianOtpHash?: string;
     guardianOtpExpiresAt?: Date;
     guardianPhoneVerifiedAt?: Date;
@@ -49,6 +50,7 @@ const StudentProfileSchema = new Schema<IStudentProfile>({
     phone: { type: String, trim: true },
     phone_number: { type: String, unique: true, sparse: true, index: true },
     guardian_phone: { type: String, trim: true },
+    guardian_email: { type: String, trim: true, lowercase: true },
     guardianOtpHash: { type: String, default: '' },
     guardianOtpExpiresAt: { type: Date, default: null },
     guardianPhoneVerifiedAt: { type: Date, default: null },

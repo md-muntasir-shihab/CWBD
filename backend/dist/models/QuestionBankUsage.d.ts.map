@@ -1,0 +1,1 @@
+{"version":3,"file":"QuestionBankUsage.d.ts","sourceRoot":"","sources":["../../src/models/QuestionBankUsage.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAE,QAAQ,EAAU,MAAM,UAAU,CAAC;AAEtD,MAAM,WAAW,kBAAmB,SAAQ,QAAQ;IAChD,cAAc,EAAE,QAAQ,CAAC,KAAK,CAAC,QAAQ,CAAC;IACxC,MAAM,EAAE,MAAM,CAAC;IACf,SAAS,EAAE,IAAI,CAAC;IAChB,kBAAkB,CAAC,EAAE,MAAM,CAAC;CAC/B;;;;;;AAsBD,wBAGE"}

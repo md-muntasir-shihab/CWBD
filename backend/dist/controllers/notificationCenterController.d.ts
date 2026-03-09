@@ -1,0 +1,20 @@
+import { Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
+export declare function adminGetNotificationSummary(_req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetProviders(_req: AuthRequest, res: Response): Promise<void>;
+export declare function adminCreateProvider(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminUpdateProvider(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminDeleteProvider(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminTestProvider(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetTemplates(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminCreateTemplate(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminUpdateTemplate(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminDeleteTemplate(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetJobs(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminSendNotification(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminRetryFailedJob(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetDeliveryLogs(req: AuthRequest, res: Response): Promise<void>;
+export declare function studentGetNotifications(req: AuthRequest, res: Response): Promise<void>;
+export declare function studentMarkNotificationRead(req: AuthRequest, res: Response): Promise<void>;
+export declare function studentMarkAllNotificationsRead(_req: AuthRequest, res: Response): Promise<void>;
+//# sourceMappingURL=notificationCenterController.d.ts.map

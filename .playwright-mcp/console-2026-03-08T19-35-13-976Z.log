@@ -1,0 +1,4 @@
+[    1032ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/campusway-secure-admin/settings/university:0
+[    1038ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/campusway-secure-admin/universities?page=1&limit=1000&status=all&sortBy=name&sortOrder=asc&fields=name,slug,shortForm:0
+[    1047ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/auth/me:0
+[    1356ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/auth/me:0

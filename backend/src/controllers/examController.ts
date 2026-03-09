@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { AuthRequest } from '../middlewares/auth';
 import Exam from '../models/Exam';
 import Question from '../models/Question';
+import { ExamQuestionModel } from '../models/examQuestion.model';
 import ExamResult from '../models/ExamResult';
 import ExamSession from '../models/ExamSession';
 import User from '../models/User';
@@ -2837,6 +2838,26 @@ async function generateQuestionsForExam(exam: typeof Exam.prototype, seedText = 
             .sort({ section: 1, order: 1 })
             .lean();
 
+        // Also include QB-attached questions from exam_questions collection
+        const bankQuestions = await ExamQuestionModel.find({ examId: String(exam._id) }).sort({ orderIndex: 1 }).lean();
+        if (bankQuestions.length > 0) {
+            const normalizedBank = bankQuestions.map((bq: any) => ({
+                ...bq,
+                exam: exam._id,
+                question: bq.question_en,
+                optionA: bq.options?.[0]?.text_en ?? '',
+                optionB: bq.options?.[1]?.text_en ?? '',
+                optionC: bq.options?.[2]?.text_en ?? '',
+                optionD: bq.options?.[3]?.text_en ?? '',
+                correctAnswer: bq.correctKey,
+                order: bq.orderIndex ?? 999,
+                explanation: bq.explanation_en ?? '',
+                active: true,
+                fromBank: true,
+            }));
+            questions.push(...normalizedBank);
+        }
+
         // If still empty, fall back to subject-based search
         if (questions.length === 0 && exam.subject) {
             const subjectQuery: any = { active: { $ne: false } };
@@ -2878,6 +2899,27 @@ async function generateQuestionsForExam(exam: typeof Exam.prototype, seedText = 
 async function getQuestionsByIdsAndFormat(questionIds: string[], exam: typeof Exam.prototype) {
     const rawQs = await Question.find({ _id: { $in: questionIds } }).lean();
     const qMap = new Map(rawQs.map(q => [q._id!.toString(), q]));
+
+    // Also check ExamQuestionModel for QB-attached questions not found in legacy collection
+    const missingIds = questionIds.filter(id => !qMap.has(id));
+    if (missingIds.length > 0) {
+        const bankQs = await ExamQuestionModel.find({ _id: { $in: missingIds } }).lean();
+        for (const bq of bankQs) {
+            const opts = (bq as any).options || [];
+            qMap.set(bq._id!.toString(), {
+                _id: bq._id,
+                question: (bq as any).question_en || '',
+                optionA: opts[0]?.text || '',
+                optionB: opts[1]?.text || '',
+                optionC: opts[2]?.text || '',
+                optionD: opts[3]?.text || '',
+                correctAnswer: (bq as any).correctKey || '',
+                order: (bq as any).orderIndex ?? 0,
+                marks: (bq as any).marks ?? 1,
+                questionType: 'mcq',
+            } as any);
+        }
+    }
 
     // Maintain generated order
     const orderedQs = questionIds.map(id => qMap.get(id)).filter(Boolean) as any[];

@@ -2,9 +2,10 @@ import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import ExcelJS from 'exceljs';
 import { authenticate, authorize, authorizePermission, forbidden, requirePermission } from '../middlewares/auth';
 import { enforceAdminPanelPolicy, enforceAdminReadOnlyMode } from '../middlewares/securityGuards';
-import { subscriptionActionRateLimiter } from '../middlewares/securityRateLimit';
+import { subscriptionActionRateLimiter, financeExportRateLimiter, financeImportRateLimiter } from '../middlewares/securityRateLimit';
 import { requireTwoPersonApproval } from '../middlewares/twoPersonApproval';
 import {
     adminGetExams,
@@ -23,6 +24,7 @@ import {
     adminImportQuestionsFromExcel,
     adminGetExamAnalytics,
     adminExportExamResults,
+    adminGetExamResults,
     adminEvaluateResult,
     adminDailyReport,
     adminUpdateUserSubscription,
@@ -116,6 +118,8 @@ import { uploadMedia, uploadMiddleware } from '../controllers/mediaController';
 import {
     adminGetNews, adminCreateNews, adminUpdateNews, adminDeleteNews, adminToggleNewsPublish,
     adminGetResources, adminCreateResource, adminUpdateResource, adminDeleteResource,
+    adminToggleResourcePublish, adminToggleResourceFeatured,
+    adminGetResourceSettings, adminUpdateResourceSettings,
     adminGetContactMessages, adminDeleteContactMessage,
     getSiteSettings, updateSiteSettings,
     adminExportNews, adminExportSubscriptionPlans as adminExportSubscriptionPlansLegacy, adminExportUniversities as adminExportUniversitiesLegacy,
@@ -247,6 +251,74 @@ import {
     adminUpdateAnalyticsSettings,
 } from '../controllers/analyticsController';
 import {
+    adminGetSecurityAlerts,
+    adminGetSecurityAlertSummary,
+    adminMarkAlertRead,
+    adminMarkAllAlertsRead,
+    adminResolveAlert,
+    adminDeleteAlert as adminDeleteSecurityAlert,
+    adminGetMaintenanceStatus,
+    adminUpdateMaintenanceStatus,
+} from '../controllers/securityAlertController';
+import {
+    adminGetHelpCategories,
+    adminCreateHelpCategory,
+    adminUpdateHelpCategory,
+    adminDeleteHelpCategory,
+    adminGetHelpArticles,
+    adminGetHelpArticle,
+    adminCreateHelpArticle,
+    adminUpdateHelpArticle,
+    adminDeleteHelpArticle,
+    adminPublishHelpArticle,
+    adminUnpublishHelpArticle,
+} from '../controllers/helpCenterController';
+import {
+    adminGetContentBlocks,
+    adminGetContentBlock,
+    adminCreateContentBlock,
+    adminUpdateContentBlock,
+    adminDeleteContentBlock,
+    adminToggleContentBlock,
+} from '../controllers/contentBlockController';
+import {
+    adminGetWeakTopics,
+    adminGetStudentWeakTopics,
+    adminGetHardestQuestions,
+} from '../controllers/weakTopicController';
+import {
+    adminGetStudentTimeline,
+    adminAddTimelineEntry,
+    adminDeleteTimelineEntry,
+    adminGetTimelineSummary,
+} from '../controllers/studentTimelineController';
+import {
+    adminGetNotificationSummary,
+    adminGetProviders,
+    adminCreateProvider,
+    adminUpdateProvider,
+    adminDeleteProvider,
+    adminTestProvider,
+    adminGetTemplates,
+    adminCreateTemplate,
+    adminUpdateTemplate,
+    adminDeleteTemplate,
+    adminGetJobs,
+    adminSendNotification,
+    adminRetryFailedJob,
+    adminGetDeliveryLogs,
+} from '../controllers/notificationCenterController';
+import {
+    adminGetActiveSubscriptions,
+    adminGetSubscriptionStats,
+    adminExtendSubscription,
+    adminExpireSubscription,
+    adminReactivateSubscription,
+    adminToggleAutoRenew,
+    adminGetAutomationLogs,
+    adminGetStudentSubscriptionHistory,
+} from '../controllers/renewalAutomationController';
+import {
     adminExportExamInsights,
     adminExportReportsSummary,
     adminGetExamInsights,
@@ -279,6 +351,33 @@ import {
     adminApprovePayment,
 } from '../controllers/adminFinanceController';
 import {
+    fcGetDashboard,
+    fcGetTransactions, fcGetTransaction, fcCreateTransaction, fcUpdateTransaction, fcDeleteTransaction,
+    fcBulkApproveTransactions, fcBulkMarkPaid,
+    fcGetInvoices, fcCreateInvoice, fcUpdateInvoice, fcMarkInvoicePaid,
+    fcGetBudgets, fcCreateBudget, fcUpdateBudget, fcDeleteBudget,
+    fcGetRecurringRules, fcCreateRecurringRule, fcUpdateRecurringRule, fcDeleteRecurringRule, fcRunRecurringRuleNow,
+    fcGetChartOfAccounts, fcCreateAccount,
+    fcGetVendors, fcCreateVendor,
+    fcGetSettings, fcUpdateSettings,
+    fcGetAuditLogs, fcGetAuditLogDetail,
+    fcExportTransactions, fcImportPreview, fcImportCommit, fcDownloadTemplate,
+    fcGetRefunds, fcCreateRefund, fcApproveRefund,
+    fcGeneratePLReport,
+    fcRestoreTransaction,
+} from '../controllers/financeCenterController';
+import { validate } from '../middlewares/validate';
+import {
+    createTransactionSchema, updateTransactionSchema, bulkIdsSchema,
+    createInvoiceSchema, updateInvoiceSchema, markInvoicePaidSchema,
+    createBudgetSchema, updateBudgetSchema,
+    createRecurringRuleSchema, updateRecurringRuleSchema,
+    createAccountSchema, createVendorSchema,
+    updateSettingsSchema,
+    createRefundSchema, processRefundSchema,
+    importCommitSchema,
+} from '../validators/financeSchemas';
+import {
     adminCreateNotice,
     adminGetNotices,
     adminGetSupportTickets,
@@ -308,16 +407,24 @@ import {
 } from '../controllers/adminUserController';
 import {
     adminAssignSubscription,
+    adminActivateUserSubscription,
     adminCreateSubscriptionPlan,
+    adminCreateUserSubscription,
     adminDeleteSubscriptionPlan,
     adminExportSubscriptionPlans,
     adminGetSubscriptionPlanById,
     adminExportSubscriptions,
     adminGetSubscriptionPlans,
+    adminGetSubscriptionSettings,
+    adminGetUserSubscriptions,
+    adminExpireUserSubscription,
     adminLegacyAssignStudentSubscription,
     adminReorderSubscriptionPlans,
     adminSuspendSubscription,
+    adminSuspendUserSubscriptionById,
+    adminToggleSubscriptionPlanFeatured,
     adminToggleSubscriptionPlan,
+    adminUpdateSubscriptionSettings,
     adminUpdateSubscriptionPlan,
 } from '../controllers/subscriptionController';
 import {
@@ -371,7 +478,12 @@ function inferModuleFromPath(pathname: string): PermissionModule | null {
     if (clean.startsWith('/resources')) return 'resources';
     if (clean.startsWith('/support-tickets') || clean.startsWith('/notices') || clean.startsWith('/contact-messages')) return 'support_center';
     if (clean.startsWith('/reports')) return 'reports_analytics';
-    if (clean.startsWith('/security') || clean.startsWith('/security-settings') || clean.startsWith('/audit-logs') || clean.startsWith('/backups') || clean.startsWith('/jobs') || clean.startsWith('/approvals')) return 'security_logs';
+    if (clean.startsWith('/security') || clean.startsWith('/security-settings') || clean.startsWith('/security-alerts') || clean.startsWith('/audit-logs') || clean.startsWith('/backups') || clean.startsWith('/jobs') || clean.startsWith('/approvals') || clean.startsWith('/maintenance')) return 'security_logs';
+    if (clean.startsWith('/help-center')) return 'support_center';
+    if (clean.startsWith('/content-blocks')) return 'site_settings';
+    if (clean.startsWith('/analytics/weak-topics')) return 'reports_analytics';
+    if (clean.startsWith('/notification-center')) return 'site_settings';
+    if (clean.startsWith('/renewal')) return 'subscription_plans';
     return null;
 }
 
@@ -571,6 +683,7 @@ router.patch('/exams/:id/publish', authorize('superadmin', 'admin', 'moderator')
 router.patch('/exams/:id/publish-result', authorize('superadmin', 'admin'), canEditExams, requireTwoPersonForExamResultPublish, adminPublishResult);
 router.patch('/exams/:examId/force-submit/:studentId', authorize('superadmin', 'admin', 'moderator'), canEditExams, adminForceSubmit);
 router.patch('/exams/evaluate/:resultId', authorize('superadmin', 'admin', 'moderator', 'editor'), canEditExams, adminEvaluateResult);
+router.get('/exams/:examId/results', authorize('superadmin', 'admin', 'moderator', 'editor'), canViewReports, adminGetExamResults);
 router.get('/exams/:examId/analytics', authorize('superadmin', 'admin', 'moderator'), canViewReports, adminGetExamAnalytics);
 router.get('/exams/:examId/export', authorize('superadmin', 'admin'), canViewReports, adminExportExamResults);
 router.get('/exams/:id/results/import-template', authorize('superadmin', 'admin', 'moderator', 'editor'), canViewReports, adminDownloadExamResultsImportTemplate);
@@ -587,6 +700,32 @@ router.put('/exams/:examId/questions/reorder', authorize('superadmin', 'admin', 
 router.put('/exams/:examId/questions/:questionId', authorize('superadmin', 'admin', 'moderator', 'editor'), canEditExams, adminUpdateQuestion);
 router.delete('/exams/:examId/questions/:questionId', authorize('superadmin', 'admin', 'moderator'), canEditExams, adminDeleteQuestion);
 router.post('/exams/:examId/questions/import-excel', authorize('superadmin', 'admin', 'moderator'), canEditExams, adminImportQuestionsFromExcel);
+router.get('/exams/:id/questions/template.xlsx', authorize('superadmin', 'admin', 'moderator', 'editor'), async (_req: Request, res: Response) => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Questions');
+    ws.columns = [
+        { header: 'question_en', key: 'question_en', width: 40 },
+        { header: 'question_bn', key: 'question_bn', width: 40 },
+        { header: 'optionA_en', key: 'optionA_en', width: 20 },
+        { header: 'optionA_bn', key: 'optionA_bn', width: 20 },
+        { header: 'optionB_en', key: 'optionB_en', width: 20 },
+        { header: 'optionB_bn', key: 'optionB_bn', width: 20 },
+        { header: 'optionC_en', key: 'optionC_en', width: 20 },
+        { header: 'optionC_bn', key: 'optionC_bn', width: 20 },
+        { header: 'optionD_en', key: 'optionD_en', width: 20 },
+        { header: 'optionD_bn', key: 'optionD_bn', width: 20 },
+        { header: 'correctKey', key: 'correctKey', width: 10 },
+        { header: 'marks', key: 'marks', width: 8 },
+        { header: 'negativeMarks', key: 'negativeMarks', width: 12 },
+        { header: 'explanation_en', key: 'explanation_en', width: 30 },
+        { header: 'explanation_bn', key: 'explanation_bn', width: 30 },
+    ];
+    ws.addRow({ question_en: 'What is 2+2?', optionA_en: '3', optionB_en: '4', optionC_en: '5', optionD_en: '6', correctKey: 'B', marks: 1 });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="questions_template.xlsx"');
+    await wb.xlsx.write(res);
+    res.end();
+});
 
 /* ── Global Question Bank ── */
 router.get('/question-bank', authorize('superadmin', 'admin', 'moderator', 'editor'), getQuestions);
@@ -760,6 +899,10 @@ router.get('/resources', authorize('superadmin', 'admin', 'moderator', 'editor')
 router.post('/resources', authorize('superadmin', 'admin', 'moderator', 'editor'), adminCreateResource);
 router.put('/resources/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), adminUpdateResource);
 router.delete('/resources/:id', authorize('superadmin', 'admin', 'moderator'), canDeleteData, adminDeleteResource);
+router.patch('/resources/:id/toggle-publish', authorize('superadmin', 'admin', 'moderator', 'editor'), adminToggleResourcePublish);
+router.patch('/resources/:id/toggle-featured', authorize('superadmin', 'admin', 'moderator', 'editor'), adminToggleResourceFeatured);
+router.get('/resource-settings', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetResourceSettings);
+router.put('/resource-settings', authorize('superadmin', 'admin', 'moderator'), adminUpdateResourceSettings);
 
 /* ── Contact Messages ── */
 router.get('/contact-messages', authorize('superadmin', 'admin', 'moderator'), adminGetContactMessages);
@@ -880,7 +1023,17 @@ router.put('/subscription-plans/:id', authorize('superadmin', 'admin'), canManag
 router.delete('/subscription-plans/:id', authorize('superadmin', 'admin'), canManagePlans, adminDeleteSubscriptionPlan);
 router.put('/subscription-plans/:id/toggle', authorize('superadmin', 'admin'), canManagePlans, adminToggleSubscriptionPlan);
 router.patch('/subscription-plans/:id/toggle', authorize('superadmin', 'admin'), canManagePlans, adminToggleSubscriptionPlan);
+router.put('/subscription-plans/:id/toggle-featured', authorize('superadmin', 'admin'), canManagePlans, adminToggleSubscriptionPlanFeatured);
 router.get('/subscription-plans/export', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminExportSubscriptionPlans);
+router.get('/subscription-settings', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminGetSubscriptionSettings);
+router.put('/subscription-settings', authorize('superadmin', 'admin'), canManagePlans, adminUpdateSubscriptionSettings);
+
+router.get('/user-subscriptions', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminGetUserSubscriptions);
+router.post('/user-subscriptions/create', authorize('superadmin', 'admin'), canManagePlans, adminCreateUserSubscription);
+router.put('/user-subscriptions/:id/activate', authorize('superadmin', 'admin'), canManagePlans, adminActivateUserSubscription);
+router.put('/user-subscriptions/:id/suspend', authorize('superadmin', 'admin'), canManagePlans, adminSuspendUserSubscriptionById);
+router.put('/user-subscriptions/:id/expire', authorize('superadmin', 'admin'), canManagePlans, adminExpireUserSubscription);
+router.get('/user-subscriptions/export', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminExportSubscriptions);
 router.post('/subscriptions/assign', authorize('superadmin', 'admin', 'moderator'), canManagePlans, subscriptionActionRateLimiter, adminAssignSubscription);
 router.post('/subscriptions/suspend', authorize('superadmin', 'admin', 'moderator'), canManagePlans, subscriptionActionRateLimiter, adminSuspendSubscription);
 router.get('/subscriptions/export', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminExportSubscriptions);
@@ -970,6 +1123,195 @@ router.get('/export-subscription-plans', authorize('superadmin', 'admin'), admin
 router.get('/export-subscription-plans/legacy', authorize('superadmin', 'admin'), adminExportSubscriptionPlansLegacy);
 router.get('/export-universities', authorize('superadmin', 'admin'), adminExportUniversitiesLegacy);
 router.get('/export-students', authorize('superadmin', 'admin'), adminExportStudents);
+
+/* ═══════════════════════════════════════════════════════════
+   FINANCE CENTER (unified ledger)
+   ═══════════════════════════════════════════════════════════ */
+router.get('/fc/dashboard', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetDashboard);
+
+// Transactions
+router.get('/fc/transactions', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetTransactions);
+router.get('/fc/transactions/:id', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetTransaction);
+router.post('/fc/transactions', authorize('superadmin', 'admin'), canManageFinance, validate(createTransactionSchema), fcCreateTransaction);
+router.put('/fc/transactions/:id', authorize('superadmin', 'admin'), canManageFinance, validate(updateTransactionSchema), fcUpdateTransaction);
+router.delete('/fc/transactions/:id', authorize('superadmin', 'admin'), canManageFinance, fcDeleteTransaction);
+router.post('/fc/transactions/:id/restore', authorize('superadmin', 'admin'), canManageFinance, fcRestoreTransaction);
+router.post('/fc/transactions/bulk-approve', authorize('superadmin', 'admin'), canManageFinance, validate(bulkIdsSchema), fcBulkApproveTransactions);
+router.post('/fc/transactions/bulk-mark-paid', authorize('superadmin', 'admin'), canManageFinance, validate(bulkIdsSchema), fcBulkMarkPaid);
+
+// Invoices
+router.get('/fc/invoices', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetInvoices);
+router.post('/fc/invoices', authorize('superadmin', 'admin'), canManageFinance, validate(createInvoiceSchema), fcCreateInvoice);
+router.put('/fc/invoices/:id', authorize('superadmin', 'admin'), canManageFinance, validate(updateInvoiceSchema), fcUpdateInvoice);
+router.post('/fc/invoices/:id/mark-paid', authorize('superadmin', 'admin'), canManageFinance, validate(markInvoicePaidSchema), fcMarkInvoicePaid);
+
+// Budgets
+router.get('/fc/budgets', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetBudgets);
+router.post('/fc/budgets', authorize('superadmin', 'admin'), canManageFinance, validate(createBudgetSchema), fcCreateBudget);
+router.put('/fc/budgets/:id', authorize('superadmin', 'admin'), canManageFinance, validate(updateBudgetSchema), fcUpdateBudget);
+router.delete('/fc/budgets/:id', authorize('superadmin', 'admin'), canManageFinance, fcDeleteBudget);
+
+// Recurring Rules
+router.get('/fc/recurring-rules', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetRecurringRules);
+router.post('/fc/recurring-rules', authorize('superadmin', 'admin'), canManageFinance, validate(createRecurringRuleSchema), fcCreateRecurringRule);
+router.put('/fc/recurring-rules/:id', authorize('superadmin', 'admin'), canManageFinance, validate(updateRecurringRuleSchema), fcUpdateRecurringRule);
+router.delete('/fc/recurring-rules/:id', authorize('superadmin', 'admin'), canManageFinance, fcDeleteRecurringRule);
+router.post('/fc/recurring-rules/:id/run-now', authorize('superadmin', 'admin'), canManageFinance, fcRunRecurringRuleNow);
+
+// Chart of Accounts
+router.get('/fc/chart-of-accounts', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetChartOfAccounts);
+router.post('/fc/chart-of-accounts', authorize('superadmin', 'admin'), canManageFinance, validate(createAccountSchema), fcCreateAccount);
+
+// Vendors
+router.get('/fc/vendors', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetVendors);
+router.post('/fc/vendors', authorize('superadmin', 'admin'), canManageFinance, validate(createVendorSchema), fcCreateVendor);
+
+// Settings
+router.get('/fc/settings', authorize('superadmin', 'admin'), canManageFinance, fcGetSettings);
+router.put('/fc/settings', authorize('superadmin', 'admin'), canManageFinance, validate(updateSettingsSchema), fcUpdateSettings);
+
+// Audit Logs
+router.get('/fc/audit-logs', authorize('superadmin', 'admin'), canManageFinance, fcGetAuditLogs);
+router.get('/fc/audit-logs/:id', authorize('superadmin', 'admin'), canManageFinance, fcGetAuditLogDetail);
+
+// Export / Import
+router.get('/fc/export', authorize('superadmin', 'admin', 'moderator'), canManageFinance, financeExportRateLimiter, fcExportTransactions);
+router.get('/fc/import-template', authorize('superadmin', 'admin'), canManageFinance, fcDownloadTemplate);
+router.post('/fc/import-preview', authorize('superadmin', 'admin'), canManageFinance, financeImportRateLimiter, upload.single('file'), fcImportPreview);
+router.post('/fc/import-commit', authorize('superadmin', 'admin'), canManageFinance, financeImportRateLimiter, validate(importCommitSchema), fcImportCommit);
+
+// Refunds
+router.get('/fc/refunds', authorize('superadmin', 'admin', 'moderator'), canManageFinance, fcGetRefunds);
+router.post('/fc/refunds', authorize('superadmin', 'admin'), canManageFinance, validate(createRefundSchema), fcCreateRefund);
+router.post('/fc/refunds/:id/process', authorize('superadmin', 'admin'), canManageFinance, validate(processRefundSchema), fcApproveRefund);
+
+// P&L Report PDF
+router.get('/fc/report.pdf', authorize('superadmin', 'admin'), canManageFinance, financeExportRateLimiter, fcGeneratePLReport);
+
+/* ── Question Bank v2 (Advanced) ── */
+import * as qbv2 from '../controllers/questionBankAdvancedController';
+
+// Settings
+router.get('/question-bank/v2/settings', authorize('superadmin', 'admin'), qbv2.getSettings);
+router.put('/question-bank/v2/settings', authorize('superadmin', 'admin'), qbv2.updateSettings);
+// CRUD
+router.get('/question-bank/v2/questions', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.listBankQuestions);
+router.get('/question-bank/v2/questions/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.getBankQuestion);
+router.post('/question-bank/v2/questions', authorize('superadmin', 'admin', 'moderator', 'editor'), canEditExams, qbv2.createBankQuestion);
+router.put('/question-bank/v2/questions/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), canEditExams, qbv2.updateBankQuestion);
+router.delete('/question-bank/v2/questions/:id', authorize('superadmin', 'admin', 'moderator'), canDeleteData, qbv2.deleteBankQuestion);
+router.post('/question-bank/v2/questions/:id/archive', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.archiveBankQuestion);
+router.post('/question-bank/v2/questions/:id/restore', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.restoreBankQuestion);
+router.post('/question-bank/v2/questions/:id/duplicate', authorize('superadmin', 'admin', 'moderator', 'editor'), canEditExams, qbv2.duplicateBankQuestion);
+// Bulk
+router.post('/question-bank/v2/bulk/archive', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.bulkArchive);
+router.post('/question-bank/v2/bulk/activate', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.bulkActivate);
+router.post('/question-bank/v2/bulk/tags', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.bulkUpdateTags);
+router.post('/question-bank/v2/bulk/delete', authorize('superadmin', 'admin'), canDeleteData, qbv2.bulkDelete);
+// Import / Export
+router.get('/question-bank/v2/import/template', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.downloadImportTemplate);
+router.post('/question-bank/v2/import/preview', authorize('superadmin', 'admin', 'moderator'), canEditExams, upload.single('file'), qbv2.importPreview);
+router.post('/question-bank/v2/import/commit', authorize('superadmin', 'admin', 'moderator'), canEditExams, upload.single('file'), qbv2.importCommit);
+router.get('/question-bank/v2/export', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.exportQuestions);
+// Sets
+router.get('/question-bank/v2/sets', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.listSets);
+router.get('/question-bank/v2/sets/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.getSet);
+router.post('/question-bank/v2/sets', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.createSet);
+router.put('/question-bank/v2/sets/:id', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.updateSet);
+router.delete('/question-bank/v2/sets/:id', authorize('superadmin', 'admin', 'moderator'), canDeleteData, qbv2.deleteSet);
+router.get('/question-bank/v2/sets/:id/resolve', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.resolveSetQuestions);
+// Exam integration
+router.get('/question-bank/v2/exam/:examId/search', authorize('superadmin', 'admin', 'moderator', 'editor'), qbv2.searchBankQuestionsForExam);
+router.post('/question-bank/v2/exam/:examId/attach', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.attachBankQuestionsToExam);
+router.delete('/question-bank/v2/exam/:examId/questions/:questionId', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.removeBankQuestionFromExam);
+router.put('/question-bank/v2/exam/:examId/reorder', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.reorderExamQuestions);
+router.post('/question-bank/v2/exam/:examId/finalize', authorize('superadmin', 'admin', 'moderator'), canEditExams, qbv2.finalizeExamSnapshot);
+// Analytics
+router.get('/question-bank/v2/analytics', authorize('superadmin', 'admin', 'moderator'), qbv2.getAnalytics);
+router.post('/question-bank/v2/analytics/:id/refresh', authorize('superadmin', 'admin', 'moderator'), qbv2.refreshAnalyticsForQuestion);
+router.post('/question-bank/v2/analytics/refresh-all', authorize('superadmin', 'admin'), qbv2.refreshAllAnalytics);
+
+/* ═══════════════════════════════════════════════════════════
+   SECURITY ALERTS & MAINTENANCE
+   ═══════════════════════════════════════════════════════════ */
+router.get('/security-alerts', authorize('superadmin', 'admin'), adminGetSecurityAlerts);
+router.get('/security-alerts/summary', authorize('superadmin', 'admin'), adminGetSecurityAlertSummary);
+router.post('/security-alerts/:id/read', authorize('superadmin', 'admin'), adminMarkAlertRead);
+router.post('/security-alerts/mark-all-read', authorize('superadmin', 'admin'), adminMarkAllAlertsRead);
+router.post('/security-alerts/:id/resolve', authorize('superadmin', 'admin'), adminResolveAlert);
+router.delete('/security-alerts/:id', authorize('superadmin', 'admin'), adminDeleteSecurityAlert);
+router.get('/maintenance/status', authorize('superadmin', 'admin'), adminGetMaintenanceStatus);
+router.put('/maintenance/status', authorize('superadmin', 'admin'), adminUpdateMaintenanceStatus);
+
+/* ═══════════════════════════════════════════════════════════
+   HELP CENTER (Knowledge Base)
+   ═══════════════════════════════════════════════════════════ */
+router.get('/help-center/categories', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetHelpCategories);
+router.post('/help-center/categories', authorize('superadmin', 'admin', 'moderator'), adminCreateHelpCategory);
+router.put('/help-center/categories/:id', authorize('superadmin', 'admin', 'moderator'), adminUpdateHelpCategory);
+router.delete('/help-center/categories/:id', authorize('superadmin', 'admin'), adminDeleteHelpCategory);
+router.get('/help-center/articles', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetHelpArticles);
+router.get('/help-center/articles/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetHelpArticle);
+router.post('/help-center/articles', authorize('superadmin', 'admin', 'moderator', 'editor'), adminCreateHelpArticle);
+router.put('/help-center/articles/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), adminUpdateHelpArticle);
+router.delete('/help-center/articles/:id', authorize('superadmin', 'admin'), adminDeleteHelpArticle);
+router.post('/help-center/articles/:id/publish', authorize('superadmin', 'admin', 'moderator'), adminPublishHelpArticle);
+router.post('/help-center/articles/:id/unpublish', authorize('superadmin', 'admin', 'moderator'), adminUnpublishHelpArticle);
+
+/* ═══════════════════════════════════════════════════════════
+   CONTENT BLOCKS (Global Promotions / Banners)
+   ═══════════════════════════════════════════════════════════ */
+router.get('/content-blocks', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetContentBlocks);
+router.get('/content-blocks/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetContentBlock);
+router.post('/content-blocks', authorize('superadmin', 'admin', 'moderator'), adminCreateContentBlock);
+router.put('/content-blocks/:id', authorize('superadmin', 'admin', 'moderator'), adminUpdateContentBlock);
+router.delete('/content-blocks/:id', authorize('superadmin', 'admin'), adminDeleteContentBlock);
+router.patch('/content-blocks/:id/toggle', authorize('superadmin', 'admin', 'moderator'), adminToggleContentBlock);
+
+/* ═══════════════════════════════════════════════════════════
+   WEAK TOPIC DETECTION (Analytics)
+   ═══════════════════════════════════════════════════════════ */
+router.get('/analytics/weak-topics', authorize('superadmin', 'admin', 'moderator'), canViewReports, adminGetWeakTopics);
+router.get('/analytics/weak-topics/by-student/:studentId', authorize('superadmin', 'admin', 'moderator'), canViewReports, adminGetStudentWeakTopics);
+router.get('/analytics/weak-topics/question-difficulty', authorize('superadmin', 'admin', 'moderator'), canViewReports, adminGetHardestQuestions);
+
+/* ═══════════════════════════════════════════════════════════
+   STUDENT CRM TIMELINE
+   ═══════════════════════════════════════════════════════════ */
+router.get('/students/:id/timeline', authorize('superadmin', 'admin', 'moderator'), canManageStudents, adminGetStudentTimeline);
+router.post('/students/:id/timeline', authorize('superadmin', 'admin', 'moderator'), canManageStudents, adminAddTimelineEntry);
+router.delete('/students/:id/timeline/:entryId', authorize('superadmin', 'admin'), canManageStudents, adminDeleteTimelineEntry);
+router.get('/students/:id/timeline/summary', authorize('superadmin', 'admin', 'moderator'), canManageStudents, adminGetTimelineSummary);
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION CENTER (Providers / Templates / Jobs / Logs)
+   ═══════════════════════════════════════════════════════════ */
+router.get('/notification-center/summary', authorize('superadmin', 'admin', 'moderator'), adminGetNotificationSummary);
+router.get('/notification-center/providers', authorize('superadmin', 'admin'), adminGetProviders);
+router.post('/notification-center/providers', authorize('superadmin', 'admin'), adminCreateProvider);
+router.put('/notification-center/providers/:id', authorize('superadmin', 'admin'), adminUpdateProvider);
+router.delete('/notification-center/providers/:id', authorize('superadmin', 'admin'), adminDeleteProvider);
+router.post('/notification-center/providers/:id/test', authorize('superadmin', 'admin'), adminTestProvider);
+router.get('/notification-center/templates', authorize('superadmin', 'admin', 'moderator'), adminGetTemplates);
+router.post('/notification-center/templates', authorize('superadmin', 'admin'), adminCreateTemplate);
+router.put('/notification-center/templates/:id', authorize('superadmin', 'admin'), adminUpdateTemplate);
+router.delete('/notification-center/templates/:id', authorize('superadmin', 'admin'), adminDeleteTemplate);
+router.get('/notification-center/jobs', authorize('superadmin', 'admin', 'moderator'), adminGetJobs);
+router.post('/notification-center/send', authorize('superadmin', 'admin'), adminSendNotification);
+router.post('/notification-center/jobs/:id/retry', authorize('superadmin', 'admin'), adminRetryFailedJob);
+router.get('/notification-center/delivery-logs', authorize('superadmin', 'admin', 'moderator'), adminGetDeliveryLogs);
+
+/* ═══════════════════════════════════════════════════════════
+   RENEWAL AUTOMATION
+   ═══════════════════════════════════════════════════════════ */
+router.get('/renewal/subscriptions', authorize('superadmin', 'admin', 'moderator'), canManagePlans, adminGetActiveSubscriptions);
+router.get('/renewal/stats', authorize('superadmin', 'admin', 'moderator'), canManagePlans, adminGetSubscriptionStats);
+router.post('/renewal/subscriptions/:id/extend', authorize('superadmin', 'admin'), canManagePlans, adminExtendSubscription);
+router.post('/renewal/subscriptions/:id/expire', authorize('superadmin', 'admin'), canManagePlans, adminExpireSubscription);
+router.post('/renewal/subscriptions/:id/reactivate', authorize('superadmin', 'admin'), canManagePlans, adminReactivateSubscription);
+router.patch('/renewal/subscriptions/:id/auto-renew', authorize('superadmin', 'admin'), canManagePlans, adminToggleAutoRenew);
+router.get('/renewal/logs', authorize('superadmin', 'admin', 'moderator'), canManagePlans, adminGetAutomationLogs);
+router.get('/renewal/students/:studentId/history', authorize('superadmin', 'admin', 'moderator'), canManagePlans, adminGetStudentSubscriptionHistory);
 
 export default router;
 
