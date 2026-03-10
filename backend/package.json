@@ -26,7 +26,10 @@
         "e2e:restore": "tsx src/scripts/e2e_restore.ts",
         "e2e:restore:deactivate": "tsx src/scripts/e2e_restore.ts --deactivate-users",
         "security:payload-smoke": "tsx src/scripts/security-payload-smoke.ts",
-        "test:home": "jest --config jest.config.cjs tests/home/home.api.test.ts"
+        "test:home": "jest --config jest.config.cjs tests/home/home.api.test.ts",
+        "test:team": "jest --config jest.config.cjs tests/team/",
+        "test:team:defaults": "jest --config jest.config.cjs tests/team/team-defaults.test.ts",
+        "test:team:api": "jest --config jest.config.cjs tests/team/team-api.test.ts"
     },
     "dependencies": {
         "@google/generative-ai": "^0.24.1",
