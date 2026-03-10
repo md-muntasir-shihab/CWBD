@@ -4,6 +4,10 @@ import { motion, type Variants } from 'framer-motion';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { normalizeExternalUrl } from '../../utils/url';
 import { trackAnalyticsEvent, type HomeAnimationLevel, type HomeUniversityCardConfig } from '../../services/api';
+import DeadlineBadge from './DeadlineBadge';
+import DaysLeftChip from './DaysLeftChip';
+import DefaultLogo from './DefaultLogo';
+import type { UrgencyState } from '../../lib/apiClient';
 
 export const DEFAULT_UNIVERSITY_CARD_CONFIG: HomeUniversityCardConfig = {
     defaultUniversityLogo: '',
@@ -111,6 +115,8 @@ function buildApplicationMeta(startRaw: unknown, endRaw: unknown, closingSoonDay
     if (!start || !end) {
         return {
             hasWindow: false,
+            urgencyState: 'unknown' as UrgencyState,
+            daysLeft: null as number | null,
             statusLabel: 'N/A',
             statusTone: 'text-slate-500 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800/70 dark:border-slate-700',
             countdown: 'Application: N/A',
@@ -129,6 +135,8 @@ function buildApplicationMeta(startRaw: unknown, endRaw: unknown, closingSoonDay
     if (nowMs < startMs) {
         return {
             hasWindow: true,
+            urgencyState: 'upcoming' as UrgencyState,
+            daysLeft: daysToEnd,
             statusLabel: 'Upcoming',
             statusTone: 'text-sky-700 bg-sky-100 border-sky-200 dark:text-sky-200 dark:bg-sky-500/15 dark:border-sky-500/35',
             countdown: daysToStart === null ? 'Starts soon' : (daysToStart <= 0 ? 'Starts today' : `Starts in ${daysToStart} days`),
@@ -140,6 +148,8 @@ function buildApplicationMeta(startRaw: unknown, endRaw: unknown, closingSoonDay
     if (nowMs > endMs) {
         return {
             hasWindow: true,
+            urgencyState: 'closed' as UrgencyState,
+            daysLeft: 0,
             statusLabel: 'Closed',
             statusTone: 'text-rose-700 bg-rose-100 border-rose-200 dark:text-rose-200 dark:bg-rose-500/15 dark:border-rose-500/35',
             countdown: 'Closed',
@@ -155,6 +165,8 @@ function buildApplicationMeta(startRaw: unknown, endRaw: unknown, closingSoonDay
 
     return {
         hasWindow: true,
+        urgencyState: (closingSoon ? 'closing_soon' : 'open') as UrgencyState,
+        daysLeft: daysToEnd,
         statusLabel: closingSoon ? 'Closing soon' : 'Open',
         statusTone: closingSoon
             ? 'text-amber-700 bg-amber-100 border-amber-200 dark:text-amber-200 dark:bg-amber-500/15 dark:border-amber-500/35'
@@ -163,16 +175,6 @@ function buildApplicationMeta(startRaw: unknown, endRaw: unknown, closingSoonDay
         progress,
         windowLabel: `${start.toLocaleDateString('en-GB')} -> ${end.toLocaleDateString('en-GB')}`,
     };
-}
-
-function calculateApplicationDurationDays(startRaw: unknown, endRaw: unknown): number | null {
-    const start = parseDate(startRaw);
-    const end = parseDate(endRaw);
-    if (!start || !end) return null;
-    const diffMs = end.getTime() - start.getTime();
-    if (diffMs < 0) return null;
-    const days = Math.round(diffMs / (24 * 60 * 60 * 1000));
-    return Number.isFinite(days) ? days : null;
 }
 
 function getAnimationVariants(level: HomeAnimationLevel): Variants {
@@ -213,10 +215,13 @@ const UniversityCard = memo(function UniversityCard({
     const logoUrl = pickString(university.logoUrl || university.logo);
     const logoFallback = pickString(mergedConfig.defaultUniversityLogo);
     const logoSrc = logoUrl || logoFallback;
-    const initials = name.split(' ').map((part) => part.slice(0, 1)).join('').slice(0, 2).toUpperCase() || 'U';
+    const shortFormRaw = pickString(university.shortForm, '');
+    const initials = (shortFormRaw && shortFormRaw !== 'N/A')
+        ? shortFormRaw.slice(0, 3).toUpperCase()
+        : name.split(' ').filter(w => !['of', 'the', 'and', 'for'].includes(w.toLowerCase())).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
     const universityNameSizeClass = getUniversityNameSizeClass(name);
 
-    const shortForm = pickString(university.shortForm, '');
+    const shortForm = shortFormRaw;
     const contactNumber = pickString(university.contactNumber, '');
     const establishedYear = pickString((university.establishedYear ?? university.established) as unknown, '');
     const email = pickString(university.email, '');
@@ -231,7 +236,6 @@ const UniversityCard = memo(function UniversityCard({
     const startRaw = university.applicationStart || university.applicationStartDate;
     const endRaw = university.applicationEnd || university.applicationEndDate;
     const appMeta = buildApplicationMeta(startRaw, endRaw, mergedConfig.closingSoonDays);
-    const appDurationDays = calculateApplicationDurationDays(startRaw, endRaw);
     const sendEvent = (eventName: string, meta: Record<string, unknown>) => {
         void trackAnalyticsEvent({
             eventName,
@@ -264,16 +268,11 @@ const UniversityCard = memo(function UniversityCard({
                     {logoSrc ? (
                         <img src={logoSrc} alt={`${name} logo`} className="h-full w-full object-contain" loading="lazy" />
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-primary/10 text-xl font-bold text-primary">
-                            {initials}
-                        </div>
+                        <DefaultLogo fallbackText={initials} />
                     )}
                 </div>
 
                 <div className="min-w-0 flex-1 relative">
-                    <button className="absolute -top-1 -right-1 p-1.5 text-slate-400 hover:text-rose-500 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                    </button>
 
                     <h3 className={`pr-6 ${universityNameSizeClass} font-bold leading-tight text-slate-900 dark:text-white line-clamp-2`} title={name}>
                         {name}
@@ -302,15 +301,11 @@ const UniversityCard = memo(function UniversityCard({
                         <span className="rounded-lg bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                             {category}
                         </span>
-                        <span className={`flex items-center gap-1 rounded-lg border px-2.5 py-0.5 text-[11px] font-bold ${appMeta.statusTone}`}>
-                            <div className="h-1.5 w-1.5 rounded-full bg-current" />
-                            {appMeta.statusLabel}
-                        </span>
+                        <DeadlineBadge urgencyState={appMeta.urgencyState} />
                     </div>
-                    <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-                        Application: {appMeta.windowLabel}
-                        {appDurationDays !== null ? ` (${appDurationDays} days)` : ''}
-                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                        <DaysLeftChip daysLeft={appMeta.daysLeft} urgencyState={appMeta.urgencyState} />
+                    </div>
                     {mergedConfig.showEmail && email && (
                         <p className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
                             <Mail className="h-3 w-3" /> {email}

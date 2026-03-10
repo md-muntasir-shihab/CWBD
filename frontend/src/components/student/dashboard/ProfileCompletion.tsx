@@ -13,7 +13,7 @@ export default function ProfileCompletion({ header, gatingMessage }: Props) {
     const isLow = pct < 60;
     const isComplete = pct >= 100;
     const isBlocked = !header.isProfileEligible;
-    const missingFields: string[] = ((header as unknown) as Record<string, unknown>).missingFields as string[] ?? [];
+    const missingFields: string[] = [...new Set(((header as unknown) as Record<string, unknown>).missingFields as string[] ?? [])];
 
     if (isComplete && !isBlocked) return null;
 

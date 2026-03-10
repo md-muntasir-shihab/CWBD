@@ -42,6 +42,8 @@ export interface IUser extends Document {
     passwordLastChangedAtUTC?: Date;
     passwordChangedByType?: 'admin' | 'user';
     forcePasswordResetRequired: boolean;
+    teamRoleId?: mongoose.Types.ObjectId;
+    notes?: string;
     accountInfoLastSentAtUTC?: Date;
     accountInfoLastSentChannels?: string[];
     credentialsLastResentAtUTC?: Date;
@@ -126,6 +128,8 @@ const UserSchema = new Schema<IUser>(
         passwordLastChangedAtUTC: { type: Date, default: null },
         passwordChangedByType: { type: String, enum: ['admin', 'user', null], default: null },
         forcePasswordResetRequired: { type: Boolean, default: false },
+        teamRoleId: { type: Schema.Types.ObjectId, ref: 'TeamRole', default: null, index: true },
+        notes: { type: String, trim: true, default: '' },
         accountInfoLastSentAtUTC: { type: Date, default: null },
         accountInfoLastSentChannels: { type: [String], default: [] },
         credentialsLastResentAtUTC: { type: Date, default: null },

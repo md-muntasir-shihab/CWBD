@@ -13,11 +13,19 @@ import SupportTicketsPanel from '../components/admin/SupportTicketsPanel';
 import ContactPanel from '../components/admin/ContactPanel';
 import { routeFromDashboardActionTab } from '../routes/adminPaths';
 import { AdminExamsPage as StandaloneExamsPage } from './admin/exams/AdminExamsPage';
-import StudentsListPage from './admin/students/StudentsListPage';
+// StudentsListPage imported via StudentManagementListPage
 import StudentDetailPage from './admin/students/StudentDetailPage';
 import StudentGroupsPageV2 from './admin/students/StudentGroupsPage';
 import NotificationCenterPage from './admin/notifications/NotificationCenterPage';
 import StudentSettingsPage from './admin/students/StudentSettingsPage';
+import StudentManagementListPage from './admin/students/StudentManagementListPage';
+import StudentCreatePage from './admin/students/StudentCreatePage';
+import StudentImportExportPage from './admin/students/StudentImportExportPage';
+import StudentAudiencesPage from './admin/students/StudentAudiencesPage';
+import StudentCrmTimelinePage from './admin/students/StudentCrmTimelinePage';
+import StudentWeakTopicsPage from './admin/students/StudentWeakTopicsPage';
+import StudentManagementDetailPage from './admin/students/StudentManagementDetailPage';
+import StudentGroupDetailPage from './admin/students/StudentGroupDetailPage';
 import SubscriptionsV2Page from './admin/subscriptions/SubscriptionsV2Page';
 
 export function AdminDashboardPage() {
@@ -113,7 +121,31 @@ export function AdminSupportCenterPage() {
 // ─── New Student Management System (v2) ───────────────────────────────────
 
 export function AdminStudentsMgmtPage() {
-    return <StudentsListPage />;
+    return <StudentManagementListPage />;
+}
+
+export function AdminStudentCreatePage() {
+    return <StudentCreatePage />;
+}
+
+export function AdminStudentImportExportPage() {
+    return <StudentImportExportPage />;
+}
+
+export function AdminStudentAudiencesPage() {
+    return <StudentAudiencesPage />;
+}
+
+export function AdminStudentCrmTimelinePage() {
+    return <StudentCrmTimelinePage />;
+}
+
+export function AdminStudentWeakTopicsPage() {
+    return <StudentWeakTopicsPage />;
+}
+
+export function AdminStudentMgmtDetailPage() {
+    return <StudentManagementDetailPage />;
 }
 
 export function AdminStudentDetailPage() {
@@ -124,12 +156,24 @@ export function AdminStudentGroupsV2Page() {
     return <StudentGroupsPageV2 />;
 }
 
+export function AdminStudentGroupDetailPage() {
+    return <StudentGroupDetailPage />;
+}
+
 export function AdminNotificationCenterPage() {
     return <NotificationCenterPage />;
 }
 
+export function AdminNotificationCenterEmbeddedPage() {
+    return <NotificationCenterPage noShell />;
+}
+
 export function AdminStudentSettingsPage() {
     return <StudentSettingsPage />;
+}
+
+export function AdminStudentSettingsEmbeddedPage() {
+    return <StudentSettingsPage noShell />;
 }
 
 export function AdminFinanceCenterPage() {

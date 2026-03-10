@@ -18,13 +18,17 @@ import type { AxiosResponse } from 'axios';
 
 export type { ApiUniversity, ApiUniversityCardPreview, UniversityCategorySummary };
 
+export type UrgencyState = 'open' | 'closing_soon' | 'closed' | 'upcoming' | 'unknown';
+
 export interface UniversityCard {
     id: string;
     name: string;
     shortForm: string;
     slug: string;
     category: string;
+    categorySlug: string;
     clusterGroup: string;
+    clusterSlug: string;
     contactNumber: string;
     established: number | null;
     address: string;
@@ -43,6 +47,31 @@ export interface UniversityCard {
     examCentersPreview: string[];
     shortDescription: string;
     logoUrl: string;
+    /* ── Computed fields ── */
+    logoFallbackText: string;
+    daysLeft: number | null;
+    urgencyState: UrgencyState;
+    deadlinePassed: boolean;
+    applicationProgress: number | null;
+    scienceExamDaysLeft: number | null;
+    artsExamDaysLeft: number | null;
+    businessExamDaysLeft: number | null;
+}
+
+export interface UniversityCategoryDetail {
+    categoryName: string;
+    categorySlug: string;
+    order: number;
+    count: number;
+    clusterGroups: string[];
+}
+
+export interface UniversityClusterSummary {
+    name: string;
+    slug: string;
+    categoryName: string;
+    categorySlug: string;
+    memberCount: number;
 }
 
 export interface UniversityDetail extends UniversityCard {
@@ -116,15 +145,81 @@ if (IS_MOCK_MODE) {
 
 /* ── Response normalisation helpers ── */
 
+export function toSlug(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function safeDaysDiff(dateStr: string): number | null {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    const now = new Date();
+    const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const targetStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    return Math.floor((targetStart - nowStart) / (24 * 60 * 60 * 1000));
+}
+
+function computeUrgency(startStr: string, endStr: string, closingSoonDays = 7): {
+    urgencyState: UrgencyState;
+    daysLeft: number | null;
+    deadlinePassed: boolean;
+    applicationProgress: number | null;
+} {
+    const start = startStr ? new Date(startStr) : null;
+    const end = endStr ? new Date(endStr) : null;
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return { urgencyState: 'unknown', daysLeft: null, deadlinePassed: false, applicationProgress: null };
+    }
+    const now = Date.now();
+    const startMs = start.getTime();
+    const endMs = end.getTime();
+    if (now < startMs) {
+        return { urgencyState: 'upcoming', daysLeft: safeDaysDiff(endStr), deadlinePassed: false, applicationProgress: 0 };
+    }
+    if (now > endMs) {
+        return { urgencyState: 'closed', daysLeft: 0, deadlinePassed: true, applicationProgress: 100 };
+    }
+    const total = Math.max(1, endMs - startMs);
+    const elapsed = Math.min(Math.max(now - startMs, 0), total);
+    const progress = Math.round((elapsed / total) * 100);
+    const daysLeft = safeDaysDiff(endStr);
+    const closingSoon = daysLeft !== null && daysLeft <= closingSoonDays;
+    return {
+        urgencyState: closingSoon ? 'closing_soon' : 'open',
+        daysLeft,
+        deadlinePassed: false,
+        applicationProgress: progress,
+    };
+}
+
+export function buildLogoFallback(name: string, shortForm?: string): string {
+    if (shortForm && shortForm !== 'N/A') return shortForm.slice(0, 3).toUpperCase();
+    return name.split(' ').filter(w => !['of', 'the', 'and', 'for'].includes(w.toLowerCase())).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
+}
+
 function normalizeUniversityCard(raw: ApiUniversity | ApiUniversityCardPreview): UniversityCard {
     const r = raw as unknown as Record<string, unknown>;
+    const name = String(r.name || '');
+    const category = String(r.category || '');
+    const clusterGroup = String(r.clusterGroup || '');
+    const applicationStartDate = String(r.applicationStartDate || r.applicationStart || '');
+    const applicationEndDate = String(r.applicationEndDate || r.applicationEnd || '');
+    const scienceExamDate = String(r.scienceExamDate || r.examDateScience || '');
+    const artsExamDate = String(r.artsExamDate || r.examDateArts || '');
+    const businessExamDate = String(r.businessExamDate || r.examDateBusiness || '');
+    const logoUrl = String(r.logoUrl || '');
+
+    const urgency = computeUrgency(applicationStartDate, applicationEndDate);
+
     return {
         id: String(r._id || r.id || ''),
-        name: String(r.name || ''),
+        name,
         shortForm: String(r.shortForm || 'N/A'),
         slug: String(r.slug || ''),
-        category: String(r.category || ''),
-        clusterGroup: String(r.clusterGroup || ''),
+        category,
+        categorySlug: toSlug(category),
+        clusterGroup,
+        clusterSlug: toSlug(clusterGroup),
         contactNumber: String(r.contactNumber || ''),
         established: typeof r.established === 'number' ? r.established
             : typeof r.establishedYear === 'number' ? r.establishedYear
@@ -137,24 +232,44 @@ function normalizeUniversityCard(raw: ApiUniversity | ApiUniversityCardPreview):
         scienceSeats: String(r.scienceSeats ?? r.seatsScienceEng ?? 'N/A'),
         artsSeats: String(r.artsSeats ?? r.seatsArtsHum ?? 'N/A'),
         businessSeats: String(r.businessSeats ?? r.seatsBusiness ?? 'N/A'),
-        applicationStartDate: String(r.applicationStartDate || r.applicationStart || ''),
-        applicationEndDate: String(r.applicationEndDate || r.applicationEnd || ''),
-        scienceExamDate: String(r.scienceExamDate || r.examDateScience || ''),
-        artsExamDate: String(r.artsExamDate || r.examDateArts || ''),
-        businessExamDate: String(r.businessExamDate || r.examDateBusiness || ''),
+        applicationStartDate,
+        applicationEndDate,
+        scienceExamDate,
+        artsExamDate,
+        businessExamDate,
         examCentersPreview: Array.isArray(r.examCentersPreview) ? r.examCentersPreview as string[]
             : Array.isArray(r.examCenters) ? (r.examCenters as { city: string }[]).map(c => c.city).slice(0, 6)
             : [],
         shortDescription: String(r.shortDescription || r.description || ''),
-        logoUrl: String(r.logoUrl || ''),
+        logoUrl,
+        logoFallbackText: buildLogoFallback(name, String(r.shortForm || '')),
+        daysLeft: urgency.daysLeft,
+        urgencyState: urgency.urgencyState,
+        deadlinePassed: urgency.deadlinePassed,
+        applicationProgress: urgency.applicationProgress,
+        scienceExamDaysLeft: safeDaysDiff(scienceExamDate),
+        artsExamDaysLeft: safeDaysDiff(artsExamDate),
+        businessExamDaysLeft: safeDaysDiff(businessExamDate),
     };
 }
 
 /* ── Public API functions ── */
 
-export async function fetchUniversityCategories(): Promise<UniversityCategorySummary[]> {
-    const { data } = await api.get<{ categories: UniversityCategorySummary[] }>('/university-categories');
-    return Array.isArray(data.categories) ? data.categories : [];
+export { normalizeUniversityCard };
+
+export async function fetchUniversityCategories(): Promise<UniversityCategoryDetail[]> {
+    const { data } = await api.get<UniversityCategorySummary[] | { categories?: UniversityCategorySummary[] }>('/university-categories');
+    const raw = Array.isArray(data) ? data
+        : Array.isArray((data as { categories?: UniversityCategorySummary[] }).categories)
+            ? (data as { categories: UniversityCategorySummary[] }).categories
+            : [];
+    return raw.map(c => ({
+        categoryName: c.categoryName,
+        categorySlug: toSlug(c.categoryName),
+        order: c.order,
+        count: c.count,
+        clusterGroups: c.clusterGroups,
+    }));
 }
 
 export async function fetchUniversities(

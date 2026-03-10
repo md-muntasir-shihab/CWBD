@@ -1,41 +1,53 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import AdminGuardShell from '../../../components/admin/AdminGuardShell';
+import { useNavigate } from 'react-router-dom';
 import {
   getStudentGroups, createStudentGroup, updateStudentGroup, deleteStudentGroup,
-  addGroupMembers, removeGroupMembers, getStudentsList,
+  canDeleteStudentGroup,
 } from '../../../api/adminStudentApi';
+import { adminUi } from '../../../lib/appRoutes';
+import {
+  Plus, Search, Users, X, Palette, Tag,
+  Star, MoreVertical, Pencil, Trash2, CheckCircle, XCircle,
+  Megaphone, BookOpen, Download,
+} from 'lucide-react';
+import { ADMIN_PATHS } from '../../../routes/adminPaths';
 
 type Toast = { show: boolean; message: string; type: 'success' | 'error' };
 type GroupType = 'manual' | 'dynamic';
-type RuleField = 'department' | 'ssc_batch' | 'hsc_batch' | 'status' | 'profile_score';
-type RuleOp = 'eq' | 'contains' | 'gt' | 'lt';
+type CardStyle = 'solid' | 'gradient' | 'outline' | 'minimal';
 
-interface Rule { field: RuleField; op: RuleOp; value: string }
-interface GroupForm { name: string; description: string; type: GroupType; rules: Rule[] }
+interface GroupForm {
+  name: string; description: string; type: GroupType;
+  shortCode: string; color: string; icon: string; cardStyleVariant: CardStyle;
+  sortOrder: number; isFeatured: boolean;
+  batch: string; department: string; visibilityNote: string;
+  defaultExamVisibility: string; defaultCommunicationAudience: string;
+}
 
-const RULE_FIELDS: RuleField[] = ['department', 'ssc_batch', 'hsc_batch', 'status', 'profile_score'];
-const RULE_OPS: RuleOp[] = ['eq', 'contains', 'gt', 'lt'];
-
-const TYPE_BADGE: Record<string, string> = {
-  manual: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  dynamic: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+const EMPTY_FORM: GroupForm = {
+  name: '', description: '', type: 'manual',
+  shortCode: '', color: '#6366f1', icon: 'Users', cardStyleVariant: 'solid',
+  sortOrder: 0, isFeatured: false,
+  batch: '', department: '', visibilityNote: '',
+  defaultExamVisibility: 'all_students', defaultCommunicationAudience: '',
 };
 
-const EMPTY_FORM: GroupForm = { name: '', description: '', type: 'manual', rules: [] };
+const CARD_STYLES: CardStyle[] = ['solid', 'gradient', 'outline', 'minimal'];
+const DEPARTMENTS = ['science', 'arts', 'commerce'];
+const EXAM_VIS = ['all_students', 'group_only', 'hidden'];
 
-function inp(extra = '') {
-  return `w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${extra}`;
-}
+const inputCls = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-400';
+const labelCls = 'block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1';
 
 function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
         </div>
         {children}
       </div>
@@ -43,15 +55,107 @@ function Modal({ open, onClose, title, children }: { open: boolean; onClose: () 
   );
 }
 
+function GroupCard({ g, onEdit, onDelete, onClick, onNavigate }: {
+  g: Record<string, unknown>;
+  onEdit: () => void; onDelete: () => void; onClick: () => void;
+  onNavigate: (path: string) => void;
+}) {
+  const [showMenu, setShowMenu] = useState(false);
+  const color = (g.color as string) || '#6366f1';
+  const style = (g.cardStyleVariant as CardStyle) || 'solid';
+  const memberCount = (g.memberCount as number) ?? (g.studentCount as number) ?? 0;
+
+  const cardBg = style === 'gradient'
+    ? { background: `linear-gradient(135deg, ${color}15, ${color}05)` }
+    : style === 'solid'
+    ? { borderLeftColor: color, borderLeftWidth: '4px' }
+    : {};
+
+  return (
+    <div
+      className={`relative rounded-xl border bg-white p-5 transition hover:shadow-md dark:bg-slate-900 cursor-pointer ${
+        style === 'outline' ? 'border-2' : 'border-slate-200 dark:border-slate-700'
+      }`}
+      style={style === 'outline' ? { borderColor: `${color}60` } : cardBg}
+      onClick={onClick}
+    >
+      {/* Header row */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: `${color}20` }}>
+            <Users size={18} style={{ color }} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{String(g.name ?? '')}</h3>
+              {!!g.isFeatured && <Star size={12} className="text-amber-500 fill-amber-500" />}
+            </div>
+            {!!g.shortCode && (
+              <span className="text-[10px] font-mono text-slate-400">{String(g.shortCode)}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Actions menu */}
+        <div className="relative" onClick={e => e.stopPropagation()}>
+          <button onClick={() => setShowMenu(!showMenu)} className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <MoreVertical size={14} />
+          </button>
+          {showMenu && (
+            <div className="absolute right-0 z-10 mt-1 w-40 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+              <button onClick={() => { setShowMenu(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">
+                <Pencil size={12} /> Edit
+              </button>
+              <button onClick={() => { setShowMenu(false); onNavigate(`${ADMIN_PATHS.campaignsNew}?audienceType=group&audienceGroupId=${g._id}&audienceGroupName=${encodeURIComponent(g.name as string || '')}`); }} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">
+                <Megaphone size={12} /> Send Campaign
+              </button>
+              <button onClick={() => { setShowMenu(false); onNavigate(ADMIN_PATHS.exams); }} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">
+                <BookOpen size={12} /> Create Exam
+              </button>
+              <button onClick={() => { setShowMenu(false); onClick(); }} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">
+                <Download size={12} /> Export
+              </button>
+              <button onClick={() => { setShowMenu(false); onDelete(); }} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                <Trash2 size={12} /> Delete
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Description */}
+      {!!g.description && (
+        <p className="mt-2 text-xs text-slate-500 line-clamp-2">{String(g.description)}</p>
+      )}
+
+      {/* Metrics row */}
+      <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
+        <div className="flex items-center gap-1">
+          <Users size={12} />
+          <span className="font-medium text-slate-700 dark:text-slate-300">{memberCount}</span>
+          <span>members</span>
+        </div>
+        <span className="rounded-full px-2 py-0.5 text-[10px] font-medium capitalize"
+          style={{ backgroundColor: `${color}15`, color }}>
+          {String(g.type)}
+        </span>
+        {!!g.department && (
+          <span className="capitalize text-slate-400">{String(g.department)}</span>
+        )}
+        {!!g.batch && <span className="text-slate-400">Batch {String(g.batch)}</span>}
+      </div>
+    </div>
+  );
+}
+
 export default function StudentGroupsPage() {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [toast, setToast] = useState<Toast>({ show: false, message: '', type: 'success' });
+  const [search, setSearch] = useState('');
   const [groupModal, setGroupModal] = useState<{ open: boolean; editId?: string }>({ open: false });
   const [form, setForm] = useState<GroupForm>(EMPTY_FORM);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string; name: string }>({ open: false, id: '', name: '' });
-  const [memberPanel, setMemberPanel] = useState<{ open: boolean; groupId: string; groupName: string } | null>(null);
-  const [memberSearch, setMemberSearch] = useState('');
-  const [addMemberIds, setAddMemberIds] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string; name: string; safe?: boolean }>({ open: false, id: '', name: '' });
 
   const showToast = (message: string, type: Toast['type'] = 'success') => {
     setToast({ show: true, message, type });
@@ -63,17 +167,15 @@ export default function StudentGroupsPage() {
     queryFn: () => getStudentGroups(),
   });
 
-  const { data: membersData } = useQuery({
-    queryKey: ['admin-group-members', memberPanel?.groupId],
-    queryFn: () => getStudentGroups(memberPanel?.groupId),
-    enabled: !!memberPanel?.open,
-  });
+  const rawGroups: Record<string, unknown>[] =
+    (groupsData as { groups?: Record<string, unknown>[]; items?: Record<string, unknown>[]; data?: Record<string, unknown>[] })?.groups ??
+    (groupsData as { data?: Record<string, unknown>[] })?.data ??
+    (groupsData as { items?: Record<string, unknown>[] })?.items ??
+    (Array.isArray(groupsData) ? groupsData as Record<string, unknown>[] : []);
 
-  const { data: studentSearchData } = useQuery({
-    queryKey: ['admin-students-search', memberSearch],
-    queryFn: () => getStudentsList({ q: memberSearch, limit: 10 }),
-    enabled: memberSearch.length >= 2,
-  });
+  const filteredGroups = search
+    ? rawGroups.filter(g => (g.name as string).toLowerCase().includes(search.toLowerCase()))
+    : rawGroups;
 
   const openCreate = () => { setForm(EMPTY_FORM); setGroupModal({ open: true }); };
   const openEdit = (g: Record<string, unknown>) => {
@@ -81,7 +183,17 @@ export default function StudentGroupsPage() {
       name: (g.name as string) ?? '',
       description: (g.description as string) ?? '',
       type: (g.type as GroupType) ?? 'manual',
-      rules: (g.rules as Rule[]) ?? [],
+      shortCode: (g.shortCode as string) ?? '',
+      color: (g.color as string) ?? '#6366f1',
+      icon: (g.icon as string) ?? 'Users',
+      cardStyleVariant: (g.cardStyleVariant as CardStyle) ?? 'solid',
+      sortOrder: (g.sortOrder as number) ?? 0,
+      isFeatured: (g.isFeatured as boolean) ?? false,
+      batch: (g.batch as string) ?? '',
+      department: (g.department as string) ?? '',
+      visibilityNote: (g.visibilityNote as string) ?? '',
+      defaultExamVisibility: (g.defaultExamVisibility as string) ?? 'all_students',
+      defaultCommunicationAudience: (g.defaultCommunicationAudience as string) ?? '',
     });
     setGroupModal({ open: true, editId: g._id as string });
   };
@@ -89,17 +201,25 @@ export default function StudentGroupsPage() {
   const handleSave = async () => {
     if (!form.name.trim()) return;
     try {
-      const payload = { ...form };
       if (groupModal.editId) {
-        await updateStudentGroup(groupModal.editId, payload as Record<string, unknown>);
+        await updateStudentGroup(groupModal.editId, form as unknown as Record<string, unknown>);
         showToast('Group updated');
       } else {
-        await createStudentGroup(payload as Record<string, unknown>);
+        await createStudentGroup(form as unknown as Record<string, unknown>);
         showToast('Group created');
       }
       qc.invalidateQueries({ queryKey: ['admin-student-groups'] });
       setGroupModal({ open: false });
     } catch { showToast('Failed to save group', 'error'); }
+  };
+
+  const confirmDelete = async (id: string, name: string) => {
+    try {
+      const res = await canDeleteStudentGroup(id);
+      setDeleteConfirm({ open: true, id, name, safe: res.canDelete ?? res.safe ?? true });
+    } catch {
+      setDeleteConfirm({ open: true, id, name, safe: true });
+    }
   };
 
   const handleDelete = async () => {
@@ -111,197 +231,184 @@ export default function StudentGroupsPage() {
     } catch { showToast('Failed to delete', 'error'); }
   };
 
-  const handleAddMembers = async () => {
-    if (!memberPanel || !addMemberIds.trim()) return;
-    const ids = addMemberIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-    try {
-      await addGroupMembers(memberPanel.groupId, ids);
-      qc.invalidateQueries({ queryKey: ['admin-group-members'] });
-      setAddMemberIds('');
-      showToast('Members added');
-    } catch { showToast('Failed', 'error'); }
-  };
-
-  const handleRemoveMember = async (studentId: string) => {
-    if (!memberPanel) return;
-    try {
-      await removeGroupMembers(memberPanel.groupId, [studentId]);
-      qc.invalidateQueries({ queryKey: ['admin-group-members'] });
-      showToast('Member removed');
-    } catch { showToast('Failed', 'error'); }
-  };
-
-  const addRule = () => setForm(f => ({ ...f, rules: [...f.rules, { field: 'department', op: 'eq', value: '' }] }));
-  const removeRule = (i: number) => setForm(f => ({ ...f, rules: f.rules.filter((_, idx) => idx !== i) }));
-  const updateRule = (i: number, key: keyof Rule, val: string) =>
-    setForm(f => ({ ...f, rules: f.rules.map((r, idx) => idx === i ? { ...r, [key]: val } : r) }));
-
-  const groups: Record<string, unknown>[] = (groupsData as { groups?: Record<string, unknown>[] })?.groups ?? (Array.isArray(groupsData) ? groupsData as Record<string, unknown>[] : []);
+  const set = (field: keyof GroupForm, value: string | number | boolean) =>
+    setForm(prev => ({ ...prev, [field]: value }));
 
   return (
-    <AdminGuardShell title="Student Groups" description="Manage manual and dynamic student groups">
+    <div className="mx-auto max-w-5xl space-y-6">
+      {/* Toast */}
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-white shadow-lg text-sm ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>{toast.message}</div>
+        <div className={`fixed right-4 top-4 z-50 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+          {toast.type === 'success' ? <CheckCircle size={16} /> : <XCircle size={16} />}
+          {toast.message}
+        </div>
       )}
 
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">All Groups</h2>
-          <button onClick={openCreate} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ New Group</button>
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-14 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />)}</div>
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800/60">
-                <tr>
-                  {['Name', 'Type', 'Members', 'Description', 'Actions'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
-                {groups.map((g: Record<string, unknown>) => (
-                  <tr key={g._id as string} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{g.name as string}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full capitalize ${TYPE_BADGE[(g.type as string)] ?? TYPE_BADGE.manual}`}>{g.type as string}</span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{(g.memberCount as number) ?? 0}</td>
-                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400 max-w-xs truncate">{g.description as string}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <button onClick={() => openEdit(g)} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded hover:bg-blue-200">Edit</button>
-                        <button onClick={() => setMemberPanel({ open: true, groupId: g._id as string, groupName: g.name as string })} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200">Members</button>
-                        <button onClick={() => setDeleteConfirm({ open: true, id: g._id as string, name: g.name as string })} className="px-2 py-1 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200">Delete</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {groups.length === 0 && <div className="p-8 text-center text-sm text-gray-400">No groups yet. Create one to get started.</div>}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/40">
+            <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-        )}
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Student Groups</h2>
+            <p className="text-xs text-slate-500">{rawGroups.length} group{rawGroups.length !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+        <button onClick={openCreate} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+          <Plus size={14} /> New Group
+        </button>
       </div>
 
+      {/* Search */}
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
+        <input className={`${inputCls} pl-8`} placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+
+      {/* Grid */}
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-36 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-700" />
+          ))}
+        </div>
+      ) : filteredGroups.length === 0 ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900">
+          <Users size={32} className="mx-auto mb-3 text-slate-300" />
+          <p className="text-sm text-slate-500">{search ? 'No groups match your search' : 'No groups yet. Create one to get started.'}</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredGroups.map(g => (
+            <GroupCard
+              key={g._id as string}
+              g={g}
+              onClick={() => navigate(adminUi(`student-management/groups/${g._id}`))}
+              onEdit={() => openEdit(g)}
+              onDelete={() => confirmDelete(g._id as string, g.name as string)}
+              onNavigate={(path) => navigate(path)}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Create/Edit Modal */}
-      <Modal open={groupModal.open} onClose={() => setGroupModal({ open: false })} title={groupModal.editId ? 'Edit Group' : 'New Group'}>
+      <Modal open={groupModal.open} onClose={() => setGroupModal({ open: false })} title={groupModal.editId ? 'Edit Group' : 'Create Group'}>
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Group Name *</label>
-            <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inp()} placeholder="e.g. HSC 2024 Batch" />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description</label>
-            <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className={inp()} placeholder="Optional description" />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Group Type</label>
-            <div className="flex gap-4">
-              {(['manual', 'dynamic'] as GroupType[]).map(t => (
-                <label key={t} className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" value={t} checked={form.type === t} onChange={() => setForm(f => ({ ...f, type: t, rules: t === 'manual' ? [] : f.rules }))} className="accent-blue-600" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">{t}</span>
-                </label>
-              ))}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Group Name *</label>
+              <input className={inputCls} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. HSC 2025 Science" />
+            </div>
+            <div>
+              <label className={labelCls}>Short Code</label>
+              <input className={inputCls} value={form.shortCode} onChange={e => set('shortCode', e.target.value)} placeholder="e.g. H25S" maxLength={10} />
+            </div>
+            <div>
+              <label className={labelCls}>Type</label>
+              <select className={inputCls} value={form.type} onChange={e => set('type', e.target.value)}>
+                <option value="manual">Manual</option>
+                <option value="dynamic">Dynamic</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Description</label>
+              <textarea className={`${inputCls} resize-none`} rows={2} value={form.description} onChange={e => set('description', e.target.value)} placeholder="Optional description" />
             </div>
           </div>
 
-          {form.type === 'dynamic' && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Filter Rules</label>
-                <button onClick={addRule} className="text-xs text-blue-600 hover:text-blue-700 font-medium">+ Add Rule</button>
-              </div>
-              {form.rules.map((rule, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <select value={rule.field} onChange={e => updateRule(i, 'field', e.target.value)} className="flex-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                    {RULE_FIELDS.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                  <select value={rule.op} onChange={e => updateRule(i, 'op', e.target.value)} className="w-24 text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                    {RULE_OPS.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                  <input value={rule.value} onChange={e => updateRule(i, 'value', e.target.value)} className="flex-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" placeholder="value" />
-                  <button onClick={() => removeRule(i)} className="text-red-400 hover:text-red-600 text-lg leading-none px-1">&times;</button>
+          {/* Appearance */}
+          <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+            <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <Palette size={12} /> Appearance
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className={labelCls}>Color</label>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={form.color} onChange={e => set('color', e.target.value)} className="h-8 w-8 cursor-pointer rounded border-0" />
+                  <input className={inputCls} value={form.color} onChange={e => set('color', e.target.value)} maxLength={7} />
                 </div>
-              ))}
-              {form.rules.length === 0 && <p className="text-xs text-gray-400 italic">No rules yet. Students won&apos;t be auto-added.</p>}
+              </div>
+              <div>
+                <label className={labelCls}>Card Style</label>
+                <select className={inputCls} value={form.cardStyleVariant} onChange={e => set('cardStyleVariant', e.target.value)}>
+                  {CARD_STYLES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Sort Order</label>
+                <input className={inputCls} type="number" min={0} value={form.sortOrder} onChange={e => set('sortOrder', parseInt(e.target.value) || 0)} />
+              </div>
             </div>
-          )}
+          </div>
 
-          <div className="flex gap-2 justify-end pt-2">
-            <button onClick={() => setGroupModal({ open: false })} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">Cancel</button>
-            <button onClick={handleSave} disabled={!form.name.trim()} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-40">
-              {groupModal.editId ? 'Update' : 'Create'}
+          {/* Organization */}
+          <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+            <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <Tag size={12} /> Organization
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className={labelCls}>Department</label>
+                <select className={inputCls} value={form.department} onChange={e => set('department', e.target.value)}>
+                  <option value="">None</option>
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Batch</label>
+                <input className={inputCls} value={form.batch} onChange={e => set('batch', e.target.value)} placeholder="e.g. 2025" />
+              </div>
+              <div>
+                <label className={labelCls}>Exam Visibility</label>
+                <select className={inputCls} value={form.defaultExamVisibility} onChange={e => set('defaultExamVisibility', e.target.value)}>
+                  {EXAM_VIS.map(v => <option key={v} value={v}>{v.replace(/_/g, ' ')}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="mt-3">
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input type="checkbox" checked={form.isFeatured} onChange={e => set('isFeatured', e.target.checked)} className="rounded border-slate-300" />
+                <Star size={14} className="text-amber-500" />
+                Featured group
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <button onClick={() => setGroupModal({ open: false })} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">
+              Cancel
+            </button>
+            <button onClick={handleSave} disabled={!form.name.trim()} className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+              {groupModal.editId ? 'Update Group' : 'Create Group'}
             </button>
           </div>
         </div>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation */}
       <Modal open={deleteConfirm.open} onClose={() => setDeleteConfirm({ open: false, id: '', name: '' })} title="Delete Group">
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Are you sure you want to delete <strong className="text-gray-900 dark:text-gray-100">{deleteConfirm.name}</strong>? This cannot be undone.</p>
-        <div className="flex gap-2 justify-end">
-          <button onClick={() => setDeleteConfirm({ open: false, id: '', name: '' })} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">Cancel</button>
-          <button onClick={handleDelete} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
-        </div>
-      </Modal>
-
-      {/* Members Panel Modal */}
-      {memberPanel?.open && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/40" onClick={() => setMemberPanel(null)} />
-          <div className="w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto flex flex-col">
-            <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">{memberPanel.groupName} — Members</h3>
-              <button onClick={() => setMemberPanel(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+        <div className="space-y-4">
+          {deleteConfirm.safe === false && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
+              This group has active members or linked exams. Deleting will archive memberships, not remove student data.
             </div>
-
-            {/* Add member */}
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700 space-y-2">
-              <label className="block text-xs text-gray-500 dark:text-gray-400">Search students to add</label>
-              <input value={memberSearch} onChange={e => setMemberSearch(e.target.value)} className={inp()} placeholder="Type name or phone..." />
-              {memberSearch.length >= 2 && (
-                <div className="max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-700">
-                  {((studentSearchData as { students?: Record<string, unknown>[] })?.students || []).map((s: Record<string, unknown>) => (
-                    <div key={s._id as string} className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <div>
-                        <p className="text-sm text-gray-800 dark:text-gray-200">{(s.fullName || s.name) as string}</p>
-                        <p className="text-xs text-gray-400">{s.phone as string}</p>
-                      </div>
-                      <button onClick={async () => { await addGroupMembers(memberPanel.groupId, [s._id as string]); qc.invalidateQueries({ queryKey: ['admin-group-members'] }); showToast('Added'); }}
-                        className="text-xs text-blue-600 hover:text-blue-700 font-medium">Add</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input value={addMemberIds} onChange={e => setAddMemberIds(e.target.value)} className={inp()} placeholder="Or paste IDs, comma separated" />
-                <button onClick={handleAddMembers} disabled={!addMemberIds.trim()} className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-40 whitespace-nowrap">Add</button>
-              </div>
-            </div>
-
-            {/* Member list */}
-            <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-              {((membersData as { members?: Record<string, unknown>[] })?.members || []).map((m: Record<string, unknown>) => (
-                <div key={m._id as string} className="flex items-center justify-between px-4 py-3">
-                  <div>
-                    <p className="text-sm text-gray-800 dark:text-gray-200">{(m.fullName || m.name) as string}</p>
-                    <p className="text-xs text-gray-400">{m.phone as string}</p>
-                  </div>
-                  <button onClick={() => handleRemoveMember(m._id as string)} className="text-xs text-red-500 hover:text-red-700">Remove</button>
-                </div>
-              ))}
-              {!(membersData as { members?: unknown[] })?.members?.length && (
-                <div className="p-8 text-center text-sm text-gray-400">No members in this group.</div>
-              )}
-            </div>
+          )}
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Are you sure you want to delete <strong className="text-slate-900 dark:text-white">{deleteConfirm.name}</strong>?
+          </p>
+          <div className="flex justify-end gap-3">
+            <button onClick={() => setDeleteConfirm({ open: false, id: '', name: '' })} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-600 dark:text-slate-300">
+              Cancel
+            </button>
+            <button onClick={handleDelete} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+              Delete
+            </button>
           </div>
         </div>
-      )}
-    </AdminGuardShell>
+      </Modal>
+    </div>
   );
 }

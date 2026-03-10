@@ -7,6 +7,8 @@ import Footer from './components/layout/Footer';
 import HomePage from './pages/HomeModern';
 import UniversitiesPage from './pages/Universities';
 import UniversityDetailsPage from './pages/UniversityDetails';
+import UniversityCategoryBrowsePage from './pages/UniversityCategoryBrowse';
+import UniversityClusterBrowsePage from './pages/UniversityClusterBrowse';
 import NewsPage from './pages/News';
 import SingleNewsPage from './pages/SingleNews';
 import { ExamsListPage } from './pages/exams/ExamsListPage';
@@ -45,6 +47,7 @@ import AdminSettingsNewsPage from './pages/AdminSettingsNews';
 import AdminReportsPage from './pages/AdminReports';
 import AdminNewsConsole from './pages/admin-news/AdminNewsConsole';
 import FinanceLayout from './components/admin/finance/FinanceLayout';
+import StudentManagementLayout from './components/admin/students/StudentManagementLayout';
 import FinanceDashboardPage from './components/admin/finance/FinanceDashboardPage';
 import FinanceTransactionsPage from './components/admin/finance/FinanceTransactionsPage';
 import FinanceInvoicesPage from './components/admin/finance/FinanceInvoicesPage';
@@ -67,15 +70,28 @@ import {
     AdminResourcesPage,
     AdminSupportCenterPage,
     AdminStudentsMgmtPage,
+    AdminStudentCreatePage,
+    AdminStudentImportExportPage,
+    AdminStudentAudiencesPage,
+    AdminStudentCrmTimelinePage,
+    AdminStudentWeakTopicsPage,
+    AdminStudentMgmtDetailPage,
     AdminStudentDetailPage,
     AdminStudentGroupsV2Page,
+    AdminStudentGroupDetailPage,
     AdminNotificationCenterPage,
+    AdminNotificationCenterEmbeddedPage,
     AdminStudentSettingsPage,
+    AdminStudentSettingsEmbeddedPage,
     AdminContactPage,
     AdminSubscriptionsV2Page,
 } from './pages/AdminCorePages';
 import CampaignConsolePage from './pages/admin/campaigns/CampaignConsolePage';
+import NotificationTestSendPage from './pages/admin/notifications/NotificationTestSendPage';
 import DataHubPage from './pages/admin/datahub/DataHubPage';
+import TeamAccessConsolePage from './pages/admin/team/TeamAccessConsolePage';
+import MemberDetailPage from './pages/admin/team/MemberDetailPage';
+import RoleDetailPage from './pages/admin/team/RoleDetailPage';
 import NotFoundPage from './pages/NotFound';
 import ForceLogoutModal from './components/auth/ForceLogoutModal';
 import ChairmanLoginPage from './pages/chairman/ChairmanLogin';
@@ -154,6 +170,7 @@ function resolveRouteTitle(pathname: string, siteName: string, defaultTitle: str
     if (pathname === '/__cw_admin__/support-center') return withSite('Admin Support Center');
     if (pathname === '/__cw_admin__/reports') return withSite('Admin Reports');
     if (pathname === '/__cw_admin__/question-bank') return withSite('Admin Question Bank');
+    if (pathname.startsWith('/__cw_admin__/team/')) return withSite('Admin Team & Access Control');
     if (pathname === '/__cw_admin__/settings/home-control') return withSite('Admin Home Control');
     if (pathname === '/__cw_admin__/settings/university-settings') return withSite('Admin University Settings');
     if (pathname === '/__cw_admin__/settings/banner-manager') return withSite('Admin Banner Manager');
@@ -256,6 +273,8 @@ export default function App() {
                             <Routes>
                                 <Route path="/" element={<HomePage />} />
                                 <Route path="/universities" element={<UniversitiesPage />} />
+                                <Route path="/universities/category/:categorySlug" element={<UniversityCategoryBrowsePage />} />
+                                <Route path="/universities/cluster/:clusterSlug" element={<UniversityClusterBrowsePage />} />
                                 <Route path="/university/:slug" element={<UniversityDetailsPage />} />
                                 <Route path="/universities/:slug" element={<UniversityDetailsPage />} />
                                 <Route path="/services" element={<Navigate to="/subscription-plans" replace />} />
@@ -348,12 +367,28 @@ export default function App() {
                                 <Route path={adminUi('settings/security')} element={<Navigate to={adminUi('settings/security-center')} replace />} />
                                 <Route path={adminUi('settings/logs')} element={<Navigate to={adminUi('settings/system-logs')} replace />} />
                                 <Route path={adminUi('settings/profile')} element={<Navigate to={adminUi('settings/admin-profile')} replace />} />
+                                {/* Student Management OS Console */}
+                                <Route path={adminUi('student-management')} element={<Navigate to={adminUi('student-management/list')} replace />} />
+                                <Route path={adminUi('student-management/*')} element={<StudentManagementLayout />}>
+                                    <Route path="list" element={<AdminStudentsMgmtPage />} />
+                                    <Route path="create" element={<AdminStudentCreatePage />} />
+                                    <Route path="import-export" element={<AdminStudentImportExportPage />} />
+                                    <Route path="groups" element={<AdminStudentGroupsV2Page />} />
+                                    <Route path="groups/:id" element={<AdminStudentGroupDetailPage />} />
+                                    <Route path="audiences" element={<AdminStudentAudiencesPage />} />
+                                    <Route path="crm-timeline" element={<AdminStudentCrmTimelinePage />} />
+                                    <Route path="weak-topics" element={<AdminStudentWeakTopicsPage />} />
+                                    <Route path="notifications" element={<AdminNotificationCenterEmbeddedPage />} />
+                                    <Route path="settings" element={<AdminStudentSettingsEmbeddedPage />} />
+                                    <Route path="students/:id" element={<AdminStudentMgmtDetailPage />} />
+                                </Route>
                                 {/* New Student Management System v2 */}
                                 <Route path={adminUi('students-v2')} element={<AdminStudentsMgmtPage />} />
                                 <Route path={adminUi('students-v2/:id')} element={<AdminStudentDetailPage />} />
                                 <Route path={adminUi('student-groups-v2')} element={<AdminStudentGroupsV2Page />} />
                                 <Route path={adminUi('notification-center')} element={<AdminNotificationCenterPage />} />
                                 {/* Campaign Platform */}
+                                <Route path={ADMIN_PATHS.notificationTestSend} element={<NotificationTestSendPage />} />
                                 <Route path={ADMIN_PATHS.campaignsDashboard} element={<CampaignConsolePage />} />
                                 <Route path={ADMIN_PATHS.campaignsList} element={<CampaignConsolePage />} />
                                 <Route path={ADMIN_PATHS.campaignsNew} element={<CampaignConsolePage />} />
@@ -363,6 +398,16 @@ export default function App() {
                                 {/* Data Hub */}
                                 <Route path={ADMIN_PATHS.dataHub} element={<DataHubPage />} />
                                 <Route path={ADMIN_PATHS.dataHubHistory} element={<DataHubPage />} />
+                                {/* Team & Access Control */}
+                                <Route path={ADMIN_PATHS.teamMembers} element={<TeamAccessConsolePage />} />
+                                <Route path={adminUi('team/members/:id')} element={<MemberDetailPage />} />
+                                <Route path={ADMIN_PATHS.teamRoles} element={<TeamAccessConsolePage />} />
+                                <Route path={adminUi('team/roles/:id')} element={<RoleDetailPage />} />
+                                <Route path={ADMIN_PATHS.teamPermissions} element={<TeamAccessConsolePage />} />
+                                <Route path={ADMIN_PATHS.teamApprovalRules} element={<TeamAccessConsolePage />} />
+                                <Route path={ADMIN_PATHS.teamActivity} element={<TeamAccessConsolePage />} />
+                                <Route path={ADMIN_PATHS.teamSecurity} element={<TeamAccessConsolePage />} />
+                                <Route path={ADMIN_PATHS.teamInvites} element={<TeamAccessConsolePage />} />
                                 <Route path={adminUi('settings/student-settings')} element={<AdminStudentSettingsPage />} />
                                 {Object.entries(LEGACY_ADMIN_PATH_REDIRECTS).map(([legacyPath, targetPath]) => (
                                     <Route key={legacyPath} path={legacyPath} element={<Navigate to={targetPath} replace />} />

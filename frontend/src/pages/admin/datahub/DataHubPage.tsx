@@ -46,7 +46,7 @@ function ExportCenter() {
     mutationFn: (params: { category: string; format: string; filters?: Record<string, string> }) => exportDataHub(params),
     onSuccess: (res: unknown) => {
       const r = res as { data?: Record<string, unknown>[]; count?: number };
-      setExportResult({ data: r.data ?? [], count: r.count ?? 0 });
+      setExportResult({ data: Array.isArray(r.data) ? r.data : [], count: r.count ?? 0 });
       setToast('Export completed!');
       setTimeout(() => setToast(''), 3000);
     },
@@ -72,7 +72,7 @@ function ExportCenter() {
   };
 
   const downloadCSV = () => {
-    if (!exportResult?.data?.length) return;
+    if (!exportResult?.data?.length || !exportResult.data[0]) return;
     const headers = Object.keys(exportResult.data[0]);
     const csv = [headers.join(','), ...exportResult.data.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -158,7 +158,7 @@ function ExportCenter() {
             </div>
           </div>
           <div className="max-h-96 overflow-auto">
-            {exportResult.data.length > 0 && (
+            {exportResult.data.length > 0 && exportResult.data[0] && (
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-left text-xs font-medium uppercase text-slate-500 dark:border-slate-700">

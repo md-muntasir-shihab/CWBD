@@ -8,14 +8,19 @@ import {
     CreditCard,
     Download,
     Edit3,
+    Eye,
+    EyeOff,
     FileSpreadsheet,
     GraduationCap,
     ListOrdered,
     Plus,
     RefreshCw,
     Search,
+    Shield,
     Trash2,
     Upload,
+    Users,
+    X,
 } from 'lucide-react';
 import {
     listAdminExams,
@@ -33,6 +38,7 @@ import {
     verifyPayment,
     downloadQuestionTemplate,
 } from '../../../api/adminExamApi';
+import { getStudentGroups } from '../../../api/adminStudentApi';
 import {
     adminDownloadExamResultImportTemplate,
     adminExportExamReport,
@@ -70,6 +76,15 @@ const defaultExamFields: Record<string, unknown> = {
     solutionsEnabled: true, solutionReleaseRule: 'after_result_publish',
     resultPublishAtUTC: '',
     status: 'draft',
+    // Visibility & audience
+    visibilityMode: 'all_students',
+    targetGroupIds: [] as string[],
+    requiresActiveSubscription: false,
+    requiresPayment: false,
+    minimumProfileScore: 0,
+    displayOnDashboard: true,
+    displayOnPublicList: true,
+    isActive: true,
 };
 
 const defaultQuestionFields: Record<string, unknown> = {
@@ -95,9 +110,16 @@ export function AdminExamsPage() {
     const [groupId, setGroupId] = useState('');
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [busy, setBusy] = useState(false);
+    const [groupSearch, setGroupSearch] = useState('');
 
     // --- Queries ---
     const examsQuery = useQuery({ queryKey: ['admin-exams'], queryFn: listAdminExams });
+    const groupsQuery = useQuery({
+        queryKey: ['admin-student-groups'],
+        queryFn: () => getStudentGroups(),
+        enabled: tab === 'create' || tab === 'edit',
+        staleTime: 60_000,
+    });
     const questionsQuery = useQuery({
         queryKey: ['admin-exam-questions', selectedExamId],
         queryFn: () => listAdminExamQuestions(selectedExamId),
@@ -192,6 +214,10 @@ export function AdminExamsPage() {
             if (data.negativeMarkValue !== undefined && data.negativePerWrong === undefined) data.negativePerWrong = data.negativeMarkValue;
             if (data.answerEditLimitPerQuestion !== undefined && data.answerChangeLimit === undefined) data.answerChangeLimit = data.answerEditLimitPerQuestion;
             if (data.showRemainingTime !== undefined && data.showTimer === undefined) data.showTimer = data.showRemainingTime;
+            // Normalize visibility fields
+            if (!data.visibilityMode) data.visibilityMode = 'all_students';
+            if (!Array.isArray(data.targetGroupIds)) data.targetGroupIds = [];
+            else data.targetGroupIds = (data.targetGroupIds as Array<unknown>).map((id) => String(id));
             setFormData(data);
         } catch {
             toast.error('Failed to load exam');
@@ -400,6 +426,92 @@ export function AdminExamsPage() {
                         {formData.negativeMarkingEnabled ? renderFormField('Negative Per Wrong', 'negativePerWrong', 'number') : null}
                         {renderFormField('Answer Change Limit', 'answerChangeLimit', 'number')}
                         {renderFormField('Solution Release Rule', 'solutionReleaseRule', 'select', ['after_result_publish', 'immediately', 'never'])}
+                    </div>
+                </div>
+
+                {/* ── Visibility & Audience ── */}
+                <div className="admin-panel-bg rounded-xl p-5 space-y-4">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted flex items-center gap-2">
+                        <Shield className="h-4 w-4" />Visibility & Audience
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {renderFormField('Visibility Mode', 'visibilityMode', 'select', ['all_students', 'group_only', 'subscription_only', 'custom'])}
+                        {renderFormField('Min Profile Score (0-100)', 'minimumProfileScore', 'number')}
+                    </div>
+
+                    {/* Target Groups Selector */}
+                    {(formData.visibilityMode === 'group_only' || formData.visibilityMode === 'custom') && (
+                        <div>
+                            <span className="text-xs font-semibold text-text-muted dark:text-dark-text/65 uppercase tracking-wider">Target Groups</span>
+                            <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
+                                {(Array.isArray(formData.targetGroupIds) ? formData.targetGroupIds as string[] : []).map((gId) => {
+                                    const allGroups = Array.isArray(groupsQuery.data) ? groupsQuery.data as Array<Record<string, unknown>> : [];
+                                    const g = allGroups.find((x) => String(x._id) === gId);
+                                    const color = String(g?.color || '#6366f1');
+                                    return (
+                                        <span key={gId} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: `${color}20`, color }}>
+                                            {String(g?.name || gId)}
+                                            <button type="button" onClick={() => setField('targetGroupIds', (formData.targetGroupIds as string[]).filter((id) => id !== gId))} className="hover:opacity-70">
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                            <div className="relative">
+                                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+                                <input type="text" value={groupSearch} onChange={(e) => setGroupSearch(e.target.value)} placeholder="Search groups to add..." className="admin-input pl-8 text-sm" />
+                            </div>
+                            {groupSearch.trim() && (
+                                <div className="mt-1 max-h-40 overflow-y-auto rounded-lg border border-card-border bg-white dark:bg-slate-800 divide-y divide-card-border/50">
+                                    {(Array.isArray(groupsQuery.data) ? groupsQuery.data as Array<Record<string, unknown>> : [])
+                                        .filter((g) => {
+                                            const selected = Array.isArray(formData.targetGroupIds) ? formData.targetGroupIds as string[] : [];
+                                            return !selected.includes(String(g._id)) && String(g.name || '').toLowerCase().includes(groupSearch.toLowerCase());
+                                        })
+                                        .slice(0, 8)
+                                        .map((g) => {
+                                            const color = String(g.color || '#6366f1');
+                                            return (
+                                                <button
+                                                    key={String(g._id)}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const existing = Array.isArray(formData.targetGroupIds) ? formData.targetGroupIds as string[] : [];
+                                                        setField('targetGroupIds', [...existing, String(g._id)]);
+                                                        setGroupSearch('');
+                                                    }}
+                                                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-left"
+                                                >
+                                                    <Users className="h-3.5 w-3.5 flex-shrink-0" style={{ color }} />
+                                                    <span className="truncate text-text dark:text-dark-text">{String(g.name)}</span>
+                                                    <span className="ml-auto text-xs text-text-muted">{String(g.type || '')}</span>
+                                                </button>
+                                            );
+                                        })}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-6">
+                        {renderFormField('Active', 'isActive', 'checkbox')}
+                        {renderFormField('Requires Subscription', 'requiresActiveSubscription', 'checkbox')}
+                        {renderFormField('Requires Payment', 'requiresPayment', 'checkbox')}
+                    </div>
+
+                    <div className="flex flex-wrap gap-6">
+                        <label className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={Boolean(formData.displayOnDashboard)} onChange={(e) => setField('displayOnDashboard', e.target.checked)} />
+                            <Eye className="h-4 w-4 text-text-muted" />
+                            <span className="text-text dark:text-dark-text">Show on Dashboard</span>
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={Boolean(formData.displayOnPublicList)} onChange={(e) => setField('displayOnPublicList', e.target.checked)} />
+                            {formData.displayOnPublicList ? <Eye className="h-4 w-4 text-text-muted" /> : <EyeOff className="h-4 w-4 text-text-muted" />}
+                            <span className="text-text dark:text-dark-text">Show on Public List</span>
+                        </label>
                     </div>
                 </div>
 

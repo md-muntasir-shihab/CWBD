@@ -244,8 +244,11 @@ async function runSubscriptionExpiryCheck(): Promise<void> {
 
   // 4. Trigger automatic audience-based notifications for subscription state changes
   try {
-    await triggerAutoSend('subscription_expired', 'system');
-    logger.info('[subscriptionExpiryCron] triggerAutoSend(subscription_expired) dispatched');
+    const expiredUserIds = overdueSubscriptions.map(s => String(s['userId'])).filter(Boolean);
+    if (expiredUserIds.length > 0) {
+      await triggerAutoSend('subscription_expired', expiredUserIds, {}, 'system');
+      logger.info('[subscriptionExpiryCron] triggerAutoSend(subscription_expired) dispatched');
+    }
   } catch (err) {
     logger.error('[subscriptionExpiryCron] triggerAutoSend failed', undefined, { error: String(err) });
   }

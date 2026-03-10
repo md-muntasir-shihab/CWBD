@@ -47,14 +47,14 @@ function matchesCategoryAndCluster(
 /* ------------------------------------------------------------------ */
 /*  Shared UI primitives                                               */
 /* ------------------------------------------------------------------ */
-const fadeInUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
+const fadeInUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } };
 
 function SectionWrap({ children, className = '' }: { children: ReactNode; className?: string }) {
     return (
         <motion.section
             variants={fadeInUp}
             initial="hidden"
-            whileInView="visible"
+            whileInView="show"
             viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
             className={`w-full ${className}`}

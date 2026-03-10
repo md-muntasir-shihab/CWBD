@@ -34,6 +34,7 @@ interface User {
         admittedAt?: string | null;
         groupIds?: string[];
     } | null;
+    permissionsV2?: Record<string, Record<string, boolean>>;
 }
 
 interface Pending2FA {

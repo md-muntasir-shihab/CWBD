@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { useUniversityDetail } from '../hooks/useUniversityQueries';
 import { normalizeExternalUrl } from '../utils/url';
+import DefaultLogo from '../components/university/DefaultLogo';
+import { buildLogoFallback } from '../lib/apiClient';
 
 /* ── Helpers ── */
 function fmtDate(d: string | undefined | null): string {
@@ -217,8 +219,8 @@ export default function UniversityDetailsPage() {
                             loading="lazy"
                         />
                     ) : (
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0 shadow-md">
-                            <BookOpen className="w-8 h-8 text-[var(--primary)]" />
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-2xl shadow-md overflow-hidden border-2 border-primary/20 dark:border-primary/30">
+                            <DefaultLogo fallbackText={buildLogoFallback(uni.name || '', uni.shortForm || '')} textClassName="text-2xl sm:text-3xl" />
                         </div>
                     )}
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, ChevronLeft, ChevronRight, LogOut, Menu, Shield, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useModuleAccess } from '../../hooks/useModuleAccess';
 import ThemeSwitchPro from '../ui/ThemeSwitchPro';
 import { ADMIN_MENU_ITEMS, ADMIN_PATHS, isAdminPathActive, type AdminMenuItem } from '../../routes/adminPaths';
 
@@ -17,8 +18,17 @@ export default function AdminShell({ title, description, children }: AdminShellP
     const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
     const { user, logout } = useAuth();
+    const { hasAnyAccess } = useModuleAccess();
     const location = useLocation();
     const navigate = useNavigate();
+
+    const visibleMenuItems = useMemo(() => {
+        return ADMIN_MENU_ITEMS.filter((item) => {
+            if (!item.module) return true;
+            if (item.module === 'dashboard' || item.module === 'admin_profile') return true;
+            return hasAnyAccess(item.module);
+        });
+    }, [hasAnyAccess]);
 
     const breadcrumb = useMemo(() => {
         if (location.pathname === '/__cw_admin__/settings') return 'Admin / Settings';
@@ -197,7 +207,7 @@ export default function AdminShell({ title, description, children }: AdminShellP
 
                     {/* Navigation */}
                     <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
-                        {ADMIN_MENU_ITEMS.map(renderSidebarItem)}
+                        {visibleMenuItems.map(renderSidebarItem)}
                     </nav>
 
                     {/* User info + Logout */}

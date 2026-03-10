@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export type NotificationJobType = 'scheduled' | 'bulk' | 'triggered';
+export type NotificationJobType = 'scheduled' | 'bulk' | 'triggered' | 'test_send';
 export type NotificationJobChannel = 'sms' | 'email' | 'both';
 export type NotificationJobTarget = 'single' | 'group' | 'filter' | 'selected';
 export type NotificationJobStatus = 'queued' | 'processing' | 'done' | 'failed' | 'partial';
@@ -36,6 +36,15 @@ export interface INotificationJob extends Document {
     quietHoursApplied: boolean;
     createdByAdminId: mongoose.Types.ObjectId;
     errorMessage?: string;
+    isTestSend?: boolean;
+    testMeta?: {
+        recipientMode?: string;
+        messageMode?: string;
+        recipientDisplay?: string;
+        renderedPreview?: string;
+        providerId?: string;
+        logOnly?: boolean;
+    };
     createdAt: Date;
     updatedAt: Date;
 }
@@ -45,7 +54,7 @@ const NotificationJobSchema = new Schema<INotificationJob>(
         campaignName: { type: String, trim: true },
         type: {
             type: String,
-            enum: ['scheduled', 'bulk', 'triggered'],
+            enum: ['scheduled', 'bulk', 'triggered', 'test_send'],
             required: true,
             index: true,
         },
@@ -90,6 +99,11 @@ const NotificationJobSchema = new Schema<INotificationJob>(
         quietHoursApplied: { type: Boolean, default: false },
         createdByAdminId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         errorMessage: { type: String },
+        isTestSend: { type: Boolean, default: false, index: true },
+        testMeta: {
+            type: Schema.Types.Mixed,
+            default: null,
+        },
     },
     { timestamps: true, collection: 'notification_jobs' }
 );

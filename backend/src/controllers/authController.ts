@@ -11,6 +11,7 @@ import LoginActivity from '../models/LoginActivity';
 import ActiveSession from '../models/ActiveSession';
 import OtpVerification from '../models/OtpVerification';
 import AuditLog from '../models/AuditLog';
+import RolePermissionSet from '../models/RolePermissionSet';
 import { addAuthSessionStreamClient } from '../realtime/authSessionStream';
 import { AuthRequest } from '../middlewares/auth';
 import { getClientIp, getDeviceInfo } from '../utils/requestMeta';
@@ -269,6 +270,23 @@ async function buildUserPayload(user: IUser): Promise<Record<string, unknown>> {
         };
     }
 
+    let resolvedPermissionsV2 = user.permissionsV2 || resolvePermissionsV2(user.role);
+
+    // Merge team role module permissions into permissionsV2
+    if (user.teamRoleId) {
+        const permSet = await RolePermissionSet.findOne({ roleId: user.teamRoleId }).lean();
+        if (permSet?.modulePermissions) {
+            const merged = { ...resolvedPermissionsV2 } as Record<string, Record<string, boolean>>;
+            for (const [mod, acts] of Object.entries(permSet.modulePermissions)) {
+                if (!merged[mod]) merged[mod] = {};
+                for (const [act, allowed] of Object.entries(acts as Record<string, boolean>)) {
+                    if (allowed) merged[mod][act] = true;
+                }
+            }
+            resolvedPermissionsV2 = merged;
+        }
+    }
+
     return {
         _id: user._id,
         username: user.username,
@@ -277,7 +295,7 @@ async function buildUserPayload(user: IUser): Promise<Record<string, unknown>> {
         fullName,
         status: user.status,
         permissions: user.permissions,
-        permissionsV2: user.permissionsV2 || resolvePermissionsV2(user.role),
+        permissionsV2: resolvedPermissionsV2,
         mustChangePassword: user.mustChangePassword,
         redirectTo: getRedirectPath(user.role),
         profile_photo: user.profile_photo || '',

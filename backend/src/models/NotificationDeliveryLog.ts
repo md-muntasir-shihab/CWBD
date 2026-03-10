@@ -16,6 +16,12 @@ export interface INotificationDeliveryLog extends Document {
     sentAtUTC?: Date;
     costAmount: number;
     retryCount: number;
+    isTestSend?: boolean;
+    recipientMode?: string;
+    messageMode?: string;
+    recipientDisplay?: string;
+    renderedPreview?: string;
+    financeSynced?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -45,6 +51,12 @@ const NotificationDeliveryLogSchema = new Schema<INotificationDeliveryLog>(
         sentAtUTC: { type: Date },
         costAmount: { type: Number, default: 0, min: 0 },
         retryCount: { type: Number, default: 0, min: 0 },
+        isTestSend: { type: Boolean, default: false, index: true },
+        recipientMode: { type: String, trim: true },
+        messageMode: { type: String, trim: true },
+        recipientDisplay: { type: String, trim: true },
+        renderedPreview: { type: String },
+        financeSynced: { type: Boolean, default: false },
     },
     { timestamps: true, collection: 'notification_delivery_logs' }
 );

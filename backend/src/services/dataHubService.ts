@@ -53,10 +53,7 @@ async function getFilteredStudents(filters?: Record<string, unknown>) {
     if (filters?.departments) profileQuery.department = { $in: filters.departments };
     if (filters?.statuses) profileQuery.status = { $in: filters.statuses };
     if (filters?.groupId) {
-        const group = await StudentGroup.findById(filters.groupId).lean();
-        if (group?.manualStudents?.length) {
-            profileQuery.user_id = { $in: group.manualStudents };
-        }
+        profileQuery.groupIds = new mongoose.Types.ObjectId(String(filters.groupId));
     }
 
     const profiles = await StudentProfile.find(profileQuery)

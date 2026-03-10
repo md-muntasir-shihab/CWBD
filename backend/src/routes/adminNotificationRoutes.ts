@@ -17,6 +17,14 @@ import {
     retryFailedDeliveries,
     triggerAutoSend,
 } from '../services/notificationOrchestrationService';
+import {
+    getTestSendMeta,
+    previewTestSend,
+    executeTestSend,
+    getTestSendLogs,
+    retryTestSendLog,
+    searchStudentsForTestSend,
+} from '../services/testSendService';
 import NotificationJob from '../models/NotificationJob';
 import NotificationDeliveryLog from '../models/NotificationDeliveryLog';
 import NotificationTemplate from '../models/NotificationTemplate';
@@ -31,9 +39,8 @@ import {
     getImportExportHistory,
 } from '../services/dataHubService';
 
-interface AuthRequest extends Request {
-    user?: { _id: string; role: string };
-}
+// AuthRequest is provided by global Express augmentation (express-user-augmentation.d.ts)
+type AuthRequest = Request;
 
 const router = Router();
 const adminAuth = [authenticate, authorize('superadmin', 'admin', 'moderator')];
@@ -141,7 +148,7 @@ router.post('/notifications/campaigns/send', ...adminAuth, async (req: AuthReque
 // Retry failed deliveries
 router.post('/notifications/campaigns/:id/retry', ...adminAuth, async (req: AuthRequest, res: Response) => {
     try {
-        const result = await retryFailedDeliveries(req.params.id, req.user!._id);
+        const result = await retryFailedDeliveries(String(req.params.id), req.user!._id);
         res.json(result);
     } catch (err) {
         console.error('POST /notifications/campaigns/:id/retry error:', err);
@@ -238,8 +245,11 @@ router.put('/notifications/templates/:id', ...adminAuth, async (req: Request, re
 
 router.get('/notifications/settings', ...adminAuth, async (_req: Request, res: Response) => {
     try {
-        let settings = await NotificationSettings.findOne().lean();
-        if (!settings) settings = await NotificationSettings.create({});
+        let settings: unknown = await NotificationSettings.findOne().lean();
+        if (!settings) {
+            const created = await NotificationSettings.create({});
+            settings = created.toObject();
+        }
         res.json(settings);
     } catch (err) {
         console.error('GET /notifications/settings error:', err);
@@ -346,6 +356,81 @@ router.post('/notifications/trigger', ...adminAuth, async (req: AuthRequest, res
     } catch (err) {
         console.error('POST /notifications/trigger error:', err);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ────────────────────────────────────────────────────────────────
+   Test-Send endpoints
+   ──────────────────────────────────────────────────────────────── */
+
+// Meta: providers, templates, cost config, presets
+router.get('/notifications/test-send/meta', ...adminAuth, async (_req: Request, res: Response) => {
+    try {
+        const meta = await getTestSendMeta();
+        res.json(meta);
+    } catch (err) {
+        console.error('GET /notifications/test-send/meta error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Search students for recipient picker
+router.get('/notifications/test-send/search-students', ...adminAuth, async (req: Request, res: Response) => {
+    try {
+        const result = await searchStudentsForTestSend(String(req.query.q ?? ''));
+        res.json(result);
+    } catch (err) {
+        console.error('GET /notifications/test-send/search-students error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Preview: validate + render without sending
+router.post('/notifications/test-send/preview', ...adminAuth, async (req: AuthRequest, res: Response) => {
+    try {
+        const preview = await previewTestSend({ ...req.body, adminId: req.user!._id });
+        res.json(preview);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Preview failed';
+        res.status(400).json({ message });
+    }
+});
+
+// Send: actually dispatch or log-only
+router.post('/notifications/test-send/send', ...adminAuth, async (req: AuthRequest, res: Response) => {
+    try {
+        const result = await executeTestSend({ ...req.body, adminId: req.user!._id });
+        res.json(result);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Send failed';
+        res.status(400).json({ message });
+    }
+});
+
+// Recent test-send logs
+router.get('/notifications/test-send/logs', ...adminAuth, async (req: Request, res: Response) => {
+    try {
+        const result = await getTestSendLogs({
+            page: req.query.page ? parseInt(String(req.query.page), 10) : undefined,
+            limit: req.query.limit ? parseInt(String(req.query.limit), 10) : undefined,
+            channel: req.query.channel as string | undefined,
+            status: req.query.status as string | undefined,
+        });
+        res.json(result);
+    } catch (err) {
+        console.error('GET /notifications/test-send/logs error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Retry a failed test send
+router.post('/notifications/test-send/logs/:id/retry', ...adminAuth, async (req: AuthRequest, res: Response) => {
+    try {
+        const result = await retryTestSendLog(String(req.params.id), req.user!._id);
+        res.json(result);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Retry failed';
+        res.status(400).json({ message });
     }
 });
 

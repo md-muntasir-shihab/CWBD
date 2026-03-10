@@ -89,7 +89,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
   );
 }
 
-export default function NotificationCenterPage() {
+export default function NotificationCenterPage({ noShell }: { noShell?: boolean } = {}) {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState<CenterTab>('send');
   const [toast, setToast] = useState<Toast>({ show: false, message: '', type: 'success' });
@@ -230,8 +230,10 @@ export default function NotificationCenterPage() {
     { key: 'logs', label: 'Logs' },
   ];
 
+  const Wrapper = noShell ? ({ children }: { children: React.ReactNode }) => <div className="space-y-6">{children}</div> : ({ children }: { children: React.ReactNode }) => <AdminGuardShell title="Notification Center" description="Send, schedule, and track notifications">{children}</AdminGuardShell>;
+
   return (
-    <AdminGuardShell title="Notification Center" description="Send, schedule, and track notifications">
+    <Wrapper>
       {toast.show && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-white shadow-lg text-sm ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>{toast.message}</div>
       )}
@@ -571,6 +573,6 @@ export default function NotificationCenterPage() {
           </div>
         </div>
       </Modal>
-    </AdminGuardShell>
+    </Wrapper>
   );
 }

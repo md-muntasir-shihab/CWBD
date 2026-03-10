@@ -56,7 +56,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export default function StudentSettingsPage() {
+export default function StudentSettingsPage({ noShell }: { noShell?: boolean } = {}) {
   const qc = useQueryClient();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [dirty, setDirty] = useState(false);
@@ -127,14 +127,16 @@ export default function StudentSettingsPage() {
 
   const inp = 'px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
+  const Shell = noShell ? ({ children }: { children: React.ReactNode }) => <div className="space-y-6">{children}</div> : ({ children }: { children: React.ReactNode }) => <AdminGuardShell title="Student Settings" description="Configure automation, notifications and expiry rules">{children}</AdminGuardShell>;
+
   if (isLoading) return (
-    <AdminGuardShell title="Student Settings" description="Configure automation, notifications and expiry rules">
+    <Shell>
       <div className="p-6 space-y-4">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />)}</div>
-    </AdminGuardShell>
+    </Shell>
   );
 
   return (
-    <AdminGuardShell title="Student Settings" description="Configure automation, notifications and expiry rules">
+    <Shell>
       {toast.show && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-white shadow-lg text-sm ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
           {toast.message}
@@ -293,6 +295,6 @@ export default function StudentSettingsPage() {
           )}
         </div>
       </div>
-    </AdminGuardShell>
+    </Shell>
   );
 }

@@ -102,10 +102,14 @@ export async function resolveAudience(
     } else if (audienceType === 'group' && opts.groupId) {
         const group = await StudentGroup.findById(opts.groupId).lean();
         if (!group) return [];
-        if (group.type === 'manual' && group.manualStudents?.length) {
-            userIds = group.manualStudents as mongoose.Types.ObjectId[];
-        } else if (group.type === 'dynamic' && group.rules) {
+        if (group.type === 'dynamic' && group.rules) {
             userIds = await resolveDynamicGroupUserIds(group.rules);
+        } else {
+            // Use StudentProfile.groupIds as the authoritative membership source
+            const memberProfiles = await StudentProfile.find(
+                { groupIds: new mongoose.Types.ObjectId(opts.groupId), status: { $ne: 'deleted' } },
+            ).select('user_id').lean();
+            userIds = memberProfiles.map((p) => p.user_id as mongoose.Types.ObjectId);
         }
     } else if (audienceType === 'filter' && opts.filters) {
         userIds = await resolveFilterUserIds(opts.filters);

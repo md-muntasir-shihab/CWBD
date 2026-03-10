@@ -27,6 +27,7 @@ import { broadcastHomeStreamEvent } from '../realtime/homeStream';
 import { getRuntimeSettingsSnapshot } from '../services/runtimeSettingsService';
 import { computeStudentProfileScore } from '../services/studentProfileScoreService';
 import { revealCredentialMirror, upsertCredentialMirror } from '../services/credentialVaultService';
+import * as groupMembershipService from '../services/groupMembershipService';
 
 function normalizeRole(value: unknown, fallback: UserRole = 'student'): UserRole {
     const role = String(value || '').trim().toLowerCase();
@@ -2168,11 +2169,25 @@ export async function adminCreateStudent(req: AuthRequest, res: Response): Promi
             registration_id: registrationId,
             institution_name: institutionName,
             admittedAt: body.admittedAt ? new Date(String(body.admittedAt)) : user.createdAt,
-            groupIds: parseGroupIds(body.groupIds || body.group_ids),
+            groupIds: [],
             profile_completion_percentage: 20,
         });
         profile.profile_completion_percentage = computeProfileCompletion(profile.toObject() as unknown as Record<string, unknown>);
         await profile.save();
+
+        // Sync group memberships through the centralized service
+        const requestedGroupIds = parseGroupIds(body.groupIds || body.group_ids);
+        if (requestedGroupIds.length > 0) {
+            await groupMembershipService.setStudentGroups(
+                user._id,
+                requestedGroupIds,
+                req.user?._id,
+                'Assigned during student creation'
+            );
+            // Reload profile to get updated groupIds
+            const refreshed = await StudentProfile.findOne({ user_id: user._id }).select('groupIds').lean();
+            if (refreshed) profile.groupIds = refreshed.groupIds;
+        }
 
         let paymentSyncWarning: string | undefined;
         try {
@@ -2351,7 +2366,16 @@ export async function adminUpdateStudent(req: AuthRequest, res: Response): Promi
             profile.admittedAt = normalizedBody.admittedAt ? new Date(String(normalizedBody.admittedAt)) : null;
         }
         if (normalizedBody.groupIds !== undefined) {
-            profile.groupIds = parseGroupIds(normalizedBody.groupIds);
+            const desiredGroupIds = parseGroupIds(normalizedBody.groupIds);
+            await groupMembershipService.setStudentGroups(
+                user._id,
+                desiredGroupIds,
+                req.user?._id,
+                'Updated via student management'
+            );
+            // Reload profile to get updated groupIds
+            const refreshed = await StudentProfile.findOne({ user_id: user._id }).select('groupIds').lean();
+            if (refreshed) profile.groupIds = refreshed.groupIds;
         }
 
         profile.username = user.username;
@@ -2486,7 +2510,7 @@ export async function adminUpdateStudentSubscription(req: AuthRequest, res: Resp
 
 export async function adminUpdateStudentGroups(req: AuthRequest, res: Response): Promise<void> {
     try {
-        const studentId = req.params.id;
+        const studentId = String(req.params.id);
         const user = await User.findById(studentId).select('role');
         if (!user || user.role !== 'student') {
             res.status(404).json({ message: 'Student not found' });
@@ -2500,17 +2524,28 @@ export async function adminUpdateStudentGroups(req: AuthRequest, res: Response):
             return;
         }
 
-        profile.groupIds = parseGroupIds(body.groupIds);
-        await profile.save();
+        const desiredGroupIds = parseGroupIds(body.groupIds);
+        const diff = await groupMembershipService.setStudentGroups(
+            studentId,
+            desiredGroupIds,
+            req.user?._id,
+            'Updated via student groups endpoint'
+        );
+
+        // Reload profile
+        const refreshed = await StudentProfile.findOne({ user_id: studentId }).select('groupIds').lean();
+        const finalGroupIds = (refreshed?.groupIds ?? []).map((id) => String(id));
 
         await createAuditLog(req, 'student_groups_updated', String(studentId), 'student', {
-            groupIds: profile.groupIds.map((id) => String(id)),
+            groupIds: finalGroupIds,
+            added: diff.added,
+            removed: diff.removed,
         });
         broadcastStudentDashboardEvent({ type: 'profile_updated', meta: { studentId, source: 'group_update' } });
 
         res.json({
             message: 'Student groups updated successfully',
-            groupIds: profile.groupIds.map((id) => String(id)),
+            groupIds: finalGroupIds,
         });
     } catch (error) {
         console.error('adminUpdateStudentGroups error:', error);
@@ -2613,6 +2648,18 @@ export async function adminCreateStudentGroup(req: AuthRequest, res: Response): 
             batchTag: String(body.batchTag || ''),
             description: String(body.description || ''),
             isActive: body.isActive !== undefined ? toBoolean(body.isActive) : true,
+            // New product fields
+            shortCode: typeof body.shortCode === 'string' ? body.shortCode.trim().toUpperCase() : undefined,
+            color: typeof body.color === 'string' ? body.color.trim() : '#6366f1',
+            icon: typeof body.icon === 'string' ? body.icon.trim() : 'Users',
+            cardStyleVariant: ['solid', 'gradient', 'outline', 'minimal'].includes(String(body.cardStyleVariant)) ? body.cardStyleVariant : 'solid',
+            sortOrder: Number(body.sortOrder) || 0,
+            isFeatured: toBoolean(body.isFeatured),
+            batch: typeof body.batch === 'string' ? body.batch.trim() : undefined,
+            department: typeof body.department === 'string' ? body.department.trim() : undefined,
+            visibilityNote: typeof body.visibilityNote === 'string' ? body.visibilityNote.trim() : '',
+            defaultExamVisibility: ['all_students', 'group_only', 'hidden'].includes(String(body.defaultExamVisibility)) ? body.defaultExamVisibility : 'all_students',
+            defaultCommunicationAudience: toBoolean(body.defaultCommunicationAudience),
             meta: (body.meta && typeof body.meta === 'object') ? body.meta : {},
         });
 
@@ -2635,6 +2682,22 @@ export async function adminUpdateStudentGroup(req: AuthRequest, res: Response): 
         if (body.type !== undefined) update.type = body.type === 'dynamic' ? 'dynamic' : 'manual';
         if (body.rules !== undefined) update.rules = body.rules;
         if (body.meta !== undefined && typeof body.meta === 'object') update.meta = body.meta;
+        // New product fields
+        if (body.shortCode !== undefined) update.shortCode = String(body.shortCode || '').trim().toUpperCase();
+        if (body.color !== undefined) update.color = String(body.color || '').trim();
+        if (body.icon !== undefined) update.icon = String(body.icon || '').trim();
+        if (body.cardStyleVariant !== undefined && ['solid', 'gradient', 'outline', 'minimal'].includes(String(body.cardStyleVariant))) {
+            update.cardStyleVariant = body.cardStyleVariant;
+        }
+        if (body.sortOrder !== undefined) update.sortOrder = Number(body.sortOrder) || 0;
+        if (body.isFeatured !== undefined) update.isFeatured = toBoolean(body.isFeatured);
+        if (body.batch !== undefined) update.batch = String(body.batch || '').trim();
+        if (body.department !== undefined) update.department = String(body.department || '').trim();
+        if (body.visibilityNote !== undefined) update.visibilityNote = String(body.visibilityNote || '').trim();
+        if (body.defaultExamVisibility !== undefined && ['all_students', 'group_only', 'hidden'].includes(String(body.defaultExamVisibility))) {
+            update.defaultExamVisibility = body.defaultExamVisibility;
+        }
+        if (body.defaultCommunicationAudience !== undefined) update.defaultCommunicationAudience = toBoolean(body.defaultCommunicationAudience);
         if (body.slug !== undefined) {
             const slug = slugify(body.slug);
             if (!slug) {
@@ -2655,28 +2718,35 @@ export async function adminUpdateStudentGroup(req: AuthRequest, res: Response): 
             return;
         }
 
-        // Handle member updates
+        // Handle member updates via centralized service
         const addStudentIds = Array.isArray(body.addStudentIds) ? body.addStudentIds : [];
         const removeStudentIds = Array.isArray(body.removeStudentIds) ? body.removeStudentIds : [];
 
+        let addResult = { added: 0, skipped: 0, errors: [] as string[] };
+        let removeResult = { removed: 0, skipped: 0, errors: [] as string[] };
+
         if (addStudentIds.length > 0) {
-            await StudentProfile.updateMany(
-                { _id: { $in: addStudentIds } },
-                { $addToSet: { groupIds: item._id } }
+            addResult = await groupMembershipService.bulkAddMembers(
+                item._id,
+                addStudentIds,
+                req.user?._id,
+                'Added via group update'
             );
         }
 
         if (removeStudentIds.length > 0) {
-            await StudentProfile.updateMany(
-                { _id: { $in: removeStudentIds } },
-                { $pull: { groupIds: item._id } }
+            removeResult = await groupMembershipService.bulkRemoveMembers(
+                item._id,
+                removeStudentIds,
+                req.user?._id,
+                'Removed via group update'
             );
         }
 
         await createAuditLog(req, 'student_group_updated', String(item._id), 'student_group', {
             edited_fields: Object.keys(update),
-            added_members: addStudentIds.length,
-            removed_members: removeStudentIds.length
+            added_members: addResult.added,
+            removed_members: removeResult.removed,
         });
         res.json({ item, message: 'Student group updated' });
     } catch (error) {

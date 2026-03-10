@@ -23,7 +23,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: <Home className="w-4 h-4" />, mobile: true },
-    { label: 'Exams', path: '/exams', icon: <BookOpenCheck className="w-4 h-4" />, mobile: true },
+    { label: 'Exams', path: '/student/exams-hub', icon: <BookOpenCheck className="w-4 h-4" />, mobile: true },
     { label: 'Results', path: '/results', icon: <NotebookText className="w-4 h-4" />, mobile: true },
     { label: 'Payments', path: '/payments', icon: <CreditCard className="w-4 h-4" /> },
     { label: 'Notifications', path: '/notifications', icon: <Bell className="w-4 h-4" /> },
@@ -42,8 +42,8 @@ function isActivePath(currentPath: string, targetPath: string): boolean {
     if (targetPath === '/results') {
         return currentPath === '/results' || currentPath.startsWith('/results/');
     }
-    if (targetPath === '/exams') {
-        return currentPath === '/exams' || currentPath.startsWith('/exams/');
+    if (targetPath === '/student/exams-hub') {
+        return currentPath === '/student/exams-hub' || currentPath.startsWith('/exams/');
     }
     if (targetPath === '/student/resources') {
         return currentPath === '/student/resources';

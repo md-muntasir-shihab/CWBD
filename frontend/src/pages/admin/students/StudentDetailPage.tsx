@@ -539,7 +539,7 @@ function SecurityTabContent({
 
   const handleAdminSetPassword = async () => {
     try {
-      await adminSetPassword(studentId, { password: setPasswordForm.password, sendSms: setPasswordForm.sendSms, sendEmail: setPasswordForm.sendEmail });
+      await adminSetPassword(studentId, { newPassword: setPasswordForm.password, sendVia: [setPasswordForm.sendSms && 'sms', setPasswordForm.sendEmail && 'email'].filter(Boolean) as string[] });
       showToast('Password set successfully');
       setShowSetPwModal(false);
       setSetPasswordForm({ password: '', sendSms: true, sendEmail: false });
@@ -592,7 +592,7 @@ function SecurityTabContent({
           ['Password Reset Required', sec.forcePasswordResetRequired ? 'Yes' : 'No'],
           ['Password Last Changed', fmtDate(sec.passwordLastChangedAtUTC as string | undefined)],
           ['Changed By', sec.passwordChangedByType ?? 'N/A'],
-          ['Password Set By Admin', sec.passwordSetByAdminId ? 'Yes' : 'No'],
+          ['Password Set By Admin', sec.passwordSetByAdmin ? 'Yes' : 'No'],
         ] as [string, string][]).map(([label, val]) => (
           <div key={label} className="flex justify-between text-sm">
             <span className="text-gray-600 dark:text-gray-400">{label}</span>

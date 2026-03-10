@@ -8,6 +8,9 @@ import {
     CreditCard, Wallet, LifeBuoy, Mail, Shield, BarChart3,
     User, Rss, Layers, Archive, Sparkles, Copy, Upload,
     Send, FileText, History, Database,
+    UserPlus, Import, Target, MessageSquare, TrendingDown,
+    FlaskConical,
+    KeyRound,
 } from 'lucide-react';
 
 export type AdminMenuIcon = ComponentType<{ className?: string }>;
@@ -37,6 +40,18 @@ export const ADMIN_PATHS = {
     studentGroupsV2: adminUi('student-groups-v2'),
     notificationCenter: adminUi('notification-center'),
     studentSettings: adminUi('settings/student-settings'),
+    // Student Management OS console routes
+    studentMgmt: adminUi('student-management'),
+    studentMgmtList: adminUi('student-management/list'),
+    studentMgmtCreate: adminUi('student-management/create'),
+    studentMgmtImportExport: adminUi('student-management/import-export'),
+    studentMgmtGroups: adminUi('student-management/groups'),
+    studentMgmtGroupDetail: adminUi('student-management/groups'),  // /:id suffix added by router
+    studentMgmtAudiences: adminUi('student-management/audiences'),
+    studentMgmtCrmTimeline: adminUi('student-management/crm-timeline'),
+    studentMgmtWeakTopics: adminUi('student-management/weak-topics'),
+    studentMgmtSettings: adminUi('student-management/settings'),
+    studentMgmtDetail: adminUi('student-management/students'),  // /:id suffix added by router
     subscriptionsV2: adminUi('subscriptions-v2'),
     subscriptionPlans: adminUi('subscription-plans'),
     payments: adminUi('payments'),
@@ -64,6 +79,8 @@ export const ADMIN_PATHS = {
     adminProfile: adminUi('settings/admin-profile'),
     settingsCenter: adminUi('settings'),
     newsSettings: adminUi('settings/news-settings'),
+    // Notification Test Send
+    notificationTestSend: adminUi('notifications/test-send'),
     // Notification Campaign Platform
     campaignsDashboard: adminUi('campaigns'),
     campaignsList: adminUi('campaigns/list'),
@@ -74,6 +91,15 @@ export const ADMIN_PATHS = {
     // Data Hub
     dataHub: adminUi('data-hub'),
     dataHubHistory: adminUi('data-hub/history'),
+    teamMembers: adminUi('team/members'),
+    teamMemberDetail: adminUi('team/members'),
+    teamRoles: adminUi('team/roles'),
+    teamRoleDetail: adminUi('team/roles'),
+    teamPermissions: adminUi('team/permissions'),
+    teamApprovalRules: adminUi('team/approval-rules'),
+    teamActivity: adminUi('team/activity'),
+    teamSecurity: adminUi('team/security'),
+    teamInvites: adminUi('team/invites'),
 } as const;
 
 export type AdminMenuItem = {
@@ -81,6 +107,7 @@ export type AdminMenuItem = {
     label: string;
     path: string;
     icon?: AdminMenuIcon;
+    module?: string;
     matchPrefixes?: string[];
     children?: { key: string; label: string; path: string; icon?: AdminMenuIcon }[];
 };
@@ -88,7 +115,7 @@ export type AdminMenuItem = {
 // ─── 13-GROUP ADMIN MENU ─────────────────────────────────────────────────────
 export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     // 1. Dashboard
-    { key: 'dashboard', label: 'Dashboard', path: ADMIN_PATHS.dashboard, icon: LayoutDashboard },
+    { key: 'dashboard', label: 'Dashboard', path: ADMIN_PATHS.dashboard, icon: LayoutDashboard, module: 'dashboard' },
 
     // 2. Website Control
     {
@@ -96,6 +123,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Website Control',
         path: ADMIN_PATHS.homeControl,
         icon: Globe,
+        module: 'home_settings',
         matchPrefixes: [
             adminUi('settings/home-control'),
             adminUi('settings/banner-manager'),
@@ -116,6 +144,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Universities',
         path: ADMIN_PATHS.universities,
         icon: GraduationCap,
+        module: 'universities',
         matchPrefixes: [adminUi('universities'), adminUi('settings/university-settings')],
         children: [
             { key: 'uni-list', label: 'All Universities', path: ADMIN_PATHS.universities, icon: GraduationCap },
@@ -129,6 +158,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'News Management',
         path: adminUi('news/dashboard'),
         icon: Newspaper,
+        module: 'news',
         matchPrefixes: [adminUi('news'), adminUi('settings/news-settings')],
         children: [
             { key: 'news-dash', label: 'Dashboard', path: adminUi('news/dashboard'), icon: LayoutDashboard },
@@ -150,6 +180,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Exams',
         path: ADMIN_PATHS.exams,
         icon: BookOpen,
+        module: 'exams',
         matchPrefixes: [adminUi('exams')],
     },
 
@@ -159,6 +190,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Question Bank',
         path: ADMIN_PATHS.questionBank,
         icon: BookOpen,
+        module: 'question_bank',
         matchPrefixes: [adminUi('question-bank')],
         children: [
             { key: 'qb-all', label: 'All Questions', path: ADMIN_PATHS.questionBank, icon: BookOpen },
@@ -175,9 +207,11 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     {
         key: 'students',
         label: 'Student Management',
-        path: ADMIN_PATHS.students,
+        path: ADMIN_PATHS.studentMgmtList,
         icon: Users,
+        module: 'student_management',
         matchPrefixes: [
+            adminUi('student-management'),
             adminUi('students'),
             adminUi('student-groups'),
             adminUi('students-v2'),
@@ -186,12 +220,15 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
             adminUi('settings/student-settings'),
         ],
         children: [
-            { key: 'stu-list', label: 'All Students', path: ADMIN_PATHS.students, icon: UserCog },
-            { key: 'stu-groups', label: 'Student Groups', path: ADMIN_PATHS.studentGroups, icon: ClipboardList },
-            { key: 'stu-crm', label: 'Students CRM', path: ADMIN_PATHS.studentsV2, icon: Users },
-            { key: 'stu-groups-v2', label: 'Groups V2', path: ADMIN_PATHS.studentGroupsV2, icon: ClipboardList },
+            { key: 'stu-list', label: 'All Students', path: ADMIN_PATHS.studentMgmtList, icon: UserCog },
+            { key: 'stu-create', label: 'Create Student', path: ADMIN_PATHS.studentMgmtCreate, icon: UserPlus },
+            { key: 'stu-import', label: 'Import / Export', path: ADMIN_PATHS.studentMgmtImportExport, icon: Import },
+            { key: 'stu-groups', label: 'Groups', path: ADMIN_PATHS.studentMgmtGroups, icon: ClipboardList },
+            { key: 'stu-audiences', label: 'Audiences', path: ADMIN_PATHS.studentMgmtAudiences, icon: Target },
+            { key: 'stu-crm', label: 'CRM Timeline', path: ADMIN_PATHS.studentMgmtCrmTimeline, icon: MessageSquare },
+            { key: 'stu-weak', label: 'Weak Topics', path: ADMIN_PATHS.studentMgmtWeakTopics, icon: TrendingDown },
             { key: 'stu-notif', label: 'Notification Center', path: ADMIN_PATHS.notificationCenter, icon: Bell },
-            { key: 'stu-settings', label: 'Student Settings', path: ADMIN_PATHS.studentSettings, icon: SlidersHorizontal },
+            { key: 'stu-settings', label: 'Settings', path: ADMIN_PATHS.studentMgmtSettings, icon: Settings },
         ],
     },
 
@@ -201,6 +238,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Subscription & Payments',
         path: ADMIN_PATHS.subscriptionPlans,
         icon: CreditCard,
+        module: 'subscriptions',
         matchPrefixes: [adminUi('subscription-plans'), adminUi('subscriptions-v2')],
         children: [
             { key: 'sub-plans', label: 'Subscription Plans', path: ADMIN_PATHS.subscriptionPlans, icon: CreditCard },
@@ -214,6 +252,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Resources',
         path: ADMIN_PATHS.resources,
         icon: FolderOpen,
+        module: 'resources',
         matchPrefixes: [adminUi('resources'), adminUi('settings/resource-settings')],
         children: [
             { key: 'res-list', label: 'All Resources', path: ADMIN_PATHS.resources, icon: FolderOpen },
@@ -227,11 +266,13 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Support & Communication',
         path: ADMIN_PATHS.supportCenter,
         icon: LifeBuoy,
-        matchPrefixes: [adminUi('support-center'), adminUi('contact'), adminUi('settings/notifications')],
+        module: 'support',
+        matchPrefixes: [adminUi('support-center'), adminUi('contact'), adminUi('settings/notifications'), adminUi('notifications/test-send')],
         children: [
             { key: 'sup-center', label: 'Support Center', path: ADMIN_PATHS.supportCenter, icon: LifeBuoy },
             { key: 'sup-contact', label: 'Contact Messages', path: ADMIN_PATHS.contact, icon: Mail },
             { key: 'sup-notif', label: 'Notifications', path: ADMIN_PATHS.notifications, icon: Bell },
+            { key: 'sup-test-send', label: 'Test Send', path: ADMIN_PATHS.notificationTestSend, icon: FlaskConical },
         ],
     },
 
@@ -241,6 +282,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Campaign Platform',
         path: ADMIN_PATHS.campaignsDashboard,
         icon: Send,
+        module: 'campaigns',
         matchPrefixes: [adminUi('campaigns')],
         children: [
             { key: 'cmp-dash', label: 'Dashboard', path: ADMIN_PATHS.campaignsDashboard, icon: LayoutDashboard },
@@ -258,6 +300,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Data Hub',
         path: ADMIN_PATHS.dataHub,
         icon: Database,
+        module: 'data_hub',
         matchPrefixes: [adminUi('data-hub')],
         children: [
             { key: 'dh-export', label: 'Export Center', path: ADMIN_PATHS.dataHub, icon: Upload },
@@ -271,6 +314,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Finance Center',
         path: ADMIN_PATHS.financeDashboard,
         icon: Wallet,
+        module: 'finance',
         matchPrefixes: [adminUi('finance'), adminUi('payments')],
         children: [
             { key: 'fc-dashboard', label: 'Dashboard', path: ADMIN_PATHS.financeDashboard, icon: LayoutDashboard },
@@ -288,12 +332,31 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         ],
     },
 
+    {
+        key: 'teamAccessControl',
+        label: 'Team & Access Control',
+        path: ADMIN_PATHS.teamMembers,
+        icon: KeyRound,
+        module: 'team_access',
+        matchPrefixes: [adminUi('team')],
+        children: [
+            { key: 'ta-members', label: 'Team Members', path: ADMIN_PATHS.teamMembers, icon: Users },
+            { key: 'ta-roles', label: 'Roles', path: ADMIN_PATHS.teamRoles, icon: UserCog },
+            { key: 'ta-permissions', label: 'Permissions Matrix', path: ADMIN_PATHS.teamPermissions, icon: SlidersHorizontal },
+            { key: 'ta-approval', label: 'Approval Rules', path: ADMIN_PATHS.teamApprovalRules, icon: ClipboardList },
+            { key: 'ta-activity', label: 'Activity / Audit Logs', path: ADMIN_PATHS.teamActivity, icon: ScrollText },
+            { key: 'ta-security', label: 'Login & Security', path: ADMIN_PATHS.teamSecurity, icon: Shield },
+            { key: 'ta-invites', label: 'Invite / Access Requests', path: ADMIN_PATHS.teamInvites, icon: UserPlus },
+        ],
+    },
+
     // 12. Security & Logs
     {
         key: 'security',
         label: 'Security & Logs',
         path: ADMIN_PATHS.securityCenter,
         icon: Shield,
+        module: 'security_logs',
         matchPrefixes: [adminUi('settings/security-center'), adminUi('settings/system-logs'), adminUi('reports')],
         children: [
             { key: 'sec-center', label: 'Security Center', path: ADMIN_PATHS.securityCenter, icon: Shield },
@@ -303,7 +366,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     },
 
     // 13. Admin Profile
-    { key: 'adminProfile', label: 'Admin Profile', path: ADMIN_PATHS.adminProfile, icon: User },
+    { key: 'adminProfile', label: 'Admin Profile', path: ADMIN_PATHS.adminProfile, icon: User, module: 'admin_profile' },
 ];
 
 export function isAdminPathActive(pathname: string, item: AdminMenuItem): boolean {

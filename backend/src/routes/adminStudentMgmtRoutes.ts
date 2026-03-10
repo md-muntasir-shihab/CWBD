@@ -16,6 +16,11 @@ import NotificationTemplate from '../models/NotificationTemplate';
 import NotificationJob from '../models/NotificationJob';
 import NotificationDeliveryLog from '../models/NotificationDeliveryLog';
 import { StudentSettingsModel } from '../models/StudentSettings';
+import { PaymentModel } from '../models/payment.model';
+import FinanceTransaction from '../models/FinanceTransaction';
+import StudentDueLedger from '../models/StudentDueLedger';
+import ExamResult from '../models/ExamResult';
+import ImportExportLog from '../models/ImportExportLog';
 import { encrypt } from '../services/cryptoService';
 import { sendNotificationToStudent } from '../services/notificationProviderService';
 import {
@@ -26,12 +31,220 @@ import {
   generateTemplateXlsx,
   ImportCommitOptions,
 } from '../services/studentImportExportService';
+import { getUnifiedStudentDetail } from '../services/adminStudentUnifiedService';
+import * as groupMembershipService from '../services/groupMembershipService';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // All routes require admin auth
 const adminAuth = [authenticate, requireRole('superadmin', 'admin', 'moderator')];
+
+// ============================================================================
+// STUDENT METRICS (Dashboard overview) — must be before :id wildcard routes
+// ============================================================================
+
+router.get('/students-v2/metrics', ...adminAuth, async (_req: Request, res: Response) => {
+  try {
+    const [
+      totalStudents, activeStudents, suspendedStudents, pendingStudents,
+      activeSubs, expiredSubs, expiringSoon,
+      pendingPayments, totalPaidPayments,
+      groupCount,
+    ] = await Promise.all([
+      User.countDocuments({ role: 'student' }),
+      User.countDocuments({ role: 'student', status: 'active' }),
+      User.countDocuments({ role: 'student', status: 'suspended' }),
+      User.countDocuments({ role: 'student', status: 'pending' }),
+      UserSubscription.countDocuments({ status: 'active' }),
+      UserSubscription.countDocuments({ status: 'expired' }),
+      UserSubscription.countDocuments({
+        status: 'active',
+        expiresAtUTC: { $lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+      }),
+      PaymentModel.countDocuments({ status: 'pending' }),
+      PaymentModel.countDocuments({ status: 'paid' }),
+      StudentGroup.countDocuments({ isActive: true }),
+    ]);
+
+    // Profile completion stats
+    const profileStats = await StudentProfile.aggregate([
+      { $group: {
+        _id: null,
+        avgCompletion: { $avg: '$profile_completion_percentage' },
+        lowProfile: { $sum: { $cond: [{ $lt: ['$profile_completion_percentage', 50] }, 1, 0] } },
+      }},
+    ]);
+    const avgProfileCompletion = Math.round(profileStats[0]?.avgCompletion ?? 0);
+    const lowProfileCount = profileStats[0]?.lowProfile ?? 0;
+
+    // Recent registrations (last 7 days)
+    const recentRegistrations = await User.countDocuments({
+      role: 'student',
+      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+    });
+
+    res.json({
+      totalStudents, activeStudents, suspendedStudents, pendingStudents,
+      activeSubs, expiredSubs, expiringSoon,
+      pendingPayments, totalPaidPayments,
+      groupCount,
+      avgProfileCompletion, lowProfileCount,
+      recentRegistrations,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch metrics', error: String(err) });
+  }
+});
+
+// ============================================================================
+// UNIFIED STUDENT DETAIL (Student Management OS — canonical read model)
+// ============================================================================
+
+router.get('/students-v2/:id/unified', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const payload = await getUnifiedStudentDetail(String(req.params.id));
+    if (!payload) return res.status(404).json({ message: 'Student not found' });
+    res.json(payload);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch unified student detail', error: String(err) });
+  }
+});
+
+// ============================================================================
+// STUDENT CREATE (Full admin create flow)
+// ============================================================================
+
+router.post('/students-v2/create', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const {
+      full_name, email, phone_number, password,
+      department, ssc_batch, hsc_batch, college_name,
+      guardian_name, guardian_phone, guardian_email,
+      gender, dob, district, present_address,
+      planId, sendCredentials,
+    } = req.body;
+
+    if (!full_name || !email || !password) {
+      return res.status(400).json({ message: 'full_name, email, and password are required' });
+    }
+    if (String(password).length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    // Check for duplicates
+    const existing = await User.findOne({
+      $or: [
+        { email: String(email).toLowerCase() },
+        ...(phone_number ? [{ phone_number: String(phone_number) }] : []),
+      ],
+    });
+    if (existing) {
+      return res.status(409).json({ message: 'A user with this email or phone already exists' });
+    }
+
+    const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
+    const hashed = await bcrypt.hash(String(password), 12);
+    const username = String(email).split('@')[0] + '-' + Date.now().toString(36);
+
+    const user = await User.create({
+      full_name: String(full_name).trim(),
+      username,
+      email: String(email).toLowerCase().trim(),
+      password: hashed,
+      role: 'student',
+      status: 'active',
+      phone_number: phone_number ? String(phone_number).trim() : undefined,
+      mustChangePassword: true,
+      passwordResetRequired: true,
+      passwordSetByAdminId: adminUser?.['_id'],
+    });
+
+    // Create profile
+    const profileData: Record<string, unknown> = {
+      user_id: user._id,
+      full_name: String(full_name).trim(),
+      phone_number: phone_number ? String(phone_number).trim() : undefined,
+      email: String(email).toLowerCase().trim(),
+    };
+    if (department)     profileData['department'] = department;
+    if (ssc_batch)      profileData['ssc_batch'] = ssc_batch;
+    if (hsc_batch)      profileData['hsc_batch'] = hsc_batch;
+    if (college_name)   profileData['college_name'] = college_name;
+    if (guardian_name)  profileData['guardian_name'] = guardian_name;
+    if (guardian_phone) profileData['guardian_phone'] = guardian_phone;
+    if (guardian_email) profileData['guardian_email'] = guardian_email;
+    if (gender)         profileData['gender'] = gender;
+    if (dob)            profileData['dob'] = new Date(dob);
+    if (district)       profileData['district'] = district;
+    if (present_address) profileData['present_address'] = present_address;
+
+    const profile = await StudentProfile.create(profileData);
+
+    // Create CRM timeline entry
+    await StudentContactTimeline.create({
+      studentId: user._id,
+      type: 'account_event',
+      content: `Student account created by admin${adminUser?.['full_name'] ? ' (' + adminUser['full_name'] + ')' : ''}`,
+      sourceType: 'system',
+      createdByAdminId: adminUser?.['_id'],
+    });
+
+    // Assign plan if requested
+    let subscription = null;
+    if (planId && mongoose.Types.ObjectId.isValid(planId)) {
+      const plan = await SubscriptionPlan.findById(planId).lean();
+      if (plan) {
+        const start = new Date();
+        const expires = new Date(start.getTime() + ((plan as Record<string, unknown>)['durationDays'] as number) * 24 * 60 * 60 * 1000);
+        subscription = await UserSubscription.create({
+          userId: user._id,
+          planId: plan._id,
+          status: 'active',
+          startAtUTC: start,
+          expiresAtUTC: expires,
+          activatedByAdminId: adminUser?.['_id'],
+        });
+        await User.findByIdAndUpdate(user._id, {
+          $set: {
+            'subscription.plan': String(plan._id),
+            'subscription.planCode': (plan as Record<string, unknown>)['code'],
+            'subscription.planName': (plan as Record<string, unknown>)['name'],
+            'subscription.isActive': true,
+            'subscription.startDate': start,
+            'subscription.expiryDate': expires,
+            'subscription.assignedBy': adminUser?.['_id'],
+            'subscription.assignedAt': new Date(),
+          },
+        });
+
+        await StudentContactTimeline.create({
+          studentId: user._id,
+          type: 'subscription_event',
+          content: `Subscription plan "${(plan as Record<string, unknown>)['name']}" assigned during account creation`,
+          sourceType: 'system',
+          createdByAdminId: adminUser?.['_id'],
+        });
+      }
+    }
+
+    // Send credentials if requested
+    if (sendCredentials) {
+      try {
+        await sendNotificationToStudent(user._id, 'ACCOUNT_CREATED', 'sms', {
+          full_name: String(full_name),
+          username,
+          email: String(email),
+        });
+      } catch { /* Best-effort, don't fail the create */ }
+    }
+
+    const safeUser = await User.findById(user._id).select('-password -twoFactorSecret').lean();
+    res.status(201).json({ user: safeUser, profile, subscription });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to create student', error: String(err) });
+  }
+});
 
 // ============================================================================
 // STUDENTS V2
@@ -42,6 +255,8 @@ router.get('/students-v2', ...adminAuth, async (req: Request, res: Response) => 
     const {
       q, status, group, page = '1', limit = '20',
       profileScoreMin, subscriptionStatus, expiringDays,
+      department, sscBatch, hscBatch, guardianStatus,
+      hasPaymentDue, sortBy, sortOrder,
     } = req.query as Record<string, string>;
 
     const pageNum  = Math.max(1, parseInt(page, 10) || 1);
@@ -81,10 +296,46 @@ router.get('/students-v2', ...adminAuth, async (req: Request, res: Response) => 
         : { $in: subUserIds };
     }
 
+    // Profile-based pre-filtering (department, batch, guardian)
+    if (department || sscBatch || hscBatch || guardianStatus) {
+      const profileQuery: Record<string, unknown> = {};
+      if (department) profileQuery['department'] = department;
+      if (sscBatch)   profileQuery['ssc_batch'] = sscBatch;
+      if (hscBatch)   profileQuery['hsc_batch'] = hscBatch;
+      if (guardianStatus === 'verified')   profileQuery['guardianPhoneVerificationStatus'] = 'verified';
+      if (guardianStatus === 'unverified') profileQuery['guardianPhoneVerificationStatus'] = { $ne: 'verified' };
+      if (guardianStatus === 'has_guardian') profileQuery['guardian_phone'] = { $exists: true, $ne: '' };
+      if (guardianStatus === 'no_guardian')  profileQuery['guardian_phone'] = { $in: [null, '', undefined] };
+
+      const filteredProfiles = await StudentProfile.find(profileQuery).select('user_id').lean();
+      const profileUserIds = filteredProfiles.map((p) => p.user_id);
+      const existingId2 = userQuery['_id'] as { $in: mongoose.Types.ObjectId[] } | undefined;
+      userQuery['_id'] = existingId2
+        ? { $in: existingId2.$in.filter((id) => profileUserIds.some((pid) => String(pid) === String(id))) }
+        : { $in: profileUserIds };
+    }
+
+    // Payment due filter
+    if (hasPaymentDue === 'true') {
+      const dueStudents = await StudentDueLedger.find({ netDue: { $gt: 0 } }).select('studentId').lean();
+      const dueIds = dueStudents.map((d) => d.studentId);
+      const existingId3 = userQuery['_id'] as { $in: mongoose.Types.ObjectId[] } | undefined;
+      userQuery['_id'] = existingId3
+        ? { $in: existingId3.$in.filter((id) => dueIds.some((did) => String(did) === String(id))) }
+        : { $in: dueIds };
+    }
+
+    // Determine sort
+    const sortField = sortBy === 'name' ? 'full_name'
+      : sortBy === 'status' ? 'status'
+      : sortBy === 'lastLogin' ? 'lastLoginAtUTC'
+      : 'createdAt';
+    const sortDir = sortOrder === 'asc' ? 1 : -1;
+
     const [users, total] = await Promise.all([
       User.find(userQuery)
         .select('-password -twoFactorSecret')
-        .sort({ createdAt: -1 })
+        .sort({ [sortField]: sortDir })
         .skip(skip)
         .limit(limitNum)
         .lean(),
@@ -220,6 +471,59 @@ router.post('/students-v2/bulk-update', ...adminAuth, async (req: Request, res: 
   }
 });
 
+// ============================================================================
+// WEAK TOPICS ADMIN REPORT — must be before :id wildcard
+// ============================================================================
+
+router.get('/students-v2/weak-topics-report', ...adminAuth, async (_req: Request, res: Response) => {
+  try {
+    const results = await ExamResult.aggregate([
+      { $unwind: '$answers' },
+      { $group: {
+        _id: '$answers.question',
+        totalAttempts: { $sum: 1 },
+        correctCount: { $sum: { $cond: ['$answers.isCorrect', 1, 0] } },
+      }},
+      { $match: { totalAttempts: { $gte: 5 } } },
+      { $addFields: { accuracy: { $multiply: [{ $divide: ['$correctCount', '$totalAttempts'] }, 100] } } },
+      { $match: { accuracy: { $lte: 50 } } },
+      { $sort: { accuracy: 1 } },
+      { $limit: 100 },
+    ]);
+    res.json({ data: results });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// ── Global CRM Timeline — must be before :id wildcard ───────
+router.get('/students-v2/crm-timeline', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { type, sourceType, limit: limitStr } = req.query;
+    const filter: Record<string, unknown> = {};
+    if (type) filter['type'] = type;
+    if (sourceType) filter['sourceType'] = sourceType;
+    const lim = Math.min(Number(limitStr) || 100, 500);
+
+    const entries = await StudentContactTimeline.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(lim)
+      .populate('studentId', 'full_name email')
+      .populate('createdByAdminId', 'full_name')
+      .lean();
+
+    // Reshape so studentId → student for frontend consumption
+    const data = entries.map((e: Record<string, unknown>) => ({
+      ...e,
+      student: e['studentId'] as Record<string, unknown> | null,
+    }));
+
+    res.json({ entries: data });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
 router.get('/students-v2/:id', ...adminAuth, async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.params.id).select('-password -twoFactorSecret').lean();
@@ -346,7 +650,10 @@ router.get('/student-groups', ...adminAuth, async (req: Request, res: Response) 
 
 router.post('/student-groups', ...adminAuth, async (req: Request, res: Response) => {
   try {
-    const { name, description, batchTag, type, rules, isActive } = req.body;
+    const { name, description, batchTag, type, rules, isActive,
+            shortCode, color, icon, cardStyleVariant, sortOrder, isFeatured,
+            batch, department, visibilityNote, defaultExamVisibility,
+            defaultCommunicationAudience } = req.body;
     if (!name) return res.status(400).json({ message: 'name is required' });
     const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-' + Date.now();
     const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
@@ -356,6 +663,17 @@ router.post('/student-groups', ...adminAuth, async (req: Request, res: Response)
       rules: rules || {},
       isActive: isActive !== false,
       createdByAdminId: adminUser?.['_id'],
+      shortCode: shortCode || undefined,
+      color: color || '#6366f1',
+      icon: icon || 'Users',
+      cardStyleVariant: cardStyleVariant || 'solid',
+      sortOrder: Number(sortOrder) || 0,
+      isFeatured: isFeatured === true,
+      batch: batch || undefined,
+      department: department || undefined,
+      visibilityNote: visibilityNote || '',
+      defaultExamVisibility: defaultExamVisibility || 'all_students',
+      defaultCommunicationAudience: defaultCommunicationAudience === true,
     });
     res.status(201).json(group);
   } catch (err) {
@@ -367,8 +685,8 @@ router.get('/student-groups/:id', ...adminAuth, async (req: Request, res: Respon
   try {
     const group = await StudentGroup.findById(req.params.id).lean();
     if (!group) return res.status(404).json({ message: 'Group not found' });
-    const count = await GroupMembership.countDocuments({ groupId: group._id });
-    res.json({ ...group, memberCount: count });
+    const memberCount = await groupMembershipService.getGroupMemberCount(group._id, 'active');
+    res.json({ ...group, memberCount });
   } catch (err) {
     res.status(500).json({ message: String(err) });
   }
@@ -376,7 +694,10 @@ router.get('/student-groups/:id', ...adminAuth, async (req: Request, res: Respon
 
 router.put('/student-groups/:id', ...adminAuth, async (req: Request, res: Response) => {
   try {
-    const { name, description, batchTag, type, rules, isActive } = req.body;
+    const { name, description, batchTag, type, rules, isActive,
+            shortCode, color, icon, cardStyleVariant, sortOrder, isFeatured,
+            batch, department, visibilityNote, defaultExamVisibility,
+            defaultCommunicationAudience } = req.body;
     const update: Record<string, unknown> = {};
     if (name        !== undefined) update['name']        = name;
     if (description !== undefined) update['description'] = description;
@@ -384,6 +705,17 @@ router.put('/student-groups/:id', ...adminAuth, async (req: Request, res: Respon
     if (type        !== undefined) update['type']        = type;
     if (rules       !== undefined) update['rules']       = rules;
     if (isActive    !== undefined) update['isActive']    = isActive;
+    if (shortCode   !== undefined) update['shortCode']   = shortCode;
+    if (color       !== undefined) update['color']       = color;
+    if (icon        !== undefined) update['icon']        = icon;
+    if (cardStyleVariant !== undefined) update['cardStyleVariant'] = cardStyleVariant;
+    if (sortOrder   !== undefined) update['sortOrder']   = Number(sortOrder) || 0;
+    if (isFeatured  !== undefined) update['isFeatured']  = isFeatured === true;
+    if (batch       !== undefined) update['batch']       = batch;
+    if (department  !== undefined) update['department']  = department;
+    if (visibilityNote !== undefined) update['visibilityNote'] = visibilityNote;
+    if (defaultExamVisibility !== undefined) update['defaultExamVisibility'] = defaultExamVisibility;
+    if (defaultCommunicationAudience !== undefined) update['defaultCommunicationAudience'] = defaultCommunicationAudience === true;
     const group = await StudentGroup.findByIdAndUpdate(req.params.id, { $set: update }, { new: true }).lean();
     if (!group) return res.status(404).json({ message: 'Group not found' });
     res.json(group);
@@ -394,9 +726,23 @@ router.put('/student-groups/:id', ...adminAuth, async (req: Request, res: Respon
 
 router.delete('/student-groups/:id', ...adminAuth, async (req: Request, res: Response) => {
   try {
+    // Safety check before deletion
+    const safety = await groupMembershipService.canDeleteGroup(String(req.params.id));
+    if (!safety.safe) {
+      return res.status(409).json({ message: 'Cannot delete group', blockers: safety.blockers });
+    }
     const group = await StudentGroup.findByIdAndDelete(req.params.id).lean();
     if (!group) return res.status(404).json({ message: 'Group not found' });
-    await GroupMembership.deleteMany({ groupId: req.params.id });
+    // Archive all memberships instead of hard delete
+    await GroupMembership.updateMany(
+      { groupId: req.params.id, membershipStatus: 'active' },
+      { $set: { membershipStatus: 'archived', removedAtUTC: new Date(), note: 'Group deleted' } }
+    );
+    // Remove group from all student profiles
+    await StudentProfile.updateMany(
+      { groupIds: req.params.id },
+      { $pull: { groupIds: new mongoose.Types.ObjectId(String(req.params.id)) } }
+    );
     res.json({ message: 'Group deleted' });
   } catch (err) {
     res.status(500).json({ message: String(err) });
@@ -409,25 +755,15 @@ router.post('/student-groups/:id/members/add', ...adminAuth, async (req: Request
     if (!Array.isArray(studentIds) || studentIds.length === 0) {
       return res.status(400).json({ message: 'studentIds array required' });
     }
-    const groupId = new mongoose.Types.ObjectId(req.params.id as string);
     const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
-    const adminId = adminUser?.['_id'];
-    let added = 0;
-    for (const sid of studentIds) {
-      if (!mongoose.Types.ObjectId.isValid(sid)) continue;
-      try {
-        await GroupMembership.create({
-          groupId,
-          studentId: new mongoose.Types.ObjectId(sid),
-          addedByAdminId: adminId,
-        });
-        added++;
-      } catch { /* Duplicate - skip */ }
-    }
-    await StudentGroup.findByIdAndUpdate(groupId, {
-      $set: { memberCountCached: await GroupMembership.countDocuments({ groupId }) },
-    });
-    res.json({ message: `Added ${added} members`, added });
+    const adminId = adminUser?.['_id'] as string | undefined;
+    const result = await groupMembershipService.bulkAddMembers(
+      String(req.params.id),
+      studentIds.filter(id => mongoose.Types.ObjectId.isValid(id)),
+      adminId,
+      'Added via group member management'
+    );
+    res.json({ message: `Added ${result.added} members`, added: result.added, skipped: result.skipped });
   } catch (err) {
     res.status(500).json({ message: String(err) });
   }
@@ -439,15 +775,15 @@ router.post('/student-groups/:id/members/remove', ...adminAuth, async (req: Requ
     if (!Array.isArray(studentIds) || studentIds.length === 0) {
       return res.status(400).json({ message: 'studentIds array required' });
     }
-    const groupId = new mongoose.Types.ObjectId(req.params.id as string);
-    const oids    = studentIds
-      .filter((id) => mongoose.Types.ObjectId.isValid(id))
-      .map((id) => new mongoose.Types.ObjectId(id));
-    const result = await GroupMembership.deleteMany({ groupId, studentId: { $in: oids } });
-    await StudentGroup.findByIdAndUpdate(groupId, {
-      $set: { memberCountCached: await GroupMembership.countDocuments({ groupId }) },
-    });
-    res.json({ message: `Removed ${result.deletedCount} members`, removed: result.deletedCount });
+    const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
+    const adminId = adminUser?.['_id'] as string | undefined;
+    const result = await groupMembershipService.bulkRemoveMembers(
+      String(req.params.id),
+      studentIds.filter(id => mongoose.Types.ObjectId.isValid(id)),
+      adminId,
+      'Removed via group member management'
+    );
+    res.json({ message: `Removed ${result.removed} members`, removed: result.removed });
   } catch (err) {
     res.status(500).json({ message: String(err) });
   }
@@ -455,19 +791,319 @@ router.post('/student-groups/:id/members/remove', ...adminAuth, async (req: Requ
 
 router.get('/student-groups/:id/members/export', ...adminAuth, async (req: Request, res: Response) => {
   try {
-    const groupId    = new mongoose.Types.ObjectId(req.params.id as string);
-    const memberships = await GroupMembership.find({ groupId }).select('studentId').lean();
-    const memberIds  = memberships.map((m) => m.studentId);
-    const users      = await User.find({ _id: { $in: memberIds } })
-      .select('full_name email phone_number status createdAt')
+    const format = String(req.query['format'] ?? 'csv') as 'csv' | 'xlsx';
+    const groupId    = new mongoose.Types.ObjectId(String(req.params.id));
+    const memberships = await GroupMembership.find({ groupId, membershipStatus: 'active' })
+      .select('studentId joinedAtUTC note')
       .lean();
-    const headers = 'Full Name,Email,Phone,Status,Created At';
-    const lines   = users.map((u) =>
-      `"${u.full_name}","${u.email}","${u.phone_number ?? ''}","${u.status}","${u.createdAt?.toISOString() ?? ''}"`,
+    const memberIds  = memberships.map((m) => m.studentId);
+    const [users, profiles] = await Promise.all([
+      User.find({ _id: { $in: memberIds } }).select('full_name email phone_number status createdAt').lean(),
+      StudentProfile.find({ user_id: { $in: memberIds } })
+        .select('user_id full_name email phone_number department ssc_batch hsc_batch guardian_name guardian_phone roll_number')
+        .lean(),
+    ]);
+    const profileMap = new Map(profiles.map(p => [p.user_id.toString(), p]));
+    const membershipMap = new Map(memberships.map(m => [m.studentId.toString(), m]));
+
+    const columns = ['Full Name', 'Email', 'Phone', 'Department', 'Batch', 'Roll', 'Guardian', 'Guardian Phone', 'Status', 'Joined At', 'Note'];
+    const rows = users.map(u => {
+      const prof = profileMap.get(u._id.toString()) ?? {} as Record<string, unknown>;
+      const mem = membershipMap.get(u._id.toString());
+      return [
+        (prof as Record<string, unknown>).full_name ?? u.full_name ?? '',
+        (prof as Record<string, unknown>).email ?? u.email ?? '',
+        (prof as Record<string, unknown>).phone_number ?? u.phone_number ?? '',
+        (prof as Record<string, unknown>).department ?? '',
+        (prof as Record<string, unknown>).hsc_batch ?? '',
+        (prof as Record<string, unknown>).roll_number ?? '',
+        (prof as Record<string, unknown>).guardian_name ?? '',
+        (prof as Record<string, unknown>).guardian_phone ?? '',
+        u.status ?? '',
+        mem?.joinedAtUTC ? new Date(mem.joinedAtUTC as string | Date).toISOString() : '',
+        mem?.note ?? '',
+      ].map(v => String(v ?? ''));
+    });
+
+    if (format === 'xlsx') {
+      const ExcelJS = await import('exceljs');
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Members');
+      ws.addRow(columns).eachCell(cell => { cell.font = { bold: true }; });
+      rows.forEach(r => ws.addRow(r));
+      columns.forEach((_, i) => { const col = ws.getColumn(i + 1); col.width = 18; });
+      const buf = await wb.xlsx.writeBuffer();
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="group_${req.params.id}_members.xlsx"`);
+      res.send(Buffer.from(buf as ArrayBuffer));
+    } else {
+      const escCsv = (v: string) => `"${v.replace(/"/g, '""')}"`;
+      const csv = [columns.join(','), ...rows.map(r => r.map(escCsv).join(','))].join('\n');
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="group_${req.params.id}_members.csv"`);
+      res.send(csv);
+    }
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// Membership import template XLSX download
+router.get('/student-groups/members/template', ...adminAuth, async (_req: Request, res: Response) => {
+  try {
+    const ExcelJS = await import('exceljs');
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Import Template');
+    const headerRow = ws.addRow(['Email', 'Phone Number', 'Student ID (optional)']);
+    headerRow.eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+    });
+    ws.addRow(['student@example.com', '01700000000', '']);
+    ws.addRow(['another@example.com', '01800000000', '']);
+    ws.getColumn(1).width = 30;
+    ws.getColumn(2).width = 20;
+    ws.getColumn(3).width = 28;
+    const buf = await wb.xlsx.writeBuffer();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="group_members_import_template.xlsx"');
+    res.send(Buffer.from(buf as ArrayBuffer));
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// Membership import preview — upload file, match students by email/phone/ID
+router.post('/student-groups/:id/members/import/preview', ...adminAuth, upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'file is required' });
+    const groupId = new mongoose.Types.ObjectId(req.params.id as string);
+
+    const { rows: rawRows } = await parseFileBuffer(req.file.buffer, req.file.mimetype);
+
+    // Resolve column mapping (flexible header aliasing)
+    const emailAliases = ['email', 'e-mail', 'email address', 'student email', 'ইমেইল'];
+    const phoneAliases = ['phone', 'phone number', 'phone_number', 'mobile', 'cell', 'ফোন'];
+    const idAliases    = ['student id', 'studentid', 'student_id', 'id', '_id', 'user id', 'userid'];
+
+    const findCol = (aliases: string[], cols: string[]): string | null => {
+      for (const a of aliases) {
+        const found = cols.find(c => c.toLowerCase().trim() === a);
+        if (found) return found;
+      }
+      return null;
+    };
+    const cols = rawRows.length > 0 ? Object.keys(rawRows[0]) : [];
+    const emailCol = findCol(emailAliases, cols);
+    const phoneCol = findCol(phoneAliases, cols);
+    const idCol    = findCol(idAliases, cols);
+
+    if (!emailCol && !phoneCol && !idCol) {
+      return res.status(400).json({ message: 'File must contain at least one of: Email, Phone Number, or Student ID columns' });
+    }
+
+    // Existing members set
+    const existingMemberships = await GroupMembership.find({ groupId, membershipStatus: 'active' }).select('studentId').lean();
+    const existingSet = new Set(existingMemberships.map(m => m.studentId.toString()));
+
+    const matched: { row: number; email?: string; phone?: string; studentId: string; fullName: string; status: 'new' | 'existing' }[] = [];
+    const unmatched: { row: number; email?: string; phone?: string; reason: string }[] = [];
+
+    for (let i = 0; i < rawRows.length; i++) {
+      const r = rawRows[i];
+      const email = emailCol ? String(r[emailCol] ?? '').trim().toLowerCase() : '';
+      const phone = phoneCol ? String(r[phoneCol] ?? '').trim() : '';
+      const rawId = idCol    ? String(r[idCol]    ?? '').trim() : '';
+
+      let user: Record<string, unknown> | null = null;
+
+      // Try ID first, then email, then phone
+      if (rawId && mongoose.Types.ObjectId.isValid(rawId)) {
+        user = await User.findById(rawId).select('_id full_name').lean() as Record<string, unknown> | null;
+      }
+      if (!user && email) {
+        user = await User.findOne({ email, role: 'student' }).select('_id full_name').lean() as Record<string, unknown> | null;
+      }
+      if (!user && phone) {
+        user = await User.findOne({ phone_number: phone, role: 'student' }).select('_id full_name').lean() as Record<string, unknown> | null;
+      }
+
+      if (user) {
+        const sid = String((user as Record<string, unknown>)._id);
+        matched.push({
+          row: i + 2,
+          email: email || undefined,
+          phone: phone || undefined,
+          studentId: sid,
+          fullName: (user.full_name as string) || '',
+          status: existingSet.has(sid) ? 'existing' : 'new',
+        });
+      } else {
+        unmatched.push({
+          row: i + 2,
+          email: email || undefined,
+          phone: phone || undefined,
+          reason: 'No matching student found',
+        });
+      }
+    }
+
+    const newCount = matched.filter(m => m.status === 'new').length;
+    const existingCount = matched.filter(m => m.status === 'existing').length;
+
+    res.json({
+      totalRows: rawRows.length,
+      matched,
+      unmatched,
+      summary: { total: rawRows.length, newMembers: newCount, alreadyMembers: existingCount, notFound: unmatched.length },
+    });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// Membership import commit — add matched students to group
+router.post('/student-groups/:id/members/import/commit', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { studentIds } = req.body as { studentIds: string[] };
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ message: 'studentIds array required' });
+    }
+    const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
+    const adminId = adminUser?.['_id'] as string | undefined;
+    const validIds = studentIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+    const result = await groupMembershipService.bulkAddMembers(
+      String(req.params.id),
+      validIds,
+      adminId,
+      'Added via file import'
     );
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="group_${req.params.id}_members.csv"`);
-    res.send([headers, ...lines].join('\n'));
+    res.json({ message: `Imported ${result.added} members`, added: result.added, skipped: result.skipped, errors: result.errors });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// Group members list (paginated, with profile data)
+router.get('/student-groups/:id/members', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { page = '1', limit = '50', q } = req.query as Record<string, string>;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+    const groupId = new mongoose.Types.ObjectId(req.params.id as string);
+
+    const memberships = await GroupMembership.find({ groupId, membershipStatus: 'active' })
+      .sort({ joinedAtUTC: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .select('studentId joinedAtUTC addedByAdminId note')
+      .lean();
+    const total = await GroupMembership.countDocuments({ groupId, membershipStatus: 'active' });
+    const studentIds = memberships.map(m => m.studentId);
+
+    let profileQuery: Record<string, unknown> = { user_id: { $in: studentIds } };
+    if (q) {
+      profileQuery = {
+        ...profileQuery,
+        $or: [
+          { full_name: new RegExp(String(q), 'i') },
+          { email: new RegExp(String(q), 'i') },
+          { phone_number: new RegExp(String(q), 'i') },
+        ],
+      };
+    }
+    const profiles = await StudentProfile.find(profileQuery)
+      .select('user_id full_name email phone_number ssc_batch hsc_batch department')
+      .lean();
+    const users = await User.find({ _id: { $in: studentIds } })
+      .select('_id status subscription')
+      .lean();
+
+    const profileMap = new Map(profiles.map(p => [p.user_id.toString(), p]));
+    const userMap = new Map(users.map(u => [u._id.toString(), u]));
+
+    const data = memberships.map(m => {
+      const sid = m.studentId.toString();
+      const prof = profileMap.get(sid);
+      const usr = userMap.get(sid);
+      return {
+        studentId: sid,
+        fullName: prof?.full_name || '',
+        email: prof?.email || '',
+        phone: prof?.phone_number || '',
+        batch: prof?.hsc_batch || '',
+        department: prof?.department || '',
+        status: (usr as Record<string, unknown>)?.status || '',
+        subscription: (usr as Record<string, unknown>)?.subscription || null,
+        joinedAtUTC: m.joinedAtUTC,
+        note: m.note || '',
+      };
+    });
+
+    res.json({ data, total, page: pageNum, limit: limitNum });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// Group detail metrics
+router.get('/student-groups/:id/metrics', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const groupId = new mongoose.Types.ObjectId(req.params.id as string);
+    const memberships = await GroupMembership.find({ groupId, membershipStatus: 'active' }).select('studentId').lean();
+    const memberIds = memberships.map(m => m.studentId);
+
+    const [users, activeSubCount] = await Promise.all([
+      User.find({ _id: { $in: memberIds } }).select('status subscription').lean(),
+      User.countDocuments({
+        _id: { $in: memberIds },
+        'subscription.isActive': true,
+      }),
+    ]);
+
+    const statusCounts: Record<string, number> = {};
+    for (const u of users) {
+      const s = (u as unknown as Record<string, unknown>).status as string || 'unknown';
+      statusCounts[s] = (statusCounts[s] || 0) + 1;
+    }
+
+    res.json({
+      totalMembers: memberIds.length,
+      activeMembersWithSubscription: activeSubCount,
+      membersByStatus: statusCounts,
+    });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// Move members between groups
+router.post('/student-groups/:id/members/move', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { studentIds, targetGroupId } = req.body as { studentIds: string[]; targetGroupId: string };
+    if (!Array.isArray(studentIds) || !targetGroupId) {
+      return res.status(400).json({ message: 'studentIds array and targetGroupId required' });
+    }
+    const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
+    const adminId = adminUser?.['_id'] as string | undefined;
+    const result = await groupMembershipService.moveMembers(
+      String(req.params.id),
+      targetGroupId,
+      studentIds.filter(id => mongoose.Types.ObjectId.isValid(id)),
+      adminId,
+      'Moved via group management'
+    );
+    res.json({ message: `Moved ${result.added} members`, ...result });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// Delete safety check
+router.get('/student-groups/:id/can-delete', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const result = await groupMembershipService.canDeleteGroup(String(req.params.id));
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: String(err) });
   }
@@ -1038,5 +1674,258 @@ router.put('/student-settings', ...adminAuth, async (req: Request, res: Response
     res.status(500).json({ message: String(err) });
   }
 });
+
+// ============================================================================
+// AUDIENCE SEGMENTS (extends StudentGroup with type='audience')
+// ============================================================================
+
+router.get('/audience-segments', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { q, page = '1', limit = '50' } = req.query as Record<string, string>;
+    const pageNum  = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+    const query: Record<string, unknown> = { type: 'dynamic' };
+    if (q) query['name'] = new RegExp(String(q), 'i');
+    const [segments, total] = await Promise.all([
+      StudentGroup.find(query).sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
+      StudentGroup.countDocuments(query),
+    ]);
+    // Enrich with live preview count
+    const enriched = await Promise.all(segments.map(async (seg) => {
+      const count = await resolveAudienceCount(seg.rules);
+      return { ...seg, liveCount: count };
+    }));
+    res.json({ data: enriched, total, page: pageNum, limit: limitNum });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+router.post('/audience-segments', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { name, description, rules } = req.body;
+    if (!name) return res.status(400).json({ message: 'name is required' });
+    const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-' + Date.now();
+    const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
+    const count = await resolveAudienceCount(rules);
+    const segment = await StudentGroup.create({
+      name, slug, description,
+      type: 'dynamic',
+      rules: rules || {},
+      isActive: true,
+      createdByAdminId: adminUser?.['_id'],
+      memberCountCached: count,
+    });
+    res.status(201).json({ ...segment.toObject(), liveCount: count });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+router.post('/audience-segments/preview', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { rules } = req.body;
+    const count = await resolveAudienceCount(rules);
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+router.delete('/audience-segments/:id', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const segment = await StudentGroup.findOneAndDelete({ _id: req.params.id, type: 'dynamic' }).lean();
+    if (!segment) return res.status(404).json({ message: 'Segment not found' });
+    res.json({ message: 'Segment deleted' });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// ============================================================================
+// FINANCE ADJUSTMENT (Admin adds manual finance entries for a student)
+// ============================================================================
+
+router.post('/students-v2/:id/finance-adjustment', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { amount, direction, description, method, categoryLabel } = req.body;
+    if (!amount || !direction || !description) {
+      return res.status(400).json({ message: 'amount, direction, description required' });
+    }
+    const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
+    const studentId = new mongoose.Types.ObjectId(req.params.id as string);
+
+    const txnCode = `ADJ-${Date.now().toString(36).toUpperCase()}`;
+    const txn = await FinanceTransaction.create({
+      txnCode,
+      direction: direction === 'income' ? 'income' : 'expense',
+      amount: Math.abs(Number(amount)),
+      currency: 'BDT',
+      dateUTC: new Date(),
+      accountCode: direction === 'income' ? 'STU-INC' : 'STU-EXP',
+      categoryLabel: categoryLabel || 'Manual Adjustment',
+      description: String(description).slice(0, 500),
+      status: 'approved',
+      method: method || 'manual',
+      sourceType: direction === 'income' ? 'manual_income' : 'expense',
+      sourceId: req.params.id,
+      studentId,
+      createdByAdminId: adminUser?.['_id'] as mongoose.Types.ObjectId,
+    });
+
+    // Update due ledger
+    const ledger = await StudentDueLedger.findOne({ studentId });
+    if (ledger) {
+      ledger.manualAdjustment += direction === 'income' ? -Math.abs(Number(amount)) : Math.abs(Number(amount));
+      ledger.netDue = ledger.computedDue + ledger.manualAdjustment - ledger.waiverAmount;
+      ledger.lastComputedAt = new Date();
+      ledger.updatedBy = adminUser?.['_id'] as mongoose.Types.ObjectId;
+      await ledger.save();
+    }
+
+    // Timeline entry
+    await StudentContactTimeline.create({
+      studentId,
+      type: 'payment_note',
+      content: `Finance adjustment: ${direction} ৳${Math.abs(Number(amount))} — ${description}`,
+      sourceType: 'system',
+      createdByAdminId: adminUser?.['_id'],
+      metadata: { txnId: txn._id, txnCode },
+    });
+
+    res.status(201).json(txn);
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// ============================================================================
+// STUDENT PAYMENT HISTORY
+// ============================================================================
+
+router.get('/students-v2/:id/payments', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const payments = await PaymentModel.find({ userId: req.params.id })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+    const ledger = await StudentDueLedger.findOne({ studentId: req.params.id }).lean();
+    res.json({ payments, ledger: ledger || null });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// ============================================================================
+// STUDENT FINANCE STATEMENT
+// ============================================================================
+
+router.get('/students-v2/:id/finance-statement', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const transactions = await FinanceTransaction.find({
+      studentId: new mongoose.Types.ObjectId(req.params.id as string),
+      isDeleted: false,
+    }).sort({ dateUTC: -1 }).limit(200).lean();
+
+    const totals = await FinanceTransaction.aggregate([
+      { $match: { studentId: new mongoose.Types.ObjectId(req.params.id as string), isDeleted: false } },
+      { $group: {
+        _id: '$direction',
+        total: { $sum: '$amount' },
+      }},
+    ]);
+    const income = totals.find((t) => t._id === 'income')?.total ?? 0;
+    const expense = totals.find((t) => t._id === 'expense')?.total ?? 0;
+
+    res.json({ transactions, totalIncome: income, totalExpenses: expense, net: income - expense });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// ============================================================================
+// IMPORT / EXPORT LOGS
+// ============================================================================
+
+router.get('/import-export-logs', ...adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { direction, category, page = '1', limit = '20' } = req.query as Record<string, string>;
+    const pageNum  = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+    const query: Record<string, unknown> = {};
+    if (direction) query['direction'] = direction;
+    if (category) query['category'] = category;
+    const [logs, total] = await Promise.all([
+      ImportExportLog.find(query)
+        .populate('performedBy', 'full_name username')
+        .sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
+      ImportExportLog.countDocuments(query),
+    ]);
+    res.json({ data: logs, total, page: pageNum, limit: limitNum });
+  } catch (err) {
+    res.status(500).json({ message: String(err) });
+  }
+});
+
+// ============================================================================
+// AUDIENCE RESOLUTION HELPER
+// ============================================================================
+
+async function resolveAudienceCount(rules?: Record<string, unknown>): Promise<number> {
+  if (!rules || Object.keys(rules).length === 0) {
+    return User.countDocuments({ role: 'student' });
+  }
+
+  const profileQuery: Record<string, unknown> = {};
+  if (rules['departments'] && Array.isArray(rules['departments']) && (rules['departments'] as string[]).length > 0) {
+    profileQuery['department'] = { $in: rules['departments'] };
+  }
+  if (rules['batches'] && Array.isArray(rules['batches']) && (rules['batches'] as string[]).length > 0) {
+    profileQuery['hsc_batch'] = { $in: rules['batches'] };
+  }
+  if (rules['sscBatches'] && Array.isArray(rules['sscBatches']) && (rules['sscBatches'] as string[]).length > 0) {
+    profileQuery['ssc_batch'] = { $in: rules['sscBatches'] };
+  }
+  if (rules['profileScoreRange']) {
+    const range = rules['profileScoreRange'] as { min?: number; max?: number };
+    const scoreFilter: Record<string, number> = {};
+    if (range.min !== undefined) scoreFilter['$gte'] = range.min;
+    if (range.max !== undefined) scoreFilter['$lte'] = range.max;
+    if (Object.keys(scoreFilter).length > 0) profileQuery['profile_completion_percentage'] = scoreFilter;
+  }
+
+  let userIds: mongoose.Types.ObjectId[] | null = null;
+
+  if (Object.keys(profileQuery).length > 0) {
+    const profs = await StudentProfile.find(profileQuery).select('user_id').lean();
+    userIds = profs.map((p) => p.user_id as mongoose.Types.ObjectId);
+  }
+
+  const userQuery: Record<string, unknown> = { role: 'student' };
+  if (rules['statuses'] && Array.isArray(rules['statuses']) && (rules['statuses'] as string[]).length > 0) {
+    userQuery['status'] = { $in: rules['statuses'] };
+  }
+  if (userIds !== null) {
+    userQuery['_id'] = { $in: userIds };
+  }
+
+  // Plan code filter
+  if (rules['planCodes'] && Array.isArray(rules['planCodes']) && (rules['planCodes'] as string[]).length > 0) {
+    const subs = await UserSubscription.find({
+      status: 'active',
+    }).populate('planId', 'code').lean();
+    const matchingSubs = subs.filter((s) => {
+      const plan = s.planId as unknown as Record<string, unknown>;
+      return plan && (rules['planCodes'] as string[]).includes(String(plan['code']));
+    });
+    const subUserIds = matchingSubs.map((s) => s.userId);
+    const existing = userQuery['_id'] as { $in: mongoose.Types.ObjectId[] } | undefined;
+    userQuery['_id'] = existing
+      ? { $in: existing.$in.filter((id) => subUserIds.some((sid) => String(sid) === String(id))) }
+      : { $in: subUserIds };
+  }
+
+  return User.countDocuments(userQuery);
+}
 
 export default router;

@@ -165,9 +165,15 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
                 const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
                 const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
                 const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
-                const subscriptionRequired = Boolean((e as Record<string, unknown>).subscriptionRequired) || requiredPlanCodes.length > 0;
+                const subscriptionRequired = Boolean((e as Record<string, unknown>).subscriptionRequired) || Boolean((e as Record<string, unknown>).requiresActiveSubscription) || requiredPlanCodes.length > 0;
                 const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
                 const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
+                // New visibility mode check (Phase 12)
+                const visibilityMode = String((e as Record<string, unknown>).visibilityMode || 'all_students');
+                const targetGroupIds = normalizeObjectIdArray((e as Record<string, unknown>).targetGroupIds);
+                const visibilityGroupDenied = (visibilityMode === 'group_only' || visibilityMode === 'custom')
+                    && targetGroupIds.length > 0
+                    && !hasAnyIntersection(targetGroupIds, studentGroupIds);
                 const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
                 const subscriptionDenied = subscriptionRequired && !hasActiveSubscription;
                 const specificModeDenied = (
@@ -175,7 +181,7 @@ export async function getStudentExams(req: AuthRequest, res: Response): Promise<
                     !e.allowedUsers.some((uid: mongoose.Types.ObjectId) => uid.toString() === studentId)
                 );
                 // Keep strict identity/group restrictions hidden from list responses.
-                if (specificModeDenied || userDenied || groupDenied) {
+                if (specificModeDenied || userDenied || groupDenied || visibilityGroupDenied) {
                     return null;
                 }
                 const accessDeniedReason = planDenied
@@ -405,7 +411,13 @@ export async function getPublicExamList(req: AuthRequest, res: Response): Promis
                 } else {
                     const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
                     const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
-                    const groupRestricted = userDenied || groupDenied || specificModeDenied;
+                    // New visibility mode check (Phase 12)
+                    const visibilityMode = String((exam as Record<string, unknown>).visibilityMode || 'all_students');
+                    const targetGroupIds = normalizeObjectIdArray((exam as Record<string, unknown>).targetGroupIds);
+                    const visibilityGroupDenied = (visibilityMode === 'group_only' || visibilityMode === 'custom')
+                        && targetGroupIds.length > 0
+                        && !hasAnyIntersection(targetGroupIds, studentGroupIds);
+                    const groupRestricted = userDenied || groupDenied || specificModeDenied || visibilityGroupDenied;
                     const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
                     const subscriptionDenied = subscriptionRequired && !hasActiveSubscription && !planDenied;
                     const paymentPending = paymentRequired && hasActiveSubscription && pendingDueAmount > 0;
@@ -622,7 +634,15 @@ export async function getExamLanding(req: AuthRequest, res: Response): Promise<v
                 const planAllowed = requiredPlanCodes.length === 0 || requiredPlanCodes.includes(studentPlanCode);
                 const isPaymentPending = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
                 const assignedAllowed = canAccessExamSync(examRecord, studentId);
-                const strictAccessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed;
+
+                // Visibility-mode group restriction (new model)
+                const visibilityMode = String(examRecord.visibilityMode || 'all_students');
+                const targetGroupIds = normalizeObjectIdArray(examRecord.targetGroupIds || []);
+                const visibilityGroupDenied = (visibilityMode === 'group_only' || visibilityMode === 'custom')
+                    && targetGroupIds.length > 0
+                    && !hasAnyIntersection(targetGroupIds, studentGroupIds);
+
+                const strictAccessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed || visibilityGroupDenied;
                 if (strictAccessDenied) {
                     return null;
                 }
@@ -871,6 +891,26 @@ async function getEligibilitySummary(exam: Record<string, unknown>, studentId: s
         accessAllowed = false;
         reasons.push(`subscription_${subscriptionState.reason || 'inactive'}`);
         if (!accessDeniedReason) accessDeniedReason = 'subscription_required';
+    }
+
+    // Visibility-mode group restriction (new model)
+    const visibilityMode = String(exam.visibilityMode || 'all_students');
+    if (visibilityMode === 'group_only' || visibilityMode === 'custom') {
+        const targetGroupIds = normalizeObjectIdArray(exam.targetGroupIds || []);
+        if (targetGroupIds.length > 0 && !hasAnyIntersection(targetGroupIds, studentGroupIds)) {
+            accessAllowed = false;
+            reasons.push('visibility_group_restricted');
+            if (!accessDeniedReason) accessDeniedReason = 'visibility_group_restricted';
+        }
+    }
+
+    // Visibility-mode subscription restriction
+    if ((visibilityMode === 'subscription_only' || exam.requiresActiveSubscription) && !subscriptionState.allowed) {
+        if (!reasons.includes(`subscription_${subscriptionState.reason || 'inactive'}`)) {
+            accessAllowed = false;
+            reasons.push(`subscription_${subscriptionState.reason || 'inactive'}`);
+            if (!accessDeniedReason) accessDeniedReason = 'subscription_required';
+        }
     }
 
     const paymentRequired = subscriptionRequired && subscriptionState.allowed;

@@ -1,9 +1,17 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useModuleAccess } from '../../hooks/useModuleAccess';
 import AdminShell from './AdminShell';
 
-export type AdminAllowedRole = 'superadmin' | 'admin' | 'moderator' | 'editor';
+export type AdminAllowedRole =
+    | 'superadmin'
+    | 'admin'
+    | 'moderator'
+    | 'editor'
+    | 'viewer'
+    | 'support_agent'
+    | 'finance_agent';
 
 const DEFAULT_ALLOWED_ROLES: AdminAllowedRole[] = ['superadmin', 'admin', 'moderator', 'editor'];
 
@@ -12,6 +20,8 @@ type AdminGuardShellProps = {
     description?: string;
     children: ReactNode;
     allowedRoles?: AdminAllowedRole[];
+    requiredModule?: string;
+    requiredAction?: string;
 };
 
 export default function AdminGuardShell({
@@ -19,8 +29,11 @@ export default function AdminGuardShell({
     description,
     children,
     allowedRoles = DEFAULT_ALLOWED_ROLES,
+    requiredModule,
+    requiredAction = 'view',
 }: AdminGuardShellProps) {
     const { user, isLoading } = useAuth();
+    const { hasAccess } = useModuleAccess();
 
     if (isLoading) {
         return <div className="section-container py-16 text-sm text-text-muted dark:text-dark-text/70">Checking admin access...</div>;
@@ -31,6 +44,10 @@ export default function AdminGuardShell({
     }
 
     if (!allowedRoles.includes(user.role as AdminAllowedRole)) {
+        return <Navigate to="/__cw_admin__/access-denied" replace />;
+    }
+
+    if (requiredModule && !hasAccess(requiredModule, requiredAction)) {
         return <Navigate to="/__cw_admin__/access-denied" replace />;
     }
 

@@ -10,8 +10,10 @@ export interface IScheduleWindow {
 
 export interface IExam extends Document {
     title: string;
+    title_bn?: string;
     type?: 'Science' | 'Arts' | 'Commerce' | 'Mixed'; // Exam Type
     group_category?: 'SSC' | 'HSC' | 'Admission' | 'Custom';
+    examCategory?: string;
     subject: string; // Keep for legacy
     subjectBn?: string;
     universityNameBn?: string;
@@ -66,17 +68,39 @@ export interface IExam extends Document {
     resultPublishDate: Date;
     isPublished: boolean;
     publish_results_after_minutes?: number; // 0 for instant
+    resultPublishMode?: 'immediate' | 'manual' | 'scheduled';
+
+    /* ── Solutions ── */
+    solutionReleaseRule?: 'after_exam_end' | 'after_result_publish' | 'manual';
+    solutionsEnabled?: boolean;
 
     /* ── Default marks per question if not specified per-question ── */
     defaultMarksPerQuestion: number;
 
-    /* ── Access control ── */
+    /* ── Access control (flat, legacy) ── */
     accessMode: 'all' | 'specific';
     access_type?: 'restricted' | 'public_link';
     allowedUsers: mongoose.Types.ObjectId[];
     allowed_user_ids?: mongoose.Types.ObjectId[];
     assignedUniversityIds: mongoose.Types.ObjectId[];
     attemptLimit: number;
+    allowReAttempt?: boolean;
+
+    /* ── Monetization ── */
+    subscriptionRequired?: boolean;
+    paymentRequired?: boolean;
+    priceBDT?: number;
+
+    /* ── Visibility & Audience (unified) ── */
+    visibilityMode?: 'all_students' | 'group_only' | 'subscription_only' | 'custom';
+    targetGroupIds?: mongoose.Types.ObjectId[];
+    requiresActiveSubscription?: boolean;
+    requiresPayment?: boolean;
+    minimumProfileScore?: number;
+    targetAudienceSummaryCache?: string;
+    displayOnDashboard?: boolean;
+    displayOnPublicList?: boolean;
+    isActive?: boolean;
 
     /* ── Security / Advanced ── */
     written_upload_enabled?: boolean;
@@ -90,7 +114,6 @@ export interface IExam extends Document {
     };
 
     autosave_interval_sec?: number;
-    resultPublishMode?: 'immediate' | 'manual' | 'scheduled';
     reviewSettings?: {
         showQuestion: boolean;
         showSelectedAnswer: boolean;
@@ -138,8 +161,10 @@ const ScheduleWindowSchema = new Schema({
 
 const ExamSchema = new Schema<IExam>({
     title: { type: String, required: true, trim: true },
+    title_bn: { type: String, default: '' },
     type: { type: String, enum: ['Science', 'Arts', 'Commerce', 'Mixed'], default: 'Mixed' },
     group_category: { type: String, enum: ['SSC', 'HSC', 'Admission', 'Custom'], default: 'Custom' },
+    examCategory: { type: String, default: '', index: true },
     subject: { type: String, required: true },
     subjectBn: { type: String, default: '' },
     universityNameBn: { type: String, default: '' },
@@ -185,6 +210,9 @@ const ExamSchema = new Schema<IExam>({
     isPublished: { type: Boolean, default: false },
     publish_results_after_minutes: { type: Number, default: 0 },
 
+    solutionReleaseRule: { type: String, enum: ['after_exam_end', 'after_result_publish', 'manual'], default: 'after_result_publish' },
+    solutionsEnabled: { type: Boolean, default: false },
+
     defaultMarksPerQuestion: { type: Number, default: 1 },
 
     accessMode: { type: String, enum: ['all', 'specific'], default: 'all' },
@@ -194,6 +222,21 @@ const ExamSchema = new Schema<IExam>({
     allowed_user_ids: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     assignedUniversityIds: [{ type: Schema.Types.ObjectId, ref: 'University' }],
     attemptLimit: { type: Number, default: 1 },
+    allowReAttempt: { type: Boolean, default: false },
+
+    subscriptionRequired: { type: Boolean, default: false },
+    paymentRequired: { type: Boolean, default: false },
+    priceBDT: { type: Number, default: null },
+
+    visibilityMode: { type: String, enum: ['all_students', 'group_only', 'subscription_only', 'custom'], default: 'all_students' },
+    targetGroupIds: [{ type: Schema.Types.ObjectId, ref: 'StudentGroup' }],
+    requiresActiveSubscription: { type: Boolean, default: false },
+    requiresPayment: { type: Boolean, default: false },
+    minimumProfileScore: { type: Number, default: null },
+    targetAudienceSummaryCache: { type: String, default: '' },
+    displayOnDashboard: { type: Boolean, default: true },
+    displayOnPublicList: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: true },
 
     written_upload_enabled: { type: Boolean, default: false },
     security_policies: {

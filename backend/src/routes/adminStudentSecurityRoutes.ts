@@ -22,9 +22,8 @@ import {
     getStudentSecurityMeta,
 } from '../services/accountControlService';
 
-interface AuthRequest extends Request {
-    user?: { _id: string; role: string };
-}
+// AuthRequest is provided by global Express augmentation (express-user-augmentation.d.ts)
+type AuthRequest = Request;
 
 const router = Router();
 const adminAuth = [authenticate, authorize('superadmin', 'admin')];
@@ -32,7 +31,7 @@ const adminAuth = [authenticate, authorize('superadmin', 'admin')];
 // Get student security metadata
 router.get('/students/:id/security', ...adminAuth, async (req: AuthRequest, res: Response) => {
     try {
-        const meta = await getStudentSecurityMeta(req.params.id);
+        const meta = await getStudentSecurityMeta(String(req.params.id));
         if (!meta) { res.status(404).json({ message: 'Student not found' }); return; }
         res.json(meta);
     } catch (err) {
@@ -45,7 +44,7 @@ router.get('/students/:id/security', ...adminAuth, async (req: AuthRequest, res:
 router.post('/students/:id/set-password', ...adminAuth, async (req: AuthRequest, res: Response) => {
     try {
         const result = await adminSetPassword({
-            studentId: req.params.id,
+            studentId: String(req.params.id),
             newPassword: req.body.newPassword,
             adminId: req.user!._id,
             ipAddress: getClientIp(req),
@@ -85,7 +84,7 @@ router.post('/students/create-with-password', ...adminAuth, async (req: AuthRequ
 router.post('/students/:id/resend-account-info', ...adminAuth, async (req: AuthRequest, res: Response) => {
     try {
         const result = await adminResendAccountInfo(
-            req.params.id,
+            String(req.params.id),
             req.body.channels ?? ['sms'],
             req.body.tempPassword,
             req.user!._id,
@@ -101,7 +100,7 @@ router.post('/students/:id/resend-account-info', ...adminAuth, async (req: AuthR
 router.post('/students/:id/force-reset', ...adminAuth, async (req: AuthRequest, res: Response) => {
     try {
         await toggleForceReset(
-            req.params.id,
+            String(req.params.id),
             req.body.force ?? true,
             req.user!._id,
             getClientIp(req),
@@ -116,7 +115,7 @@ router.post('/students/:id/force-reset', ...adminAuth, async (req: AuthRequest, 
 // Revoke all sessions
 router.post('/students/:id/revoke-sessions', ...adminAuth, async (req: AuthRequest, res: Response) => {
     try {
-        await adminRevokeStudentSessions(req.params.id, req.user!._id, getClientIp(req));
+        await adminRevokeStudentSessions(String(req.params.id), req.user!._id, getClientIp(req));
         res.json({ message: 'All sessions revoked' });
     } catch (err) {
         console.error('POST /students/:id/revoke-sessions error:', err);

@@ -16,6 +16,7 @@ export const PERMISSION_MODULES = [
     'support_center',
     'reports_analytics',
     'security_logs',
+    'team_access_control',
 ] as const;
 
 export const PERMISSION_ACTIONS = [
@@ -83,6 +84,7 @@ const ADMIN_MODULES: PermissionModule[] = [
     'support_center',
     'reports_analytics',
     'security_logs',
+    'team_access_control',
 ];
 
 const roleMatrixBase: RolePermissionMatrix = {

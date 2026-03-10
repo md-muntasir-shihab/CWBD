@@ -153,6 +153,37 @@ function normalizeExamPayload(body: Record<string, unknown>): Record<string, unk
     if (payload.batchFilters !== undefined) {
         payload.batchFilters = asStringArray(payload.batchFilters);
     }
+
+    /* ── Visibility & audience fields ── */
+    const validVisibilityModes = ['all_students', 'group_only', 'subscription_only', 'custom'];
+    if (payload.visibilityMode !== undefined) {
+        if (!validVisibilityModes.includes(String(payload.visibilityMode))) {
+            payload.visibilityMode = 'all_students';
+        }
+    }
+    if (payload.targetGroupIds !== undefined) {
+        payload.targetGroupIds = toObjectIdList(asStringArray(payload.targetGroupIds));
+    }
+    if (payload.requiresActiveSubscription !== undefined) {
+        payload.requiresActiveSubscription = Boolean(payload.requiresActiveSubscription);
+    }
+    if (payload.requiresPayment !== undefined) {
+        payload.requiresPayment = Boolean(payload.requiresPayment);
+    }
+    if (payload.minimumProfileScore !== undefined) {
+        const score = parseNumeric(payload.minimumProfileScore);
+        payload.minimumProfileScore = score !== null ? Math.max(0, Math.min(100, score)) : undefined;
+    }
+    if (payload.displayOnDashboard !== undefined) {
+        payload.displayOnDashboard = Boolean(payload.displayOnDashboard);
+    }
+    if (payload.displayOnPublicList !== undefined) {
+        payload.displayOnPublicList = Boolean(payload.displayOnPublicList);
+    }
+    if (payload.isActive !== undefined) {
+        payload.isActive = Boolean(payload.isActive);
+    }
+
     normalizeDeliveryMode(payload);
     return payload;
 }

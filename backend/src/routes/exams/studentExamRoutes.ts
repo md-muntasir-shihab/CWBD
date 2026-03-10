@@ -9,6 +9,7 @@ import { getSessionQuestions, saveSessionAnswers, startSession, submitSession } 
 import { requireAuth } from "../../middleware/auth";
 import { examSessionStartLimit, examAutoSaveLimit, examSubmitLimit } from "../../middleware/examRateLimit";
 import { generateQuestionsPdf, generateSolutionsPdf, generateAnswersPdf } from "../../controllers/examPdfController";
+import StudentProfile from "../../models/StudentProfile";
 
 export const studentExamRoutes = Router();
 
@@ -27,26 +28,44 @@ studentExamRoutes.get("/exams", async (req, res) => {
     .skip((Number(page) - 1) * Number(limit))
     .limit(Number(limit));
 
-  const items = docs.map((e: any) => ({
-    id: String(e._id),
-    title: e.title,
-    title_bn: e.title_bn,
-    examCategory: e.examCategory,
-    subject: e.subject,
-    bannerImageUrl: e.bannerImageUrl,
-    examWindowStartUTC: e.examWindowStartUTC,
-    examWindowEndUTC: e.examWindowEndUTC,
-    durationMinutes: e.durationMinutes,
-    resultPublishAtUTC: e.resultPublishAtUTC,
-    subscriptionRequired: e.subscriptionRequired,
-    paymentRequired: e.paymentRequired,
-    priceBDT: e.priceBDT,
-    attemptLimit: e.attemptLimit,
-    allowReAttempt: e.allowReAttempt,
-    status: now < e.examWindowStartUTC ? "upcoming" : now > e.examWindowEndUTC ? "ended" : "live"
-  }));
+  // Resolve student group IDs for group-based visibility filtering
+  const userId = (req as any).user?.id || req.headers["x-user-id"];
+  let studentGroupIds: string[] = [];
+  if (userId) {
+    const profile = await StudentProfile.findOne({ user_id: userId }).select('groupIds').lean();
+    studentGroupIds = Array.isArray(profile?.groupIds) ? profile!.groupIds.map(String) : [];
+  }
 
-  res.json({ items, page: Number(page), total: await ExamModel.countDocuments(filters), limit: Number(limit) });
+  const items = docs
+    .filter((e: any) => {
+      const mode = e.visibilityMode || 'all_students';
+      if (mode === 'all_students') return true;
+      if (mode === 'group_only' || mode === 'custom') {
+        const targetIds = Array.isArray(e.targetGroupIds) ? e.targetGroupIds.map(String) : [];
+        if (targetIds.length > 0 && !targetIds.some((gId: string) => studentGroupIds.includes(gId))) return false;
+      }
+      return true;
+    })
+    .map((e: any) => ({
+      id: String(e._id),
+      title: e.title,
+      title_bn: e.title_bn,
+      examCategory: e.examCategory,
+      subject: e.subject,
+      bannerImageUrl: e.bannerImageUrl,
+      examWindowStartUTC: e.examWindowStartUTC,
+      examWindowEndUTC: e.examWindowEndUTC,
+      durationMinutes: e.durationMinutes,
+      resultPublishAtUTC: e.resultPublishAtUTC,
+      subscriptionRequired: e.subscriptionRequired,
+      paymentRequired: e.paymentRequired,
+      priceBDT: e.priceBDT,
+      attemptLimit: e.attemptLimit,
+      allowReAttempt: e.allowReAttempt,
+      status: now < e.examWindowStartUTC ? "upcoming" : now > e.examWindowEndUTC ? "ended" : "live"
+    }));
+
+  res.json({ items, page: Number(page), total: items.length, limit: Number(limit) });
 });
 
 studentExamRoutes.get("/exams/:examId", async (req, res) => {

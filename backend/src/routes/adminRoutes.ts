@@ -434,6 +434,34 @@ import {
     adminUpdateSocialLink,
 } from '../controllers/socialLinksController';
 import {
+    teamActivateMember,
+    teamCreateApprovalRule,
+    teamCreateMember,
+    teamCreateRole,
+    teamDeleteApprovalRule,
+    teamDeleteRole,
+    teamDuplicateRole,
+    teamGetActivity,
+    teamGetActivityById,
+    teamGetApprovalRules,
+    teamGetInvites,
+    teamGetMemberById,
+    teamGetMembers,
+    teamGetPermissions,
+    teamGetRoleById,
+    teamGetRoles,
+    teamGetSecurityOverview,
+    teamResendInvite,
+    teamResetPassword,
+    teamRevokeSessions,
+    teamSuspendMember,
+    teamUpdateApprovalRule,
+    teamUpdateMember,
+    teamUpdateMemberOverride,
+    teamUpdateRole,
+    teamUpdateRolePermissions,
+} from '../controllers/teamAccessController';
+import {
     adminGetJobHealth,
     adminGetJobRuns,
 } from '../controllers/adminJobsController';
@@ -479,6 +507,7 @@ function inferModuleFromPath(pathname: string): PermissionModule | null {
     if (clean.startsWith('/support-tickets') || clean.startsWith('/notices') || clean.startsWith('/contact-messages')) return 'support_center';
     if (clean.startsWith('/reports')) return 'reports_analytics';
     if (clean.startsWith('/security') || clean.startsWith('/security-settings') || clean.startsWith('/security-alerts') || clean.startsWith('/audit-logs') || clean.startsWith('/backups') || clean.startsWith('/jobs') || clean.startsWith('/approvals') || clean.startsWith('/maintenance')) return 'security_logs';
+    if (clean.startsWith('/team')) return 'team_access_control';
     if (clean.startsWith('/help-center')) return 'support_center';
     if (clean.startsWith('/content-blocks')) return 'site_settings';
     if (clean.startsWith('/analytics/weak-topics')) return 'reports_analytics';
@@ -564,6 +593,39 @@ router.get('/permissions/matrix', authorize('superadmin', 'admin'), (req: Reques
 
     res.json(responseBody);
 });
+
+/* ── Team & Access Control ── */
+router.get('/team/members', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetMembers);
+router.post('/team/members', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamCreateMember);
+router.get('/team/members/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetMemberById);
+router.put('/team/members/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamUpdateMember);
+router.post('/team/members/:id/suspend', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamSuspendMember);
+router.post('/team/members/:id/activate', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamActivateMember);
+router.post('/team/members/:id/reset-password', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamResetPassword);
+router.post('/team/members/:id/revoke-sessions', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamRevokeSessions);
+router.post('/team/members/:id/resend-invite', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamResendInvite);
+
+router.get('/team/roles', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetRoles);
+router.post('/team/roles', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamCreateRole);
+router.get('/team/roles/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetRoleById);
+router.put('/team/roles/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamUpdateRole);
+router.post('/team/roles/:id/duplicate', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamDuplicateRole);
+router.delete('/team/roles/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamDeleteRole);
+
+router.get('/team/permissions', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetPermissions);
+router.put('/team/permissions/roles/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamUpdateRolePermissions);
+router.put('/team/permissions/members/:id/override', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamUpdateMemberOverride);
+
+router.get('/team/approval-rules', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetApprovalRules);
+router.post('/team/approval-rules', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamCreateApprovalRule);
+router.put('/team/approval-rules/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamUpdateApprovalRule);
+router.delete('/team/approval-rules/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamDeleteApprovalRule);
+
+router.get('/team/activity', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetActivity);
+router.get('/team/activity/:id', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetActivityById);
+
+router.get('/team/security', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetSecurityOverview);
+router.get('/team/invites', authorize('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamGetInvites);
 
 router.get('/approvals/pending', authorize('superadmin', 'admin', 'moderator', 'support_agent'), adminGetPendingApprovals);
 router.post('/approvals/:id/approve', authorize('superadmin', 'admin', 'moderator', 'support_agent'), adminApprovePendingAction);
