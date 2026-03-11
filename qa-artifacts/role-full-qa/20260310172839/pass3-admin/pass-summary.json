@@ -1,0 +1,224 @@
+{
+  "id": "pass3-admin",
+  "title": "PASS 3 - Admin",
+  "role": "Admin",
+  "summary": {
+    "total": 27,
+    "passed": 16,
+    "failed": 3,
+    "skipped": 8,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > site settings save reflects on public settings payload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > home control toggle save reflects on /api/home",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > news source save reflects on public sources list",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > subscription plan create and support unread simulation work through admin endpoints",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 360x800",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 390x844",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 768x1024",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 1024x768",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 1440x900",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-smoke.spec.ts",
+      "title": "admin-smoke.spec.ts > Admin Smoke > admin can login and navigate key tabs",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > admin creates student account and assigns subscription plan",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > superadmin password reveal requires MFA + reason",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > manual payment and expense entries are accepted",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > due ledger update and reminder flow works",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > student can create support ticket and admin can update it",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > backup run is successful and restore guard requires typed confirmation",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > major import templates and export endpoints respond successfully",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  64 |             expect(response.status(), `Template endpoint failed: ${endpoint}`).toBe(200);\n  65 |             const contentLength = Number(response.headers()['content-length'] || 0);\n> 66 |             expect(contentLength).toBeGreaterThan(0);\n     |                                   ^\n  67 |         }\n  68 |\n  69 |         const exportEndpoints = [\n    at F:\\CampusWay\\frontend\\e2e\\import-export-bulk.spec.ts:66:35",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > bulk update changes university state and persists",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank import preview endpoint accepts file payload and returns non-crashing response",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank bulk tag update works for an existing item",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-admin-routes.spec.ts",
+      "title": "news-admin-routes.spec.ts > News admin routes > canonical /__cw_admin__/news routes resolve without runtime failures",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/__cw_admin__\\/news$/i\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/__cw_admin__/news/dashboard\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://127.0.0.1:5283/__cw_admin__/news/dashboard\"\u001b[22m\n\n\n  23 |             await page.goto(route.path);\n  24 |             if (route.canonicalPath) {\n> 25 |                 await expect(page).toHaveURL(route.canonicalPath);\n     |                                    ^\n  26 |             }\n  27 |             await expect(page.locator('body')).toBeVisible();\n  28 |             await expect(page.getByText(route.marker).first()).toBeVisible();\n    at F:\\CampusWay\\frontend\\e2e\\news-admin-routes.spec.ts:25:36",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/__cw_admin__\\/news$/i\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/__cw_admin__/news/dashboard\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://127.0.0.1:5283/__cw_admin__/news/dashboard\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-7f176-ve-without-runtime-failures-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-7f176-ve-without-runtime-failures-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-7f176-ve-without-runtime-failures-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "news-admin-routes.spec.ts",
+      "title": "news-admin-routes.spec.ts > News admin routes > legacy /admin/news redirects to secret admin base",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/__cw_admin__\\/news$/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/__cw_admin__/news/sources\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://127.0.0.1:5283/__cw_admin__/news/sources\"\u001b[22m\n\n\n  36 |         await loginAsAdmin(page);\n  37 |         await page.goto('/admin/news/sources');\n> 38 |         await expect(page).toHaveURL(/\\/__cw_admin__\\/news$/);\n     |                            ^\n  39 |     });\n  40 | });\n  41 |\n    at F:\\CampusWay\\frontend\\e2e\\news-admin-routes.spec.ts:38:28",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/__cw_admin__\\/news$/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/__cw_admin__/news/sources\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://127.0.0.1:5283/__cw_admin__/news/sources\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-e3765-irects-to-secret-admin-base-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-e3765-irects-to-secret-admin-base-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-e3765-irects-to-secret-admin-base-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-add-question-upload-and-link",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-bulk-import-mapping-and-report",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-picker-filter-smart-pick-and-preview",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-moderator-approve-flow",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "settings-propagation.spec.ts",
+      "title": "settings-propagation.spec.ts > Settings Propagation > site name update propagates to public API and public/student UI",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310172839\\pass3-admin\\playwright.log",
+  "resultPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310172839\\pass3-admin\\playwright.json",
+  "dbEvidencePath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310172839\\pass3-admin\\db-evidence.json"
+}

@@ -1078,6 +1078,7 @@ router.delete('/student-groups/:id', authorize('superadmin', 'admin'), adminDele
 
 /* ── Subscription Plans ── */
 router.get('/subscription-plans', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetSubscriptionPlans);
+router.get('/subscription-plans/export', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminExportSubscriptionPlans);
 router.get('/subscription-plans/:id', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetSubscriptionPlanById);
 router.post('/subscription-plans', authorize('superadmin', 'admin'), canManagePlans, adminCreateSubscriptionPlan);
 router.put('/subscription-plans/reorder', authorize('superadmin', 'admin'), canManagePlans, adminReorderSubscriptionPlans);
@@ -1086,7 +1087,6 @@ router.delete('/subscription-plans/:id', authorize('superadmin', 'admin'), canMa
 router.put('/subscription-plans/:id/toggle', authorize('superadmin', 'admin'), canManagePlans, adminToggleSubscriptionPlan);
 router.patch('/subscription-plans/:id/toggle', authorize('superadmin', 'admin'), canManagePlans, adminToggleSubscriptionPlan);
 router.put('/subscription-plans/:id/toggle-featured', authorize('superadmin', 'admin'), canManagePlans, adminToggleSubscriptionPlanFeatured);
-router.get('/subscription-plans/export', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminExportSubscriptionPlans);
 router.get('/subscription-settings', authorize('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, adminGetSubscriptionSettings);
 router.put('/subscription-settings', authorize('superadmin', 'admin'), canManagePlans, adminUpdateSubscriptionSettings);
 
@@ -1168,9 +1168,9 @@ router.put('/dashboard-config', authorize('superadmin', 'admin'), adminUpdateStu
 /* ── Notifications ── */
 router.get('/notifications', authorize('superadmin', 'admin', 'moderator', 'editor'), adminGetNotifications);
 router.post('/notifications', authorize('superadmin', 'admin', 'moderator'), adminCreateNotification);
-router.put('/notifications/:id', authorize('superadmin', 'admin', 'moderator'), adminUpdateNotification);
-router.patch('/notifications/:id/toggle', authorize('superadmin', 'admin', 'moderator'), adminToggleNotification);
-router.delete('/notifications/:id', authorize('superadmin', 'admin'), adminDeleteNotification);
+router.put('/notifications/:id([0-9a-fA-F]{24})', authorize('superadmin', 'admin', 'moderator'), adminUpdateNotification);
+router.patch('/notifications/:id([0-9a-fA-F]{24})/toggle', authorize('superadmin', 'admin', 'moderator'), adminToggleNotification);
+router.delete('/notifications/:id([0-9a-fA-F]{24})', authorize('superadmin', 'admin'), adminDeleteNotification);
 
 /* ── Parent / Guardian Link ── */
 router.post('/students/:studentId/otp', authorize('superadmin', 'admin'), adminIssueGuardianOtp);

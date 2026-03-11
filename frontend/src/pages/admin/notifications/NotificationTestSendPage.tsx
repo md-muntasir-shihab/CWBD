@@ -21,7 +21,7 @@ import {
   Send, Eye, RotateCcw, Copy,
   Phone, Mail, Search,
   AlertTriangle, CheckCircle2, XCircle, Loader2,
-  Smartphone, MessageSquare, FileText,
+  Smartphone, MessageSquare, FileText, DollarSign, Zap,
 } from 'lucide-react';
 
 /* ─── Helpers ─────────────────────────────────────── */
@@ -40,6 +40,12 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 const CHANNEL_ICONS: Record<string, typeof Phone> = { sms: Smartphone, email: Mail };
+
+const FINANCE_SYNC_BADGE: Record<string, { label: string; cls: string }> = {
+  synced: { label: 'Synced', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  pending: { label: 'Pending', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  none: { label: '—', cls: 'text-slate-400' },
+};
 
 interface FormState {
   channel: TestSendChannel;
@@ -77,8 +83,8 @@ const INITIAL_FORM: FormState = {
 export default function NotificationTestSendPage() {
   return (
     <AdminGuardShell
-      title="Notification Test Send"
-      description="Send test SMS & email messages to verify delivery before launching campaigns."
+      title="Test Send — SMS & Email"
+      description="Send test messages to verify delivery, preview templates, and estimate costs before launching campaigns. যেকোনো ক্যাম্পেইন লঞ্চের আগে এখানে টেস্ট করুন।"
     >
       <TestSendConsole />
     </AdminGuardShell>
@@ -215,10 +221,14 @@ function TestSendConsole() {
         </div>
       )}
 
-      {/* Preset Buttons */}
+      {/* Quick Presets */}
       {meta?.presetScenarios && meta.presetScenarios.length > 0 && (
         <div className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Quick Test Presets</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <Zap className="h-4 w-4 text-amber-500" />
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Quick Test Presets</h3>
+          </div>
+          <p className="mb-3 text-xs text-slate-400 dark:text-slate-500">একটি প্রিসেটে ক্লিক করলে ফর্ম স্বয়ংক্রিয়ভাবে পূরণ হবে। আপনি পরে মান পরিবর্তন করতে পারবেন।</p>
           <div className="flex flex-wrap gap-2">
             {meta.presetScenarios.map(p => (
               <button
@@ -246,7 +256,7 @@ function TestSendConsole() {
             </div>
 
             {/* Channel */}
-            <FieldGroup label="Channel" error={errors.channel}>
+            <FieldGroup label="Channel" hint="SMS বা Email — কোন চ্যানেলে টেস্ট পাঠাবেন তা বেছে নিন" error={errors.channel}>
               <div className="flex gap-2">
                 {(['sms', 'email'] as TestSendChannel[]).map(ch => {
                   const Icon = CHANNEL_ICONS[ch];
@@ -277,7 +287,7 @@ function TestSendConsole() {
             </FieldGroup>
 
             {/* Recipient Mode */}
-            <FieldGroup label="Recipient" error={errors.studentId || errors.customPhone || errors.customEmail}>
+            <FieldGroup label="Recipient" hint="কাকে টেস্ট মেসেজ পাঠাবেন — ছাত্র, অভিভাবক, নাকি কাস্টম নম্বর" error={errors.studentId || errors.customPhone || errors.customEmail}>
               <select
                 value={form.recipientMode}
                 onChange={e => updateField('recipientMode', e.target.value as RecipientMode)}
@@ -346,7 +356,7 @@ function TestSendConsole() {
             )}
 
             {/* Message Mode */}
-            <FieldGroup label="Message Mode">
+            <FieldGroup label="Message Mode" hint="Template: সেভ করা টেমপ্লেট ব্যবহার করুন | Custom: নিজের মেসেজ লিখুন">
               <div className="flex gap-2">
                 {(['template', 'custom'] as MessageMode[]).map(mode => (
                   <button
@@ -445,7 +455,7 @@ function TestSendConsole() {
             )}
 
             {/* Log Only toggle */}
-            <FieldGroup label="Send Mode">
+            <FieldGroup label="Send Mode" hint="Log Only মোডে কোনো আসল মেসেজ যাবে না — শুধু ডেটাবেসে লগ হবে। Real Send প্রোভাইডারের মাধ্যমে পাঠাবে।">
               <label className="flex items-center gap-3 cursor-pointer">
                 <div className="relative">
                   <input
@@ -488,12 +498,29 @@ function TestSendConsole() {
           {/* Cost Info */}
           {meta?.costConfig && (
             <div className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900">
-              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cost Config</h4>
-              <div className="space-y-1 text-sm text-slate-600 dark:text-slate-300">
-                <p>SMS: {meta.costConfig.smsCostPerMessageBDT} BDT/msg</p>
-                <p>Email: {meta.costConfig.emailCostPerMessageBDT} BDT/msg</p>
-                <p>Finance Sync: <span className={meta.autoSyncCostToFinance ? 'text-emerald-600' : 'text-slate-400'}>{meta.autoSyncCostToFinance ? 'Enabled' : 'Disabled'}</span></p>
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="h-4 w-4 text-slate-400" />
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cost & Finance</h4>
               </div>
+              <div className="space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex justify-between">
+                  <span>SMS per message</span>
+                  <span className="font-medium">{meta.costConfig.smsCostPerMessageBDT} BDT</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Email per message</span>
+                  <span className="font-medium">{meta.costConfig.emailCostPerMessageBDT} BDT</span>
+                </div>
+                <div className="flex justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <span>Finance Sync</span>
+                  <span className={`font-medium ${meta.autoSyncCostToFinance ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+                    {meta.autoSyncCostToFinance ? 'Auto' : 'Off'}
+                  </span>
+                </div>
+              </div>
+              <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+                Finance Sync চালু থাকলে প্রতিটি সফল টেস্ট সেন্ডের খরচ স্বয়ংক্রিয়ভাবে Finance module-এ রেকর্ড হবে।
+              </p>
             </div>
           )}
         </div>
@@ -506,12 +533,13 @@ function TestSendConsole() {
 }
 
 /* ─── Field Group ─────────────────────────────────── */
-function FieldGroup({ label, children }: { label: string; error?: string; children: React.ReactNode }) {
+function FieldGroup({ label, hint, children }: { label: string; hint?: string; error?: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {label}
       </label>
+      {hint && <p className="mb-1.5 text-[11px] text-slate-400 dark:text-slate-500">{hint}</p>}
       {children}
     </div>
   );
@@ -776,6 +804,7 @@ function RecentLogsPanel({ onRetrySuccess, onRetryError }: { onRetrySuccess: () 
                   <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-400">Status</th>
                   <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-400">Provider</th>
                   <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-400">Cost</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-400">Finance</th>
                   <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-400">Time</th>
                   <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-400">Actions</th>
                 </tr>
@@ -813,6 +842,10 @@ function RecentLogsPanel({ onRetrySuccess, onRetryError }: { onRetrySuccess: () 
 
 /* ─── Log Table Row ───────────────────────────────── */
 function LogRow({ log, onRetry, retrying }: { log: TestSendLogItem; onRetry: () => void; retrying: boolean }) {
+  const fStatus = log.costAmount > 0
+    ? (log.financeSynced ? 'synced' : 'pending')
+    : 'none';
+  const fb = FINANCE_SYNC_BADGE[fStatus];
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
       <td className="px-4 py-2.5">
@@ -831,6 +864,11 @@ function LogRow({ log, onRetry, retrying }: { log: TestSendLogItem; onRetry: () 
       </td>
       <td className="px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400">{log.providerUsed}</td>
       <td className="px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400">{log.costAmount > 0 ? `${log.costAmount} BDT` : '—'}</td>
+      <td className="px-4 py-2.5">
+        <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${fb.cls}`}>
+          {fb.label}
+        </span>
+      </td>
       <td className="px-4 py-2.5 text-xs text-slate-400">{new Date(log.createdAt).toLocaleString()}</td>
       <td className="px-4 py-2.5 text-right">
         {log.status === 'failed' && (
@@ -845,6 +883,10 @@ function LogRow({ log, onRetry, retrying }: { log: TestSendLogItem; onRetry: () 
 
 /* ─── Log Mobile Card ─────────────────────────────── */
 function LogCard({ log, onRetry, retrying }: { log: TestSendLogItem; onRetry: () => void; retrying: boolean }) {
+  const fStatus = log.costAmount > 0
+    ? (log.financeSynced ? 'synced' : 'pending')
+    : 'none';
+  const fb = FINANCE_SYNC_BADGE[fStatus];
   return (
     <div className="p-4 space-y-2">
       <div className="flex items-center justify-between">
@@ -855,6 +897,11 @@ function LogCard({ log, onRetry, retrying }: { log: TestSendLogItem; onRetry: ()
           <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[log.status] ?? STATUS_BADGE.queued}`}>
             {log.status}
           </span>
+          {fStatus !== 'none' && (
+            <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${fb.cls}`}>
+              {fb.label}
+            </span>
+          )}
         </div>
         {log.status === 'failed' && (
           <button onClick={onRetry} disabled={retrying} className="text-xs text-indigo-600 hover:text-indigo-700 disabled:opacity-50">

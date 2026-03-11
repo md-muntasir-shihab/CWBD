@@ -41,7 +41,16 @@ export default function StudentCreatePage() {
     queryKey: ['student-groups-list'],
     queryFn: () => getStudentGroups(),
   });
-  const allGroups: GroupOption[] = groupsData?.data ?? groupsData ?? [];
+  const groupsPayload = (groupsData ?? {}) as Record<string, unknown>;
+  const allGroups: GroupOption[] = Array.isArray(groupsPayload.data)
+    ? groupsPayload.data as GroupOption[]
+    : Array.isArray(groupsPayload.groups)
+      ? groupsPayload.groups as GroupOption[]
+      : Array.isArray(groupsPayload.items)
+        ? groupsPayload.items as GroupOption[]
+        : Array.isArray(groupsData)
+          ? groupsData as GroupOption[]
+          : [];
 
   const filteredGroups = allGroups.filter(
     g => !form.groupIds.includes(g._id) &&

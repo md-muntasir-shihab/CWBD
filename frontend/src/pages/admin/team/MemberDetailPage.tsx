@@ -78,14 +78,26 @@ export default function MemberDetailPage() {
         teamApi.getMemberById(id),
         teamApi.getRoles(),
       ]);
-      const m = memberRes.data as TeamMemberItem;
+      const payload = memberRes.data as {
+        item?: TeamMemberItem;
+        data?: TeamMemberItem | { item?: TeamMemberItem };
+        logs?: TeamAuditItem[];
+      };
+      const dataValue = payload.data;
+      const m = payload.item
+        ?? (typeof dataValue === 'object' && dataValue && 'item' in dataValue ? dataValue.item : undefined)
+        ?? (typeof dataValue === 'object' && dataValue ? dataValue as TeamMemberItem : undefined);
+      if (!m) {
+        throw new Error('Member payload missing');
+      }
       setMember(m);
       setRoles(roleRes.data.items || []);
+      setActivityItems(Array.isArray(payload.logs) ? payload.logs : []);
       setEditForm({
         fullName: m.full_name || m.fullName || '',
         email: m.email || '',
         phone: m.phone_number || '',
-        notes: '',
+        notes: m.notes || '',
         roleId: typeof m.teamRoleId === 'object' && m.teamRoleId ? m.teamRoleId._id : (m.teamRoleId as string) || '',
       });
     } catch (err: any) {
@@ -116,8 +128,12 @@ export default function MemberDetailPage() {
   const displayName = member?.full_name || member?.fullName || member?.email || '';
   const roleName = useMemo(() => {
     if (member?.teamRoleId && typeof member.teamRoleId === 'object' && 'name' in member.teamRoleId) return member.teamRoleId.name;
+    if (typeof member?.teamRoleId === 'string') {
+      const selected = roles.find((item) => item._id === member.teamRoleId);
+      if (selected?.name) return selected.name;
+    }
     return 'Unassigned';
-  }, [member]);
+  }, [member, roles]);
 
   async function handleSave() {
     if (!id) return;
@@ -126,8 +142,9 @@ export default function MemberDetailPage() {
       await teamApi.updateMember(id, {
         fullName: editForm.fullName,
         email: editForm.email,
-        phone_number: editForm.phone,
-        teamRoleId: editForm.roleId || undefined,
+        phone: editForm.phone,
+        notes: editForm.notes,
+        roleId: editForm.roleId || undefined,
       });
       toast.success('Member updated');
       await loadMember();
@@ -150,6 +167,7 @@ export default function MemberDetailPage() {
         } else {
           toast.success('Password reset email sent');
         }
+        await loadMember();
         return;
       }
       if (action === 'revoke') await teamApi.revokeMemberSessions(id);
@@ -165,7 +183,7 @@ export default function MemberDetailPage() {
       title="Team Member Detail"
       description="View and manage individual team member profile, role, permissions, and security."
       allowedRoles={['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent']}
-      requiredModule="team_access"
+      requiredModule="team_access_control"
     >
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
         {/* Back button */}

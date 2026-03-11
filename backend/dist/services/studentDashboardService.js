@@ -21,6 +21,7 @@ const University_1 = __importDefault(require("../models/University"));
 const Notification_1 = __importDefault(require("../models/Notification"));
 const StudentDashboardConfig_1 = __importDefault(require("../models/StudentDashboardConfig"));
 const StudentBadge_1 = __importDefault(require("../models/StudentBadge"));
+const studentProfileScoreService_1 = require("./studentProfileScoreService");
 const StudentApplication_1 = __importDefault(require("../models/StudentApplication"));
 const StudentDueLedger_1 = __importDefault(require("../models/StudentDueLedger"));
 const examCardMetricsService_1 = require("./examCardMetricsService");
@@ -84,7 +85,8 @@ async function getStudentDashboardHeader(studentId) {
     if (!user || !profile) {
         throw new Error('Student not found');
     }
-    const completion = Number(profile.profile_completion_percentage || 0);
+    const scoreResult = (0, studentProfileScoreService_1.computeStudentProfileScore)(profile, user);
+    const completion = scoreResult.score;
     const messageTemplate = String(config?.welcomeMessageTemplate || 'স্বাগতম, {{name}}!');
     const welcomeMessage = messageTemplate
         .replace('{{name}}', String(profile.full_name || user.full_name || user.username))

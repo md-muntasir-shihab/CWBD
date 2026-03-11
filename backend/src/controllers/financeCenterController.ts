@@ -83,17 +83,19 @@ export async function fcGetTransactions(req: AuthRequest, res: Response): Promis
         const q = req.query as Record<string, unknown>;
         const { page, limit, skip } = paginate(q);
 
-        const filter: Record<string, unknown> = { isDeleted: false };
+        const showDeleted = String(q.showDeleted || '').toLowerCase() === 'true';
+        const filter: Record<string, unknown> = { isDeleted: showDeleted };
         if (q.direction === 'income' || q.direction === 'expense') filter.direction = q.direction;
         if (q.status) filter.status = q.status;
+        if (q.method) filter.method = q.method;
         if (q.accountCode) filter.accountCode = String(q.accountCode).toUpperCase();
         if (q.sourceType) filter.sourceType = q.sourceType;
         if (q.costCenterId) filter.costCenterId = q.costCenterId;
         if (q.tag) filter.tags = q.tag;
         const dr = dateRange(q);
         if (dr) filter.dateUTC = dr;
-        if (q.q) {
-            const search = sanitize(q.q);
+        const search = sanitize(q.q ?? q.search);
+        if (search) {
             filter.$or = [
                 { txnCode: { $regex: search, $options: 'i' } },
                 { categoryLabel: { $regex: search, $options: 'i' } },

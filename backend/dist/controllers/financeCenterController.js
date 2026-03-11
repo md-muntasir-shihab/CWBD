@@ -9,6 +9,7 @@ exports.fcGetTransaction = fcGetTransaction;
 exports.fcCreateTransaction = fcCreateTransaction;
 exports.fcUpdateTransaction = fcUpdateTransaction;
 exports.fcDeleteTransaction = fcDeleteTransaction;
+exports.fcRestoreTransaction = fcRestoreTransaction;
 exports.fcBulkApproveTransactions = fcBulkApproveTransactions;
 exports.fcBulkMarkPaid = fcBulkMarkPaid;
 exports.fcGetInvoices = fcGetInvoices;
@@ -31,6 +32,7 @@ exports.fcCreateVendor = fcCreateVendor;
 exports.fcGetSettings = fcGetSettings;
 exports.fcUpdateSettings = fcUpdateSettings;
 exports.fcGetAuditLogs = fcGetAuditLogs;
+exports.fcGetAuditLogDetail = fcGetAuditLogDetail;
 exports.fcExportTransactions = fcExportTransactions;
 exports.fcImportPreview = fcImportPreview;
 exports.fcImportCommit = fcImportCommit;
@@ -106,11 +108,14 @@ async function fcGetTransactions(req, res) {
     try {
         const q = req.query;
         const { page, limit, skip } = paginate(q);
-        const filter = { isDeleted: false };
+        const showDeleted = String(q.showDeleted || '').toLowerCase() === 'true';
+        const filter = { isDeleted: showDeleted };
         if (q.direction === 'income' || q.direction === 'expense')
             filter.direction = q.direction;
         if (q.status)
             filter.status = q.status;
+        if (q.method)
+            filter.method = q.method;
         if (q.accountCode)
             filter.accountCode = String(q.accountCode).toUpperCase();
         if (q.sourceType)
@@ -122,8 +127,8 @@ async function fcGetTransactions(req, res) {
         const dr = dateRange(q);
         if (dr)
             filter.dateUTC = dr;
-        if (q.q) {
-            const search = sanitize(q.q);
+        const search = sanitize(q.q ?? q.search);
+        if (search) {
             filter.$or = [
                 { txnCode: { $regex: search, $options: 'i' } },
                 { categoryLabel: { $regex: search, $options: 'i' } },
@@ -292,6 +297,8 @@ async function fcUpdateTransaction(req, res) {
             targetId: String(txn._id),
             details: { changed: Object.keys(b) },
             ip: (0, requestMeta_1.getClientIp)(req),
+            beforeSnapshot: prev,
+            afterSnapshot: txn.toObject(),
         });
         res.json({ ok: true, data: txn });
     }
@@ -328,6 +335,38 @@ async function fcDeleteTransaction(req, res) {
     }
     catch (err) {
         console.error('fcDeleteTransaction error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+// ── Restore (Undelete) ──────────────────────────────────
+async function fcRestoreTransaction(req, res) {
+    try {
+        const id = oid(req.params.id);
+        if (!id) {
+            res.status(400).json({ message: 'Invalid ID' });
+            return;
+        }
+        const adminId = String(req.user?._id || '');
+        const txn = await FinanceTransaction_1.default.findOne({ _id: id, isDeleted: true });
+        if (!txn) {
+            res.status(404).json({ message: 'Deleted transaction not found' });
+            return;
+        }
+        txn.isDeleted = false;
+        txn.deletedAt = undefined;
+        txn.deletedByAdminId = undefined;
+        await txn.save();
+        await (0, financeCenterService_1.logFinanceAudit)({
+            actorId: adminId,
+            action: 'finance.transaction.restore',
+            targetType: 'FinanceTransaction',
+            targetId: String(txn._id),
+            ip: (0, requestMeta_1.getClientIp)(req),
+        });
+        res.json({ ok: true, data: txn });
+    }
+    catch (err) {
+        console.error('fcRestoreTransaction error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 }
@@ -574,7 +613,28 @@ async function fcGetBudgets(req, res) {
         const filter = {};
         if (month)
             filter.month = month;
-        const items = await FinanceBudget_1.default.find(filter).sort({ month: -1, accountCode: 1 }).lean();
+        const budgets = await FinanceBudget_1.default.find(filter).sort({ month: -1, accountCode: 1 }).lean();
+        // Compute actualSpent for each budget
+        const items = await Promise.all(budgets.map(async (b) => {
+            const [yr, mn] = (b.month || '').split('-').map(Number);
+            if (!yr || !mn)
+                return { ...b, actualSpent: 0 };
+            const start = new Date(Date.UTC(yr, mn - 1, 1));
+            const end = new Date(Date.UTC(yr, mn, 0, 23, 59, 59, 999));
+            const agg = await FinanceTransaction_1.default.aggregate([
+                {
+                    $match: {
+                        dateUTC: { $gte: start, $lte: end },
+                        isDeleted: false,
+                        direction: b.direction,
+                        accountCode: b.accountCode,
+                        status: { $in: ['paid', 'approved'] },
+                    },
+                },
+                { $group: { _id: null, total: { $sum: '$amount' } } },
+            ]);
+            return { ...b, actualSpent: agg[0]?.total || 0 };
+        }));
         res.json({ ok: true, items });
     }
     catch (err) {
@@ -949,6 +1009,27 @@ async function fcGetAuditLogs(req, res) {
         res.status(500).json({ message: 'Server error' });
     }
 }
+async function fcGetAuditLogDetail(req, res) {
+    try {
+        const id = oid(req.params.id);
+        if (!id) {
+            res.status(400).json({ message: 'Invalid ID' });
+            return;
+        }
+        const log = await AuditLog_1.default.findById(id)
+            .populate('actor_id', 'full_name username')
+            .lean();
+        if (!log) {
+            res.status(404).json({ message: 'Not found' });
+            return;
+        }
+        res.json({ ok: true, data: log });
+    }
+    catch (err) {
+        console.error('fcGetAuditLogDetail error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
 // ══════════════════════════════════════════════════════════
 // EXPORT
 // ══════════════════════════════════════════════════════════
@@ -1148,11 +1229,11 @@ async function fcGetRefunds(req, res) {
             filter.status = req.query.status;
         if (req.query.studentId)
             filter.studentId = oid(req.query.studentId);
-        const [docs, total] = await Promise.all([
+        const [items, total] = await Promise.all([
             FinanceRefund_1.default.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
             FinanceRefund_1.default.countDocuments(filter),
         ]);
-        res.json({ data: docs, total, page, limit });
+        res.json({ ok: true, items, total, page, limit, totalPages: Math.ceil(total / limit) });
     }
     catch (err) {
         console.error('fcGetRefunds error:', err);

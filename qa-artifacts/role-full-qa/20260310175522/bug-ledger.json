@@ -1,0 +1,50 @@
+[
+  {
+    "bugId": "CW-BUG-0001",
+    "key": "phase3-page-audit.spec.ts::phase3-page-audit.spec.ts > Phase3 Page Audit > resources and contact pages have usable states and submit path",
+    "role": "Viewer",
+    "module": "General",
+    "routeOrPage": "N/A",
+    "mcpToolUsed": "Playwright MCP + Filesystem + Mongo fallback",
+    "severity": "Low",
+    "stepsToReproduce": "Run pass1-viewer and execute test \"phase3-page-audit.spec.ts > Phase3 Page Audit > resources and contact pages have usable states and submit path\"",
+    "expectedResult": "Test assertion should pass and flow should remain stable.",
+    "actualResult": "Error: locator.fill: Error: strict mode violation: getByLabel(/Email \\(optional\\)|Email/i) resolved to 2 elements:\n    1) <input value=\"\" id=\"contact-email\" class=\"input-field \" autocomplete=\"email\" placeholder=\"you@example.com\"/> aka getByRole('textbox', { name: 'Email (optional)' })\n    2) <input type=\"radio\" value=\"email\" name=\"preferredContact\" class=\"h-4 w-4 accent-primary\"/> aka getByRole('radio', { name: 'Email' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/Email \\(optional\\)|Email/i)\u001b[22m\n\n\n  126 |         await page.getByLabel(/Full Name/i).fill('Phase3 QA');\n  127 |         await page.getByRole('textbox', { name: /^Phone/i }).fill('+8801700000000');\n> 128 |         await page.getByLabel(/Email \\(optional\\)|Email/i).fill(`phase3-${Date.now()}@campusway.local`);\n      |                                                            ^\n  129 |         await page.getByLabel(/Subject/i).fill('Technical Issue');\n  130 |         await page.getByLabel(/Message/i).fill('Automated phase 3 QA submission for contact/support visibility validation.');\n  131 |         await page.getByLabel(/I agree to be contacted/i).check();\n    at f:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:128:60",
+    "screenshotOrTrace": "f:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\test-failed-1.png",
+    "dbEvidence": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310175522\\pass1-viewer\\db-evidence.json",
+    "fixed": "No",
+    "retested": "No"
+  },
+  {
+    "bugId": "CW-BUG-0002",
+    "key": "exam-flow.spec.ts::exam-flow.spec.ts > Student Exam Flow > full exam lifecycle: landing, taking, auto-save, and results",
+    "role": "Student",
+    "module": "Student",
+    "routeOrPage": "N/A",
+    "mcpToolUsed": "Playwright MCP + Filesystem + Mongo fallback",
+    "severity": "Low",
+    "stepsToReproduce": "Run pass2-student and execute test \"exam-flow.spec.ts > Student Exam Flow > full exam lifecycle: landing, taking, auto-save, and results\"",
+    "expectedResult": "Test assertion should pass and flow should remain stable.",
+    "actualResult": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[id^=\"exam-question-\"]').first()\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('[id^=\"exam-question-\"]').first()\u001b[22m\n\n\n  27 |         // 3. Active exam UI verification and answer at least one question\n  28 |         const questionCards = page.locator('[id^=\"exam-question-\"]');\n> 29 |         await expect(questionCards.first()).toBeVisible({ timeout: 20000 });\n     |                                             ^\n  30 |         await questionCards.first().getByRole('button').first().click();\n  31 |\n  32 |         // Let auto-save trigger\n    at f:\\CampusWay\\frontend\\e2e\\exam-flow.spec.ts:29:45",
+    "screenshotOrTrace": "f:\\CampusWay\\frontend\\test-results\\exam-flow-Student-Exam-Flo-82425-aking-auto-save-and-results-chromium-desktop\\test-failed-1.png",
+    "dbEvidence": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310175522\\pass2-student\\db-evidence.json",
+    "fixed": "No",
+    "retested": "No"
+  },
+  {
+    "bugId": "CW-BUG-0003",
+    "key": "import-export-bulk.spec.ts::import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank import preview endpoint accepts file payload and returns non-crashing response",
+    "role": "Admin",
+    "module": "Data Operations",
+    "routeOrPage": "N/A",
+    "mcpToolUsed": "Playwright MCP + Filesystem + Mongo fallback",
+    "severity": "Low",
+    "stepsToReproduce": "Run pass3-admin and execute test \"import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank import preview endpoint accepts file payload and returns non-crashing response\"",
+    "expectedResult": "Test assertion should pass and flow should remain stable.",
+    "actualResult": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"\"\u001b[39m\n\n  144 |         expect([200, 400], `Unexpected status for import preview: ${preview.status()}`).toContain(preview.status());\n  145 |         const body = await preview.json().catch(async () => ({ message: await preview.text() }));\n> 146 |         expect(String(body?.message || body?.error || '')).not.toBe('');\n      |                                                                ^\n  147 |     });\n  148 |\n  149 |     test('question-bank bulk tag update works for an existing item', async ({ request }) => {\n    at f:\\CampusWay\\frontend\\e2e\\import-export-bulk.spec.ts:146:64",
+    "screenshotOrTrace": "N/A",
+    "dbEvidence": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310175522\\pass3-admin\\db-evidence.json",
+    "fixed": "No",
+    "retested": "No"
+  }
+]

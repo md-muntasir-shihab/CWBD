@@ -22,6 +22,7 @@ const slugify_1 = __importDefault(require("slugify"));
 const HomeSettings_1 = __importDefault(require("../models/HomeSettings"));
 const University_1 = __importDefault(require("../models/University"));
 const UniversityCategory_1 = __importDefault(require("../models/UniversityCategory"));
+const UniversitySettings_1 = require("../models/UniversitySettings");
 const studentDashboardStream_1 = require("../realtime/studentDashboardStream");
 const homeStream_1 = require("../realtime/homeStream");
 const universityCategories_1 = require("../utils/universityCategories");
@@ -246,8 +247,10 @@ async function getUniversities(req, res) {
         const total = await University_1.default.countDocuments(filter);
         const rows = await University_1.default.find(filter).sort(sortOption).skip((pageNum - 1) * limitNum).limit(limitNum).lean();
         res.json({
-            universities: rows.map((item) => toCanonicalUniversityRecord(item)),
-            pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) },
+            items: rows.map((item) => toCanonicalUniversityRecord(item)),
+            page: pageNum,
+            limit: limitNum,
+            total,
         });
     }
     catch (error) {
@@ -282,7 +285,7 @@ async function getUniversityCategories(_req, res) {
             count: map.get(categoryName)?.count || 0,
             clusterGroups: Array.from(map.get(categoryName)?.clusterGroups || []).sort(),
         }));
-        res.json({ categories, items: categories });
+        res.json(categories);
     }
     catch (error) {
         console.error('Get university categories error:', error);
@@ -296,7 +299,7 @@ async function getUniversityBySlug(req, res) {
             res.status(404).json({ message: 'University not found' });
             return;
         }
-        res.json({ university: toCanonicalUniversityRecord(row) });
+        res.json(toCanonicalUniversityRecord(row));
     }
     catch (error) {
         console.error('Get university error:', error);
@@ -406,6 +409,16 @@ async function adminCreateUniversity(req, res) {
             res.status(400).json({ message: 'University name is required' });
             return;
         }
+        // Category validation against allowed list
+        const catName = String(payload.category || '').trim();
+        if (catName) {
+            const settings = await (0, UniversitySettings_1.ensureUniversitySettings)();
+            const isAllowed = UniversitySettings_1.ALLOWED_CATEGORIES.some((c) => c.toLowerCase() === catName.toLowerCase());
+            if (!isAllowed && !settings.allowCustomCategories) {
+                res.status(400).json({ message: `Category "${catName}" is not in the allowed list.`, code: 'INVALID_CATEGORY', allowedCategories: [...UniversitySettings_1.ALLOWED_CATEGORIES] });
+                return;
+            }
+        }
         if (!payload.slug)
             payload.slug = normalizeSlug(String(payload.name || ''));
         const existing = await University_1.default.findOne({ slug: payload.slug });
@@ -435,6 +448,16 @@ async function adminCreateUniversity(req, res) {
 async function adminUpdateUniversity(req, res) {
     try {
         const payload = toCanonicalUniversityRecord((req.body || {}));
+        // Category validation against allowed list
+        const catName = String(payload.category || '').trim();
+        if (catName) {
+            const settings = await (0, UniversitySettings_1.ensureUniversitySettings)();
+            const isAllowed = UniversitySettings_1.ALLOWED_CATEGORIES.some((c) => c.toLowerCase() === catName.toLowerCase());
+            if (!isAllowed && !settings.allowCustomCategories) {
+                res.status(400).json({ message: `Category "${catName}" is not in the allowed list.`, code: 'INVALID_CATEGORY', allowedCategories: [...UniversitySettings_1.ALLOWED_CATEGORIES] });
+                return;
+            }
+        }
         if (payload.name && !payload.slug)
             payload.slug = normalizeSlug(String(payload.name || ''));
         if (payload.category !== undefined || payload.categoryId !== undefined) {

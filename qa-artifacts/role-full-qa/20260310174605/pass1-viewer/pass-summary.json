@@ -1,0 +1,242 @@
+{
+  "id": "pass1-viewer",
+  "title": "PASS 1 - Viewer/Public",
+  "role": "Viewer",
+  "summary": {
+    "total": 30,
+    "passed": 28,
+    "failed": 2,
+    "skipped": 0,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "home-master.spec.ts",
+      "title": "home-master.spec.ts > Home Master Smoke > api/home contract contains strict top-level keys",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-master.spec.ts",
+      "title": "home-master.spec.ts > Home Master Smoke > home sections render in strict order and services stay absent",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-master.spec.ts",
+      "title": "home-master.spec.ts > Home Master Smoke > mobile layout avoids horizontal overflow and keeps sticky search visible",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > renders required home sections in strict order",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > hero primary CTA navigates to configured target",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > deadline Apply CTA opens a valid admission target",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > theme toggle changes persisted theme state",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > featured universities section renders when API returns featured items",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at mobile",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at mobile-plus",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at tablet",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at desktop",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > universities list keeps category isolation and required card actions",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > university detail shows admission structure with actionable links",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > news article keeps readable prose and share controls",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > resources and contact pages have usable states and submit path",
+      "status": "failed",
+      "errors": [
+        "Error: locator.fill: Error: strict mode violation: getByLabel(/^Phone/i) resolved to 2 elements:\n    1) <input value=\"\" id=\"contact-phone\" autocomplete=\"tel\" class=\"input-field \" placeholder=\"+8801XXXXXXXXX\"/> aka getByRole('textbox', { name: 'Phone *' })\n    2) <input type=\"radio\" value=\"phone\" name=\"preferredContact\" class=\"h-4 w-4 accent-primary\"/> aka getByRole('radio', { name: 'Phone Call' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/^Phone/i)\u001b[22m\n\n\n  125 |         await expect(page.getByRole('heading', { name: /Contact CampusWay|Contact Form/i }).first()).toBeVisible();\n  126 |         await page.getByLabel(/Full Name/i).fill('Phase3 QA');\n> 127 |         await page.getByLabel(/^Phone/i).fill('+8801700000000');\n      |                                          ^\n  128 |         await page.getByLabel(/Email \\(optional\\)|Email/i).fill(`phase3-${Date.now()}@campusway.local`);\n  129 |         await page.getByLabel(/Subject/i).fill('Technical Issue');\n  130 |         await page.getByLabel(/Message/i).fill('Automated phase 3 QA submission for contact/support visibility validation.');\n    at f:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:127:42",
+        "Error: locator.fill: Error: strict mode violation: getByLabel(/^Phone/i) resolved to 2 elements:\n    1) <input value=\"\" id=\"contact-phone\" autocomplete=\"tel\" class=\"input-field \" placeholder=\"+8801XXXXXXXXX\"/> aka getByRole('textbox', { name: 'Phone *' })\n    2) <input type=\"radio\" value=\"phone\" name=\"preferredContact\" class=\"h-4 w-4 accent-primary\"/> aka getByRole('radio', { name: 'Phone Call' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/^Phone/i)\u001b[22m\n"
+      ],
+      "attachments": [
+        "f:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\test-failed-1.png",
+        "f:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\video.webm",
+        "f:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "public-design-visibility.spec.ts",
+      "title": "public-design-visibility.spec.ts > Public Design Visibility > legacy routes normalize to subscription plans",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-design-visibility.spec.ts",
+      "title": "public-design-visibility.spec.ts > Public Design Visibility > home, news, and subscription pages render redesigned blocks",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Plan Type/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Plan Type/i)\u001b[22m\n\n\n  25 |         await page.goto('/subscription-plans');\n  26 |         await expect(page.getByRole('heading', { name: /Subscription Plans/i })).toBeVisible();\n> 27 |         await expect(page.getByText(/Plan Type/i)).toBeVisible();\n     |                                                    ^\n  28 |\n  29 |         await page.getByTestId('theme-toggle').first().click();\n  30 |         await expect(page.locator('body')).toBeVisible();\n    at f:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts:27:52",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Plan Type/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Plan Type/i)\u001b[22m\n"
+      ],
+      "attachments": [
+        "f:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\test-failed-1.png",
+        "f:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\video.webm",
+        "f:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "public-design-visibility.spec.ts",
+      "title": "public-design-visibility.spec.ts > Public Design Visibility > theme selection persists across reload using campusway_theme",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route / renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /universities renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /news renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /subscription-plans renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /services renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /exam-portal renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /resources renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /contact renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /chairman/login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /__cw_admin__/login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310174605\\pass1-viewer\\playwright.log",
+  "resultPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310174605\\pass1-viewer\\playwright.json",
+  "dbEvidencePath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310174605\\pass1-viewer\\db-evidence.json"
+}

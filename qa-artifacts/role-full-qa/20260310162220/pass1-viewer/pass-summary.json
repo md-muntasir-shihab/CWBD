@@ -1,0 +1,305 @@
+{
+  "id": "pass1-viewer",
+  "title": "PASS 1 - Viewer/Public",
+  "role": "Viewer",
+  "summary": {
+    "total": 30,
+    "passed": 19,
+    "failed": 11,
+    "skipped": 0,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "home-master.spec.ts",
+      "title": "home-master.spec.ts > Home Master Smoke > api/home contract contains strict top-level keys",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-master.spec.ts",
+      "title": "home-master.spec.ts > Home Master Smoke > home sections render in strict order and services stay absent",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-resources-preview')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-resources-preview')\u001b[22m\n\u001b[2m    9 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n\n\n  61 |         }\n  62 |\n> 63 |         await expect(page.getByTestId('home-section-resources-preview')).toHaveCount(1);\n     |                                                                          ^\n  64 |         await expect(page.getByTestId('home-section-campaign-banners')).toHaveCount(1);\n  65 |         await expect(page.getByRole('heading', { name: /services/i })).toHaveCount(0);\n  66 |\n    at F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts:63:74",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-resources-preview')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-resources-preview')\u001b[22m\n\u001b[2m    9 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-fd3a1-er-and-services-stay-absent-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-fd3a1-er-and-services-stay-absent-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-fd3a1-er-and-services-stay-absent-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "home-master.spec.ts",
+      "title": "home-master.spec.ts > Home Master Smoke > mobile layout avoids horizontal overflow and keeps sticky search visible",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-search')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\n\n  80 |\n  81 |         const stickySearch = page.getByTestId('home-section-search');\n> 82 |         await expect(stickySearch).toBeVisible();\n     |                                    ^\n  83 |         await page.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }));\n  84 |         await page.waitForTimeout(100);\n  85 |         const box = await stickySearch.boundingBox();\n    at F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts:82:36",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-search')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-4de61-keeps-sticky-search-visible-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-4de61-keeps-sticky-search-visible-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-4de61-keeps-sticky-search-visible-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > renders required home sections in strict order",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-search')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\u001b[2m    8 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n\n\n  23 |         for (const sectionId of sectionIds) {\n  24 |             const locator = page.getByTestId(sectionId);\n> 25 |             await expect(locator).toHaveCount(1);\n     |                                   ^\n  26 |             await expect(locator).toBeVisible();\n  27 |             const box = await locator.boundingBox();\n  28 |             yPositions.push(box?.y ?? 0);\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:25:35",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-search')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\u001b[2m    8 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-rend-0e354-me-sections-in-strict-order-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-rend-0e354-me-sections-in-strict-order-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-rend-0e354-me-sections-in-strict-order-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > hero primary CTA navigates to configured target",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-hero-primary-cta')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-hero-primary-cta')\u001b[22m\n\n\n  37 |         await page.goto('/');\n  38 |         const cta = page.getByTestId('home-hero-primary-cta');\n> 39 |         await expect(cta).toBeVisible();\n     |                           ^\n  40 |         const href = (await cta.getAttribute('href')) || '/';\n  41 |         const isExternal = /^https?:\\/\\//i.test(href);\n  42 |\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:39:27",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-hero-primary-cta')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-hero-primary-cta')\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-hero-1d7b1-igates-to-configured-target-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-hero-1d7b1-igates-to-configured-target-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-hero-1d7b1-igates-to-configured-target-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > deadline Apply CTA opens a valid admission target",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate\n\n  75 |         const applyLinks = page.locator('a[data-testid=\\\"university-card-apply\\\"]');\n  76 |         if (hasAdmissionLinkInPayload) {\n> 77 |             await expect\n     |             ^\n  78 |                 .poll(async () => applyLinks.count(), { timeout: 8_000 })\n  79 |                 .toBeGreaterThan(0);\n  80 |         } else {\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:77:13",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-dead-f3f6a-ns-a-valid-admission-target-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-dead-f3f6a-ns-a-valid-admission-target-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-dead-f3f6a-ns-a-valid-admission-target-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > theme toggle changes persisted theme state",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "home-step1.spec.ts",
+      "title": "home-step1.spec.ts > Home Step1 > featured universities section renders when API returns featured items",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate\n\n  125 |         const featuredSection = page.getByTestId('home-section-featured-universities');\n  126 |         if (hasFeatured) {\n> 127 |             await expect\n      |             ^\n  128 |                 .poll(async () => featuredSection.count(), { timeout: 8_000 })\n  129 |                 .toBeGreaterThan(0);\n  130 |             await expect(featuredSection.first()).toBeVisible();\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:127:13",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-feat-62e75--API-returns-featured-items-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-feat-62e75--API-returns-featured-items-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-feat-62e75--API-returns-featured-items-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at mobile",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at mobile-plus",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at tablet",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-exam-responsive.spec.ts",
+      "title": "news-exam-responsive.spec.ts > News + Exams responsive stability > news/exams render healthy at desktop",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > universities list keeps category isolation and required card actions",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-university-card-id]').first().getByText(/Application:/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-university-card-id]').first().getByText(/Application:/i)\u001b[22m\n\n\n  45 |         }\n  46 |\n> 47 |         await expect(cards.first().getByText(/Application:/i)).toBeVisible();\n     |                                                                ^\n  48 |         await expect(cards.first().getByText(/Official Site|Official N\\/A/i)).toBeVisible();\n  49 |         await expect(cards.first().getByText(/Quick Apply|Apply N\\/A/i)).toBeVisible();\n  50 |\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:47:64",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-university-card-id]').first().getByText(/Application:/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-university-card-id]').first().getByText(/Application:/i)\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-5c0a0-n-and-required-card-actions-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-5c0a0-n-and-required-card-actions-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-5c0a0-n-and-required-card-actions-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > university detail shows admission structure with actionable links",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Application Window/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Application Window/i)\u001b[22m\n\n\n  72 |         await expect(page).toHaveURL(/\\/universit(y|ies)\\//);\n  73 |         await expect(page.getByRole('heading').first()).toBeVisible();\n> 74 |         await expect(page.getByText(/Application Window/i)).toBeVisible();\n     |                                                             ^\n  75 |         await expect(page.getByText(/Exam Centers/i)).toBeVisible();\n  76 |         await expect(page.getByText(/Total Seats|Seat Distribution/i).first()).toBeVisible();\n  77 |         await expect(page.getByRole('link', { name: /Apply|Apply Now/i }).first()).toBeVisible();\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:74:61",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Application Window/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Application Window/i)\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-dbfad-cture-with-actionable-links-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-dbfad-cture-with-actionable-links-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-dbfad-cture-with-actionable-links-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > news article keeps readable prose and share controls",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Original Source/i)\nExpected: visible\nError: strict mode violation: getByText(/Original Source/i) resolved to 2 elements:\n    1) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20\">…</a> aka getByRole('link', { name: 'Original Source', exact: true })\n    2) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"font-semibold underline underline-offset-2\">Open original source</a> aka getByRole('link', { name: 'Open original source' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Original Source/i)\u001b[22m\n\n\n  100 |         await page.goto(`/news/${slug}`);\n  101 |         await expect(page.locator('.prose').first()).toBeVisible();\n> 102 |         await expect(page.getByText(/Original Source/i)).toBeVisible();\n      |                                                          ^\n  103 |         await expect(page.getByRole('button', { name: /WhatsApp|Facebook|Messenger|Telegram|Copy Link|Copy Text/i }).first()).toBeVisible();\n  104 |\n  105 |         for (const vp of responsiveWidths) {\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:102:58",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Original Source/i)\nExpected: visible\nError: strict mode violation: getByText(/Original Source/i) resolved to 2 elements:\n    1) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20\">…</a> aka getByRole('link', { name: 'Original Source', exact: true })\n    2) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"font-semibold underline underline-offset-2\">Open original source</a> aka getByRole('link', { name: 'Open original source' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Original Source/i)\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-ac655-le-prose-and-share-controls-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-ac655-le-prose-and-share-controls-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-ac655-le-prose-and-share-controls-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "phase3-page-audit.spec.ts",
+      "title": "phase3-page-audit.spec.ts > Phase3 Page Audit > resources and contact pages have usable states and submit path",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Get In Touch/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Get In Touch/i })\u001b[22m\n\n\n  121 |\n  122 |         await page.goto('/contact');\n> 123 |         await expect(page.getByRole('heading', { name: /Get In Touch/i })).toBeVisible();\n      |                                                                            ^\n  124 |         await page.getByLabel(/Full Name/i).fill('Phase3 QA');\n  125 |         await page.getByLabel(/Email Address/i).fill(`phase3-${Date.now()}@campusway.local`);\n  126 |         await page.getByLabel(/Subject/i).selectOption({ label: 'Technical Issue' });\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:123:76",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Get In Touch/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Get In Touch/i })\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "public-design-visibility.spec.ts",
+      "title": "public-design-visibility.spec.ts > Public Design Visibility > legacy routes normalize to subscription plans",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-design-visibility.spec.ts",
+      "title": "public-design-visibility.spec.ts > Public Design Visibility > home, news, and subscription pages render redesigned blocks",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-hero')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-hero')\u001b[22m\n\n\n  15 |\n  16 |         await page.goto('/');\n> 17 |         await expect(page.getByTestId('home-section-hero')).toBeVisible();\n     |                                                             ^\n  18 |         await expect(page.getByTestId('home-section-subscription-banner')).toBeVisible();\n  19 |         await expect(page.getByTestId('home-section-resources-preview')).toBeVisible();\n  20 |\n    at F:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts:17:61",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-hero')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-hero')\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "public-design-visibility.spec.ts",
+      "title": "public-design-visibility.spec.ts > Public Design Visibility > theme selection persists across reload using campusway_theme",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route / renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /universities renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /news renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /subscription-plans renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /services renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /exam-portal renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /resources renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /contact renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /chairman/login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /__cw_admin__/login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162220\\pass1-viewer\\playwright.log",
+  "resultPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162220\\pass1-viewer\\playwright.json",
+  "dbEvidencePath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162220\\pass1-viewer\\db-evidence.json"
+}

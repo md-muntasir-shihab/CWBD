@@ -21,6 +21,7 @@
         "test:qbank:unit": "tsx src/scripts/qbank-unit-tests.ts",
         "test:qbank:integration": "tsx src/scripts/qbank-integration-smoke.ts",
         "e2e:prepare": "tsx src/scripts/e2e_prepare.ts",
+        "e2e:db-evidence": "tsx src/scripts/e2e_db_evidence.ts",
         "seed:content": "tsx src/scripts/seed-content-pipeline.ts",
         "seed:default-users": "tsx src/scripts/seed-default-users.ts",
         "e2e:restore": "tsx src/scripts/e2e_restore.ts",

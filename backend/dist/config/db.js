@@ -34,6 +34,14 @@ async function ensureCriticalIndexes() {
         }
         // --- Users ---
         const users = db.db.collection('users');
+        const userIndexes = await users.indexes();
+        const legacyUserIdUnique = userIndexes.find((idx) => idx.name === 'userId_1'
+            && idx.unique === true
+            && idx.key?.userId === 1);
+        if (legacyUserIdUnique) {
+            await users.dropIndex('userId_1');
+            console.log('[db] Dropped legacy index users.userId_1');
+        }
         await Promise.all([
             users.createIndex({ email: 1 }, { unique: true, name: 'email_1' }).catch(() => { }),
             users.createIndex({ username: 1 }, { unique: true, name: 'username_1' }).catch(() => { }),

@@ -66,7 +66,7 @@ router.get('/notifications/campaigns', ...adminAuth, async (req: AuthRequest, re
                 .sort({ createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit)
-                .populate('createdByAdmin', 'full_name username')
+                .populate('createdByAdminId', 'full_name username')
                 .lean(),
             NotificationJob.countDocuments(query),
         ]);
@@ -82,7 +82,7 @@ router.get('/notifications/campaigns', ...adminAuth, async (req: AuthRequest, re
 router.get('/notifications/campaigns/:id', ...adminAuth, async (req: AuthRequest, res: Response) => {
     try {
         const job = await NotificationJob.findById(req.params.id)
-            .populate('createdByAdmin', 'full_name username')
+            .populate('createdByAdminId', 'full_name username')
             .lean();
         if (!job) { res.status(404).json({ message: 'Campaign not found' }); return; }
         res.json(job);
@@ -355,6 +355,100 @@ router.post('/notifications/trigger', ...adminAuth, async (req: AuthRequest, res
         res.json(result);
     } catch (err) {
         console.error('POST /notifications/trigger error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ────────────────────────────────────────────────────────────────
+   Trigger configuration management
+   ──────────────────────────────────────────────────────────────── */
+
+// Get all configured triggers
+router.get('/notifications/triggers', ...adminAuth, async (_req: Request, res: Response) => {
+    try {
+        const settings = await NotificationSettings.findOne().lean() ??
+            (await NotificationSettings.create({})).toObject();
+        res.json({
+            triggers: settings.triggers ?? [],
+            resultPublishAutoSend: settings.resultPublishAutoSend ?? false,
+            resultPublishChannels: settings.resultPublishChannels ?? [],
+            resultPublishGuardianIncluded: settings.resultPublishGuardianIncluded ?? false,
+            subscriptionReminderDays: settings.subscriptionReminderDays ?? [7, 3, 1],
+            autoSyncCostToFinance: settings.autoSyncCostToFinance ?? true,
+        });
+    } catch (err) {
+        console.error('GET /notifications/triggers error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Upsert a single trigger
+router.put('/notifications/triggers/:triggerKey', ...adminAuth, async (req: AuthRequest, res: Response) => {
+    try {
+        const { triggerKey } = req.params;
+        const { enabled, channels, guardianIncluded } = req.body;
+        if (!triggerKey || typeof triggerKey !== 'string') {
+            res.status(400).json({ message: 'triggerKey is required' });
+            return;
+        }
+        const allowedChannels = (channels ?? []).filter((c: string) => ['sms', 'email'].includes(c));
+
+        const settings = await NotificationSettings.findOne();
+        if (!settings) {
+            res.status(500).json({ message: 'Settings not initialized' });
+            return;
+        }
+
+        const idx = settings.triggers.findIndex((t) => t.triggerKey === triggerKey);
+        const triggerData = {
+            triggerKey,
+            enabled: enabled ?? true,
+            channels: allowedChannels.length > 0 ? allowedChannels : ['sms'],
+            guardianIncluded: guardianIncluded ?? false,
+        };
+
+        if (idx >= 0) {
+            settings.triggers[idx] = triggerData;
+        } else {
+            settings.triggers.push(triggerData);
+        }
+        await settings.save();
+        res.json({ trigger: triggerData });
+    } catch (err) {
+        console.error('PUT /notifications/triggers/:triggerKey error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Bulk update triggers
+router.put('/notifications/triggers', ...adminAuth, async (req: AuthRequest, res: Response) => {
+    try {
+        const { triggers, resultPublishAutoSend, resultPublishChannels, resultPublishGuardianIncluded, subscriptionReminderDays } = req.body;
+        const update: Record<string, unknown> = {};
+
+        if (Array.isArray(triggers)) {
+            update.triggers = triggers.map((t: Record<string, unknown>) => ({
+                triggerKey: String(t.triggerKey ?? ''),
+                enabled: t.enabled ?? true,
+                channels: (Array.isArray(t.channels) ? t.channels : ['sms']).filter((c: string) => ['sms', 'email'].includes(c)),
+                guardianIncluded: t.guardianIncluded ?? false,
+            }));
+        }
+        if (resultPublishAutoSend !== undefined) update.resultPublishAutoSend = !!resultPublishAutoSend;
+        if (Array.isArray(resultPublishChannels)) update.resultPublishChannels = resultPublishChannels.filter((c: string) => ['sms', 'email'].includes(c));
+        if (resultPublishGuardianIncluded !== undefined) update.resultPublishGuardianIncluded = !!resultPublishGuardianIncluded;
+        if (Array.isArray(subscriptionReminderDays)) update.subscriptionReminderDays = subscriptionReminderDays.filter((d: number) => d > 0 && d <= 90);
+
+        const settings = await NotificationSettings.findOneAndUpdate({}, { $set: update }, { new: true, upsert: true });
+        res.json({
+            triggers: settings.triggers,
+            resultPublishAutoSend: settings.resultPublishAutoSend,
+            resultPublishChannels: settings.resultPublishChannels,
+            resultPublishGuardianIncluded: settings.resultPublishGuardianIncluded,
+            subscriptionReminderDays: settings.subscriptionReminderDays,
+        });
+    } catch (err) {
+        console.error('PUT /notifications/triggers error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });

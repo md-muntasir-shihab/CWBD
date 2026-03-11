@@ -1,0 +1,1643 @@
+{
+  "config": {
+    "configFile": "F:\\CampusWay\\frontend\\playwright.config.ts",
+    "rootDir": "F:/CampusWay/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "F:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-desktop",
+        "name": "chromium-desktop",
+        "testDir": "F:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "F:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-mobile",
+        "name": "chromium-mobile",
+        "testDir": "F:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "home-master.spec.ts",
+      "file": "home-master.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Home Master Smoke",
+          "file": "home-master.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "api/home contract contains strict top-level keys",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2677,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:26:16.725Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6422427918a9f53efaa7-6e7bf26e5c04e3daf648",
+              "file": "home-master.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "home sections render in strict order and services stay absent",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7563,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-resources-preview')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-resources-preview')\u001b[22m\n\u001b[2m    9 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-resources-preview')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-resources-preview')\u001b[22m\n\u001b[2m    9 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts:63:74",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts",
+                          "column": 74,
+                          "line": 63
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 61 |\u001b[39m         }\n \u001b[90m 62 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 63 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-section-resources-preview'\u001b[39m))\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 64 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-section-campaign-banners'\u001b[39m))\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 65 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/services/i\u001b[39m }))\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 66 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts",
+                            "column": 74,
+                            "line": 63
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-resources-preview')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-resources-preview')\u001b[22m\n\u001b[2m    9 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n\n\n  61 |         }\n  62 |\n> 63 |         await expect(page.getByTestId('home-section-resources-preview')).toHaveCount(1);\n     |                                                                          ^\n  64 |         await expect(page.getByTestId('home-section-campaign-banners')).toHaveCount(1);\n  65 |         await expect(page.getByRole('heading', { name: /services/i })).toHaveCount(0);\n  66 |\n    at F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts:63:74"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:26:19.555Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-fd3a1-er-and-services-stay-absent-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-fd3a1-er-and-services-stay-absent-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-fd3a1-er-and-services-stay-absent-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts",
+                        "column": 74,
+                        "line": 63
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6422427918a9f53efaa7-71af661acde27e59d2f7",
+              "file": "home-master.spec.ts",
+              "line": 33,
+              "column": 5
+            },
+            {
+              "title": "mobile layout avoids horizontal overflow and keeps sticky search visible",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6814,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-search')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-search')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts:82:36",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts",
+                          "column": 36,
+                          "line": 82
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 80 |\u001b[39m\n \u001b[90m 81 |\u001b[39m         \u001b[36mconst\u001b[39m stickySearch \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-section-search'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 82 |\u001b[39m         \u001b[36mawait\u001b[39m expect(stickySearch)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 83 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m window\u001b[33m.\u001b[39mscrollTo({ top\u001b[33m:\u001b[39m \u001b[35m1200\u001b[39m\u001b[33m,\u001b[39m behavior\u001b[33m:\u001b[39m \u001b[32m'instant'\u001b[39m }))\u001b[33m;\u001b[39m\n \u001b[90m 84 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m100\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 85 |\u001b[39m         \u001b[36mconst\u001b[39m box \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m stickySearch\u001b[33m.\u001b[39mboundingBox()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts",
+                            "column": 36,
+                            "line": 82
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-search')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\n\n  80 |\n  81 |         const stickySearch = page.getByTestId('home-section-search');\n> 82 |         await expect(stickySearch).toBeVisible();\n     |                                    ^\n  83 |         await page.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }));\n  84 |         await page.waitForTimeout(100);\n  85 |         const box = await stickySearch.boundingBox();\n    at F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts:82:36"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:26:28.940Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-4de61-keeps-sticky-search-visible-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-4de61-keeps-sticky-search-visible-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-master-Home-Master-Sm-4de61-keeps-sticky-search-visible-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\home-master.spec.ts",
+                        "column": 36,
+                        "line": 82
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6422427918a9f53efaa7-c722834a5b1a936d8a91",
+              "file": "home-master.spec.ts",
+              "line": 71,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "home-step1.spec.ts",
+      "file": "home-step1.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Home Step1",
+          "file": "home-step1.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "renders required home sections in strict order",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6614,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-search')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\u001b[2m    8 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-search')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\u001b[2m    8 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:25:35",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                          "column": 35,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m         \u001b[36mfor\u001b[39m (\u001b[36mconst\u001b[39m sectionId \u001b[36mof\u001b[39m sectionIds) {\n \u001b[90m 24 |\u001b[39m             \u001b[36mconst\u001b[39m locator \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(sectionId)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m             \u001b[36mawait\u001b[39m expect(locator)\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m             \u001b[36mawait\u001b[39m expect(locator)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 27 |\u001b[39m             \u001b[36mconst\u001b[39m box \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m locator\u001b[33m.\u001b[39mboundingBox()\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m             yPositions\u001b[33m.\u001b[39mpush(box\u001b[33m?\u001b[39m\u001b[33m.\u001b[39my \u001b[33m?\u001b[39m\u001b[33m?\u001b[39m \u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                            "column": 35,
+                            "line": 25
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('home-section-search')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-search')\u001b[22m\n\u001b[2m    8 × locator resolved to 0 elements\u001b[22m\n\u001b[2m      - unexpected value \"0\"\u001b[22m\n\n\n  23 |         for (const sectionId of sectionIds) {\n  24 |             const locator = page.getByTestId(sectionId);\n> 25 |             await expect(locator).toHaveCount(1);\n     |                                   ^\n  26 |             await expect(locator).toBeVisible();\n  27 |             const box = await locator.boundingBox();\n  28 |             yPositions.push(box?.y ?? 0);\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:25:35"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:26:37.656Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-rend-0e354-me-sections-in-strict-order-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-rend-0e354-me-sections-in-strict-order-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-rend-0e354-me-sections-in-strict-order-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                        "column": 35,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-ca9a06b53af5282f7096",
+              "file": "home-step1.spec.ts",
+              "line": 8,
+              "column": 5
+            },
+            {
+              "title": "hero primary CTA navigates to configured target",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6584,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-hero-primary-cta')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-hero-primary-cta')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-hero-primary-cta')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-hero-primary-cta')\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:39:27",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                          "column": 27,
+                          "line": 39
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 37 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 38 |\u001b[39m         \u001b[36mconst\u001b[39m cta \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-hero-primary-cta'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 39 |\u001b[39m         \u001b[36mawait\u001b[39m expect(cta)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 40 |\u001b[39m         \u001b[36mconst\u001b[39m href \u001b[33m=\u001b[39m (\u001b[36mawait\u001b[39m cta\u001b[33m.\u001b[39mgetAttribute(\u001b[32m'href'\u001b[39m)) \u001b[33m||\u001b[39m \u001b[32m'/'\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m 41 |\u001b[39m         \u001b[36mconst\u001b[39m isExternal \u001b[33m=\u001b[39m \u001b[35m/^https?:\\/\\//i\u001b[39m\u001b[33m.\u001b[39mtest(href)\u001b[33m;\u001b[39m\n \u001b[90m 42 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                            "column": 27,
+                            "line": 39
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-hero-primary-cta')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-hero-primary-cta')\u001b[22m\n\n\n  37 |         await page.goto('/');\n  38 |         const cta = page.getByTestId('home-hero-primary-cta');\n> 39 |         await expect(cta).toBeVisible();\n     |                           ^\n  40 |         const href = (await cta.getAttribute('href')) || '/';\n  41 |         const isExternal = /^https?:\\/\\//i.test(href);\n  42 |\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:39:27"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:26:46.261Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-hero-1d7b1-igates-to-configured-target-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-hero-1d7b1-igates-to-configured-target-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-hero-1d7b1-igates-to-configured-target-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                        "column": 27,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-d073b7f6d5afcfe01f69",
+              "file": "home-step1.spec.ts",
+              "line": 36,
+              "column": 5
+            },
+            {
+              "title": "deadline Apply CTA opens a valid admission target",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9735,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:77:13",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                          "column": 13,
+                          "line": 77
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 75 |\u001b[39m         \u001b[36mconst\u001b[39m applyLinks \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'a[data-testid=\\\"university-card-apply\\\"]'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 76 |\u001b[39m         \u001b[36mif\u001b[39m (hasAdmissionLinkInPayload) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 77 |\u001b[39m             \u001b[36mawait\u001b[39m expect\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 78 |\u001b[39m                 \u001b[33m.\u001b[39mpoll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m applyLinks\u001b[33m.\u001b[39mcount()\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m8\u001b[39m_000 })\n \u001b[90m 79 |\u001b[39m                 \u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 80 |\u001b[39m         } \u001b[36melse\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                            "column": 13,
+                            "line": 77
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate\n\n  75 |         const applyLinks = page.locator('a[data-testid=\\\"university-card-apply\\\"]');\n  76 |         if (hasAdmissionLinkInPayload) {\n> 77 |             await expect\n     |             ^\n  78 |                 .poll(async () => applyLinks.count(), { timeout: 8_000 })\n  79 |                 .toBeGreaterThan(0);\n  80 |         } else {\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:77:13"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:26:54.728Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-dead-f3f6a-ns-a-valid-admission-target-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-dead-f3f6a-ns-a-valid-admission-target-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-dead-f3f6a-ns-a-valid-admission-target-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                        "column": 13,
+                        "line": 77
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-8ff89d745da1e50ff489",
+              "file": "home-step1.spec.ts",
+              "line": 60,
+              "column": 5
+            },
+            {
+              "title": "theme toggle changes persisted theme state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2689,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:06.330Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-a10e17933caf5adb3bf7",
+              "file": "home-step1.spec.ts",
+              "line": 98,
+              "column": 5
+            },
+            {
+              "title": "featured universities section renders when API returns featured items",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9478,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:127:13",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                          "column": 13,
+                          "line": 127
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 125 |\u001b[39m         \u001b[36mconst\u001b[39m featuredSection \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-section-featured-universities'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 126 |\u001b[39m         \u001b[36mif\u001b[39m (hasFeatured) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 127 |\u001b[39m             \u001b[36mawait\u001b[39m expect\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 128 |\u001b[39m                 \u001b[33m.\u001b[39mpoll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m featuredSection\u001b[33m.\u001b[39mcount()\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m8\u001b[39m_000 })\n \u001b[90m 129 |\u001b[39m                 \u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 130 |\u001b[39m             \u001b[36mawait\u001b[39m expect(featuredSection\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                            "column": 13,
+                            "line": 127
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 8000ms exceeded while waiting on the predicate\n\n  125 |         const featuredSection = page.getByTestId('home-section-featured-universities');\n  126 |         if (hasFeatured) {\n> 127 |             await expect\n      |             ^\n  128 |                 .poll(async () => featuredSection.count(), { timeout: 8_000 })\n  129 |                 .toBeGreaterThan(0);\n  130 |             await expect(featuredSection.first()).toBeVisible();\n    at F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts:127:13"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:09.156Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-feat-62e75--API-returns-featured-items-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-feat-62e75--API-returns-featured-items-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\home-step1-Home-Step1-feat-62e75--API-returns-featured-items-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\home-step1.spec.ts",
+                        "column": 13,
+                        "line": 127
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-1fcda400e6a1670fb6cd",
+              "file": "home-step1.spec.ts",
+              "line": 110,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "news-exam-responsive.spec.ts",
+      "file": "news-exam-responsive.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "News + Exams responsive stability",
+          "file": "news-exam-responsive.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "news/exams render healthy at mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2550,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:20.450Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-48f8eb1619279f159126",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "news/exams render healthy at mobile-plus",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2746,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:23.147Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-fc2d2993758e6c383721",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "news/exams render healthy at tablet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2630,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:25.913Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-371faf1aa1f5bbb5505b",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "news/exams render healthy at desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2622,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:28.561Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-8eeaca04b9618dc0ce45",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "phase3-page-audit.spec.ts",
+      "file": "phase3-page-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Phase3 Page Audit",
+          "file": "phase3-page-audit.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "universities list keeps category isolation and required card actions",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7650,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-university-card-id]').first().getByText(/Application:/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-university-card-id]').first().getByText(/Application:/i)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-university-card-id]').first().getByText(/Application:/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-university-card-id]').first().getByText(/Application:/i)\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:47:64",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                          "column": 64,
+                          "line": 47
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 45 |\u001b[39m         }\n \u001b[90m 46 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 47 |\u001b[39m         \u001b[36mawait\u001b[39m expect(cards\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mgetByText(\u001b[35m/Application:/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 48 |\u001b[39m         \u001b[36mawait\u001b[39m expect(cards\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mgetByText(\u001b[35m/Official Site|Official N\\/A/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 49 |\u001b[39m         \u001b[36mawait\u001b[39m expect(cards\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mgetByText(\u001b[35m/Quick Apply|Apply N\\/A/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 50 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                            "column": 64,
+                            "line": 47
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-university-card-id]').first().getByText(/Application:/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-university-card-id]').first().getByText(/Application:/i)\u001b[22m\n\n\n  45 |         }\n  46 |\n> 47 |         await expect(cards.first().getByText(/Application:/i)).toBeVisible();\n     |                                                                ^\n  48 |         await expect(cards.first().getByText(/Official Site|Official N\\/A/i)).toBeVisible();\n  49 |         await expect(cards.first().getByText(/Quick Apply|Apply N\\/A/i)).toBeVisible();\n  50 |\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:47:64"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:31.236Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-5c0a0-n-and-required-card-actions-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-5c0a0-n-and-required-card-actions-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-5c0a0-n-and-required-card-actions-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                        "column": 64,
+                        "line": 47
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-c7d547939c198a211ea4",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 18,
+              "column": 5
+            },
+            {
+              "title": "university detail shows admission structure with actionable links",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8136,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Application Window/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Application Window/i)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Application Window/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Application Window/i)\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:74:61",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                          "column": 61,
+                          "line": 74
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 72 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/universit(y|ies)\\//\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 74 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/Application Window/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 75 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/Exam Centers/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 76 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/Total Seats|Seat Distribution/i\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 77 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'link'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Apply|Apply Now/i\u001b[39m })\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                            "column": 61,
+                            "line": 74
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Application Window/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Application Window/i)\u001b[22m\n\n\n  72 |         await expect(page).toHaveURL(/\\/universit(y|ies)\\//);\n  73 |         await expect(page.getByRole('heading').first()).toBeVisible();\n> 74 |         await expect(page.getByText(/Application Window/i)).toBeVisible();\n     |                                                             ^\n  75 |         await expect(page.getByText(/Exam Centers/i)).toBeVisible();\n  76 |         await expect(page.getByText(/Total Seats|Seat Distribution/i).first()).toBeVisible();\n  77 |         await expect(page.getByRole('link', { name: /Apply|Apply Now/i }).first()).toBeVisible();\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:74:61"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:40.729Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-dbfad-cture-with-actionable-links-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-dbfad-cture-with-actionable-links-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-dbfad-cture-with-actionable-links-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                        "column": 61,
+                        "line": 74
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-7ead74e58a958c13f425",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 67,
+              "column": 5
+            },
+            {
+              "title": "news article keeps readable prose and share controls",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2086,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Original Source/i)\nExpected: visible\nError: strict mode violation: getByText(/Original Source/i) resolved to 2 elements:\n    1) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20\">…</a> aka getByRole('link', { name: 'Original Source', exact: true })\n    2) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"font-semibold underline underline-offset-2\">Open original source</a> aka getByRole('link', { name: 'Open original source' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Original Source/i)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Original Source/i)\nExpected: visible\nError: strict mode violation: getByText(/Original Source/i) resolved to 2 elements:\n    1) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20\">…</a> aka getByRole('link', { name: 'Original Source', exact: true })\n    2) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"font-semibold underline underline-offset-2\">Open original source</a> aka getByRole('link', { name: 'Open original source' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Original Source/i)\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:102:58",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                          "column": 58,
+                          "line": 102
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 100 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m`/news/${slug}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 101 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'.prose'\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 102 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/Original Source/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 103 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/WhatsApp|Facebook|Messenger|Telegram|Copy Link|Copy Text/i\u001b[39m })\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 104 |\u001b[39m\n \u001b[90m 105 |\u001b[39m         \u001b[36mfor\u001b[39m (\u001b[36mconst\u001b[39m vp \u001b[36mof\u001b[39m responsiveWidths) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                            "column": 58,
+                            "line": 102
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Original Source/i)\nExpected: visible\nError: strict mode violation: getByText(/Original Source/i) resolved to 2 elements:\n    1) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-white/20\">…</a> aka getByRole('link', { name: 'Original Source', exact: true })\n    2) <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://example.com\" class=\"font-semibold underline underline-offset-2\">Open original source</a> aka getByRole('link', { name: 'Open original source' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Original Source/i)\u001b[22m\n\n\n  100 |         await page.goto(`/news/${slug}`);\n  101 |         await expect(page.locator('.prose').first()).toBeVisible();\n> 102 |         await expect(page.getByText(/Original Source/i)).toBeVisible();\n      |                                                          ^\n  103 |         await expect(page.getByRole('button', { name: /WhatsApp|Facebook|Messenger|Telegram|Copy Link|Copy Text/i }).first()).toBeVisible();\n  104 |\n  105 |         for (const vp of responsiveWidths) {\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:102:58"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:50.769Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-ac655-le-prose-and-share-controls-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-ac655-le-prose-and-share-controls-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-ac655-le-prose-and-share-controls-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                        "column": 58,
+                        "line": 102
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-024aca6338dabbf8d8c0",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 90,
+              "column": 5
+            },
+            {
+              "title": "resources and contact pages have usable states and submit path",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7322,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Get In Touch/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Get In Touch/i })\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Get In Touch/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Get In Touch/i })\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:123:76",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                          "column": 76,
+                          "line": 123
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 121 |\u001b[39m\n \u001b[90m 122 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/contact'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 123 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Get In Touch/i\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 124 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Full Name/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Phase3 QA'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 125 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Email Address/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m`phase3-${Date.now()}@campusway.local`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 126 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Subject/i\u001b[39m)\u001b[33m.\u001b[39mselectOption({ label\u001b[33m:\u001b[39m \u001b[32m'Technical Issue'\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                            "column": 76,
+                            "line": 123
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Get In Touch/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Get In Touch/i })\u001b[22m\n\n\n  121 |\n  122 |         await page.goto('/contact');\n> 123 |         await expect(page.getByRole('heading', { name: /Get In Touch/i })).toBeVisible();\n      |                                                                            ^\n  124 |         await page.getByLabel(/Full Name/i).fill('Phase3 QA');\n  125 |         await page.getByLabel(/Email Address/i).fill(`phase3-${Date.now()}@campusway.local`);\n  126 |         await page.getByLabel(/Subject/i).selectOption({ label: 'Technical Issue' });\n    at F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:123:76"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:27:54.830Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                        "column": 76,
+                        "line": 123
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-09fb386e17cb87ecf477",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 115,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "public-design-visibility.spec.ts",
+      "file": "public-design-visibility.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Public Design Visibility",
+          "file": "public-design-visibility.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "legacy routes normalize to subscription plans",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2482,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:04.125Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6dd276e73f6bf75f7e29-84d5dc16fd9179ee02d5",
+              "file": "public-design-visibility.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "home, news, and subscription pages render redesigned blocks",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6433,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-hero')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-hero')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-hero')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-hero')\u001b[22m\n\n    at F:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts:17:61",
+                        "location": {
+                          "file": "F:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts",
+                          "column": 61,
+                          "line": 17
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 15 |\u001b[39m\n \u001b[90m 16 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 17 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-section-hero'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 18 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-section-subscription-banner'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 19 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'home-section-resources-preview'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 20 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "F:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts",
+                            "column": 61,
+                            "line": 17
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('home-section-hero')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('home-section-hero')\u001b[22m\n\n\n  15 |\n  16 |         await page.goto('/');\n> 17 |         await expect(page.getByTestId('home-section-hero')).toBeVisible();\n     |                                                             ^\n  18 |         await expect(page.getByTestId('home-section-subscription-banner')).toBeVisible();\n  19 |         await expect(page.getByTestId('home-section-resources-preview')).toBeVisible();\n  20 |\n    at F:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts:17:61"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:06.760Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "F:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "F:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts",
+                        "column": 61,
+                        "line": 17
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6dd276e73f6bf75f7e29-5b53f93e586bb1341132",
+              "file": "public-design-visibility.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "theme selection persists across reload using campusway_theme",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4463,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:15.017Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6dd276e73f6bf75f7e29-528178a29e9e32e4fe8e",
+              "file": "public-design-visibility.spec.ts",
+              "line": 36,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "public-smoke.spec.ts",
+      "file": "public-smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Public Smoke",
+          "file": "public-smoke.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "route / renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2369,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:19.632Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-db17f553bf39ce884e0f",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /universities renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2048,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:22.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-f9c02363ae968f46e0e3",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /news renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2098,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:24.086Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-a6189c69b108e972958e",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /subscription-plans renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1818,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:26.201Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-1fdf760cfba83e7005e2",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /services renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1856,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:28.039Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-28cf0a9fb8780f46492c",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /exam-portal renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2551,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:29.925Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-94da59c2fe002f08c9c8",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /resources renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2120,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:32.495Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-36b0dfc23cf83928082f",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /contact renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1742,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:34.632Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-03aeb6e8fdecd7be5d16",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /login renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1487,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:36.395Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-63c641aeb484a7494a33",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /chairman/login renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1492,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:37.901Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-b28b0124293a27a0b513",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /__cw_admin__/login renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1464,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T16:28:39.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-60e95a043743e48fa602",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-10T16:26:14.849Z",
+    "duration": 146199.916,
+    "expected": 19,
+    "skipped": 0,
+    "unexpected": 11,
+    "flaky": 0
+  }
+}

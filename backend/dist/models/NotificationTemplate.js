@@ -63,6 +63,12 @@ const NotificationTemplateSchema = new mongoose_1.Schema({
         required: true,
         index: true,
     },
+    category: {
+        type: String,
+        enum: ['account', 'password', 'subscription', 'payment', 'exam', 'result', 'news', 'resource', 'support', 'campaign', 'guardian', 'other'],
+        default: 'other',
+        index: true,
+    },
     subject: { type: String, trim: true },
     body: { type: String, required: true },
     placeholdersAllowed: {
@@ -70,6 +76,7 @@ const NotificationTemplateSchema = new mongoose_1.Schema({
         default: [],
     },
     isEnabled: { type: Boolean, default: true, index: true },
+    versionNo: { type: Number, default: 1, min: 1 },
 }, { timestamps: true, collection: 'notification_templates' });
 NotificationTemplateSchema.index({ key: 1, channel: 1 });
 exports.default = mongoose_1.default.model('NotificationTemplate', NotificationTemplateSchema);

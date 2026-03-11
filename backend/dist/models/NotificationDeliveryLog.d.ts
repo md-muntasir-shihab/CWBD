@@ -2,7 +2,9 @@ import mongoose, { Document } from 'mongoose';
 export type DeliveryLogStatus = 'sent' | 'failed' | 'queued';
 export interface INotificationDeliveryLog extends Document {
     jobId: mongoose.Types.ObjectId;
+    campaignId?: mongoose.Types.ObjectId;
     studentId: mongoose.Types.ObjectId;
+    guardianTargeted: boolean;
     channel: 'sms' | 'email';
     providerUsed: string;
     to: string;
@@ -10,6 +12,14 @@ export interface INotificationDeliveryLog extends Document {
     providerMessageId?: string;
     errorMessage?: string;
     sentAtUTC?: Date;
+    costAmount: number;
+    retryCount: number;
+    isTestSend?: boolean;
+    recipientMode?: string;
+    messageMode?: string;
+    recipientDisplay?: string;
+    renderedPreview?: string;
+    financeSynced?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

@@ -30,6 +30,7 @@ import {
   adminResolveUniversityClusterMembers,
   adminSyncUniversityClusterDates,
   adminToggleUniversityCategory,
+  adminToggleUniversityStatus,
   adminUpdateHomeSettings,
   adminUpdateUniversity,
   adminUpdateUniversityCategory,
@@ -822,7 +823,7 @@ export default function UniversitiesPanel() {
                         <td className="px-3 py-2.5 sticky right-0 bg-slate-900/90 backdrop-blur-md shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.3)] z-10">
                           <div className="flex items-center gap-2">
                             <button type="button" onClick={() => openEdit(u)} className="rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-400 hover:bg-indigo-500/20 transition-all">Edit</button>
-                            <button type="button" onClick={() => void adminUpdateUniversity(u._id, { isActive: !u.isActive }).then(async () => { await invalidateUniversityQueries(); await loadUniversities(); })} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${u.isActive ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'}`}>{u.isActive ? 'Disable' : 'Enable'}</button>
+                            <button type="button" onClick={() => void adminToggleUniversityStatus(u._id).then(async () => { await invalidateUniversityQueries(); await loadUniversities(); })} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${u.isActive ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'}`}>{u.isActive ? 'Disable' : 'Enable'}</button>
                             <button type="button" onClick={() => void deleteOne(u._id)} className="rounded-lg bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/20 transition-all">Delete</button>
                           </div>
                         </td>

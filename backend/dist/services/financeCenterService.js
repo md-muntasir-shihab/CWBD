@@ -113,7 +113,11 @@ async function getFinanceSummary(month) {
     const startDate = new Date(Date.UTC(year, mon - 1, 1));
     const endDate = new Date(Date.UTC(year, mon, 0, 23, 59, 59, 999));
     const dateFilter = { dateUTC: { $gte: startDate, $lte: endDate }, isDeleted: false };
-    const [incomeTxns, expenseTxns, receivables, payables, topIncome, topExpense, dailyCashflow, budgets,] = await Promise.all([
+    // Previous month for comparison
+    const prevStart = new Date(Date.UTC(year, mon - 2, 1));
+    const prevEnd = new Date(Date.UTC(year, mon - 1, 0, 23, 59, 59, 999));
+    const prevDateFilter = { dateUTC: { $gte: prevStart, $lte: prevEnd }, isDeleted: false };
+    const [incomeTxns, expenseTxns, receivables, payables, topIncome, topExpense, dailyCashflow, budgets, incomeBySourceAgg, expenseByCatAgg, prevIncome, prevExpense, recentActivity,] = await Promise.all([
         // Total income
         FinanceTransaction_1.default.aggregate([
             { $match: { ...dateFilter, direction: 'income', status: { $in: ['paid', 'approved'] } } },
@@ -164,9 +168,44 @@ async function getFinanceSummary(month) {
         ]),
         // Budget status
         FinanceBudget_1.default.find({ month: targetMonth }).lean(),
+        // Income by sourceType
+        FinanceTransaction_1.default.aggregate([
+            { $match: { ...dateFilter, direction: 'income', status: { $in: ['paid', 'approved'] } } },
+            { $group: { _id: '$sourceType', total: { $sum: '$amount' } } },
+            { $sort: { total: -1 } },
+        ]),
+        // Expense by category
+        FinanceTransaction_1.default.aggregate([
+            { $match: { ...dateFilter, direction: 'expense', status: { $in: ['paid', 'approved'] } } },
+            { $group: { _id: '$categoryLabel', total: { $sum: '$amount' } } },
+            { $sort: { total: -1 } },
+        ]),
+        // Previous month income
+        FinanceTransaction_1.default.aggregate([
+            { $match: { ...prevDateFilter, direction: 'income', status: { $in: ['paid', 'approved'] } } },
+            { $group: { _id: null, total: { $sum: '$amount' } } },
+        ]),
+        // Previous month expense
+        FinanceTransaction_1.default.aggregate([
+            { $match: { ...prevDateFilter, direction: 'expense', status: { $in: ['paid', 'approved'] } } },
+            { $group: { _id: null, total: { $sum: '$amount' } } },
+        ]),
+        // Recent activity (last 10 transactions)
+        FinanceTransaction_1.default.find({ isDeleted: false })
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .select('_id direction sourceType categoryLabel amount dateUTC description')
+            .lean(),
     ]);
     const incomeTotal = incomeTxns[0]?.total || 0;
     const expenseTotal = expenseTxns[0]?.total || 0;
+    const prevMonthIncome = prevIncome[0]?.total || 0;
+    const prevMonthExpense = prevExpense[0]?.total || 0;
+    // Revenue breakdowns by source type
+    const sourceMap = {};
+    for (const row of incomeBySourceAgg) {
+        sourceMap[row._id || 'other'] = row.total;
+    }
     // Compute budget status with actual spend
     const budgetStatus = await Promise.all(budgets.map(async (b) => {
         const actual = await FinanceTransaction_1.default.aggregate([
@@ -211,14 +250,32 @@ async function getFinanceSummary(month) {
         incomeTotal,
         expenseTotal,
         netProfit: incomeTotal - expenseTotal,
+        subscriptionRevenue: sourceMap['subscription_payment'] || 0,
+        examRevenue: sourceMap['exam_payment'] || 0,
+        manualRevenue: sourceMap['manual_income'] || 0,
+        refundTotal: sourceMap['refund'] || 0,
+        prevMonthIncome,
+        prevMonthExpense,
         receivablesTotal: receivables[0]?.total || 0,
         receivablesCount: receivables[0]?.count || 0,
         payablesTotal: payables[0]?.total || 0,
         payablesCount: payables[0]?.count || 0,
+        activeBudgetUsagePercent: budgetStatus.length > 0
+            ? Math.round(budgetStatus.reduce((s, b) => s + b.percentUsed, 0) / budgetStatus.length)
+            : 0,
         topIncomeSources: topIncome.map((r) => ({ category: r._id, total: r.total })),
         topExpenseCategories: topExpense.map((r) => ({ category: r._id, total: r.total })),
+        incomeBySource: incomeBySourceAgg.map((r) => ({ source: r._id || 'Other', total: r.total })),
+        expenseByCategory: expenseByCatAgg.map((r) => ({ category: r._id || 'Other', total: r.total })),
         dailyCashflowTrend,
         budgetStatus,
+        recentActivity: recentActivity.map((t) => ({
+            _id: String(t._id),
+            type: t.direction,
+            description: t.description || t.categoryLabel || '',
+            amount: t.amount,
+            timestamp: t.dateUTC || t.createdAt,
+        })),
     };
 }
 // ── Recurring Rule Execution ────────────────────────────
@@ -299,7 +356,11 @@ async function logFinanceAudit(opts) {
         action: opts.action,
         target_type: opts.targetType,
         target_id: opts.targetId ? new mongoose_1.default.Types.ObjectId(opts.targetId) : undefined,
-        details: opts.details || {},
+        details: {
+            ...(opts.details || {}),
+            ...(opts.beforeSnapshot ? { beforeSnapshot: opts.beforeSnapshot } : {}),
+            ...(opts.afterSnapshot ? { afterSnapshot: opts.afterSnapshot } : {}),
+        },
         ip_address: opts.ip,
         timestamp: new Date(),
     });

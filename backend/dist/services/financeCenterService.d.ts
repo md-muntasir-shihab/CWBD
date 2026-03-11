@@ -22,15 +22,30 @@ export declare function getFinanceSummary(month?: string): Promise<{
     incomeTotal: any;
     expenseTotal: any;
     netProfit: number;
+    subscriptionRevenue: number;
+    examRevenue: number;
+    manualRevenue: number;
+    refundTotal: number;
+    prevMonthIncome: any;
+    prevMonthExpense: any;
     receivablesTotal: any;
     receivablesCount: any;
     payablesTotal: any;
     payablesCount: any;
+    activeBudgetUsagePercent: number;
     topIncomeSources: {
         category: any;
         total: any;
     }[];
     topExpenseCategories: {
+        category: any;
+        total: any;
+    }[];
+    incomeBySource: {
+        source: any;
+        total: any;
+    }[];
+    expenseByCategory: {
         category: any;
         total: any;
     }[];
@@ -52,6 +67,13 @@ export declare function getFinanceSummary(month?: string): Promise<{
         alertThresholdPercent: number;
         exceeded: boolean;
     }[];
+    recentActivity: {
+        _id: string;
+        type: string;
+        description: any;
+        amount: any;
+        timestamp: any;
+    }[];
 }>;
 export declare function executeRecurringRule(ruleId: string, adminId: string): Promise<mongoose.Document<unknown, {}, import("../models/FinanceTransaction").IFinanceTransaction, {}, {}> & import("../models/FinanceTransaction").IFinanceTransaction & Required<{
     _id: mongoose.Types.ObjectId;
@@ -66,6 +88,8 @@ export declare function logFinanceAudit(opts: {
     targetId?: string;
     details?: Record<string, unknown>;
     ip?: string;
+    beforeSnapshot?: Record<string, unknown>;
+    afterSnapshot?: Record<string, unknown>;
 }): Promise<void>;
 export declare function seedDefaultChartOfAccounts(): Promise<void>;
 export declare function getOrCreateFinanceSettings(): Promise<mongoose.Document<unknown, {}, import("../models/FinanceSettings").IFinanceSettings, {}, {}> & import("../models/FinanceSettings").IFinanceSettings & Required<{

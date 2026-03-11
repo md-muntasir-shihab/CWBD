@@ -10,6 +10,7 @@ export interface IStudentProfile extends Document {
     phone?: string;
     phone_number?: string;
     guardian_phone?: string;
+    guardian_email?: string;
     guardianOtpHash?: string;
     guardianOtpExpiresAt?: Date;
     guardianPhoneVerifiedAt?: Date;

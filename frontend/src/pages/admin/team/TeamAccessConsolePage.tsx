@@ -376,7 +376,7 @@ export default function TeamAccessConsolePage() {
       title={titleByView[view]}
       description="Manage admin/staff roles, permissions, approvals, security controls, and audit visibility from one access-control workspace."
       allowedRoles={['superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent']}
-      requiredModule="team_access"
+      requiredModule="team_access_control"
     >
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
         {/* Search & action bar */}

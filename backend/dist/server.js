@@ -19,15 +19,19 @@ const publicRoutes_1 = __importDefault(require("./routes/publicRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const studentRoutes_1 = __importDefault(require("./routes/studentRoutes"));
 const webhookRoutes_1 = __importDefault(require("./routes/webhookRoutes"));
+const studentExamRoutes_1 = require("./routes/exams/studentExamRoutes");
 const defaultSetup_1 = require("./setup/defaultSetup");
 const examJobs_1 = require("./cron/examJobs");
 const modernExamJobs_1 = require("./cron/modernExamJobs");
 const dashboardJobs_1 = require("./cron/dashboardJobs");
 const financeRecurringJobs_1 = require("./cron/financeRecurringJobs");
+const financeSeedService_1 = require("./services/financeSeedService");
 const newsJobs_1 = require("./cron/newsJobs");
 const retentionJobs_1 = require("./cron/retentionJobs");
 const subscriptionExpiryCron_1 = require("./cron/subscriptionExpiryCron");
 const adminStudentMgmtRoutes_1 = __importDefault(require("./routes/adminStudentMgmtRoutes"));
+const adminNotificationRoutes_1 = __importDefault(require("./routes/adminNotificationRoutes"));
+const adminStudentSecurityRoutes_1 = __importDefault(require("./routes/adminStudentSecurityRoutes"));
 const securityGuards_1 = require("./middlewares/securityGuards");
 const requestSanitizer_1 = require("./middlewares/requestSanitizer");
 const securityRateLimit_1 = require("./middlewares/securityRateLimit");
@@ -195,10 +199,14 @@ app.use('/api', publicRoutes_1.default);
 app.use(`/api/${ADMIN_SECRET_PATH}`, securityRateLimit_1.adminRateLimiter);
 app.use(`/api/${ADMIN_SECRET_PATH}`, adminRoutes_1.default);
 app.use('/api/admin', securityRateLimit_1.adminRateLimiter);
-app.use('/api/admin', adminRoutes_1.default);
 app.use('/api/admin', adminStudentMgmtRoutes_1.default);
+app.use('/api/admin', adminNotificationRoutes_1.default);
+app.use('/api/admin', adminStudentSecurityRoutes_1.default);
+app.use('/api/admin', adminRoutes_1.default);
 // Student API
 app.use('/api/student', studentRoutes_1.default);
+// Modern exam routes (session-based)
+app.use('/api', studentExamRoutes_1.studentExamRoutes);
 // Webhooks
 app.use('/api/webhooks', webhookRoutes_1.default);
 app.use('/api/payments', webhookRoutes_1.default);
@@ -267,6 +275,8 @@ async function start() {
     (0, retentionJobs_1.startRetentionCronJobs)();
     (0, subscriptionExpiryCron_1.startSubscriptionExpiryCron)();
     (0, financeRecurringJobs_1.startFinanceRecurringCronJobs)();
+    // Seed default Chart-of-Account entries (idempotent)
+    await (0, financeSeedService_1.seedDefaultChartOfAccounts)();
     app.listen(PORT, () => {
         console.log(`🚀 CampusWay Backend running on port ${PORT}`);
         console.log(`📡 Public API: http://localhost:${PORT}/api`);

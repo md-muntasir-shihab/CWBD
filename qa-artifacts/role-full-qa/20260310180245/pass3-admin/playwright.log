@@ -1,0 +1,1255 @@
+{
+  "config": {
+    "configFile": "f:\\CampusWay\\frontend\\playwright.config.ts",
+    "rootDir": "f:/CampusWay/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "f:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-desktop",
+        "name": "chromium-desktop",
+        "testDir": "f:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "f:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-mobile",
+        "name": "chromium-mobile",
+        "testDir": "f:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin-phase2-micro.spec.ts",
+      "file": "admin-phase2-micro.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Admin Phase2 Micro Saves",
+          "file": "admin-phase2-micro.spec.ts",
+          "line": 28,
+          "column": 6,
+          "specs": [
+            {
+              "title": "site settings save reflects on public settings payload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 526,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:05:37.995Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4b5de36fd3c0d137027f-394df2ec0185537092a3",
+              "file": "admin-phase2-micro.spec.ts",
+              "line": 29,
+              "column": 5
+            },
+            {
+              "title": "home control toggle save reflects on /api/home",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 534,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:05:38.552Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4b5de36fd3c0d137027f-6970224d53fc8beb06e7",
+              "file": "admin-phase2-micro.spec.ts",
+              "line": 60,
+              "column": 5
+            },
+            {
+              "title": "news source save reflects on public sources list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 453,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:05:39.105Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4b5de36fd3c0d137027f-2630a345a6e0cab23d27",
+              "file": "admin-phase2-micro.spec.ts",
+              "line": 98,
+              "column": 5
+            },
+            {
+              "title": "subscription plan create and support unread simulation work through admin endpoints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1005,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:05:39.574Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4b5de36fd3c0d137027f-c9c108a8ddf619c53311",
+              "file": "admin-phase2-micro.spec.ts",
+              "line": 135,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin-responsive-all.spec.ts",
+      "file": "admin-responsive-all.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Admin Responsive Matrix",
+          "file": "admin-responsive-all.spec.ts",
+          "line": 36,
+          "column": 6,
+          "specs": [
+            {
+              "title": "routes are responsive at 360x800",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17598,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:05:40.622Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04b6e59024c692938a29-cb8271a37e4d21f81b65",
+              "file": "admin-responsive-all.spec.ts",
+              "line": 43,
+              "column": 9
+            },
+            {
+              "title": "routes are responsive at 390x844",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17808,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:05:58.347Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04b6e59024c692938a29-900e7fc7570951880dea",
+              "file": "admin-responsive-all.spec.ts",
+              "line": 43,
+              "column": 9
+            },
+            {
+              "title": "routes are responsive at 768x1024",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 18329,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:06:16.177Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04b6e59024c692938a29-ec5e10b26446e8d6ddb2",
+              "file": "admin-responsive-all.spec.ts",
+              "line": 43,
+              "column": 9
+            },
+            {
+              "title": "routes are responsive at 1024x768",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 18515,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:06:34.525Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04b6e59024c692938a29-4801eca74b250c1f18b0",
+              "file": "admin-responsive-all.spec.ts",
+              "line": 43,
+              "column": 9
+            },
+            {
+              "title": "routes are responsive at 1440x900",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20000,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:06:53.059Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04b6e59024c692938a29-6b0bbef183dba2f9269b",
+              "file": "admin-responsive-all.spec.ts",
+              "line": 43,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin-smoke.spec.ts",
+      "file": "admin-smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Admin Smoke",
+          "file": "admin-smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "admin can login and navigate key tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4868,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:13.112Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3e1ae038a429e6569c19-ba71816f92e6d4f01c5e",
+              "file": "admin-smoke.spec.ts",
+              "line": 5,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "finance-support-critical.spec.ts",
+      "file": "finance-support-critical.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Finance + Support Critical Flows",
+          "file": "finance-support-critical.spec.ts",
+          "line": 23,
+          "column": 6,
+          "specs": [
+            {
+              "title": "admin creates student account and assigns subscription plan",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 493,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:18.025Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "640a65ea92a70c674037-4bf1dc6e3568dcc427dd",
+              "file": "finance-support-critical.spec.ts",
+              "line": 50,
+              "column": 5
+            },
+            {
+              "title": "superadmin password reveal requires MFA + reason",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Seeded admin is not superadmin; reveal flow is superadmin-only.",
+                      "location": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\finance-support-critical.spec.ts",
+                        "line": 100,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 4,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:18.978Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Seeded admin is not superadmin; reveal flow is superadmin-only.",
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\finance-support-critical.spec.ts",
+                            "line": 100,
+                            "column": 14
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "640a65ea92a70c674037-7a681e2c8190d0bee6e5",
+              "file": "finance-support-critical.spec.ts",
+              "line": 98,
+              "column": 5
+            },
+            {
+              "title": "manual payment and expense entries are accepted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 55,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:18.996Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "640a65ea92a70c674037-45b80f45be0194c93f73",
+              "file": "finance-support-critical.spec.ts",
+              "line": 143,
+              "column": 5
+            },
+            {
+              "title": "due ledger update and reminder flow works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 47,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:19.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "640a65ea92a70c674037-c4b8ef2ae44679ca0d1e",
+              "file": "finance-support-critical.spec.ts",
+              "line": 190,
+              "column": 5
+            },
+            {
+              "title": "student can create support ticket and admin can update it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:19.128Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "640a65ea92a70c674037-bbfdd03275e5c32d4734",
+              "file": "finance-support-critical.spec.ts",
+              "line": 216,
+              "column": 5
+            },
+            {
+              "title": "backup run is successful and restore guard requires typed confirmation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 51,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:19.617Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "640a65ea92a70c674037-c446dcd95770d1d7e483",
+              "file": "finance-support-critical.spec.ts",
+              "line": 255,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "import-export-bulk.spec.ts",
+      "file": "import-export-bulk.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Import / Export / Bulk Verification",
+          "file": "import-export-bulk.spec.ts",
+          "line": 29,
+          "column": 6,
+          "specs": [
+            {
+              "title": "major import templates and export endpoints respond successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 199,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:19.721Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9769b0d2bce288b4ac11-5dad250e1f50c2183606",
+              "file": "import-export-bulk.spec.ts",
+              "line": 52,
+              "column": 5
+            },
+            {
+              "title": "bulk update changes university state and persists",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 47,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:20.366Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9769b0d2bce288b4ac11-bec7dae14c793188b58e",
+              "file": "import-export-bulk.spec.ts",
+              "line": 86,
+              "column": 5
+            },
+            {
+              "title": "question-bank import preview endpoint accepts file payload and returns non-crashing response",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 26,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:20.432Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9769b0d2bce288b4ac11-bdedc36be02eb59e491e",
+              "file": "import-export-bulk.spec.ts",
+              "line": 127,
+              "column": 5
+            },
+            {
+              "title": "question-bank bulk tag update works for an existing item",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "No question-bank v2 records available to test bulk tag update.",
+                      "location": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\import-export-bulk.spec.ts",
+                        "line": 161,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 17,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:20.473Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "No question-bank v2 records available to test bulk tag update.",
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\import-export-bulk.spec.ts",
+                            "line": 161,
+                            "column": 14
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9769b0d2bce288b4ac11-f4f908c456d4c753680c",
+              "file": "import-export-bulk.spec.ts",
+              "line": 153,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "news-admin-routes.spec.ts",
+      "file": "news-admin-routes.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "News admin routes",
+          "file": "news-admin-routes.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "canonical /__cw_admin__/news routes resolve without runtime failures",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9368,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:20.567Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7262bdb4fdf622903829-923f09165f8e6aa2c0a0",
+              "file": "news-admin-routes.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "legacy /admin/news redirects to secret admin base",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3542,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:29.952Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7262bdb4fdf622903829-efba0a036802f4a18177",
+              "file": "news-admin-routes.spec.ts",
+              "line": 33,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "qbank-critical.spec.ts",
+      "file": "qbank-critical.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Question Bank Critical Flows",
+          "file": "qbank-critical.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "qbank-add-question-upload-and-link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Skeleton: wire exact selectors for current admin DOM.",
+                      "location": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                        "line": 6,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 395,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:33.556Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Skeleton: wire exact selectors for current admin DOM.",
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                            "line": 6,
+                            "column": 14
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f9c5897b84c75a0952ea-de77d2af4e4a4f376092",
+              "file": "qbank-critical.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "qbank-bulk-import-mapping-and-report",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Skeleton: upload fixture, map columns, assert import report.",
+                      "location": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                        "line": 13,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 241,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:33.968Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Skeleton: upload fixture, map columns, assert import report.",
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                            "line": 13,
+                            "column": 14
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f9c5897b84c75a0952ea-6799f5f45f6cb97859d0",
+              "file": "qbank-critical.spec.ts",
+              "line": 12,
+              "column": 5
+            },
+            {
+              "title": "qbank-picker-filter-smart-pick-and-preview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Skeleton: open exam builder, query picker, assert selected totals.",
+                      "location": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                        "line": 20,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 232,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:34.232Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Skeleton: open exam builder, query picker, assert selected totals.",
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                            "line": 20,
+                            "column": 14
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f9c5897b84c75a0952ea-8ce792c94c20df7aa6c0",
+              "file": "qbank-critical.spec.ts",
+              "line": 19,
+              "column": 5
+            },
+            {
+              "title": "qbank-moderator-approve-flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Skeleton: approve pending question and assert status/webhook side effects.",
+                      "location": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                        "line": 27,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 234,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:34.481Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Skeleton: approve pending question and assert status/webhook side effects.",
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\qbank-critical.spec.ts",
+                            "line": 27,
+                            "column": 14
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f9c5897b84c75a0952ea-56a99188ad759eb22ca6",
+              "file": "qbank-critical.spec.ts",
+              "line": 26,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "settings-propagation.spec.ts",
+      "file": "settings-propagation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Settings Propagation",
+          "file": "settings-propagation.spec.ts",
+          "line": 34,
+          "column": 6,
+          "specs": [
+            {
+              "title": "site name update propagates to public API and public/student UI",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7229,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:07:34.763Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e5cd76c57c045ee690c5-6e2ebbe2e3f4e5a8ad50",
+              "file": "settings-propagation.spec.ts",
+              "line": 35,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-10T18:05:35.925Z",
+    "duration": 126274.636,
+    "expected": 21,
+    "skipped": 6,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

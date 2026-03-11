@@ -70,7 +70,7 @@ const FinanceTransactionSchema = new mongoose_1.Schema({
         enum: [
             'subscription_payment', 'exam_payment', 'service_sale', 'manual_income',
             'expense', 'refund', 'sms_cost', 'email_cost', 'hosting_cost',
-            'staff_payout', 'other',
+            'staff_payout', 'sms_test_send_cost', 'email_test_send_cost', 'other',
         ],
         required: true,
         index: true,

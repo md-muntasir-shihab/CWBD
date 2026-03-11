@@ -1,0 +1,1011 @@
+{
+  "config": {
+    "configFile": "f:\\CampusWay\\frontend\\playwright.config.ts",
+    "rootDir": "f:/CampusWay/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "f:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-desktop",
+        "name": "chromium-desktop",
+        "testDir": "f:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "f:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-mobile",
+        "name": "chromium-mobile",
+        "testDir": "f:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth-session.spec.ts",
+      "file": "auth-session.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Auth Session Security",
+          "file": "auth-session.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "new login invalidates old student session",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6987,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:02.341Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9343c0faad9d5d909287-64f507576366d3e89e02",
+              "file": "auth-session.spec.ts",
+              "line": 7,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "cross-role-permissions.spec.ts",
+      "file": "cross-role-permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cross-role Permissions",
+          "file": "cross-role-permissions.spec.ts",
+          "line": 29,
+          "column": 6,
+          "specs": [
+            {
+              "title": "public direct URLs cannot access protected student/admin pages",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5003,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:09.485Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d035a49d885ce6556860-760443bf7b0f35583ccd",
+              "file": "cross-role-permissions.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "student cannot reach admin routes by direct URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3885,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:14.508Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d035a49d885ce6556860-2ee009cec39840aaa5e9",
+              "file": "cross-role-permissions.spec.ts",
+              "line": 47,
+              "column": 5
+            },
+            {
+              "title": "student/admin API tokens are blocked from cross-role endpoints",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 919,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[401, 403]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[401, 403]\u001b[39m\n    at f:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts:84:28",
+                        "location": {
+                          "file": "f:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts",
+                          "column": 28,
+                          "line": 84
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 82 |\u001b[39m             headers\u001b[33m:\u001b[39m authHeader(adminLogin\u001b[33m.\u001b[39mtoken)\u001b[33m,\u001b[39m\n \u001b[90m 83 |\u001b[39m         })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 84 |\u001b[39m         expect([\u001b[35m401\u001b[39m\u001b[33m,\u001b[39m \u001b[35m403\u001b[39m])\u001b[33m.\u001b[39mtoContain(adminToStudentTickets\u001b[33m.\u001b[39mstatus())\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 85 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 86 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 87 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts",
+                            "column": 28,
+                            "line": 84
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[401, 403]\u001b[39m\n\n  82 |             headers: authHeader(adminLogin.token),\n  83 |         });\n> 84 |         expect([401, 403]).toContain(adminToStudentTickets.status());\n     |                            ^\n  85 |     });\n  86 | });\n  87 |\n    at f:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts:84:28"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:18.411Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts",
+                        "column": 28,
+                        "line": 84
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d035a49d885ce6556860-83a8e4d1445088ca5222",
+              "file": "cross-role-permissions.spec.ts",
+              "line": 59,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "login-unification.spec.ts",
+      "file": "login-unification.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login Unification",
+          "file": "login-unification.spec.ts",
+          "line": 15,
+          "column": 15,
+          "specs": [
+            {
+              "title": "canonical login pages render logo + compact theme toggle",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2939,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:21.119Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cc2f8252618595ce4ba3-89795b44dca1c5449b55",
+              "file": "login-unification.spec.ts",
+              "line": 16,
+              "column": 5
+            },
+            {
+              "title": "legacy /admin/login redirects to secret admin login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1655,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:24.221Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cc2f8252618595ce4ba3-896710b02716cf5be32d",
+              "file": "login-unification.spec.ts",
+              "line": 29,
+              "column": 5
+            },
+            {
+              "title": "unauthorized admin dashboard redirects to secret login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1696,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:25.894Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cc2f8252618595ce4ba3-00dc27776928ea84de7b",
+              "file": "login-unification.spec.ts",
+              "line": 34,
+              "column": 5
+            },
+            {
+              "title": "student login succeeds only from /login and redirects to /dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2132,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:27.607Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cc2f8252618595ce4ba3-09870e69eb61d220b75e",
+              "file": "login-unification.spec.ts",
+              "line": 39,
+              "column": 5
+            },
+            {
+              "title": "admin login succeeds only from /__cw_admin__/login and redirects to /__cw_admin__/dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2398,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:29.758Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cc2f8252618595ce4ba3-8ca2c7572d79cfc4deec",
+              "file": "login-unification.spec.ts",
+              "line": 48,
+              "column": 5
+            },
+            {
+              "title": "chairman login redirects to /chairman/dashboard when chairman creds are configured",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Chairman credentials are not configured for this environment.",
+                      "location": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\login-unification.spec.ts",
+                        "line": 58,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 266,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:32.174Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Chairman credentials are not configured for this environment.",
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\login-unification.spec.ts",
+                            "line": 58,
+                            "column": 14
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cc2f8252618595ce4ba3-eabcc824762383d77a93",
+              "file": "login-unification.spec.ts",
+              "line": 57,
+              "column": 5
+            },
+            {
+              "title": "role mismatch: student creds fail on admin/chairman portals",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2477,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:32.459Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cc2f8252618595ce4ba3-670bd5446e25b25584ac",
+              "file": "login-unification.spec.ts",
+              "line": 64,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "phase4-pipelines.spec.ts",
+      "file": "phase4-pipelines.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Phase4 Pipelines Validation",
+          "file": "phase4-pipelines.spec.ts",
+          "line": 49,
+          "column": 6,
+          "specs": [
+            {
+              "title": "P4.1 rss ingestion creates pending items and dedupes duplicates",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 198,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at f:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts:170:68",
+                        "location": {
+                          "file": "f:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts",
+                          "column": 68,
+                          "line": 170
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 168 |\u001b[39m         expect(fetchAgain\u001b[33m.\u001b[39mok()\u001b[33m,\u001b[39m \u001b[36mawait\u001b[39m fetchAgain\u001b[33m.\u001b[39mtext())\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 169 |\u001b[39m         \u001b[36mconst\u001b[39m fetchAgainBody \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m fetchAgain\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 170 |\u001b[39m         expect(\u001b[33mNumber\u001b[39m(fetchAgainBody\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mstats\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mduplicateCount \u001b[33m||\u001b[39m \u001b[35m0\u001b[39m))\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 171 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 172 |\u001b[39m\n \u001b[90m 173 |\u001b[39m     test(\u001b[32m'P4.1 scheduled publish and default banner fallback update work'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ request }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts",
+                            "column": 68,
+                            "line": 170
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  168 |         expect(fetchAgain.ok(), await fetchAgain.text()).toBeTruthy();\n  169 |         const fetchAgainBody = await fetchAgain.json();\n> 170 |         expect(Number(fetchAgainBody?.stats?.duplicateCount || 0)).toBeGreaterThan(0);\n      |                                                                    ^\n  171 |     });\n  172 |\n  173 |     test('P4.1 scheduled publish and default banner fallback update work', async ({ request }) => {\n    at f:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts:170:68"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:34.978Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts",
+                        "column": 68,
+                        "line": 170
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a2eae2c4a57d0f99ae43-d1002150dcce1e28c060",
+              "file": "phase4-pipelines.spec.ts",
+              "line": 119,
+              "column": 5
+            },
+            {
+              "title": "P4.1 scheduled publish and default banner fallback update work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:36.235Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a2eae2c4a57d0f99ae43-3e617115e646e30293b9",
+              "file": "phase4-pipelines.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "P4.2 exam session autosubmit cron finalizes expired attempts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:36.235Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a2eae2c4a57d0f99ae43-ec0626106917d9820846",
+              "file": "phase4-pipelines.spec.ts",
+              "line": 266,
+              "column": 5
+            },
+            {
+              "title": "P4.3 payment pending->paid updates dashboard and P4.4 audit logs capture action",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:36.235Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a2eae2c4a57d0f99ae43-8d5d981802215c3c69c8",
+              "file": "phase4-pipelines.spec.ts",
+              "line": 368,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "role-theme-persistence.spec.ts",
+      "file": "role-theme-persistence.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Role Theme Persistence",
+          "file": "role-theme-persistence.spec.ts",
+          "line": 30,
+          "column": 6,
+          "specs": [
+            {
+              "title": "student dark/light theme persists across reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7420,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:37.926Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "36ac5bf95a8cd39628ac-0fc8899fadc7708cf25c",
+              "file": "role-theme-persistence.spec.ts",
+              "line": 31,
+              "column": 5
+            },
+            {
+              "title": "admin dark/light theme persists across reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6244,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:45.478Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "36ac5bf95a8cd39628ac-3f4f2509afcf7133fce8",
+              "file": "role-theme-persistence.spec.ts",
+              "line": 54,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step2-core.spec.ts",
+      "file": "step2-core.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Step 2 Core Pack",
+          "file": "step2-core.spec.ts",
+          "line": 70,
+          "column": 6,
+          "specs": [
+            {
+              "title": "admin highlighted + featured updates are reflected in /api/home",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2625,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:51.775Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ad706c873c04a0afe0a9-b315b437aa8543fcb17b",
+              "file": "step2-core.spec.ts",
+              "line": 71,
+              "column": 5
+            },
+            {
+              "title": "exam routes are gated by login and subscription policy",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11872,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/login/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/login/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[22m\n\n    at f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:145:28",
+                        "location": {
+                          "file": "f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts",
+                          "column": 28,
+                          "line": 145
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 143 |\u001b[39m\n \u001b[90m 144 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/exam/take/000000000000000000000000'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 145 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/login/\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 146 |\u001b[39m\n \u001b[90m 147 |\u001b[39m         \u001b[36mawait\u001b[39m loginAsStudent(page)\u001b[33m;\u001b[39m\n \u001b[90m 148 |\u001b[39m         \u001b[36mconst\u001b[39m studentToken \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m readAccessToken(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts",
+                            "column": 28,
+                            "line": 145
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/login/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[22m\n\n\n  143 |\n  144 |         await page.goto('/exam/take/000000000000000000000000');\n> 145 |         await expect(page).toHaveURL(/\\/login/, { timeout: 10000 });\n      |                            ^\n  146 |\n  147 |         await loginAsStudent(page);\n  148 |         const studentToken = await readAccessToken(page);\n    at f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:145:28"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:09:54.417Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts",
+                        "column": 28,
+                        "line": 145
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ad706c873c04a0afe0a9-07ba64076d82b449369b",
+              "file": "step2-core.spec.ts",
+              "line": 141,
+              "column": 5
+            },
+            {
+              "title": "question bank supports BN/EN payload and mobile card layout",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 18556,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\u001b[22m\n\n    at f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:319:15",
+                        "location": {
+                          "file": "f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts",
+                          "column": 15,
+                          "line": 319
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 317 |\u001b[39m             \u001b[36mawait\u001b[39m expect(\n \u001b[90m 318 |\u001b[39m                 page\u001b[33m.\u001b[39mlocator(\u001b[32m'table tbody tr:visible, article:visible'\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mRegExp\u001b[39m(suffix) })\u001b[33m.\u001b[39mfirst()\u001b[33m,\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 319 |\u001b[39m             )\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 320 |\u001b[39m         }\n \u001b[90m 321 |\u001b[39m\n \u001b[90m 322 |\u001b[39m         \u001b[36mawait\u001b[39m expectPageHealthy(page\u001b[33m,\u001b[39m tracker)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts",
+                            "column": 15,
+                            "line": 319
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\u001b[22m\n\n\n  317 |             await expect(\n  318 |                 page.locator('table tbody tr:visible, article:visible').filter({ hasText: new RegExp(suffix) }).first(),\n> 319 |             ).toBeVisible({ timeout: 15000 });\n      |               ^\n  320 |         }\n  321 |\n  322 |         await expectPageHealthy(page, tracker);\n    at f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:319:15"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T18:10:08.130Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts",
+                        "column": 15,
+                        "line": 319
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ad706c873c04a0afe0a9-dda527bfd180379943f0",
+              "file": "step2-core.spec.ts",
+              "line": 231,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-10T18:09:00.467Z",
+    "duration": 86460.17300000001,
+    "expected": 12,
+    "skipped": 4,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

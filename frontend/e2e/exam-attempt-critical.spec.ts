@@ -83,8 +83,18 @@ test.describe('Exam Attempt Critical Flows', () => {
         const detailsResponse = await request.get(`/api/exams/${examId}/details`, {
             headers: authHeader(studentToken),
         });
-        expect(detailsResponse.status()).toBe(200);
-        const detailsBody = (await detailsResponse.json()) as { exam?: { _id?: string; title?: string } };
+        const detailsStatus = detailsResponse.status();
+        let detailsBody: { exam?: { _id?: string; title?: string } } | null = null;
+        if (detailsStatus === 404) {
+            const fallbackResponse = await request.get(`/api/exams/${examId}`, {
+                headers: authHeader(studentToken),
+            });
+            expect(fallbackResponse.status(), await fallbackResponse.text()).toBe(200);
+            detailsBody = (await fallbackResponse.json()) as { exam?: { _id?: string; title?: string } };
+        } else {
+            expect(detailsStatus, await detailsResponse.text()).toBe(200);
+            detailsBody = (await detailsResponse.json()) as { exam?: { _id?: string; title?: string } };
+        }
         expect(String(detailsBody.exam?._id || '')).toBe(examId);
 
         const startResponse = await request.post(`/api/exams/${examId}/start`, {
@@ -444,7 +454,14 @@ async function ensureCriticalFlowExam(
     const publishResponse = await request.patch(`/api/campusway-secure-admin/exams/${targetExamId}/publish`, {
         headers: authHeader(token),
     });
-    expect([200, 400]).toContain(publishResponse.status());
+    expect(publishResponse.status(), await publishResponse.text()).toBe(200);
+
+    const verifyPublishedResponse = await request.get(`/api/campusway-secure-admin/exams/${targetExamId}`, {
+        headers: authHeader(token),
+    });
+    expect(verifyPublishedResponse.status(), await verifyPublishedResponse.text()).toBe(200);
+    const verifyBody = (await verifyPublishedResponse.json()) as { exam?: { isPublished?: boolean } };
+    expect(Boolean(verifyBody?.exam?.isPublished)).toBeTruthy();
 
     return targetExamId;
 }

@@ -1,7 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.submitSession = exports.saveSessionAnswers = exports.getSessionQuestions = exports.startSession = void 0;
-const crypto_1 = require("crypto");
+const mongoose_1 = __importDefault(require("mongoose"));
 const answer_model_1 = require("../models/answer.model");
 const exam_model_1 = require("../models/exam.model");
 const examQuestion_model_1 = require("../models/examQuestion.model");
@@ -26,7 +29,7 @@ const startSession = async (examId, userId, reqMeta) => {
         exam.randomizeOptions ? shuffle((q.options || []).map((o) => o.key)) : (q.options || []).map((o) => o.key)
     ]));
     const session = await examSession_model_1.ExamSessionModel.create({
-        _id: (0, crypto_1.randomUUID)(),
+        _id: new mongoose_1.default.Types.ObjectId(),
         examId,
         userId,
         attemptNo,
@@ -96,7 +99,7 @@ const saveSessionAnswers = async (examId, sessionId, userId, payload) => {
     for (const row of payload.answers || []) {
         const prev = await answer_model_1.AnswerModel.findOne({ sessionId, questionId: row.questionId, userId });
         const oldSelected = prev?.selectedKey ?? null;
-        const willChange = oldSelected !== row.selectedKey;
+        const willChange = oldSelected !== null && oldSelected !== row.selectedKey;
         const nextChangeCount = (prev?.changeCount || 0) + (willChange ? 1 : 0);
         if ((exam.answerChangeLimit ?? null) !== null && nextChangeCount > exam.answerChangeLimit)
             continue;

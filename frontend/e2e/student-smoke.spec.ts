@@ -6,10 +6,10 @@ test.describe('Student Smoke', () => {
         const tracker = attachHealthTracker(page);
         await loginAsStudent(page);
 
-        await expect(page.getByRole('heading', { name: /Upcoming Exams/i })).toBeVisible();
+        await expect(page.getByText(/My Subscription/i).first()).toBeVisible();
         await expect(page.locator('text=Profile Completion').first()).toBeVisible();
 
-        await page.goto('/student/profile');
+        await page.goto('/profile');
         await expect(page.getByRole('heading', { name: /Profile & Documents/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /Save Changes/i })).toBeVisible();
 

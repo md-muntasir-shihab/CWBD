@@ -38,10 +38,26 @@ export default function RoleDetailPage() {
     setLoading(true);
     try {
       const res = await teamApi.getRoleById(id);
-      const r = res.data as TeamRoleItem;
+      const payload = res.data as {
+        item?: TeamRoleItem;
+        data?: TeamRoleItem | { item?: TeamRoleItem };
+        permissions?: ModulePermissionMap;
+        users?: unknown[];
+      };
+      const dataValue = payload.data;
+      const roleItem = payload.item
+        ?? (typeof dataValue === 'object' && dataValue && 'item' in dataValue ? dataValue.item : undefined)
+        ?? (typeof dataValue === 'object' && dataValue ? dataValue as TeamRoleItem : undefined);
+      if (!roleItem) {
+        throw new Error('Role payload missing');
+      }
+      const r: TeamRoleItem = {
+        ...roleItem,
+        totalUsers: roleItem.totalUsers ?? (Array.isArray(payload.users) ? payload.users.length : 0),
+      };
       setRole(r);
       setEditForm({ name: r.name, description: r.description || '', basePlatformRole: r.basePlatformRole || 'viewer' });
-      setPermissions(r.modulePermissions || {});
+      setPermissions(payload.permissions || r.modulePermissions || {});
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Failed to load role');
     } finally {
@@ -134,7 +150,7 @@ export default function RoleDetailPage() {
       title="Role Detail"
       description="View and manage role configuration and permissions."
       allowedRoles={['superadmin', 'admin', 'moderator']}
-      requiredModule="team_access"
+      requiredModule="team_access_control"
     >
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
         <button onClick={() => navigate(ADMIN_PATHS.teamRoles)} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">

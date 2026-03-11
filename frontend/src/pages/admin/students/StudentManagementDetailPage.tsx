@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {
   getStudentUnified, updateStudent, suspendStudent, activateStudent,
-  resetStudentPassword, assignSubscription, extendSubscription,
+  assignSubscription, extendSubscription,
   expireSubscriptionNow, toggleAutoRenew,
   addTimelineEntry, deleteTimelineEntry,
   createFinanceAdjustment, getStudentPayments, getStudentFinanceStatement,
@@ -130,7 +130,14 @@ export default function StudentManagementDetailPage() {
   const updateMut = useMutation({ mutationFn: (d: Record<string, unknown>) => updateStudent(id!, d), onSuccess: () => { refetch(); flash('Profile updated'); setEditProfile(false); } });
   const suspendMut = useMutation({ mutationFn: () => suspendStudent(id!), onSuccess: () => { refetch(); flash('Student suspended'); } });
   const activateMut = useMutation({ mutationFn: () => activateStudent(id!), onSuccess: () => { refetch(); flash('Student activated'); } });
-  const resetPassMut = useMutation({ mutationFn: () => resetStudentPassword(id!, { newPassword: '' }), onSuccess: () => flash('Password reset link sent') });
+  const resetPassMut = useMutation({
+    mutationFn: async () => {
+      await toggleForceReset(id!, { enabled: true });
+      return resendAccountInfo(id!, { channels: ['email'] });
+    },
+    onSuccess: () => { refetch(); flash('Password reset request sent'); },
+    onError: () => flash('Failed to send reset request', false),
+  });
   const assignSubMut = useMutation({ mutationFn: () => assignSubscription(id!, assignForm), onSuccess: () => { refetch(); flash('Subscription assigned'); setAssignModal(false); } });
   const extendSubMut = useMutation({ mutationFn: () => extendSubscription(id!, parseInt(extendDays)), onSuccess: () => { refetch(); flash('Subscription extended'); setExtendModal(false); } });
   const expireSubMut = useMutation({ mutationFn: () => expireSubscriptionNow(id!), onSuccess: () => { refetch(); flash('Subscription expired'); } });

@@ -1,0 +1,77 @@
+[    8776ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/auth/login:0
+[   12659ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/auth/login:0
+[   13752ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:5175/api/auth/login:0
+[  155578ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772877321_2995037c007ccdcc96c3.jpg:0
+[  155579ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772623013_12fd02f2c30e57f0bd8a.jpg:0
+[  155580ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772619305_4a7a7ee16edc2495e6cb.jpg:0
+[  155580ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772621438_51020b18fef8c34231b3.jpg:0
+[  155581ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772618282_0d879fbfcf867ae1e1ba.jpg:0
+[  155584ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772610866_debea363aaa38c8a10b5.jpg:0
+[  155592ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772612188_f40af778b6e72f725075.jpg:0
+[  155610ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772612403_9ddb5b94014bcdc60756.jpg:0
+[  155612ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772607809_0784e8643d6bd986199e.jpg:0
+[  155612ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772607860_bcb84512da6e3ca89c08.jpg:0
+[  155612ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772601718_485939317e7cea1dbeab.jpg:0
+[  155613ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772605197_7fb83f2deb66abeafec2.jpg:0
+[  155614ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772593720_742fcfd2111175b5d593.jpg:0
+[  155614ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772601958_64a5f70b6743b7cb368d.jpg:0
+[  155614ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772580202_ebe902867c45dd98477c.jpg:0
+[  155614ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772535424_b2b5e23c47b322091047.jpg:0
+[  155614ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772927358_e28954dc8c97f28d7095.jpg:0
+[  155615ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772930596_c1590fa286c540b55575.jpg:0
+[  155615ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772959233_ad90d4eb6bc4e7258fd7.jpg:0
+[  155619ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772961204_0408c9fd15be196d3329.jpg:0
+[  155620ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772965056_f436576cfe035bd078e2.jpg:0
+[  155620ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1771736431_4135f88a48f6d0c2e84e.jpg:0
+[  155620ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1771783823_64f7756e4acfe90f2e46.jpg:0
+[  155620ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1771904152_eeec0a108e762a0f53cd.jpg:0
+[  155621ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1771987715_8751cd048928ed870e74.jpg:0
+[  155621ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1772000425_22306a1954fb5801f389.jpg:0
+[  155621ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772381996_087066b7c91e8743daae.jpg:0
+[  155621ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772724246_717bdc98f8830aa8fdb3.jpg:0
+[  155621ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772725992_32ea46908f38932c7f71.jpg:0
+[  155622ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772716565_bcacafc79b6b8f6af955.jpg:0
+[  155622ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772717722_25f7aecaa7af4fd2b02a.jpg:0
+[  155622ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772691437_163970bf32b751fa680c.jpg:0
+[  155623ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1769941923_a8667a1052d5c0b71ed5.jpg:0
+[  155623ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772898260_eb0fb1754f5967ecbc0f.jpg:0
+[  155623ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772870270_0523a319e43172357ae2.jpg:0
+[  155623ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772786785_ecc2c768ac9bab6340e8.jpg:0
+[  155624ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772790285_4c3fa89a236116b4eb9d.jpg:0
+[  155624ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1769969474_3c2542d9a33a5e3c9dde.jpg:0
+[  155624ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1770019512_69bf5d91b78f9f8ebd4f.jpg:0
+[  155624ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1770099022_95c374b765415b0eed14.jpg:0
+[  155624ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1770099830_b9889a646d057e517f14.jpg:0
+[  155625ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1770122551_bc7c05b75a794e7357f8.jpg:0
+[  155626ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202602/og_1771475134_e02943848b1e8e590d28.jpg:0
+[  155626ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772641547_ae2c48cfa55f7dd57c40.jpg:0
+[  155632ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772643744_cc0aee5a9d1bac5a1dad.jpg:0
+[  155632ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772645181_69fcbc422dd76bc020ce.jpg:0
+[  155632ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772645720_624ddd5bafb322ed72ad.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772630050_9cc73430af16c3dbcb66.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772633285_bb151fd9f105720d4b62.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772635211_e218908d23224cc7e0ea.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772635605_ba457db776ee7122df98.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772635761_27da407494d9a047b9e6.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772637044_70e900662ec27b437224.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772637957_63abb00cdb4c5c94f1ca.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772639030_bee90a9277d793832655.jpg:0
+[  155633ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772640726_f060e90dc7bb7e0a22eb.jpg:0
+[  155634ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772643212_3089842d777d0af74206.jpg:0
+[  155634ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772631278_5daff00a223a6d9f827a.jpg:0
+[  155634ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772631391_ce9ad50293ea26d4aec0.jpg:0
+[  155854ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://files.thedailycampus.com/assets/img/202603/og_1772805036_a70bba97183f38478142.jpg:0
+[  423063ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/hooks/useUniversityQueries.ts?t=1773086944416:0
+[  423066ms] [ERROR] [vite] Failed to reload /src/pages/UniversityCategoryBrowse.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:881
+[  423066ms] [ERROR] [vite] Failed to reload /src/components/university/UniversityBrowseShell.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:881
+[  423066ms] [ERROR] [vite] Failed to reload /src/pages/UniversityDetails.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:881
+[  430723ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/hooks/useUniversityQueries.ts?t=1773086952281:0
+[  430723ms] [ERROR] [vite] Failed to reload /src/pages/UniversityDetails.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:881
+[  430723ms] [ERROR] [vite] Failed to reload /src/components/university/UniversityBrowseShell.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:881
+[  430723ms] [ERROR] [vite] Failed to reload /src/pages/UniversityCategoryBrowse.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:881
+[  533229ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. admission @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:4924
+[  536369ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. admission @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:4924
+[  539313ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. admission @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:4924
+[  887452ms] [ERROR] Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information. 
+
+Check the render method of `SocialLinksManager`.  @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18617

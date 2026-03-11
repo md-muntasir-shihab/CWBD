@@ -1,0 +1,1283 @@
+{
+  "config": {
+    "configFile": "f:\\CampusWay\\frontend\\playwright.config.ts",
+    "rootDir": "f:/CampusWay/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "f:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-desktop",
+        "name": "chromium-desktop",
+        "testDir": "f:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "f:/CampusWay/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-mobile",
+        "name": "chromium-mobile",
+        "testDir": "f:/CampusWay/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "home-master.spec.ts",
+      "file": "home-master.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Home Master Smoke",
+          "file": "home-master.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "api/home contract contains strict top-level keys",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:47:50.492Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6422427918a9f53efaa7-6e7bf26e5c04e3daf648",
+              "file": "home-master.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "home sections render in strict order and services stay absent",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2821,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:47:53.838Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6422427918a9f53efaa7-71af661acde27e59d2f7",
+              "file": "home-master.spec.ts",
+              "line": 33,
+              "column": 5
+            },
+            {
+              "title": "mobile layout avoids horizontal overflow and keeps sticky search visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2413,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:47:56.680Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6422427918a9f53efaa7-c722834a5b1a936d8a91",
+              "file": "home-master.spec.ts",
+              "line": 82,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "home-step1.spec.ts",
+      "file": "home-step1.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Home Step1",
+          "file": "home-step1.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "renders required home sections in strict order",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2775,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:47:59.133Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-ca9a06b53af5282f7096",
+              "file": "home-step1.spec.ts",
+              "line": 8,
+              "column": 5
+            },
+            {
+              "title": "hero primary CTA navigates to configured target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3365,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:01.926Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-d073b7f6d5afcfe01f69",
+              "file": "home-step1.spec.ts",
+              "line": 36,
+              "column": 5
+            },
+            {
+              "title": "deadline Apply CTA opens a valid admission target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2664,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:05.312Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-8ff89d745da1e50ff489",
+              "file": "home-step1.spec.ts",
+              "line": 71,
+              "column": 5
+            },
+            {
+              "title": "theme toggle changes persisted theme state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2668,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:07.994Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-a10e17933caf5adb3bf7",
+              "file": "home-step1.spec.ts",
+              "line": 117,
+              "column": 5
+            },
+            {
+              "title": "featured universities section renders when API returns featured items",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2544,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:10.682Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e44a68c139ffadfe6458-1fcda400e6a1670fb6cd",
+              "file": "home-step1.spec.ts",
+              "line": 129,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "news-exam-responsive.spec.ts",
+      "file": "news-exam-responsive.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "News + Exams responsive stability",
+          "file": "news-exam-responsive.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "news/exams render healthy at mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3036,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:13.271Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-48f8eb1619279f159126",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "news/exams render healthy at mobile-plus",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2817,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:16.347Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-fc2d2993758e6c383721",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "news/exams render healthy at tablet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2625,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:19.181Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-371faf1aa1f5bbb5505b",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "news/exams render healthy at desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3113,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:21.822Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a91aee87bb74f446618f-8eeaca04b9618dc0ce45",
+              "file": "news-exam-responsive.spec.ts",
+              "line": 13,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "phase3-page-audit.spec.ts",
+      "file": "phase3-page-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Phase3 Page Audit",
+          "file": "phase3-page-audit.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "universities list keeps category isolation and required card actions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3548,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:24.982Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-c7d547939c198a211ea4",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 18,
+              "column": 5
+            },
+            {
+              "title": "university detail shows admission structure with actionable links",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4386,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:28.547Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-7ead74e58a958c13f425",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 69,
+              "column": 5
+            },
+            {
+              "title": "news article keeps readable prose and share controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2704,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:32.951Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-024aca6338dabbf8d8c0",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 92,
+              "column": 5
+            },
+            {
+              "title": "resources and contact pages have usable states and submit path",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3328,
+                      "error": {
+                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/^Phone/i) resolved to 2 elements:\n    1) <input value=\"\" id=\"contact-phone\" autocomplete=\"tel\" class=\"input-field \" placeholder=\"+8801XXXXXXXXX\"/> aka getByRole('textbox', { name: 'Phone *' })\n    2) <input type=\"radio\" value=\"phone\" name=\"preferredContact\" class=\"h-4 w-4 accent-primary\"/> aka getByRole('radio', { name: 'Phone Call' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/^Phone/i)\u001b[22m\n",
+                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/^Phone/i) resolved to 2 elements:\n    1) <input value=\"\" id=\"contact-phone\" autocomplete=\"tel\" class=\"input-field \" placeholder=\"+8801XXXXXXXXX\"/> aka getByRole('textbox', { name: 'Phone *' })\n    2) <input type=\"radio\" value=\"phone\" name=\"preferredContact\" class=\"h-4 w-4 accent-primary\"/> aka getByRole('radio', { name: 'Phone Call' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/^Phone/i)\u001b[22m\n\n    at f:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:127:42",
+                        "location": {
+                          "file": "f:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                          "column": 42,
+                          "line": 127
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 125 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Contact CampusWay|Contact Form/i\u001b[39m })\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 126 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Full Name/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Phase3 QA'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 127 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/^Phone/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'+8801700000000'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 128 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Email \\(optional\\)|Email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m`phase3-${Date.now()}@campusway.local`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 129 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Subject/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Technical Issue'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 130 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Message/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Automated phase 3 QA submission for contact/support visibility validation.'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                            "column": 42,
+                            "line": 127
+                          },
+                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/^Phone/i) resolved to 2 elements:\n    1) <input value=\"\" id=\"contact-phone\" autocomplete=\"tel\" class=\"input-field \" placeholder=\"+8801XXXXXXXXX\"/> aka getByRole('textbox', { name: 'Phone *' })\n    2) <input type=\"radio\" value=\"phone\" name=\"preferredContact\" class=\"h-4 w-4 accent-primary\"/> aka getByRole('radio', { name: 'Phone Call' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/^Phone/i)\u001b[22m\n\n\n  125 |         await expect(page.getByRole('heading', { name: /Contact CampusWay|Contact Form/i }).first()).toBeVisible();\n  126 |         await page.getByLabel(/Full Name/i).fill('Phase3 QA');\n> 127 |         await page.getByLabel(/^Phone/i).fill('+8801700000000');\n      |                                          ^\n  128 |         await page.getByLabel(/Email \\(optional\\)|Email/i).fill(`phase3-${Date.now()}@campusway.local`);\n  129 |         await page.getByLabel(/Subject/i).fill('Technical Issue');\n  130 |         await page.getByLabel(/Message/i).fill('Automated phase 3 QA submission for contact/support visibility validation.');\n    at f:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts:127:42"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:35.673Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\phase3-page-audit-Phase3-P-63ce6-able-states-and-submit-path-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\phase3-page-audit.spec.ts",
+                        "column": 42,
+                        "line": 127
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "95524b2cee81139e6727-09fb386e17cb87ecf477",
+              "file": "phase3-page-audit.spec.ts",
+              "line": 117,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "public-design-visibility.spec.ts",
+      "file": "public-design-visibility.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Public Design Visibility",
+          "file": "public-design-visibility.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "legacy routes normalize to subscription plans",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2576,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:41.085Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6dd276e73f6bf75f7e29-84d5dc16fd9179ee02d5",
+              "file": "public-design-visibility.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "home, news, and subscription pages render redesigned blocks",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9219,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Plan Type/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Plan Type/i)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Plan Type/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Plan Type/i)\u001b[22m\n\n    at f:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts:27:52",
+                        "location": {
+                          "file": "f:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts",
+                          "column": 52,
+                          "line": 27
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 25 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/subscription-plans'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 26 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Subscription Plans/i\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 27 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/Plan Type/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'theme-toggle'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 30 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'body'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "f:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts",
+                            "column": 52,
+                            "line": 27
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Plan Type/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Plan Type/i)\u001b[22m\n\n\n  25 |         await page.goto('/subscription-plans');\n  26 |         await expect(page.getByRole('heading', { name: /Subscription Plans/i })).toBeVisible();\n> 27 |         await expect(page.getByText(/Plan Type/i)).toBeVisible();\n     |                                                    ^\n  28 |\n  29 |         await page.getByTestId('theme-toggle').first().click();\n  30 |         await expect(page.locator('body')).toBeVisible();\n    at f:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts:27:52"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:43.826Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "f:\\CampusWay\\frontend\\test-results\\public-design-visibility-P-cb04a-es-render-redesigned-blocks-chromium-desktop\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "f:\\CampusWay\\frontend\\e2e\\public-design-visibility.spec.ts",
+                        "column": 52,
+                        "line": 27
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6dd276e73f6bf75f7e29-5b53f93e586bb1341132",
+              "file": "public-design-visibility.spec.ts",
+              "line": 13,
+              "column": 5
+            },
+            {
+              "title": "theme selection persists across reload using campusway_theme",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5349,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:48:54.974Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6dd276e73f6bf75f7e29-528178a29e9e32e4fe8e",
+              "file": "public-design-visibility.spec.ts",
+              "line": 36,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "public-smoke.spec.ts",
+      "file": "public-smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Public Smoke",
+          "file": "public-smoke.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "route / renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2648,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:00.545Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-db17f553bf39ce884e0f",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /universities renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2321,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:03.213Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-f9c02363ae968f46e0e3",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /news renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2290,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:05.553Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-a6189c69b108e972958e",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /subscription-plans renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2050,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:07.862Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-1fdf760cfba83e7005e2",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /services renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2077,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:09.930Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-28cf0a9fb8780f46492c",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /exam-portal renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2158,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:12.024Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-94da59c2fe002f08c9c8",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /resources renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2496,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:14.200Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-36b0dfc23cf83928082f",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /contact renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1832,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:16.714Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-03aeb6e8fdecd7be5d16",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /login renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1745,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:18.565Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-63c641aeb484a7494a33",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /chairman/login renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1757,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:20.327Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-b28b0124293a27a0b513",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            },
+            {
+              "title": "route /__cw_admin__/login renders without critical breakage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1505,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-10T17:49:22.101Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9069cf5df66af74e1237-60e95a043743e48fa602",
+              "file": "public-smoke.spec.ts",
+              "line": 20,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-10T17:47:48.252Z",
+    "duration": 95606.348,
+    "expected": 28,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

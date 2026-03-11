@@ -44,7 +44,7 @@ export const resendAccountInfo = (id: string, data: { channels: string[] }) =>
   api.post(`/admin/students/${id}/resend-account-info`, data).then(r => r.data);
 
 export const toggleForceReset = (id: string, data: { enabled: boolean }) =>
-  api.post(`/admin/students/${id}/force-reset`, data).then(r => r.data);
+  api.post(`/admin/students/${id}/force-reset`, { force: data.enabled }).then(r => r.data);
 
 export const revokeStudentSessions = (id: string) =>
   api.post(`/admin/students/${id}/revoke-sessions`).then(r => r.data);

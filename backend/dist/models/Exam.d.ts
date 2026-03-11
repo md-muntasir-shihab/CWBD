@@ -10,8 +10,10 @@ export interface IScheduleWindow {
 }
 export interface IExam extends Document {
     title: string;
+    title_bn?: string;
     type?: 'Science' | 'Arts' | 'Commerce' | 'Mixed';
     group_category?: 'SSC' | 'HSC' | 'Admission' | 'Custom';
+    examCategory?: string;
     subject: string;
     subjectBn?: string;
     universityNameBn?: string;
@@ -51,6 +53,9 @@ export interface IExam extends Document {
     resultPublishDate: Date;
     isPublished: boolean;
     publish_results_after_minutes?: number;
+    resultPublishMode?: 'immediate' | 'manual' | 'scheduled';
+    solutionReleaseRule?: 'after_exam_end' | 'after_result_publish' | 'manual';
+    solutionsEnabled?: boolean;
     defaultMarksPerQuestion: number;
     accessMode: 'all' | 'specific';
     access_type?: 'restricted' | 'public_link';
@@ -58,6 +63,19 @@ export interface IExam extends Document {
     allowed_user_ids?: mongoose.Types.ObjectId[];
     assignedUniversityIds: mongoose.Types.ObjectId[];
     attemptLimit: number;
+    allowReAttempt?: boolean;
+    subscriptionRequired?: boolean;
+    paymentRequired?: boolean;
+    priceBDT?: number;
+    visibilityMode?: 'all_students' | 'group_only' | 'subscription_only' | 'custom';
+    targetGroupIds?: mongoose.Types.ObjectId[];
+    requiresActiveSubscription?: boolean;
+    requiresPayment?: boolean;
+    minimumProfileScore?: number;
+    targetAudienceSummaryCache?: string;
+    displayOnDashboard?: boolean;
+    displayOnPublicList?: boolean;
+    isActive?: boolean;
     written_upload_enabled?: boolean;
     security_policies?: {
         tab_switch_limit: number;
@@ -68,7 +86,6 @@ export interface IExam extends Document {
         violation_action?: 'warn' | 'submit' | 'lock';
     };
     autosave_interval_sec?: number;
-    resultPublishMode?: 'immediate' | 'manual' | 'scheduled';
     reviewSettings?: {
         showQuestion: boolean;
         showSelectedAnswer: boolean;

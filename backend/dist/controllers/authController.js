@@ -41,6 +41,7 @@ const LoginActivity_1 = __importDefault(require("../models/LoginActivity"));
 const ActiveSession_1 = __importDefault(require("../models/ActiveSession"));
 const OtpVerification_1 = __importDefault(require("../models/OtpVerification"));
 const AuditLog_1 = __importDefault(require("../models/AuditLog"));
+const RolePermissionSet_1 = __importDefault(require("../models/RolePermissionSet"));
 const authSessionStream_1 = require("../realtime/authSessionStream");
 const requestMeta_1 = require("../utils/requestMeta");
 const mailer_1 = require("../utils/mailer");
@@ -64,7 +65,9 @@ function generateAccessToken(user, fullName, sessionId, ttlMinutes = 15) {
         role: user.role,
         fullName,
         permissions: user.permissions,
-        permissionsV2: user.permissionsV2 || (0, permissions_1.resolvePermissionsV2)(user.role),
+        permissionsV2: (user.permissionsV2 && Object.keys(user.permissionsV2).length > 0)
+            ? user.permissionsV2
+            : (0, permissions_1.resolvePermissionsV2)(user.role),
         sessionId,
     };
     return jsonwebtoken_1.default.sign(payload, JWT_SECRET, { expiresIn: expiresInSeconds });
@@ -251,6 +254,25 @@ async function buildUserPayload(user) {
             groupIds: Array.isArray(profile?.groupIds) ? profile.groupIds.map((id) => String(id)) : [],
         };
     }
+    let resolvedPermissionsV2 = (user.permissionsV2 && Object.keys(user.permissionsV2).length > 0)
+        ? user.permissionsV2
+        : (0, permissions_1.resolvePermissionsV2)(user.role);
+    // Merge team role module permissions into permissionsV2
+    if (user.teamRoleId) {
+        const permSet = await RolePermissionSet_1.default.findOne({ roleId: user.teamRoleId }).lean();
+        if (permSet?.modulePermissions) {
+            const merged = { ...resolvedPermissionsV2 };
+            for (const [mod, acts] of Object.entries(permSet.modulePermissions)) {
+                if (!merged[mod])
+                    merged[mod] = {};
+                for (const [act, allowed] of Object.entries(acts)) {
+                    if (allowed)
+                        merged[mod][act] = true;
+                }
+            }
+            resolvedPermissionsV2 = merged;
+        }
+    }
     return {
         _id: user._id,
         username: user.username,
@@ -259,7 +281,7 @@ async function buildUserPayload(user) {
         fullName,
         status: user.status,
         permissions: user.permissions,
-        permissionsV2: user.permissionsV2 || (0, permissions_1.resolvePermissionsV2)(user.role),
+        permissionsV2: resolvedPermissionsV2,
         mustChangePassword: user.mustChangePassword,
         redirectTo: getRedirectPath(user.role),
         profile_photo: user.profile_photo || '',
@@ -479,7 +501,7 @@ async function login(req, res) {
         if (!user.permissions) {
             user.permissions = (0, permissions_1.resolvePermissions)(user.role);
         }
-        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object') {
+        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object' || Object.keys(user.permissionsV2).length === 0) {
             user.permissionsV2 = (0, permissions_1.resolvePermissionsV2)(user.role);
         }
         await user.save();
@@ -713,7 +735,7 @@ async function verify2fa(req, res) {
         if (!user.permissions) {
             user.permissions = (0, permissions_1.resolvePermissions)(user.role);
         }
-        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object') {
+        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object' || Object.keys(user.permissionsV2).length === 0) {
             user.permissionsV2 = (0, permissions_1.resolvePermissionsV2)(user.role);
         }
         await user.save();
@@ -1593,12 +1615,16 @@ async function changePassword(req, res) {
         }
         const isMatch = await bcryptjs_1.default.compare(currentPassword, user.password);
         if (!isMatch) {
-            res.status(401).json({ message: 'Current password is incorrect' });
+            // Wrong current password is a validation failure, not an auth-session failure.
+            res.status(400).json({ message: 'Current password is incorrect' });
             return;
         }
         user.password = await bcryptjs_1.default.hash(newPassword, 12);
         user.mustChangePassword = false;
         user.password_updated_at = new Date();
+        user.passwordLastChangedAtUTC = new Date();
+        user.passwordChangedByType = 'user';
+        user.forcePasswordResetRequired = false;
         await user.save();
         await (0, credentialVaultService_1.upsertCredentialMirror)(user._id, newPassword, user._id);
         await (0, sessionSecurityService_1.terminateSessionsForUser)(String(user._id), 'password_changed', {

@@ -1,0 +1,151 @@
+{
+  "id": "pass5-regression",
+  "title": "PASS 5 - Regression",
+  "role": "Cross-role",
+  "summary": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0,
+    "other": 0
+  },
+  "code": 0,
+  "entries": [
+    {
+      "file": "admin-smoke.spec.ts",
+      "title": "admin-smoke.spec.ts > Admin Smoke > admin can login and navigate key tabs",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > public direct URLs cannot access protected student/admin pages",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student cannot reach admin routes by direct URL",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student/admin API tokens are blocked from cross-role endpoints",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route / renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /universities renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /news renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /subscription-plans renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /services renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /exam-portal renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /resources renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /contact renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /chairman/login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "public-smoke.spec.ts",
+      "title": "public-smoke.spec.ts > Public Smoke > route /__cw_admin__/login renders without critical breakage",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > student dark/light theme persists across reload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > admin dark/light theme persists across reload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "settings-propagation.spec.ts",
+      "title": "settings-propagation.spec.ts > Settings Propagation > site name update propagates to public API and public/student UI",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "student-smoke.spec.ts",
+      "title": "student-smoke.spec.ts > Student Smoke > student can login and open dashboard/profile",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310181427\\pass5-regression\\playwright.log",
+  "resultPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310181427\\pass5-regression\\playwright.json",
+  "dbEvidencePath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310181427\\pass5-regression\\db-evidence.json"
+}

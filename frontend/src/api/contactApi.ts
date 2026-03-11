@@ -172,19 +172,19 @@ export async function submitContactMessage(
     }
 
     try {
-        const response = await api.post<unknown>("/contact/messages", payload);
-        return normalizeContactSubmitResponse(response.data);
+        return submitLegacyContactMessage(payload);
     } catch (error: unknown) {
         const primaryStatus = isAxiosError(error) ? error.response?.status : null;
-        const shouldTryLegacy =
+        const shouldTryModernEndpoint =
             primaryStatus === 404 || primaryStatus === 405 || primaryStatus === 501;
 
-        if (!shouldTryLegacy) {
+        if (!shouldTryModernEndpoint) {
             throw error;
         }
 
         try {
-            return submitLegacyContactMessage(payload);
+            const response = await api.post<unknown>("/contact/messages", payload);
+            return normalizeContactSubmitResponse(response.data);
         } catch (legacyError: unknown) {
             if (
                 isAxiosError(legacyError) &&

@@ -261,6 +261,10 @@ async function studentCreateSupportTicket(req, res) {
             res.status(401).json({ message: 'Authentication required' });
             return;
         }
+        if (req.user.role !== 'student') {
+            res.status(403).json({ message: 'Student access required' });
+            return;
+        }
         const body = req.body;
         const subject = String(body.subject || '').trim();
         const message = String(body.message || '').trim();
@@ -303,6 +307,10 @@ async function studentGetSupportTickets(req, res) {
     try {
         if (!req.user) {
             res.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+        if (req.user.role !== 'student') {
+            res.status(403).json({ message: 'Student access required' });
             return;
         }
         const studentId = asObjectId(req.user._id);

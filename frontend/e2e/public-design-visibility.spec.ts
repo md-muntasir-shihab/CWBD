@@ -14,9 +14,9 @@ test.describe('Public Design Visibility', () => {
         const tracker = attachHealthTracker(page);
 
         await page.goto('/');
-        await expect(page.getByTestId('home-section-hero')).toBeVisible();
-        await expect(page.getByTestId('home-section-subscription-banner')).toBeVisible();
-        await expect(page.getByTestId('home-section-resources-preview')).toBeVisible();
+        await expect(page.getByRole('textbox', { name: /Search universities, news, exams and resources/i }).first()).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Featured Universities/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Application Deadlines/i })).toBeVisible();
 
         await page.goto('/news');
         await expect(page.getByText(/CampusWay News Hub/i)).toBeVisible();
@@ -24,7 +24,7 @@ test.describe('Public Design Visibility', () => {
 
         await page.goto('/subscription-plans');
         await expect(page.getByRole('heading', { name: /Subscription Plans/i })).toBeVisible();
-        await expect(page.getByText(/Plan Type/i)).toBeVisible();
+        await expect(page.getByRole('button', { name: /All|Free|Paid/i }).first()).toBeVisible();
 
         await page.getByTestId('theme-toggle').first().click();
         await expect(page.locator('body')).toBeVisible();

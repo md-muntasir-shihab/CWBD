@@ -1,0 +1,178 @@
+{
+  "id": "pass4-cross-role",
+  "title": "PASS 4 - Cross-role / Permission / Sync",
+  "role": "Cross-role",
+  "summary": {
+    "total": 20,
+    "passed": 12,
+    "failed": 4,
+    "skipped": 4,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "auth-session.spec.ts",
+      "title": "auth-session.spec.ts > Auth Session Security > new login invalidates old student session",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > public direct URLs cannot access protected student/admin pages",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student cannot reach admin routes by direct URL",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student/admin API tokens are blocked from cross-role endpoints",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[401, 403]\u001b[39m\n\n  82 |             headers: authHeader(adminLogin.token),\n  83 |         });\n> 84 |         expect([401, 403]).toContain(adminToStudentTickets.status());\n     |                            ^\n  85 |     });\n  86 | });\n  87 |\n    at f:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts:84:28",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[401, 403]\u001b[39m"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > canonical login pages render logo + compact theme toggle",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > legacy /admin/login redirects to secret admin login",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > unauthorized admin dashboard redirects to secret login",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > student login succeeds only from /login and redirects to /dashboard",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > admin login succeeds only from /__cw_admin__/login and redirects to /__cw_admin__/dashboard",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > chairman login redirects to /chairman/dashboard when chairman creds are configured",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > role mismatch: student creds fail on admin/chairman portals",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.1 rss ingestion creates pending items and dedupes duplicates",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  168 |         expect(fetchAgain.ok(), await fetchAgain.text()).toBeTruthy();\n  169 |         const fetchAgainBody = await fetchAgain.json();\n> 170 |         expect(Number(fetchAgainBody?.stats?.duplicateCount || 0)).toBeGreaterThan(0);\n      |                                                                    ^\n  171 |     });\n  172 |\n  173 |     test('P4.1 scheduled publish and default banner fallback update work', async ({ request }) => {\n    at f:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts:170:68",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.1 scheduled publish and default banner fallback update work",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.2 exam session autosubmit cron finalizes expired attempts",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.3 payment pending->paid updates dashboard and P4.4 audit logs capture action",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > student dark/light theme persists across reload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > admin dark/light theme persists across reload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > admin highlighted + featured updates are reflected in /api/home",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > exam routes are gated by login and subscription policy",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/login/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[22m\n\n\n  143 |\n  144 |         await page.goto('/exam/take/000000000000000000000000');\n> 145 |         await expect(page).toHaveURL(/\\/login/, { timeout: 10000 });\n      |                            ^\n  146 |\n  147 |         await loginAsStudent(page);\n  148 |         const studentToken = await readAccessToken(page);\n    at f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:145:28",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/login/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\test-failed-1.png",
+        "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\video.webm",
+        "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > question bank supports BN/EN payload and mobile card layout",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\u001b[22m\n\n\n  317 |             await expect(\n  318 |                 page.locator('table tbody tr:visible, article:visible').filter({ hasText: new RegExp(suffix) }).first(),\n> 319 |             ).toBeVisible({ timeout: 15000 });\n      |               ^\n  320 |         }\n  321 |\n  322 |         await expectPageHealthy(page, tracker);\n    at f:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:319:15",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('table tbody tr:visible, article:visible').filter({ hasText: /e2e-1773166210748/ }).first()\u001b[22m\n"
+      ],
+      "attachments": [
+        "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\test-failed-1.png",
+        "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\video.webm",
+        "f:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\error-context.md"
+      ]
+    }
+  ],
+  "logPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180754\\pass4-cross-role\\playwright.log",
+  "resultPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180754\\pass4-cross-role\\playwright.json",
+  "dbEvidencePath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180754\\pass4-cross-role\\db-evidence.json"
+}

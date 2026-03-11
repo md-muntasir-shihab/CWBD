@@ -1,0 +1,207 @@
+{
+  "id": "pass3-admin",
+  "title": "PASS 3 - Admin",
+  "role": "Admin",
+  "summary": {
+    "total": 27,
+    "passed": 21,
+    "failed": 0,
+    "skipped": 6,
+    "other": 0
+  },
+  "code": 0,
+  "entries": [
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > site settings save reflects on public settings payload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > home control toggle save reflects on /api/home",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > news source save reflects on public sources list",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > subscription plan create and support unread simulation work through admin endpoints",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 360x800",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 390x844",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 768x1024",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 1024x768",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 1440x900",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-smoke.spec.ts",
+      "title": "admin-smoke.spec.ts > Admin Smoke > admin can login and navigate key tabs",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > admin creates student account and assigns subscription plan",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > superadmin password reveal requires MFA + reason",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > manual payment and expense entries are accepted",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > due ledger update and reminder flow works",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > student can create support ticket and admin can update it",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > backup run is successful and restore guard requires typed confirmation",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > major import templates and export endpoints respond successfully",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > bulk update changes university state and persists",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank import preview endpoint accepts file payload and returns non-crashing response",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank bulk tag update works for an existing item",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-admin-routes.spec.ts",
+      "title": "news-admin-routes.spec.ts > News admin routes > canonical /__cw_admin__/news routes resolve without runtime failures",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-admin-routes.spec.ts",
+      "title": "news-admin-routes.spec.ts > News admin routes > legacy /admin/news redirects to secret admin base",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-add-question-upload-and-link",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-bulk-import-mapping-and-report",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-picker-filter-smart-pick-and-preview",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-moderator-approve-flow",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "settings-propagation.spec.ts",
+      "title": "settings-propagation.spec.ts > Settings Propagation > site name update propagates to public API and public/student UI",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180245\\pass3-admin\\playwright.log",
+  "resultPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180245\\pass3-admin\\playwright.json",
+  "dbEvidencePath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180245\\pass3-admin\\db-evidence.json"
+}

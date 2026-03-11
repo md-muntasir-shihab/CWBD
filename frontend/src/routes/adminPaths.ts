@@ -11,6 +11,7 @@ import {
     UserPlus, Import, Target, MessageSquare, TrendingDown,
     FlaskConical,
     KeyRound,
+    Zap,
 } from 'lucide-react';
 
 export type AdminMenuIcon = ComponentType<{ className?: string }>;
@@ -81,6 +82,8 @@ export const ADMIN_PATHS = {
     newsSettings: adminUi('settings/news-settings'),
     // Notification Test Send
     notificationTestSend: adminUi('notifications/test-send'),
+    // Notification Triggers
+    notificationTriggers: adminUi('notifications/triggers'),
     // Notification Campaign Platform
     campaignsDashboard: adminUi('campaigns'),
     campaignsList: adminUi('campaigns/list'),
@@ -267,12 +270,13 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         path: ADMIN_PATHS.supportCenter,
         icon: LifeBuoy,
         module: 'support',
-        matchPrefixes: [adminUi('support-center'), adminUi('contact'), adminUi('settings/notifications'), adminUi('notifications/test-send')],
+        matchPrefixes: [adminUi('support-center'), adminUi('contact'), adminUi('settings/notifications'), adminUi('notifications/test-send'), adminUi('notifications/triggers')],
         children: [
             { key: 'sup-center', label: 'Support Center', path: ADMIN_PATHS.supportCenter, icon: LifeBuoy },
             { key: 'sup-contact', label: 'Contact Messages', path: ADMIN_PATHS.contact, icon: Mail },
             { key: 'sup-notif', label: 'Notifications', path: ADMIN_PATHS.notifications, icon: Bell },
             { key: 'sup-test-send', label: 'Test Send', path: ADMIN_PATHS.notificationTestSend, icon: FlaskConical },
+            { key: 'sup-triggers', label: 'Auto Triggers', path: ADMIN_PATHS.notificationTriggers, icon: Zap },
         ],
     },
 
@@ -337,7 +341,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
         label: 'Team & Access Control',
         path: ADMIN_PATHS.teamMembers,
         icon: KeyRound,
-        module: 'team_access',
+        module: 'team_access_control',
         matchPrefixes: [adminUi('team')],
         children: [
             { key: 'ta-members', label: 'Team Members', path: ADMIN_PATHS.teamMembers, icon: Users },

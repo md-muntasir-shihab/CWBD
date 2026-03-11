@@ -47,6 +47,7 @@ exports.adminCloneExam = adminCloneExam;
 exports.adminRegenerateExamShareLink = adminRegenerateExamShareLink;
 exports.adminSignExamBannerUpload = adminSignExamBannerUpload;
 exports.adminForceSubmit = adminForceSubmit;
+exports.adminGetExamResults = adminGetExamResults;
 exports.adminPublishResult = adminPublishResult;
 exports.adminEvaluateResult = adminEvaluateResult;
 exports.adminGetQuestions = adminGetQuestions;
@@ -79,6 +80,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const Exam_1 = __importDefault(require("../models/Exam"));
 const Question_1 = __importDefault(require("../models/Question"));
+const examQuestion_model_1 = require("../models/examQuestion.model");
 const ExamResult_1 = __importDefault(require("../models/ExamResult"));
 const ExamSession_1 = __importDefault(require("../models/ExamSession"));
 const ExamEvent_1 = __importDefault(require("../models/ExamEvent"));
@@ -171,6 +173,45 @@ function normalizeExamPayload(body) {
     if (payload.scheduleEnd && !payload.endDate) {
         payload.endDate = payload.scheduleEnd;
     }
+    /* ── New admin panel field-name mappings ── */
+    if (payload.examWindowStartUTC && !payload.startDate) {
+        payload.startDate = payload.examWindowStartUTC;
+    }
+    if (payload.examWindowEndUTC && !payload.endDate) {
+        payload.endDate = payload.examWindowEndUTC;
+    }
+    if (payload.durationMinutes !== undefined && payload.duration === undefined) {
+        payload.duration = Number(payload.durationMinutes || 30);
+    }
+    if (payload.resultPublishAtUTC && !payload.resultPublishDate) {
+        payload.resultPublishDate = payload.resultPublishAtUTC;
+    }
+    if (payload.examCategory && !payload.group_category) {
+        payload.group_category = payload.examCategory;
+    }
+    if (payload.shuffleQuestions !== undefined && payload.randomizeQuestions === undefined) {
+        payload.randomizeQuestions = Boolean(payload.shuffleQuestions);
+    }
+    if (payload.shuffleOptions !== undefined && payload.randomizeOptions === undefined) {
+        payload.randomizeOptions = Boolean(payload.shuffleOptions);
+    }
+    if (payload.negativeMarkingEnabled !== undefined && payload.negativeMarking === undefined) {
+        payload.negativeMarking = Boolean(payload.negativeMarkingEnabled);
+    }
+    if (payload.negativePerWrong !== undefined && payload.negativeMarkValue === undefined) {
+        payload.negativeMarkValue = Number(payload.negativePerWrong || 0);
+    }
+    if (payload.answerChangeLimit !== undefined && payload.answerEditLimitPerQuestion === undefined) {
+        payload.answerEditLimitPerQuestion = payload.answerChangeLimit === null ? undefined : Number(payload.answerChangeLimit);
+    }
+    if (payload.showTimer !== undefined && payload.showRemainingTime === undefined) {
+        payload.showRemainingTime = Boolean(payload.showTimer);
+    }
+    /* ── Defaults for required fields the new form omits ── */
+    if (payload.totalQuestions === undefined)
+        payload.totalQuestions = 0;
+    if (payload.totalMarks === undefined)
+        payload.totalMarks = 0;
     if (!payload.resultPublishDate && payload.endDate) {
         payload.resultPublishDate = payload.endDate;
     }
@@ -179,6 +220,35 @@ function normalizeExamPayload(body) {
     }
     if (payload.batchFilters !== undefined) {
         payload.batchFilters = asStringArray(payload.batchFilters);
+    }
+    /* ── Visibility & audience fields ── */
+    const validVisibilityModes = ['all_students', 'group_only', 'subscription_only', 'custom'];
+    if (payload.visibilityMode !== undefined) {
+        if (!validVisibilityModes.includes(String(payload.visibilityMode))) {
+            payload.visibilityMode = 'all_students';
+        }
+    }
+    if (payload.targetGroupIds !== undefined) {
+        payload.targetGroupIds = toObjectIdList(asStringArray(payload.targetGroupIds));
+    }
+    if (payload.requiresActiveSubscription !== undefined) {
+        payload.requiresActiveSubscription = Boolean(payload.requiresActiveSubscription);
+    }
+    if (payload.requiresPayment !== undefined) {
+        payload.requiresPayment = Boolean(payload.requiresPayment);
+    }
+    if (payload.minimumProfileScore !== undefined) {
+        const score = parseNumeric(payload.minimumProfileScore);
+        payload.minimumProfileScore = score !== null ? Math.max(0, Math.min(100, score)) : undefined;
+    }
+    if (payload.displayOnDashboard !== undefined) {
+        payload.displayOnDashboard = Boolean(payload.displayOnDashboard);
+    }
+    if (payload.displayOnPublicList !== undefined) {
+        payload.displayOnPublicList = Boolean(payload.displayOnPublicList);
+    }
+    if (payload.isActive !== undefined) {
+        payload.isActive = Boolean(payload.isActive);
     }
     normalizeDeliveryMode(payload);
     return payload;
@@ -568,6 +638,14 @@ async function adminDeleteExam(req, res) {
 }
 async function adminPublishExam(req, res) {
     try {
+        // Support both legacy and canonical question linkage fields.
+        const questionCount = await Question_1.default.countDocuments({
+            $or: [{ exam: req.params.id }, { examId: req.params.id }],
+        });
+        if (questionCount === 0) {
+            res.status(400).json({ message: 'Cannot publish an exam with no questions. Add at least one question first.' });
+            return;
+        }
         const exam = await Exam_1.default.findByIdAndUpdate(req.params.id, { isPublished: true }, { new: true });
         if (!exam) {
             res.status(404).json({ message: 'Exam not found' });
@@ -716,6 +794,18 @@ async function adminForceSubmit(req, res) {
         res.status(500).json({ message: 'Server error' });
     }
 }
+async function adminGetExamResults(req, res) {
+    try {
+        const results = await ExamResult_1.default.find({ exam: req.params.examId })
+            .populate('student', 'fullName username email phone')
+            .sort({ obtainedMarks: -1 })
+            .lean();
+        res.json({ results, count: results.length });
+    }
+    catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
 async function adminPublishResult(req, res) {
     try {
         const exam = await Exam_1.default.findByIdAndUpdate(req.params.id, { resultPublishDate: new Date() }, { new: true });
@@ -761,18 +851,68 @@ async function adminEvaluateResult(req, res) {
 async function adminGetQuestions(req, res) {
     try {
         const { examId } = req.params;
-        const questions = await Question_1.default.find({ exam: examId }).sort({ order: 1 }).lean();
-        res.json({ questions, count: questions.length });
+        // Legacy questions (Question model — "questions" collection)
+        const legacyQuestions = await Question_1.default.find({ exam: examId }).sort({ order: 1 }).lean();
+        // QB-attached questions (ExamQuestionModel — "exam_questions" collection)
+        const bankQuestions = await examQuestion_model_1.ExamQuestionModel.find({ examId }).sort({ orderIndex: 1 }).lean();
+        // Normalize bank questions to match legacy shape for frontend
+        const normalizedBank = bankQuestions.map((bq) => ({
+            ...bq,
+            exam: examId,
+            question: bq.question_en,
+            question_en: bq.question_en,
+            optionA: bq.options?.[0]?.text_en ?? '',
+            optionB: bq.options?.[1]?.text_en ?? '',
+            optionC: bq.options?.[2]?.text_en ?? '',
+            optionD: bq.options?.[3]?.text_en ?? '',
+            correctAnswer: bq.correctKey,
+            correctKey: bq.correctKey,
+            order: bq.orderIndex ?? 999,
+            explanation: bq.explanation_en ?? '',
+            fromBank: true,
+        }));
+        const allQuestions = [...legacyQuestions, ...normalizedBank];
+        res.json({ questions: allQuestions, count: allQuestions.length });
     }
     catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
 }
+function normalizeQuestionPayload(body) {
+    const p = { ...body };
+    // Map frontend field names → Question model field names
+    if (p.question_en !== undefined && p.question === undefined)
+        p.question = p.question_en;
+    if (p.question_bn !== undefined && !p.questionText)
+        p.questionText = { en: String(p.question_en ?? ''), bn: String(p.question_bn ?? '') };
+    if (p.optionA_en !== undefined && p.optionA === undefined)
+        p.optionA = p.optionA_en;
+    if (p.optionB_en !== undefined && p.optionB === undefined)
+        p.optionB = p.optionB_en;
+    if (p.optionC_en !== undefined && p.optionC === undefined)
+        p.optionC = p.optionC_en;
+    if (p.optionD_en !== undefined && p.optionD === undefined)
+        p.optionD = p.optionD_en;
+    if (p.correctKey !== undefined && p.correctAnswer === undefined)
+        p.correctAnswer = p.correctKey;
+    if (p.orderIndex !== undefined && p.order === undefined)
+        p.order = p.orderIndex;
+    if (p.explanation_en !== undefined && p.explanation === undefined)
+        p.explanation = p.explanation_en;
+    if (!p.questionType)
+        p.questionType = 'mcq';
+    if (p.difficulty === undefined)
+        p.difficulty = 'medium';
+    if (p.active === undefined)
+        p.active = true;
+    return p;
+}
 async function adminCreateQuestion(req, res) {
     try {
         const { examId } = req.params;
         const count = await Question_1.default.countDocuments({ exam: examId });
-        const question = await Question_1.default.create({ ...req.body, exam: examId, order: count + 1 });
+        const payload = normalizeQuestionPayload(req.body);
+        const question = await Question_1.default.create({ ...payload, exam: examId, order: payload.order ?? count + 1 });
         // Update totalQuestions count on exam
         await Exam_1.default.findByIdAndUpdate(examId, { $inc: { totalQuestions: 1 } });
         res.status(201).json({ question, message: 'Question created.' });
@@ -783,7 +923,8 @@ async function adminCreateQuestion(req, res) {
 }
 async function adminUpdateQuestion(req, res) {
     try {
-        const question = await Question_1.default.findByIdAndUpdate(req.params.questionId, req.body, { new: true });
+        const payload = normalizeQuestionPayload(req.body);
+        const question = await Question_1.default.findByIdAndUpdate(req.params.questionId, payload, { new: true });
         if (!question) {
             res.status(404).json({ message: 'Question not found' });
             return;

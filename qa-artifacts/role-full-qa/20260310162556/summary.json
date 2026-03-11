@@ -1,0 +1,72 @@
+{
+  "runId": "20260310162556",
+  "baseUrl": "http://127.0.0.1:5283",
+  "apiBaseUrl": "http://127.0.0.1:5083",
+  "dbName": "campusway_role_qa_20260310162556",
+  "outputDir": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556",
+  "passes": [
+    {
+      "passId": "pass1-viewer",
+      "role": "Viewer",
+      "total": 30,
+      "passed": 19,
+      "failed": 11,
+      "skipped": 0,
+      "other": 0
+    },
+    {
+      "passId": "pass2-student",
+      "role": "Student",
+      "total": 6,
+      "passed": 0,
+      "failed": 3,
+      "skipped": 3,
+      "other": 0
+    },
+    {
+      "passId": "pass3-admin",
+      "role": "Admin",
+      "total": 27,
+      "passed": 4,
+      "failed": 11,
+      "skipped": 12,
+      "other": 0
+    },
+    {
+      "passId": "pass4-cross-role",
+      "role": "Cross-role",
+      "total": 20,
+      "passed": 5,
+      "failed": 9,
+      "skipped": 6,
+      "other": 0
+    },
+    {
+      "passId": "pass5-regression",
+      "role": "Cross-role",
+      "total": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "other": 0
+    }
+  ],
+  "totals": {
+    "total": 83,
+    "passed": 28,
+    "failed": 34,
+    "skipped": 21,
+    "other": 0
+  },
+  "bugCount": 34,
+  "openCriticalOrHigh": 11,
+  "warnings": [
+    "pass1-viewer returned non-zero exit code (1).",
+    "pass2-student returned non-zero exit code (1).",
+    "pass3-admin returned non-zero exit code (1).",
+    "pass4-cross-role returned non-zero exit code (1).",
+    "pass5-regression returned non-zero exit code (1073807364).",
+    "backend e2e:restore returned non-zero exit code.",
+    "Isolated DB drop skipped (mongosh unavailable or failed)."
+  ]
+}

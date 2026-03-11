@@ -4,10 +4,11 @@ export declare const startSession: (examId: string, userId: string, reqMeta: {
 }) => Promise<{
     blocked: {
         loginRequired: true;
-        profileScoreMin: number;
+        profileScoreMin: any;
         subscriptionRequired: any;
         paymentRequired: any;
         priceBDT: any;
+        visibilityMode: any;
         accessStatus: string;
         blockReasons: string[];
     };

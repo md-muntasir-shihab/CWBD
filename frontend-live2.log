@@ -1,0 +1,250 @@
+
+> campusway-frontend@1.0.0 dev
+> vite --port 5175
+
+[2m1:48:05 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v6.4.1[39m  [2mready in [0m[1m883[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5175[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m2:59:36 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/admin/students/StudentCreatePage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:00:02 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/admin/students/StudentImportExportPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:00:19 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/admin/students/StudentGroupDetailPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:01:18 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/styles/index.css, /src/pages/admin/students/StudentManagementDetailPage.tsx, /src/pages/admin/students/StudentDetailPage.tsx[22m
+[2m3:01:42 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/admin/students/StudentManagementDetailPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:01:49 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/admin/students/StudentManagementDetailPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:02:05 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/styles/index.css, /@fs/F:/CampusWay/frontend/src/pages/Contact.tsx[22m
+[2m3:02:17 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/admin/UniversitiesPanel.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:02:37 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/App.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:02:38 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "./pages/HelpCenter" from "src/App.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mF:/CampusWay/frontend/src/App.tsx[39m:22:27
+[33m  37 |  import AdminSettingsResourcesPage from "./pages/AdminSettingsResources";
+  38 |  import ContactPage from "./pages/Contact";
+  39 |  import HelpCenterPage from "./pages/HelpCenter";
+     |                              ^
+  40 |  import HelpArticlePage from "./pages/HelpArticle";
+  41 |  import SubscriptionPlansPage from "./pages/SubscriptionPlans";[39m
+      at TransformPluginContext._formatLog (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42528:41)
+      at TransformPluginContext.error (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42525:16)
+      at normalizeUrl (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40504:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40623:37
+      at async Promise.all (index 24)
+      at async TransformPluginContext.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40550:7)
+      at async EnvironmentPluginContainer.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42323:18)
+      at async loadAndTransform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:35739:27)
+      at async viteTransformMiddleware (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:37254:24)
+[2m3:02:45 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mF:/CampusWay/frontend/src/App.tsx[22m
+[2m3:02:46 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "./pages/HelpCenter" from "src/App.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mF:/CampusWay/frontend/src/App.tsx[39m:22:27
+[33m  37 |  import AdminSettingsResourcesPage from "./pages/AdminSettingsResources";
+  38 |  import ContactPage from "./pages/Contact";
+  39 |  import HelpCenterPage from "./pages/HelpCenter";
+     |                              ^
+  40 |  import HelpArticlePage from "./pages/HelpArticle";
+  41 |  import SubscriptionPlansPage from "./pages/SubscriptionPlans";[39m
+      at TransformPluginContext._formatLog (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42528:41)
+      at TransformPluginContext.error (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42525:16)
+      at normalizeUrl (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40504:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40623:37
+      at async Promise.all (index 24)
+      at async TransformPluginContext.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40550:7)
+      at async EnvironmentPluginContainer.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42323:18)
+      at async loadAndTransform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:35739:27)
+[2m3:02:46 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "./pages/HelpCenter" from "src/App.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mF:/CampusWay/frontend/src/App.tsx[39m:22:27
+[33m  37 |  import AdminSettingsResourcesPage from "./pages/AdminSettingsResources";
+  38 |  import ContactPage from "./pages/Contact";
+  39 |  import HelpCenterPage from "./pages/HelpCenter";
+     |                              ^
+  40 |  import HelpArticlePage from "./pages/HelpArticle";
+  41 |  import SubscriptionPlansPage from "./pages/SubscriptionPlans";[39m
+[2m3:03:05 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/api/helpCenterApi.ts[22m
+[2m3:03:05 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "./pages/HelpCenter" from "src/App.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mF:/CampusWay/frontend/src/App.tsx[39m:22:27
+[33m  37 |  import AdminSettingsResourcesPage from "./pages/AdminSettingsResources";
+  38 |  import ContactPage from "./pages/Contact";
+  39 |  import HelpCenterPage from "./pages/HelpCenter";
+     |                              ^
+  40 |  import HelpArticlePage from "./pages/HelpArticle";
+  41 |  import SubscriptionPlansPage from "./pages/SubscriptionPlans";[39m
+[2m3:03:06 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "./pages/HelpCenter" from "src/App.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mF:/CampusWay/frontend/src/App.tsx[39m:22:27
+[33m  37 |  import AdminSettingsResourcesPage from "./pages/AdminSettingsResources";
+  38 |  import ContactPage from "./pages/Contact";
+  39 |  import HelpCenterPage from "./pages/HelpCenter";
+     |                              ^
+  40 |  import HelpArticlePage from "./pages/HelpArticle";
+  41 |  import SubscriptionPlansPage from "./pages/SubscriptionPlans";[39m
+      at TransformPluginContext._formatLog (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42528:41)
+      at TransformPluginContext.error (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42525:16)
+      at normalizeUrl (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40504:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40623:37
+      at async Promise.all (index 24)
+      at async TransformPluginContext.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40550:7)
+      at async EnvironmentPluginContainer.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42323:18)
+      at async loadAndTransform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:35739:27)
+      at async viteTransformMiddleware (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:37254:24)
+[2m3:03:47 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/HelpCenter.tsx[22m
+[2m3:03:48 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "./pages/HelpArticle" from "src/App.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mF:/CampusWay/frontend/src/App.tsx[39m:23:28
+[33m  38 |  import ContactPage from "./pages/Contact";
+  39 |  import HelpCenterPage from "./pages/HelpCenter";
+  40 |  import HelpArticlePage from "./pages/HelpArticle";
+     |                               ^
+  41 |  import SubscriptionPlansPage from "./pages/SubscriptionPlans";
+  42 |  import SubscriptionPlanDetailPage from "./pages/SubscriptionPlanDetail";[39m
+      at TransformPluginContext._formatLog (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42528:41)
+      at TransformPluginContext.error (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42525:16)
+      at normalizeUrl (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40504:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40623:37
+      at async Promise.all (index 25)
+      at async TransformPluginContext.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:40550:7)
+      at async EnvironmentPluginContainer.transform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:42323:18)
+      at async loadAndTransform (file:///f:/CampusWay/frontend/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:35739:27)
+[2m3:03:48 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "./pages/HelpArticle" from "src/App.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mF:/CampusWay/frontend/src/App.tsx[39m:23:28
+[33m  38 |  import ContactPage from "./pages/Contact";
+  39 |  import HelpCenterPage from "./pages/HelpCenter";
+  40 |  import HelpArticlePage from "./pages/HelpArticle";
+     |                               ^
+  41 |  import SubscriptionPlansPage from "./pages/SubscriptionPlans";
+  42 |  import SubscriptionPlanDetailPage from "./pages/SubscriptionPlanDetail";[39m
+[2m3:04:21 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/HelpArticle.tsx[22m
+[2m3:09:41 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/styles/index.css, /@fs/F:/CampusWay/frontend/src/pages/admin/datahub/DataHubPage.tsx, /@fs/F:/CampusWay/frontend/src/pages/admin/campaigns/CampaignConsolePage.tsx, /src/pages/admin/students/StudentGroupDetailPage.tsx[22m
+[2m3:09:42 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses[39m
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+      at failureErrorWithLog (f:\CampusWay\frontend\node_modules\esbuild\lib\main.js:1467:15)
+      at f:\CampusWay\frontend\node_modules\esbuild\lib\main.js:736:50
+      at responseCallbacks.<computed> (f:\CampusWay\frontend\node_modules\esbuild\lib\main.js:603:9)
+      at handleIncomingPacket (f:\CampusWay\frontend\node_modules\esbuild\lib\main.js:658:12)
+      at Socket.readFromStdout (f:\CampusWay\frontend\node_modules\esbuild\lib\main.js:581:7)
+      at Socket.emit (node:events:508:28)
+      at addChunk (node:internal/streams/readable:563:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+      at Readable.push (node:internal/streams/readable:394:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2m3:09:42 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+[2m3:09:42 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+[2m3:09:42 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+[2m3:10:08 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/campaigns/CampaignConsolePage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:10:09 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+[2m3:10:27 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/campaigns/CampaignConsolePage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:10:28 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+[2m3:11:47 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/campaigns/CampaignConsolePage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:11:48 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+[2m3:14:06 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/campaigns/CampaignConsolePage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m3:14:07 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+F:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts:151:41: ERROR: Cannot use "||" with "??" without parentheses
+  Plugin: [35mvite:esbuild[39m
+  File: [36mF:/CampusWay/frontend/src/api/adminNotificationCampaignApi.ts[39m:151:41
+[33m  
+  [33mCannot use "||" with "??" without parentheses[33m
+  149|      _id: String(raw._id ?? ''),
+  150|      templateKey,
+  151|      name: String(raw.name ?? templateKey || 'Untitled'),
+     |                                           ^
+  152|      channel: String(raw.channel ?? 'sms'),
+  153|      subject: typeof raw.subject === 'string' ? raw.subject : undefined,
+  [39m
+[2m3:14:20 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/styles/index.css, /src/pages/HelpCenter.tsx, /@fs/F:/CampusWay/frontend/src/pages/HelpArticle.tsx[22m
+[2m3:14:26 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/styles/index.css, /@fs/F:/CampusWay/frontend/src/pages/admin/datahub/DataHubPage.tsx, /@fs/F:/CampusWay/frontend/src/pages/admin/campaigns/CampaignConsolePage.tsx, /src/pages/admin/students/StudentGroupDetailPage.tsx[22m
+[2m4:11:01 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/styles/index.css, /@fs/F:/CampusWay/frontend/src/pages/admin/team/MemberDetailPage.tsx, /@fs/F:/CampusWay/frontend/src/pages/admin/team/RoleDetailPage.tsx, /@fs/F:/CampusWay/frontend/src/pages/admin/team/TeamAccessConsolePage.tsx[22m
+[2m4:11:18 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/team/MemberDetailPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m4:11:28 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/team/RoleDetailPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m4:48:43 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/datahub/DataHubPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m
+[2m4:52:21 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/F:/CampusWay/frontend/src/pages/admin/datahub/DataHubPage.tsx, /@fs/F:/CampusWay/frontend/src/styles/index.css[22m

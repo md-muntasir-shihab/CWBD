@@ -1,0 +1,77 @@
+{
+  "id": "pass2-student",
+  "title": "PASS 2 - Student",
+  "role": "Student",
+  "summary": {
+    "total": 6,
+    "passed": 0,
+    "failed": 3,
+    "skipped": 3,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > student start and autosave API flow works for active attempt",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n  84 |             headers: authHeader(studentToken),\n  85 |         });\n> 86 |         expect(detailsResponse.status()).toBe(200);\n     |                                          ^\n  87 |         const detailsBody = (await detailsResponse.json()) as { exam?: { _id?: string; title?: string } };\n  88 |         expect(String(detailsBody.exam?._id || '')).toBe(examId);\n  89 |\n    at F:\\CampusWay\\frontend\\e2e\\exam-attempt-critical.spec.ts:86:42",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > attempt API handles stale revision, anti-cheat event, and submit",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > lock policy prevents save and submit after violation threshold",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > admin live action endpoint can warn and force-submit an active attempt",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-flow.spec.ts",
+      "title": "exam-flow.spec.ts > Student Exam Flow > full exam lifecycle: landing, taking, auto-save, and results",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /(Exam Portal|Welcome)/i })\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /(Exam Portal|Welcome)/i })\u001b[22m\n\n\n   6 |         await loginAsStudent(page);\n   7 |         await page.goto('/exams');\n>  8 |         await expect(page.getByRole('heading', { name: /(Exam Portal|Welcome)/i })).toBeVisible({ timeout: 20000 });\n     |                                                                                     ^\n   9 |     });\n  10 |\n  11 |     test('full exam lifecycle: landing, taking, auto-save, and results', async ({ page }) => {\n    at F:\\CampusWay\\frontend\\e2e\\exam-flow.spec.ts:8:85",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /(Exam Portal|Welcome)/i })\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /(Exam Portal|Welcome)/i })\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\exam-flow-Student-Exam-Flo-82425-aking-auto-save-and-results-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\exam-flow-Student-Exam-Flo-82425-aking-auto-save-and-results-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\exam-flow-Student-Exam-Flo-82425-aking-auto-save-and-results-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "student-smoke.spec.ts",
+      "title": "student-smoke.spec.ts > Student Smoke > student can login and open dashboard/profile",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Upcoming Exams/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Upcoming Exams/i })\u001b[22m\n\n\n   7 |         await loginAsStudent(page);\n   8 |\n>  9 |         await expect(page.getByRole('heading', { name: /Upcoming Exams/i })).toBeVisible();\n     |                                                                              ^\n  10 |         await expect(page.locator('text=Profile Completion').first()).toBeVisible();\n  11 |\n  12 |         await page.goto('/student/profile');\n    at F:\\CampusWay\\frontend\\e2e\\student-smoke.spec.ts:9:78",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Upcoming Exams/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Upcoming Exams/i })\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\student-smoke-Student-Smok-f1290--and-open-dashboard-profile-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\student-smoke-Student-Smok-f1290--and-open-dashboard-profile-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\student-smoke-Student-Smok-f1290--and-open-dashboard-profile-chromium-desktop\\error-context.md"
+      ]
+    }
+  ],
+  "logPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass2-student\\playwright.log",
+  "resultPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass2-student\\playwright.json",
+  "dbEvidencePath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass2-student\\db-evidence.json"
+}

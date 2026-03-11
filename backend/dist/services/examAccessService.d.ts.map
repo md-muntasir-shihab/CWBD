@@ -1,1 +1,1 @@
-{"version":3,"file":"examAccessService.d.ts","sourceRoot":"","sources":["../../src/services/examAccessService.ts"],"names":[],"mappings":"AAKA,eAAO,MAAM,kBAAkB,SAAgB,GAAG,WAAW,MAAM;;;;;;;;EAqClE,CAAC"}
+{"version":3,"file":"examAccessService.d.ts","sourceRoot":"","sources":["../../src/services/examAccessService.ts"],"names":[],"mappings":"AAMA,eAAO,MAAM,kBAAkB,SAAgB,GAAG,WAAW,MAAM;;;;;;;;;EAwDlE,CAAC"}

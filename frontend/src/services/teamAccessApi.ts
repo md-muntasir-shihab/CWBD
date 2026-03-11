@@ -42,6 +42,7 @@ export interface TeamMemberItem {
   email: string;
   phone_number?: string;
   username?: string;
+  notes?: string;
   role?: string;
   teamRoleId?: TeamRoleItem | string;
   status?: TeamStatus | string;

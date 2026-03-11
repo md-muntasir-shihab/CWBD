@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "generatedAt": "2026-03-10T18:20:50.328Z",
+  "dbName": "campusway_role_qa_20260310181427",
+  "runLabel": "pass5-regression",
+  "counts": {
+    "users": 5,
+    "student_profiles": 3,
+    "universities": 6,
+    "news": 8,
+    "resources": 4,
+    "exams": 4,
+    "manual_payments": 3,
+    "expenses": 2,
+    "support_tickets": 1,
+    "audit_logs": 6,
+    "notifications": 6,
+    "user_subscriptions": 5
+  },
+  "seededUsers": [
+    {
+      "id": "69b05fc19b2e93b2d58c4d9c",
+      "email": "e2e_admin_desktop@campusway.local",
+      "role": "admin",
+      "status": "active",
+      "subscriptionActive": false
+    },
+    {
+      "id": "69b05fc19b2e93b2d58c4d9d",
+      "email": "e2e_admin_mobile@campusway.local",
+      "role": "admin",
+      "status": "active",
+      "subscriptionActive": false
+    },
+    {
+      "id": "69b05fc29b2e93b2d58c4d9e",
+      "email": "e2e_student_desktop@campusway.local",
+      "role": "student",
+      "status": "active",
+      "subscriptionActive": true
+    },
+    {
+      "id": "69b05fc29b2e93b2d58c4d9f",
+      "email": "e2e_student_mobile@campusway.local",
+      "role": "student",
+      "status": "active",
+      "subscriptionActive": true
+    },
+    {
+      "id": "69b05fc29b2e93b2d58c4da0",
+      "email": "e2e_student_session@campusway.local",
+      "role": "student",
+      "status": "active",
+      "subscriptionActive": true
+    }
+  ],
+  "relationChecks": {
+    "seededStudentProfiles": 3,
+    "seededSubscriptions": 5,
+    "seededPayments": 3,
+    "seededSupportTickets": 1,
+    "seededAuditLogs": 6,
+    "seededNotifications": 3
+  },
+  "sensitiveChecks": {
+    "userPasswordHashNonBcrypt": [],
+    "plaintextSensitiveFieldHits": []
+  }
+}

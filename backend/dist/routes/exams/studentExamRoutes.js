@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.studentExamRoutes = void 0;
 const express_1 = require("express");
@@ -12,6 +15,7 @@ const examSessionService_1 = require("../../services/examSessionService");
 const auth_1 = require("../../middleware/auth");
 const examRateLimit_1 = require("../../middleware/examRateLimit");
 const examPdfController_1 = require("../../controllers/examPdfController");
+const StudentProfile_1 = __importDefault(require("../../models/StudentProfile"));
 exports.studentExamRoutes = (0, express_1.Router)();
 exports.studentExamRoutes.get("/exams", async (req, res) => {
     const { category, status, page = 1, limit = 10 } = req.query;
@@ -29,7 +33,26 @@ exports.studentExamRoutes.get("/exams", async (req, res) => {
         .sort({ examWindowStartUTC: -1 })
         .skip((Number(page) - 1) * Number(limit))
         .limit(Number(limit));
-    const items = docs.map((e) => ({
+    // Resolve student group IDs for group-based visibility filtering
+    const userId = req.user?.id || req.headers["x-user-id"];
+    let studentGroupIds = [];
+    if (userId) {
+        const profile = await StudentProfile_1.default.findOne({ user_id: userId }).select('groupIds').lean();
+        studentGroupIds = Array.isArray(profile?.groupIds) ? profile.groupIds.map(String) : [];
+    }
+    const items = docs
+        .filter((e) => {
+        const mode = e.visibilityMode || 'all_students';
+        if (mode === 'all_students')
+            return true;
+        if (mode === 'group_only' || mode === 'custom') {
+            const targetIds = Array.isArray(e.targetGroupIds) ? e.targetGroupIds.map(String) : [];
+            if (targetIds.length > 0 && !targetIds.some((gId) => studentGroupIds.includes(gId)))
+                return false;
+        }
+        return true;
+    })
+        .map((e) => ({
         id: String(e._id),
         title: e.title,
         title_bn: e.title_bn,
@@ -47,7 +70,7 @@ exports.studentExamRoutes.get("/exams", async (req, res) => {
         allowReAttempt: e.allowReAttempt,
         status: now < e.examWindowStartUTC ? "upcoming" : now > e.examWindowEndUTC ? "ended" : "live"
     }));
-    res.json({ items, page: Number(page), total: await exam_model_1.ExamModel.countDocuments(filters), limit: Number(limit) });
+    res.json({ items, page: Number(page), total: items.length, limit: Number(limit) });
 });
 exports.studentExamRoutes.get("/exams/:examId", async (req, res) => {
     const exam = await exam_model_1.ExamModel.findById(req.params.examId);

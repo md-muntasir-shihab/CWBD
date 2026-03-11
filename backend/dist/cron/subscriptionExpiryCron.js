@@ -10,6 +10,7 @@ const User_1 = __importDefault(require("../models/User"));
 const ActiveSession_1 = __importDefault(require("../models/ActiveSession"));
 const StudentSettings_1 = require("../models/StudentSettings");
 const notificationProviderService_1 = require("../services/notificationProviderService");
+const notificationOrchestrationService_1 = require("../services/notificationOrchestrationService");
 const logger_1 = require("../utils/logger");
 // Map reminder day count to template key
 const REMINDER_TEMPLATE_MAP = {
@@ -184,6 +185,17 @@ async function runSubscriptionExpiryCheck() {
         }
     }
     logger_1.logger.info('[subscriptionExpiryCron] Run complete');
+    // 4. Trigger automatic audience-based notifications for subscription state changes
+    try {
+        const expiredUserIds = overdueSubscriptions.map(s => String(s['userId'])).filter(Boolean);
+        if (expiredUserIds.length > 0) {
+            await (0, notificationOrchestrationService_1.triggerAutoSend)('subscription_expired', expiredUserIds, {}, 'system');
+            logger_1.logger.info('[subscriptionExpiryCron] triggerAutoSend(subscription_expired) dispatched');
+        }
+    }
+    catch (err) {
+        logger_1.logger.error('[subscriptionExpiryCron] triggerAutoSend failed', undefined, { error: String(err) });
+    }
 }
 function startSubscriptionExpiryCron() {
     // Daily at 01:00 UTC

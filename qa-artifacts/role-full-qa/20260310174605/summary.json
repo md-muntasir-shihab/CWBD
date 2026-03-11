@@ -1,0 +1,51 @@
+{
+  "runId": "20260310174605",
+  "baseUrl": "http://127.0.0.1:5283",
+  "apiBaseUrl": "http://127.0.0.1:5083",
+  "dbName": "campusway_role_qa_20260310174605",
+  "outputDir": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310174605",
+  "passes": [
+    {
+      "passId": "pass1-viewer",
+      "role": "Viewer",
+      "total": 30,
+      "passed": 28,
+      "failed": 2,
+      "skipped": 0,
+      "other": 0
+    },
+    {
+      "passId": "pass2-student",
+      "role": "Student",
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "skipped": 0,
+      "other": 0
+    },
+    {
+      "passId": "pass3-admin",
+      "role": "Admin",
+      "total": 27,
+      "passed": 18,
+      "failed": 1,
+      "skipped": 8,
+      "other": 0
+    }
+  ],
+  "totals": {
+    "total": 63,
+    "passed": 51,
+    "failed": 4,
+    "skipped": 8,
+    "other": 0
+  },
+  "bugCount": 4,
+  "openCriticalOrHigh": 0,
+  "warnings": [
+    "pass1-viewer returned non-zero exit code (1).",
+    "pass2-student returned non-zero exit code (1).",
+    "pass3-admin returned non-zero exit code (1).",
+    "Isolated DB drop skipped (mongosh unavailable or failed)."
+  ]
+}

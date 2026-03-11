@@ -25,6 +25,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const crypto_1 = __importDefault(require("crypto"));
 const Exam_1 = __importDefault(require("../models/Exam"));
 const Question_1 = __importDefault(require("../models/Question"));
+const examQuestion_model_1 = require("../models/examQuestion.model");
 const ExamResult_1 = __importDefault(require("../models/ExamResult"));
 const ExamSession_1 = __importDefault(require("../models/ExamSession"));
 const User_1 = __importDefault(require("../models/User"));
@@ -159,15 +160,21 @@ async function getStudentExams(req, res) {
             const requiredUserIds = normalizeObjectIdArray(accessControl.allowedUserIds);
             const requiredGroupIds = normalizeObjectIdArray(accessControl.allowedGroupIds);
             const requiredPlanCodes = toStringArray(accessControl.allowedPlanCodes).map((code) => code.toLowerCase());
-            const subscriptionRequired = Boolean(e.subscriptionRequired) || requiredPlanCodes.length > 0;
+            const subscriptionRequired = Boolean(e.subscriptionRequired) || Boolean(e.requiresActiveSubscription) || requiredPlanCodes.length > 0;
             const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
             const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
+            // New visibility mode check (Phase 12)
+            const visibilityMode = String(e.visibilityMode || 'all_students');
+            const targetGroupIds = normalizeObjectIdArray(e.targetGroupIds);
+            const visibilityGroupDenied = (visibilityMode === 'group_only' || visibilityMode === 'custom')
+                && targetGroupIds.length > 0
+                && !hasAnyIntersection(targetGroupIds, studentGroupIds);
             const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
             const subscriptionDenied = subscriptionRequired && !hasActiveSubscription;
             const specificModeDenied = (e.accessMode === 'specific' &&
                 !e.allowedUsers.some((uid) => uid.toString() === studentId));
             // Keep strict identity/group restrictions hidden from list responses.
-            if (specificModeDenied || userDenied || groupDenied) {
+            if (specificModeDenied || userDenied || groupDenied || visibilityGroupDenied) {
                 return null;
             }
             const accessDeniedReason = planDenied
@@ -352,7 +359,13 @@ async function getPublicExamList(req, res) {
             else {
                 const userDenied = requiredUserIds.length > 0 && !requiredUserIds.includes(studentId);
                 const groupDenied = requiredGroupIds.length > 0 && !hasAnyIntersection(requiredGroupIds, studentGroupIds);
-                const groupRestricted = userDenied || groupDenied || specificModeDenied;
+                // New visibility mode check (Phase 12)
+                const visibilityMode = String(exam.visibilityMode || 'all_students');
+                const targetGroupIds = normalizeObjectIdArray(exam.targetGroupIds);
+                const visibilityGroupDenied = (visibilityMode === 'group_only' || visibilityMode === 'custom')
+                    && targetGroupIds.length > 0
+                    && !hasAnyIntersection(targetGroupIds, studentGroupIds);
+                const groupRestricted = userDenied || groupDenied || specificModeDenied || visibilityGroupDenied;
                 const planDenied = requiredPlanCodes.length > 0 && !requiredPlanCodes.includes(studentPlanCode);
                 const subscriptionDenied = subscriptionRequired && !hasActiveSubscription && !planDenied;
                 const paymentPending = paymentRequired && hasActiveSubscription && pendingDueAmount > 0;
@@ -526,7 +539,13 @@ async function getExamLanding(req, res) {
             const planAllowed = requiredPlanCodes.length === 0 || requiredPlanCodes.includes(studentPlanCode);
             const isPaymentPending = requiredPlanCodes.length > 0 && pendingDueAmount > 0;
             const assignedAllowed = canAccessExamSync(examRecord, studentId);
-            const strictAccessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed;
+            // Visibility-mode group restriction (new model)
+            const visibilityMode = String(examRecord.visibilityMode || 'all_students');
+            const targetGroupIds = normalizeObjectIdArray(examRecord.targetGroupIds || []);
+            const visibilityGroupDenied = (visibilityMode === 'group_only' || visibilityMode === 'custom')
+                && targetGroupIds.length > 0
+                && !hasAnyIntersection(targetGroupIds, studentGroupIds);
+            const strictAccessDenied = !userAllowed || !groupAllowed || !planAllowed || !assignedAllowed || visibilityGroupDenied;
             if (strictAccessDenied) {
                 return null;
             }
@@ -750,6 +769,26 @@ async function getEligibilitySummary(exam, studentId) {
         reasons.push(`subscription_${subscriptionState.reason || 'inactive'}`);
         if (!accessDeniedReason)
             accessDeniedReason = 'subscription_required';
+    }
+    // Visibility-mode group restriction (new model)
+    const visibilityMode = String(exam.visibilityMode || 'all_students');
+    if (visibilityMode === 'group_only' || visibilityMode === 'custom') {
+        const targetGroupIds = normalizeObjectIdArray(exam.targetGroupIds || []);
+        if (targetGroupIds.length > 0 && !hasAnyIntersection(targetGroupIds, studentGroupIds)) {
+            accessAllowed = false;
+            reasons.push('visibility_group_restricted');
+            if (!accessDeniedReason)
+                accessDeniedReason = 'visibility_group_restricted';
+        }
+    }
+    // Visibility-mode subscription restriction
+    if ((visibilityMode === 'subscription_only' || exam.requiresActiveSubscription) && !subscriptionState.allowed) {
+        if (!reasons.includes(`subscription_${subscriptionState.reason || 'inactive'}`)) {
+            accessAllowed = false;
+            reasons.push(`subscription_${subscriptionState.reason || 'inactive'}`);
+            if (!accessDeniedReason)
+                accessDeniedReason = 'subscription_required';
+        }
     }
     const paymentRequired = subscriptionRequired && subscriptionState.allowed;
     const pendingDueAmount = Number(dueLedger?.netDue || 0);
@@ -2531,6 +2570,25 @@ async function generateQuestionsForExam(exam, seedText = '') {
         questions = await Question_1.default.find({ exam: exam._id, active: { $ne: false } })
             .sort({ section: 1, order: 1 })
             .lean();
+        // Also include QB-attached questions from exam_questions collection
+        const bankQuestions = await examQuestion_model_1.ExamQuestionModel.find({ examId: String(exam._id) }).sort({ orderIndex: 1 }).lean();
+        if (bankQuestions.length > 0) {
+            const normalizedBank = bankQuestions.map((bq) => ({
+                ...bq,
+                exam: exam._id,
+                question: bq.question_en,
+                optionA: bq.options?.[0]?.text_en ?? '',
+                optionB: bq.options?.[1]?.text_en ?? '',
+                optionC: bq.options?.[2]?.text_en ?? '',
+                optionD: bq.options?.[3]?.text_en ?? '',
+                correctAnswer: bq.correctKey,
+                order: bq.orderIndex ?? 999,
+                explanation: bq.explanation_en ?? '',
+                active: true,
+                fromBank: true,
+            }));
+            questions.push(...normalizedBank);
+        }
         // If still empty, fall back to subject-based search
         if (questions.length === 0 && exam.subject) {
             const subjectQuery = { active: { $ne: false } };
@@ -2568,6 +2626,26 @@ async function generateQuestionsForExam(exam, seedText = '') {
 async function getQuestionsByIdsAndFormat(questionIds, exam) {
     const rawQs = await Question_1.default.find({ _id: { $in: questionIds } }).lean();
     const qMap = new Map(rawQs.map(q => [q._id.toString(), q]));
+    // Also check ExamQuestionModel for QB-attached questions not found in legacy collection
+    const missingIds = questionIds.filter(id => !qMap.has(id));
+    if (missingIds.length > 0) {
+        const bankQs = await examQuestion_model_1.ExamQuestionModel.find({ _id: { $in: missingIds } }).lean();
+        for (const bq of bankQs) {
+            const opts = bq.options || [];
+            qMap.set(bq._id.toString(), {
+                _id: bq._id,
+                question: bq.question_en || '',
+                optionA: opts[0]?.text || '',
+                optionB: opts[1]?.text || '',
+                optionC: opts[2]?.text || '',
+                optionD: opts[3]?.text || '',
+                correctAnswer: bq.correctKey || '',
+                order: bq.orderIndex ?? 0,
+                marks: bq.marks ?? 1,
+                questionType: 'mcq',
+            });
+        }
+    }
     // Maintain generated order
     const orderedQs = questionIds.map(id => qMap.get(id)).filter(Boolean);
     return orderedQs.filter(q => q && q._id).map(q => {

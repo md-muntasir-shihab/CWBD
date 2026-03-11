@@ -4,7 +4,11 @@ import {
   Upload, Download, FileSpreadsheet, Clock, CheckCircle, XCircle,
   RefreshCcw, Filter,
 } from 'lucide-react';
-import { getImportExportLogs } from '../../../api/adminStudentApi';
+import {
+  getImportExportLogs,
+  importStudentsPreview,
+  importStudentsCommit,
+} from '../../../api/adminStudentApi';
 import api from '../../../services/api';
 
 type LogEntry = {
@@ -29,10 +33,22 @@ export default function StudentImportExportPage() {
       if (!importFile) throw new Error('Select a file');
       const fd = new FormData();
       fd.append('file', importFile);
-      const res = await api.post('/admin/students-v2/import', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+
+      const preview = await importStudentsPreview(fd) as Record<string, unknown>;
+      const rows = Array.isArray(preview?.allRows)
+        ? preview.allRows as Record<string, string>[]
+        : [];
+      const mapping = (preview?.suggestedMapping ?? {}) as Record<string, string>;
+      if (rows.length === 0) {
+        return { created: 0, updated: 0, skipped: 0, errors: [] };
+      }
+
+      return importStudentsCommit({
+        mode: 'create_only',
+        dedupeField: 'email',
+        mapping,
+        rows,
       });
-      return res.data;
     },
     onSuccess: (data) => {
       setImportResult(data);
@@ -57,11 +73,11 @@ export default function StudentImportExportPage() {
   });
 
   const downloadTemplate = async () => {
-    const res = await api.get('/admin/students-v2/import-template', { responseType: 'blob' });
+    const res = await api.get('/admin/students-v2/template.xlsx', { responseType: 'blob' });
     const url = URL.createObjectURL(res.data as Blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'import-template.xlsx';
+    a.download = 'students_import_template.xlsx';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -99,7 +115,14 @@ export default function StudentImportExportPage() {
             </div>
             {importResult && (
               <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                Import complete: {(importResult as Record<string, number>).successCount ?? 0} success, {(importResult as Record<string, number>).failCount ?? 0} failed
+                {(() => {
+                  const result = importResult as Record<string, unknown>;
+                  const created = Number(result.created ?? 0);
+                  const updated = Number(result.updated ?? 0);
+                  const skipped = Number(result.skipped ?? 0);
+                  const errors = Array.isArray(result.errors) ? result.errors.length : 0;
+                  return `Import complete: ${created} created, ${updated} updated, ${skipped} skipped, ${errors} failed`;
+                })()}
               </div>
             )}
             {importMutation.isError && (

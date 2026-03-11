@@ -8,6 +8,8 @@ exports.adminRateLimiter = adminRateLimiter;
 exports.uploadRateLimiter = uploadRateLimiter;
 exports.contactRateLimiter = contactRateLimiter;
 exports.subscriptionActionRateLimiter = subscriptionActionRateLimiter;
+exports.financeExportRateLimiter = financeExportRateLimiter;
+exports.financeImportRateLimiter = financeImportRateLimiter;
 const requestMeta_1 = require("../utils/requestMeta");
 const securityCenterService_1 = require("../services/securityCenterService");
 const buckets = new Map();
@@ -190,6 +192,44 @@ async function subscriptionActionRateLimiter(req, res, next) {
         const result = consume(key, 20, 60 * 60 * 1000); // 20 actions per hour
         if (!result.allowed) {
             limiterResponse(res, 'Too many subscription actions. Please try again later.', result.retryAfterSec);
+            return;
+        }
+        next();
+    }
+    catch {
+        next();
+    }
+}
+async function financeExportRateLimiter(req, res, next) {
+    try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
+        const userScope = req.user?._id || (0, requestMeta_1.getClientIp)(req);
+        const key = `finance_export:${String(userScope)}`;
+        const result = consume(key, 10, 60 * 1000); // 10 per minute
+        if (!result.allowed) {
+            limiterResponse(res, 'Too many export requests. Please wait before retrying.', result.retryAfterSec);
+            return;
+        }
+        next();
+    }
+    catch {
+        next();
+    }
+}
+async function financeImportRateLimiter(req, res, next) {
+    try {
+        if (shouldBypassRateLimit(req)) {
+            next();
+            return;
+        }
+        const userScope = req.user?._id || (0, requestMeta_1.getClientIp)(req);
+        const key = `finance_import:${String(userScope)}`;
+        const result = consume(key, 5, 60 * 1000); // 5 per minute
+        if (!result.allowed) {
+            limiterResponse(res, 'Too many import requests. Please wait before retrying.', result.retryAfterSec);
             return;
         }
         next();

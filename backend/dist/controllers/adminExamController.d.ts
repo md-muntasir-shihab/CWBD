@@ -10,6 +10,7 @@ export declare function adminCloneExam(req: AuthRequest, res: Response): Promise
 export declare function adminRegenerateExamShareLink(req: AuthRequest, res: Response): Promise<void>;
 export declare function adminSignExamBannerUpload(req: AuthRequest, res: Response): Promise<void>;
 export declare function adminForceSubmit(req: AuthRequest, res: Response): Promise<void>;
+export declare function adminGetExamResults(req: AuthRequest, res: Response): Promise<void>;
 export declare function adminPublishResult(req: AuthRequest, res: Response): Promise<void>;
 export declare function adminEvaluateResult(req: AuthRequest, res: Response): Promise<void>;
 export declare function adminGetQuestions(req: AuthRequest, res: Response): Promise<void>;

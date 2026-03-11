@@ -1,9 +1,10 @@
 export declare const buildAccessPayload: (exam: any, userId?: string) => Promise<{
     loginRequired: true;
-    profileScoreMin: number;
+    profileScoreMin: any;
     subscriptionRequired: any;
     paymentRequired: any;
     priceBDT: any;
+    visibilityMode: any;
     accessStatus: string;
     blockReasons: string[];
 }>;

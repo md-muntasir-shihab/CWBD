@@ -1,0 +1,67 @@
+{
+  "id": "pass2-student",
+  "title": "PASS 2 - Student",
+  "role": "Student",
+  "summary": {
+    "total": 6,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > student start and autosave API flow works for active attempt",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > attempt API handles stale revision, anti-cheat event, and submit",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > lock policy prevents save and submit after violation threshold",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > admin live action endpoint can warn and force-submit an active attempt",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-flow.spec.ts",
+      "title": "exam-flow.spec.ts > Student Exam Flow > full exam lifecycle: landing, taking, auto-save, and results",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[id^=\"exam-question-\"]').first()\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('[id^=\"exam-question-\"]').first()\u001b[22m\n\n\n  27 |         // 3. Active exam UI verification and answer at least one question\n  28 |         const questionCards = page.locator('[id^=\"exam-question-\"]');\n> 29 |         await expect(questionCards.first()).toBeVisible({ timeout: 20000 });\n     |                                             ^\n  30 |         await questionCards.first().getByRole('button').first().click();\n  31 |\n  32 |         // Let auto-save trigger\n    at f:\\CampusWay\\frontend\\e2e\\exam-flow.spec.ts:29:45",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[id^=\"exam-question-\"]').first()\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('[id^=\"exam-question-\"]').first()\u001b[22m\n"
+      ],
+      "attachments": [
+        "f:\\CampusWay\\frontend\\test-results\\exam-flow-Student-Exam-Flo-82425-aking-auto-save-and-results-chromium-desktop\\test-failed-1.png",
+        "f:\\CampusWay\\frontend\\test-results\\exam-flow-Student-Exam-Flo-82425-aking-auto-save-and-results-chromium-desktop\\video.webm",
+        "f:\\CampusWay\\frontend\\test-results\\exam-flow-Student-Exam-Flo-82425-aking-auto-save-and-results-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "student-smoke.spec.ts",
+      "title": "student-smoke.spec.ts > Student Smoke > student can login and open dashboard/profile",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310175522\\pass2-student\\playwright.log",
+  "resultPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310175522\\pass2-student\\playwright.json",
+  "dbEvidencePath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310175522\\pass2-student\\db-evidence.json"
+}

@@ -1,0 +1,2 @@
+{"t":{"$date":"2026-03-10T22:53:48.700+06:00"},"s":"I",  "c":"-",        "id":8991200, "ctx":"thread1","msg":"Shuffling initializers","attr":{"seed":144552529}}
+{"t":{"$date":"2026-03-10T22:53:48.795+06:00"},"s":"F",  "c":"CONTROL",  "id":20574,   "ctx":"thread1","msg":"Error during global initialization","attr":{"error":{"code":38,"codeName":"FileNotOpen","errmsg":"Can't initialize rotatable log file :: caused by :: Failed to open C:\\Program Files\\MongoDB\\Server\\8.2\\log\\mongod.log"}}}

@@ -37,6 +37,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const StudentGroupSchema = new mongoose_1.Schema({
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, trim: true, lowercase: true },
+    shortCode: { type: String, trim: true, uppercase: true, sparse: true },
     batchTag: { type: String, trim: true, default: '' },
     description: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
@@ -44,6 +45,20 @@ const StudentGroupSchema = new mongoose_1.Schema({
     memberCountCached: { type: Number, default: 0 },
     createdByAdminId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
     type: { type: String, enum: ['manual', 'dynamic'], default: 'manual' },
+    // Visual / card UI
+    color: { type: String, trim: true, default: '#6366f1' },
+    icon: { type: String, trim: true, default: 'Users' },
+    cardStyleVariant: { type: String, enum: ['solid', 'gradient', 'outline', 'minimal'], default: 'solid' },
+    sortOrder: { type: Number, default: 0 },
+    isFeatured: { type: Boolean, default: false },
+    // Academic targeting
+    batch: { type: String, trim: true },
+    department: { type: String, trim: true },
+    // Admin policy defaults
+    visibilityNote: { type: String, trim: true, default: '' },
+    defaultExamVisibility: { type: String, enum: ['all_students', 'group_only', 'hidden'], default: 'all_students' },
+    defaultCommunicationAudience: { type: Boolean, default: false },
+    /** @deprecated */
     manualStudents: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }],
     rules: {
         batches: [String],
@@ -59,6 +74,8 @@ const StudentGroupSchema = new mongoose_1.Schema({
     meta: { type: mongoose_1.Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
 StudentGroupSchema.index({ isActive: 1, batchTag: 1, name: 1 });
-StudentGroupSchema.index({ type: 1, manualStudents: 1 });
+StudentGroupSchema.index({ type: 1 });
+StudentGroupSchema.index({ sortOrder: 1, name: 1 });
+StudentGroupSchema.index({ isFeatured: 1, isActive: 1 });
 exports.default = mongoose_1.default.model('StudentGroup', StudentGroupSchema);
 //# sourceMappingURL=StudentGroup.js.map

@@ -1,0 +1,60 @@
+{
+  "id": "pass2-student",
+  "title": "PASS 2 - Student",
+  "role": "Student",
+  "summary": {
+    "total": 6,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 1,
+    "other": 0
+  },
+  "code": 0,
+  "entries": [
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > student start and autosave API flow works for active attempt",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > attempt API handles stale revision, anti-cheat event, and submit",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > lock policy prevents save and submit after violation threshold",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-attempt-critical.spec.ts",
+      "title": "exam-attempt-critical.spec.ts > Exam Attempt Critical Flows > admin live action endpoint can warn and force-submit an active attempt",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "exam-flow.spec.ts",
+      "title": "exam-flow.spec.ts > Student Exam Flow > full exam lifecycle: landing, taking, auto-save, and results",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "student-smoke.spec.ts",
+      "title": "student-smoke.spec.ts > Student Smoke > student can login and open dashboard/profile",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180245\\pass2-student\\playwright.log",
+  "resultPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180245\\pass2-student\\playwright.json",
+  "dbEvidencePath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310180245\\pass2-student\\db-evidence.json"
+}

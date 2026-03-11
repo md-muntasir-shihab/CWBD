@@ -1,0 +1,3 @@
+[  171530ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/pages/admin/students/StudentGroupsPage.tsx?t=1773068371070:0
+[  171530ms] [ERROR] [vite] Failed to reload /src/pages/admin/students/StudentGroupsPage.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:881
+[  201645ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/auth/me:0

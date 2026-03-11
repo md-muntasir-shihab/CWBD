@@ -1,0 +1,212 @@
+{
+  "id": "pass4-cross-role",
+  "title": "PASS 4 - Cross-role / Permission / Sync",
+  "role": "Cross-role",
+  "summary": {
+    "total": 20,
+    "passed": 5,
+    "failed": 9,
+    "skipped": 6,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "auth-session.spec.ts",
+      "title": "auth-session.spec.ts > Auth Session Security > new login invalidates old student session",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n  35 |             }\n  36 |         }\n> 37 |         expect(loggedIn).toBeTruthy();\n     |                          ^\n  38 |\n  39 |         const oldToken = await page1.evaluate(\n  40 |             () => sessionStorage.getItem('campusway-token') || localStorage.getItem('campusway-token')\n    at F:\\CampusWay\\frontend\\e2e\\auth-session.spec.ts:37:26",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\auth-session-Auth-Session--14963-lidates-old-student-session-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\auth-session-Auth-Session--14963-lidates-old-student-session-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > public direct URLs cannot access protected student/admin pages",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student cannot reach admin routes by direct URL",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/login\"\u001b[39m\nTimeout: 15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 15000ms\u001b[22m\n\u001b[2m    18 × unexpected value \"http://127.0.0.1:5283/login\"\u001b[22m\n\n\n   at helpers.ts:135\n\n  133 |     await page.locator('input#password, input[name=\"password\"], input[type=\"password\"]').first().fill(creds.password);\n  134 |     await page.getByRole('button', { name: /(Sign in|Access Dashboard)/i }).first().click();\n> 135 |     await expect(page).toHaveURL(/\\/dashboard/, { timeout: 15000 });\n      |                        ^\n  136 | }\n  137 |\n    at loginAsStudent (F:\\CampusWay\\frontend\\e2e\\helpers.ts:135:24)\n    at F:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts:48:9",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/login\"\u001b[39m\nTimeout: 15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 15000ms\u001b[22m\n\u001b[2m    18 × unexpected value \"http://127.0.0.1:5283/login\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\cross-role-permissions-Cro-f9e48--admin-routes-by-direct-URL-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\cross-role-permissions-Cro-f9e48--admin-routes-by-direct-URL-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\cross-role-permissions-Cro-f9e48--admin-routes-by-direct-URL-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student/admin API tokens are blocked from cross-role endpoints",
+      "status": "failed",
+      "errors": [
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n\n\n  14 |\n  15 | async function apiLogin(request: APIRequestContext, identifier: string, password: string): Promise<LoginResult> {\n> 16 |     const response = await request.post('/api/auth/login', {\n     |                                    ^\n  17 |         data: { identifier, password },\n  18 |     });\n  19 |     expect(response.status(), `Login failed for ${identifier}`).toBe(200);\n    at apiLogin (F:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts:16:36)\n    at F:\\CampusWay\\frontend\\e2e\\cross-role-permissions.spec.ts:60:34",
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > canonical login pages render logo + compact theme toggle",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > legacy /admin/login redirects to secret admin login",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > unauthorized admin dashboard redirects to secret login",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > student login succeeds only from /login and redirects to /dashboard",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > admin login succeeds only from /__cw_admin__/login and redirects to /__cw_admin__/dashboard",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > chairman login redirects to /chairman/dashboard when chairman creds are configured",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > role mismatch: student creds fail on admin/chairman portals",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.1 rss ingestion creates pending items and dedupes duplicates",
+      "status": "failed",
+      "errors": [
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n\n\n  19 |\n  20 | async function apiLogin(request: APIRequestContext, identifier: string, password: string): Promise<LoginResult> {\n> 21 |     const response = await request.post('/api/auth/login', {\n     |                                    ^\n  22 |         data: { identifier, password },\n  23 |     });\n  24 |     expect(response.status(), `Login failed for ${identifier}`).toBe(200);\n    at apiLogin (F:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts:21:36)\n    at F:\\CampusWay\\frontend\\e2e\\phase4-pipelines.spec.ts:66:34",
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.1 scheduled publish and default banner fallback update work",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.2 exam session autosubmit cron finalizes expired attempts",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.3 payment pending->paid updates dashboard and P4.4 audit logs capture action",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > student dark/light theme persists across reload",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/login\"\u001b[39m\nTimeout: 15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 15000ms\u001b[22m\n\u001b[2m    19 × unexpected value \"http://127.0.0.1:5283/login\"\u001b[22m\n\n\n   at helpers.ts:135\n\n  133 |     await page.locator('input#password, input[name=\"password\"], input[type=\"password\"]').first().fill(creds.password);\n  134 |     await page.getByRole('button', { name: /(Sign in|Access Dashboard)/i }).first().click();\n> 135 |     await expect(page).toHaveURL(/\\/dashboard/, { timeout: 15000 });\n      |                        ^\n  136 | }\n  137 |\n    at loginAsStudent (F:\\CampusWay\\frontend\\e2e\\helpers.ts:135:24)\n    at F:\\CampusWay\\frontend\\e2e\\role-theme-persistence.spec.ts:34:9",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/login\"\u001b[39m\nTimeout: 15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 15000ms\u001b[22m\n\u001b[2m    19 × unexpected value \"http://127.0.0.1:5283/login\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\role-theme-persistence-Rol-79837-heme-persists-across-reload-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\role-theme-persistence-Rol-79837-heme-persists-across-reload-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\role-theme-persistence-Rol-79837-heme-persists-across-reload-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > admin dark/light theme persists across reload",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\role-theme-persistence.spec.ts:57:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\role-theme-persistence-Rol-dd58d-heme-persists-across-reload-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\role-theme-persistence-Rol-dd58d-heme-persists-across-reload-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\role-theme-persistence-Rol-dd58d-heme-persists-across-reload-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > admin highlighted + featured updates are reflected in /api/home",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:73:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-86e6e-s-are-reflected-in-api-home-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-86e6e-s-are-reflected-in-api-home-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-86e6e-s-are-reflected-in-api-home-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > exam routes are gated by login and subscription policy",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/login/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[22m\n\n\n  143 |\n  144 |         await page.goto('/exam/take/000000000000000000000000');\n> 145 |         await expect(page).toHaveURL(/\\/login/, { timeout: 10000 });\n      |                            ^\n  146 |\n  147 |         await loginAsStudent(page);\n  148 |         const studentToken = await readAccessToken(page);\n    at F:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:145:28",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/login/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://127.0.0.1:5283/exam/000000000000000000000000\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-371e2-gin-and-subscription-policy-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > question bank supports BN/EN payload and mobile card layout",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\step2-core.spec.ts:233:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\step2-core-Step-2-Core-Pac-90bf3-load-and-mobile-card-layout-chromium-desktop\\error-context.md"
+      ]
+    }
+  ],
+  "logPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass4-cross-role\\playwright.log",
+  "resultPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass4-cross-role\\playwright.json",
+  "dbEvidencePath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass4-cross-role\\db-evidence.json"
+}

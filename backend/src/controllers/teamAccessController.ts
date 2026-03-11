@@ -190,7 +190,6 @@ export async function teamCreateMember(req: Request, res: Response): Promise<voi
             status,
             forcePasswordResetRequired: requirePasswordReset,
             notes,
-            permissionsV2: {},
         });
 
         const inviteStatus = mode === 'draft' ? 'draft' : mode === 'without_send' ? 'pending' : 'sent';
@@ -269,17 +268,37 @@ export async function teamUpdateMember(req: Request, res: Response): Promise<voi
             role: member.role,
             status: member.status,
             forcePasswordResetRequired: member.forcePasswordResetRequired,
+            email: member.email,
         };
 
         if (body.fullName) member.full_name = String(body.fullName).trim();
-        if (body.phone !== undefined) member.phone_number = String(body.phone || '').trim();
+        if (body.email !== undefined) {
+            const nextEmail = normalizeEmail(body.email);
+            if (!nextEmail) {
+                res.status(400).json({ message: 'email is required' });
+                return;
+            }
+            if (nextEmail !== member.email) {
+                const existing = await User.findOne({
+                    email: nextEmail,
+                    _id: { $ne: member._id },
+                }).select('_id').lean();
+                if (existing) {
+                    res.status(409).json({ message: 'Email already exists' });
+                    return;
+                }
+                member.email = nextEmail;
+            }
+        }
+        const phoneInput = body.phone ?? body.phone_number;
+        if (phoneInput !== undefined) member.phone_number = String(phoneInput || '').trim();
         if (body.status) member.status = String(body.status) as any;
         if (body.notes !== undefined) member.notes = String(body.notes || '').trim();
         if (body.forcePasswordResetRequired !== undefined) {
             member.forcePasswordResetRequired = Boolean(body.forcePasswordResetRequired);
         }
 
-        const roleId = String(body.roleId || '').trim();
+        const roleId = String(body.roleId || body.teamRoleId || '').trim();
         if (roleId && mongoose.Types.ObjectId.isValid(roleId)) {
             const role = await TeamRole.findById(roleId).lean();
             if (!role) {
@@ -296,6 +315,7 @@ export async function teamUpdateMember(req: Request, res: Response): Promise<voi
             role: member.role,
             status: member.status,
             forcePasswordResetRequired: member.forcePasswordResetRequired,
+            email: member.email,
         });
 
         res.json({ message: 'Member updated', item: member });

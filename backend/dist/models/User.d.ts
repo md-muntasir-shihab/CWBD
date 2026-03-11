@@ -26,6 +26,15 @@ export interface IUser extends Document {
     profile_photo?: string;
     mustChangePassword: boolean;
     passwordResetRequired: boolean;
+    passwordSetByAdminId?: mongoose.Types.ObjectId;
+    passwordLastChangedAtUTC?: Date;
+    passwordChangedByType?: 'admin' | 'user';
+    forcePasswordResetRequired: boolean;
+    teamRoleId?: mongoose.Types.ObjectId;
+    notes?: string;
+    accountInfoLastSentAtUTC?: Date;
+    accountInfoLastSentChannels?: string[];
+    credentialsLastResentAtUTC?: Date;
     loginAttempts: number;
     lockUntil?: Date;
     twoFactorEnabled: boolean;

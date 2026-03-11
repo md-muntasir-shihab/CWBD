@@ -77,7 +77,10 @@ export default function StudentGroupDetailPage() {
 
   const g = (group as Record<string, unknown>) ?? {};
   const color = (g.color as string) || '#6366f1';
-  const members = ((membersData as Record<string, unknown>)?.members ?? (membersData as Record<string, unknown>)?.items ?? []) as Record<string, unknown>[];
+  const members = ((membersData as Record<string, unknown>)?.data ??
+    (membersData as Record<string, unknown>)?.members ??
+    (membersData as Record<string, unknown>)?.items ??
+    []) as Record<string, unknown>[];
   const totalMembers = ((membersData as Record<string, unknown>)?.total ?? members.length) as number;
   const totalPages = Math.max(1, Math.ceil(totalMembers / 20));
   const metricsObj = (metrics ?? {}) as Record<string, unknown>;
@@ -125,11 +128,17 @@ export default function StudentGroupDetailPage() {
     if (!addIds.trim()) return;
     const ids = addIds.split(/[\s,]+/).filter(Boolean);
     try {
-      await addGroupMembers(id!, ids);
+      const result = await addGroupMembers(id!, ids) as { added?: number; skipped?: number };
       qc.invalidateQueries({ queryKey: ['admin-student-group-members', id] });
       qc.invalidateQueries({ queryKey: ['admin-student-group-metrics', id] });
       setAddIds('');
-      showToast(`${ids.length} member(s) added`);
+      const added = Number(result?.added ?? 0);
+      const skipped = Number(result?.skipped ?? 0);
+      if (added <= 0) {
+        showToast('No matching student IDs were added', 'error');
+        return;
+      }
+      showToast(skipped > 0 ? `${added} member(s) added, ${skipped} skipped` : `${added} member(s) added`);
     } catch { showToast('Failed to add members', 'error'); }
   };
 
@@ -370,7 +379,7 @@ export default function StudentGroupDetailPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
                 {members.map(m => (
-                  <tr key={m._id as string} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <tr key={(m.studentId || m._id) as string} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                     <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{(m.fullName || m.name || m.studentName) as string}</td>
                     <td className="px-4 py-3 text-slate-500">{(m.phone || m.studentPhone || '—') as string}</td>
                     <td className="px-4 py-3">

@@ -1,0 +1,74 @@
+
+> campusway-backend@1.0.0 e2e:prepare
+> tsx src/scripts/e2e_prepare.ts
+
+[db] MongoDB connected successfully
+[db] All critical indexes ensured
+{
+  "ok": true,
+  "message": "E2E environment prepared.",
+  "admins": [
+    {
+      "id": "69b055319b2e93b2d58c4bd2",
+      "email": "e2e_admin_desktop@campusway.local",
+      "password": "E2E_Admin#12345"
+    },
+    {
+      "id": "69b055319b2e93b2d58c4bd3",
+      "email": "e2e_admin_mobile@campusway.local",
+      "password": "E2E_Admin#12345"
+    }
+  ],
+  "students": [
+    {
+      "id": "69b055329b2e93b2d58c4bd4",
+      "email": "e2e_student_desktop@campusway.local",
+      "password": "E2E_Student#12345"
+    },
+    {
+      "id": "69b055329b2e93b2d58c4bd5",
+      "email": "e2e_student_mobile@campusway.local",
+      "password": "E2E_Student#12345"
+    },
+    {
+      "id": "69b055329b2e93b2d58c4bd6",
+      "email": "e2e_student_session@campusway.local",
+      "password": "E2E_Student#12345"
+    }
+  ],
+  "contentSeed": {
+    "ok": true,
+    "runLabel": "e2e_prepare",
+    "users": {
+      "admins": 2,
+      "students": 3
+    },
+    "seeded": {
+      "categories": 12,
+      "universities": 6,
+      "plans": 3,
+      "banners": 4,
+      "newsSources": 2,
+      "news": 5,
+      "newsAuditEvents": 2,
+      "resources": 4,
+      "exams": 3,
+      "questions": 10,
+      "newsJobs": 1,
+      "approvals": 1,
+      "notifications": 3,
+      "notices": 1,
+      "supportTickets": 1,
+      "payments": 2,
+      "expenses": 2,
+      "auditLogs": 2,
+      "badges": 1
+    }
+  },
+  "backupPath": "F:\\CampusWay\\backend\\.e2e-security-backup.json",
+  "baseUrl": "http://127.0.0.1:5283"
+}
+
+(node:12188) [MONGOOSE] Warning: Duplicate schema index on {"slug":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[db] MongoDB disconnected

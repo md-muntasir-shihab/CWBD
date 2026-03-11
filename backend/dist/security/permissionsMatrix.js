@@ -21,6 +21,7 @@ exports.PERMISSION_MODULES = [
     'support_center',
     'reports_analytics',
     'security_logs',
+    'team_access_control',
 ];
 exports.PERMISSION_ACTIONS = [
     'view',
@@ -68,6 +69,7 @@ const ADMIN_MODULES = [
     'support_center',
     'reports_analytics',
     'security_logs',
+    'team_access_control',
 ];
 const roleMatrixBase = {
     superadmin: allowMany(emptyModuleMap(), ADMIN_MODULES, ALL_ACTIONS),

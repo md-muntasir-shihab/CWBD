@@ -206,10 +206,10 @@ app.use('/api', publicRoutes);
 app.use(`/api/${ADMIN_SECRET_PATH}`, adminRateLimiter);
 app.use(`/api/${ADMIN_SECRET_PATH}`, adminRoutes);
 app.use('/api/admin', adminRateLimiter);
-app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminStudentMgmtRoutes);
 app.use('/api/admin', adminNotificationRoutes);
 app.use('/api/admin', adminStudentSecurityRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Student API
 app.use('/api/student', studentRoutes);

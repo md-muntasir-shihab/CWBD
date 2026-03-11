@@ -40,6 +40,7 @@ const express_1 = require("express");
 const multer_1 = __importDefault(require("multer"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const exceljs_1 = __importDefault(require("exceljs"));
 const auth_1 = require("../middlewares/auth");
 const securityGuards_1 = require("../middlewares/securityGuards");
 const securityRateLimit_1 = require("../middlewares/securityRateLimit");
@@ -79,11 +80,14 @@ const renewalAutomationController_1 = require("../controllers/renewalAutomationC
 const adminReportsController_1 = require("../controllers/adminReportsController");
 const adminFinanceController_1 = require("../controllers/adminFinanceController");
 const financeCenterController_1 = require("../controllers/financeCenterController");
+const validate_1 = require("../middlewares/validate");
+const financeSchemas_1 = require("../validators/financeSchemas");
 const adminSupportController_1 = require("../controllers/adminSupportController");
 const backupController_1 = require("../controllers/backupController");
 const adminUserController_1 = require("../controllers/adminUserController");
 const subscriptionController_1 = require("../controllers/subscriptionController");
 const socialLinksController_1 = require("../controllers/socialLinksController");
+const teamAccessController_1 = require("../controllers/teamAccessController");
 const adminJobsController_1 = require("../controllers/adminJobsController");
 const studentImportController_1 = require("../controllers/studentImportController");
 const permissionsMatrix_1 = require("../security/permissionsMatrix");
@@ -129,6 +133,8 @@ function inferModuleFromPath(pathname) {
         return 'reports_analytics';
     if (clean.startsWith('/security') || clean.startsWith('/security-settings') || clean.startsWith('/security-alerts') || clean.startsWith('/audit-logs') || clean.startsWith('/backups') || clean.startsWith('/jobs') || clean.startsWith('/approvals') || clean.startsWith('/maintenance'))
         return 'security_logs';
+    if (clean.startsWith('/team'))
+        return 'team_access_control';
     if (clean.startsWith('/help-center'))
         return 'support_center';
     if (clean.startsWith('/content-blocks'))
@@ -206,6 +212,33 @@ router.get('/permissions/matrix', (0, auth_1.authorize)('superadmin', 'admin'), 
     }
     res.json(responseBody);
 });
+/* ── Team & Access Control ── */
+router.get('/team/members', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetMembers);
+router.post('/team/members', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamCreateMember);
+router.get('/team/members/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetMemberById);
+router.put('/team/members/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamUpdateMember);
+router.post('/team/members/:id/suspend', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamSuspendMember);
+router.post('/team/members/:id/activate', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamActivateMember);
+router.post('/team/members/:id/reset-password', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamResetPassword);
+router.post('/team/members/:id/revoke-sessions', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamRevokeSessions);
+router.post('/team/members/:id/resend-invite', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamResendInvite);
+router.get('/team/roles', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetRoles);
+router.post('/team/roles', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamCreateRole);
+router.get('/team/roles/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetRoleById);
+router.put('/team/roles/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamUpdateRole);
+router.post('/team/roles/:id/duplicate', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamDuplicateRole);
+router.delete('/team/roles/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamDeleteRole);
+router.get('/team/permissions', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetPermissions);
+router.put('/team/permissions/roles/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamUpdateRolePermissions);
+router.put('/team/permissions/members/:id/override', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamUpdateMemberOverride);
+router.get('/team/approval-rules', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetApprovalRules);
+router.post('/team/approval-rules', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamCreateApprovalRule);
+router.put('/team/approval-rules/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamUpdateApprovalRule);
+router.delete('/team/approval-rules/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamDeleteApprovalRule);
+router.get('/team/activity', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetActivity);
+router.get('/team/activity/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetActivityById);
+router.get('/team/security', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetSecurityOverview);
+router.get('/team/invites', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor', 'viewer', 'support_agent', 'finance_agent'), teamAccessController_1.teamGetInvites);
 router.get('/approvals/pending', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'support_agent'), actionApprovalController_1.adminGetPendingApprovals);
 router.post('/approvals/:id/approve', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'support_agent'), actionApprovalController_1.adminApprovePendingAction);
 router.post('/approvals/:id/reject', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'support_agent'), actionApprovalController_1.adminRejectPendingAction);
@@ -318,6 +351,7 @@ router.patch('/exams/:id/publish', (0, auth_1.authorize)('superadmin', 'admin', 
 router.patch('/exams/:id/publish-result', (0, auth_1.authorize)('superadmin', 'admin'), canEditExams, requireTwoPersonForExamResultPublish, adminExamController_1.adminPublishResult);
 router.patch('/exams/:examId/force-submit/:studentId', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canEditExams, adminExamController_1.adminForceSubmit);
 router.patch('/exams/evaluate/:resultId', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canEditExams, adminExamController_1.adminEvaluateResult);
+router.get('/exams/:examId/results', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canViewReports, adminExamController_1.adminGetExamResults);
 router.get('/exams/:examId/analytics', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canViewReports, adminExamController_1.adminGetExamAnalytics);
 router.get('/exams/:examId/export', (0, auth_1.authorize)('superadmin', 'admin'), canViewReports, adminExamController_1.adminExportExamResults);
 router.get('/exams/:id/results/import-template', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canViewReports, adminExamController_1.adminDownloadExamResultsImportTemplate);
@@ -333,6 +367,32 @@ router.put('/exams/:examId/questions/reorder', (0, auth_1.authorize)('superadmin
 router.put('/exams/:examId/questions/:questionId', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canEditExams, adminExamController_1.adminUpdateQuestion);
 router.delete('/exams/:examId/questions/:questionId', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canEditExams, adminExamController_1.adminDeleteQuestion);
 router.post('/exams/:examId/questions/import-excel', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canEditExams, adminExamController_1.adminImportQuestionsFromExcel);
+router.get('/exams/:id/questions/template.xlsx', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), async (_req, res) => {
+    const wb = new exceljs_1.default.Workbook();
+    const ws = wb.addWorksheet('Questions');
+    ws.columns = [
+        { header: 'question_en', key: 'question_en', width: 40 },
+        { header: 'question_bn', key: 'question_bn', width: 40 },
+        { header: 'optionA_en', key: 'optionA_en', width: 20 },
+        { header: 'optionA_bn', key: 'optionA_bn', width: 20 },
+        { header: 'optionB_en', key: 'optionB_en', width: 20 },
+        { header: 'optionB_bn', key: 'optionB_bn', width: 20 },
+        { header: 'optionC_en', key: 'optionC_en', width: 20 },
+        { header: 'optionC_bn', key: 'optionC_bn', width: 20 },
+        { header: 'optionD_en', key: 'optionD_en', width: 20 },
+        { header: 'optionD_bn', key: 'optionD_bn', width: 20 },
+        { header: 'correctKey', key: 'correctKey', width: 10 },
+        { header: 'marks', key: 'marks', width: 8 },
+        { header: 'negativeMarks', key: 'negativeMarks', width: 12 },
+        { header: 'explanation_en', key: 'explanation_en', width: 30 },
+        { header: 'explanation_bn', key: 'explanation_bn', width: 30 },
+    ];
+    ws.addRow({ question_en: 'What is 2+2?', optionA_en: '3', optionB_en: '4', optionC_en: '5', optionD_en: '6', correctKey: 'B', marks: 1 });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="questions_template.xlsx"');
+    await wb.xlsx.write(res);
+    res.end();
+});
 /* ── Global Question Bank ── */
 router.get('/question-bank', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), questionBankController_1.getQuestions);
 router.get('/question-bank/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), questionBankController_1.getQuestionById);
@@ -593,6 +653,7 @@ router.put('/student-groups/:id', (0, auth_1.authorize)('superadmin', 'admin', '
 router.delete('/student-groups/:id', (0, auth_1.authorize)('superadmin', 'admin'), adminUserController_1.adminDeleteStudentGroup);
 /* ── Subscription Plans ── */
 router.get('/subscription-plans', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), subscriptionController_1.adminGetSubscriptionPlans);
+router.get('/subscription-plans/export', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, subscriptionController_1.adminExportSubscriptionPlans);
 router.get('/subscription-plans/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), subscriptionController_1.adminGetSubscriptionPlanById);
 router.post('/subscription-plans', (0, auth_1.authorize)('superadmin', 'admin'), canManagePlans, subscriptionController_1.adminCreateSubscriptionPlan);
 router.put('/subscription-plans/reorder', (0, auth_1.authorize)('superadmin', 'admin'), canManagePlans, subscriptionController_1.adminReorderSubscriptionPlans);
@@ -601,7 +662,6 @@ router.delete('/subscription-plans/:id', (0, auth_1.authorize)('superadmin', 'ad
 router.put('/subscription-plans/:id/toggle', (0, auth_1.authorize)('superadmin', 'admin'), canManagePlans, subscriptionController_1.adminToggleSubscriptionPlan);
 router.patch('/subscription-plans/:id/toggle', (0, auth_1.authorize)('superadmin', 'admin'), canManagePlans, subscriptionController_1.adminToggleSubscriptionPlan);
 router.put('/subscription-plans/:id/toggle-featured', (0, auth_1.authorize)('superadmin', 'admin'), canManagePlans, subscriptionController_1.adminToggleSubscriptionPlanFeatured);
-router.get('/subscription-plans/export', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, subscriptionController_1.adminExportSubscriptionPlans);
 router.get('/subscription-settings', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, subscriptionController_1.adminGetSubscriptionSettings);
 router.put('/subscription-settings', (0, auth_1.authorize)('superadmin', 'admin'), canManagePlans, subscriptionController_1.adminUpdateSubscriptionSettings);
 router.get('/user-subscriptions', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), canManagePlans, subscriptionController_1.adminGetUserSubscriptions);
@@ -671,9 +731,9 @@ router.put('/dashboard-config', (0, auth_1.authorize)('superadmin', 'admin'), ad
 /* ── Notifications ── */
 router.get('/notifications', (0, auth_1.authorize)('superadmin', 'admin', 'moderator', 'editor'), adminDashboardController_1.adminGetNotifications);
 router.post('/notifications', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), adminDashboardController_1.adminCreateNotification);
-router.put('/notifications/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), adminDashboardController_1.adminUpdateNotification);
-router.patch('/notifications/:id/toggle', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), adminDashboardController_1.adminToggleNotification);
-router.delete('/notifications/:id', (0, auth_1.authorize)('superadmin', 'admin'), adminDashboardController_1.adminDeleteNotification);
+router.put('/notifications/:id([0-9a-fA-F]{24})', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), adminDashboardController_1.adminUpdateNotification);
+router.patch('/notifications/:id([0-9a-fA-F]{24})/toggle', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), adminDashboardController_1.adminToggleNotification);
+router.delete('/notifications/:id([0-9a-fA-F]{24})', (0, auth_1.authorize)('superadmin', 'admin'), adminDashboardController_1.adminDeleteNotification);
 /* ── Parent / Guardian Link ── */
 router.post('/students/:studentId/otp', (0, auth_1.authorize)('superadmin', 'admin'), adminDashboardController_1.adminIssueGuardianOtp);
 router.post('/students/:studentId/confirm-otp', (0, auth_1.authorize)('superadmin', 'admin'), adminDashboardController_1.adminConfirmGuardianOtp);
@@ -692,49 +752,51 @@ router.get('/fc/dashboard', (0, auth_1.authorize)('superadmin', 'admin', 'modera
 // Transactions
 router.get('/fc/transactions', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetTransactions);
 router.get('/fc/transactions/:id', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetTransaction);
-router.post('/fc/transactions', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcCreateTransaction);
-router.put('/fc/transactions/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcUpdateTransaction);
+router.post('/fc/transactions', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.createTransactionSchema), financeCenterController_1.fcCreateTransaction);
+router.put('/fc/transactions/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.updateTransactionSchema), financeCenterController_1.fcUpdateTransaction);
 router.delete('/fc/transactions/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcDeleteTransaction);
-router.post('/fc/transactions/bulk-approve', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcBulkApproveTransactions);
-router.post('/fc/transactions/bulk-mark-paid', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcBulkMarkPaid);
+router.post('/fc/transactions/:id/restore', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcRestoreTransaction);
+router.post('/fc/transactions/bulk-approve', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.bulkIdsSchema), financeCenterController_1.fcBulkApproveTransactions);
+router.post('/fc/transactions/bulk-mark-paid', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.bulkIdsSchema), financeCenterController_1.fcBulkMarkPaid);
 // Invoices
 router.get('/fc/invoices', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetInvoices);
-router.post('/fc/invoices', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcCreateInvoice);
-router.put('/fc/invoices/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcUpdateInvoice);
-router.post('/fc/invoices/:id/mark-paid', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcMarkInvoicePaid);
+router.post('/fc/invoices', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.createInvoiceSchema), financeCenterController_1.fcCreateInvoice);
+router.put('/fc/invoices/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.updateInvoiceSchema), financeCenterController_1.fcUpdateInvoice);
+router.post('/fc/invoices/:id/mark-paid', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.markInvoicePaidSchema), financeCenterController_1.fcMarkInvoicePaid);
 // Budgets
 router.get('/fc/budgets', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetBudgets);
-router.post('/fc/budgets', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcCreateBudget);
-router.put('/fc/budgets/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcUpdateBudget);
+router.post('/fc/budgets', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.createBudgetSchema), financeCenterController_1.fcCreateBudget);
+router.put('/fc/budgets/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.updateBudgetSchema), financeCenterController_1.fcUpdateBudget);
 router.delete('/fc/budgets/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcDeleteBudget);
 // Recurring Rules
 router.get('/fc/recurring-rules', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetRecurringRules);
-router.post('/fc/recurring-rules', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcCreateRecurringRule);
-router.put('/fc/recurring-rules/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcUpdateRecurringRule);
+router.post('/fc/recurring-rules', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.createRecurringRuleSchema), financeCenterController_1.fcCreateRecurringRule);
+router.put('/fc/recurring-rules/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.updateRecurringRuleSchema), financeCenterController_1.fcUpdateRecurringRule);
 router.delete('/fc/recurring-rules/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcDeleteRecurringRule);
 router.post('/fc/recurring-rules/:id/run-now', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcRunRecurringRuleNow);
 // Chart of Accounts
 router.get('/fc/chart-of-accounts', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetChartOfAccounts);
-router.post('/fc/chart-of-accounts', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcCreateAccount);
+router.post('/fc/chart-of-accounts', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.createAccountSchema), financeCenterController_1.fcCreateAccount);
 // Vendors
 router.get('/fc/vendors', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetVendors);
-router.post('/fc/vendors', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcCreateVendor);
+router.post('/fc/vendors', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.createVendorSchema), financeCenterController_1.fcCreateVendor);
 // Settings
 router.get('/fc/settings', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcGetSettings);
-router.put('/fc/settings', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcUpdateSettings);
+router.put('/fc/settings', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.updateSettingsSchema), financeCenterController_1.fcUpdateSettings);
 // Audit Logs
 router.get('/fc/audit-logs', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcGetAuditLogs);
+router.get('/fc/audit-logs/:id', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcGetAuditLogDetail);
 // Export / Import
-router.get('/fc/export', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcExportTransactions);
+router.get('/fc/export', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, securityRateLimit_1.financeExportRateLimiter, financeCenterController_1.fcExportTransactions);
 router.get('/fc/import-template', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcDownloadTemplate);
-router.post('/fc/import-preview', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, upload.single('file'), financeCenterController_1.fcImportPreview);
-router.post('/fc/import-commit', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcImportCommit);
+router.post('/fc/import-preview', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, securityRateLimit_1.financeImportRateLimiter, upload.single('file'), financeCenterController_1.fcImportPreview);
+router.post('/fc/import-commit', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, securityRateLimit_1.financeImportRateLimiter, (0, validate_1.validate)(financeSchemas_1.importCommitSchema), financeCenterController_1.fcImportCommit);
 // Refunds
 router.get('/fc/refunds', (0, auth_1.authorize)('superadmin', 'admin', 'moderator'), canManageFinance, financeCenterController_1.fcGetRefunds);
-router.post('/fc/refunds', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcCreateRefund);
-router.post('/fc/refunds/:id/process', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcApproveRefund);
+router.post('/fc/refunds', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.createRefundSchema), financeCenterController_1.fcCreateRefund);
+router.post('/fc/refunds/:id/process', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, (0, validate_1.validate)(financeSchemas_1.processRefundSchema), financeCenterController_1.fcApproveRefund);
 // P&L Report PDF
-router.get('/fc/report.pdf', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, financeCenterController_1.fcGeneratePLReport);
+router.get('/fc/report.pdf', (0, auth_1.authorize)('superadmin', 'admin'), canManageFinance, securityRateLimit_1.financeExportRateLimiter, financeCenterController_1.fcGeneratePLReport);
 /* ── Question Bank v2 (Advanced) ── */
 const qbv2 = __importStar(require("../controllers/questionBankAdvancedController"));
 // Settings

@@ -45,6 +45,7 @@ const StudentProfileSchema = new mongoose_1.Schema({
     phone: { type: String, trim: true },
     phone_number: { type: String, unique: true, sparse: true, index: true },
     guardian_phone: { type: String, trim: true },
+    guardian_email: { type: String, trim: true, lowercase: true },
     guardianOtpHash: { type: String, default: '' },
     guardianOtpExpiresAt: { type: Date, default: null },
     guardianPhoneVerifiedAt: { type: Date, default: null },

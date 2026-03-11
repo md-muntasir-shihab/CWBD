@@ -11,6 +11,7 @@
         "e2e": "playwright test",
         "e2e:headed": "playwright test --headed",
         "e2e:smoke": "node ./scripts/run-e2e-smoke.mjs",
+        "e2e:role-full-qa": "node ./scripts/role-full-qa-run.mjs",
         "e2e:prepare": "npm --prefix ../backend run e2e:prepare",
         "e2e:restore": "npm --prefix ../backend run e2e:restore",
         "mcp:smoke": "node ./scripts/mcp-smoke.mjs",

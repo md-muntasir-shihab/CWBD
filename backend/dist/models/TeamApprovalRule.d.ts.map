@@ -1,0 +1,1 @@
+{"version":3,"file":"TeamApprovalRule.d.ts","sourceRoot":"","sources":["../../src/models/TeamApprovalRule.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAE,QAAQ,EAAU,MAAM,UAAU,CAAC;AAEtD,MAAM,WAAW,iBAAkB,SAAQ,QAAQ;IAC/C,MAAM,EAAE,MAAM,CAAC;IACf,MAAM,EAAE,MAAM,CAAC;IACf,gBAAgB,EAAE,OAAO,CAAC;IAC1B,eAAe,EAAE,QAAQ,CAAC,KAAK,CAAC,QAAQ,EAAE,CAAC;CAC9C;;;;;;AAcD,wBAA6F"}

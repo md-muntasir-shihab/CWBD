@@ -64,6 +64,31 @@ const SEEDED_STUDENTS: SeedUser[] = [
 
 const BACKUP_PATH = path.resolve(process.cwd(), '.e2e-security-backup.json');
 
+async function normalizeLegacyUserIdIndex(): Promise<void> {
+    const db = mongoose.connection.db;
+    if (!db) return;
+
+    const users = db.collection('users');
+    const indexes = await users.indexes();
+    const userIdIndex = indexes.find((index) => index.name === 'userId_1');
+    if (!userIdIndex) return;
+
+    const isUnique = Boolean(userIdIndex.unique);
+    const isSparse = Boolean((userIdIndex as { sparse?: boolean }).sparse);
+    if (isUnique && isSparse) return;
+
+    await users.dropIndex('userId_1').catch(() => undefined);
+    await users.createIndex(
+        { userId: 1 },
+        {
+            name: 'userId_1',
+            unique: true,
+            sparse: true,
+            background: true,
+        },
+    );
+}
+
 function makeDeterministicPhone(seedKey: string, variant: 'student' | 'guardian'): string {
     const normalized = `${seedKey}:${variant}`.toLowerCase();
     let hash = 0;
@@ -214,6 +239,7 @@ async function backupAndPatchSecurity(): Promise<void> {
 async function run(): Promise<void> {
     try {
         await connectDB();
+        await normalizeLegacyUserIdIndex();
 
         const adminResults = await Promise.all(SEEDED_ADMINS.map(async (seed) => ({
             id: await upsertSeedUser(seed),

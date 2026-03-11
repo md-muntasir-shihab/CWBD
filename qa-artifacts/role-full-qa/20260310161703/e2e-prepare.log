@@ -1,0 +1,36 @@
+
+> campusway-backend@1.0.0 e2e:prepare
+> tsx src/scripts/e2e_prepare.ts
+
+[db] MongoDB connected successfully
+[db] All critical indexes ensured
+
+(node:11616) [MONGOOSE] Warning: Duplicate schema index on {"slug":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[e2e_prepare] failed MongoServerError: Plan executor error during findAndModify :: caused by :: E11000 duplicate key error collection: campusway_role_qa_20260310161703.users index: userId_1 dup key: { userId: null }
+    at Connection.sendCommand (f:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:559:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Connection.command (f:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:633:22)
+    at async Server.command (f:\CampusWay\backend\node_modules\mongodb\src\sdam\server.ts:350:21)
+    at async tryOperation (f:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:289:24)
+    at async executeOperation (f:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async Collection.findOneAndUpdate (f:\CampusWay\backend\node_modules\mongodb\src\collection.ts:1041:12)
+    at async model.Query._findOneAndUpdate (f:\CampusWay\backend\node_modules\mongoose\lib\query.js:3536:13)
+    at async model.Query.exec (f:\CampusWay\backend\node_modules\mongoose\lib\query.js:4627:63)
+    at async upsertSeedUser (f:\CampusWay\backend\src\scripts\e2e_prepare.ts:107:18) {
+  errorLabelSet: Set(0) {},
+  errorResponse: {
+    ok: 0,
+    errmsg: 'Plan executor error during findAndModify :: caused by :: E11000 duplicate key error collection: campusway_role_qa_20260310161703.users index: userId_1 dup key: { userId: null }',
+    code: 11000,
+    codeName: 'DuplicateKey',
+    keyPattern: { userId: 1 },
+    keyValue: { userId: null }
+  },
+  ok: 0,
+  code: 11000,
+  codeName: 'DuplicateKey',
+  keyPattern: { userId: 1 },
+  keyValue: { userId: null }
+}
+[db] MongoDB disconnected

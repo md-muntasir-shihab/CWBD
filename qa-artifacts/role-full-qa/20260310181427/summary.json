@@ -1,0 +1,39 @@
+{
+  "runId": "20260310181427",
+  "baseUrl": "http://127.0.0.1:5283",
+  "apiBaseUrl": "http://127.0.0.1:5083",
+  "dbName": "campusway_role_qa_20260310181427",
+  "outputDir": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310181427",
+  "passes": [
+    {
+      "passId": "pass4-cross-role",
+      "role": "Cross-role",
+      "total": 20,
+      "passed": 19,
+      "failed": 0,
+      "skipped": 1,
+      "other": 0
+    },
+    {
+      "passId": "pass5-regression",
+      "role": "Cross-role",
+      "total": 19,
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "other": 0
+    }
+  ],
+  "totals": {
+    "total": 39,
+    "passed": 38,
+    "failed": 0,
+    "skipped": 1,
+    "other": 0
+  },
+  "bugCount": 0,
+  "openCriticalOrHigh": 0,
+  "warnings": [
+    "Isolated DB drop skipped (mongosh unavailable or failed)."
+  ]
+}

@@ -578,7 +578,10 @@ export async function adminDeleteExam(req: AuthRequest, res: Response): Promise<
 
 export async function adminPublishExam(req: AuthRequest, res: Response): Promise<void> {
     try {
-        const questionCount = await Question.countDocuments({ examId: req.params.id });
+        // Support both legacy and canonical question linkage fields.
+        const questionCount = await Question.countDocuments({
+            $or: [{ exam: req.params.id }, { examId: req.params.id }],
+        });
         if (questionCount === 0) {
             res.status(400).json({ message: 'Cannot publish an exam with no questions. Add at least one question first.' });
             return;

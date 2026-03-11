@@ -71,6 +71,17 @@ export interface PreviewEstimate {
     sampleRendered?: { subject?: string; body: string };
 }
 
+function deriveJobChannel(channels: ('sms' | 'email')[]): 'sms' | 'email' | 'both' {
+    if (channels.includes('sms') && channels.includes('email')) return 'both';
+    return channels.includes('email') ? 'email' : 'sms';
+}
+
+function deriveJobTarget(audienceType: CampaignSendOptions['audienceType']): 'single' | 'group' | 'filter' | 'selected' {
+    if (audienceType === 'group') return 'group';
+    if (audienceType === 'manual') return 'selected';
+    return 'filter';
+}
+
 /* ================================================================
    Settings helper (singleton)
    ================================================================ */
@@ -332,20 +343,34 @@ export async function executeCampaign(
     // Check quiet hours for non-test sends
     if (!opts.testSend && !opts.scheduledAtUTC && isInQuietHours(settings)) {
         // Defer: create a scheduled job instead
+        const manualStudentObjectIds = (opts.manualStudentIds ?? [])
+            .filter(id => mongoose.Types.ObjectId.isValid(id))
+            .map(id => new mongoose.Types.ObjectId(id));
         const job = await NotificationJob.create({
             type: 'scheduled',
             campaignName: opts.campaignName,
             status: 'queued',
-            channels: opts.channels,
+            channel: deriveJobChannel(opts.channels),
+            target: deriveJobTarget(opts.audienceType),
+            targetGroupId: opts.audienceGroupId && mongoose.Types.ObjectId.isValid(opts.audienceGroupId)
+                ? new mongoose.Types.ObjectId(opts.audienceGroupId)
+                : undefined,
+            targetStudentIds: manualStudentObjectIds.length > 0 ? manualStudentObjectIds : undefined,
+            targetFilterJson: opts.audienceFilters ? JSON.stringify(opts.audienceFilters) : undefined,
             audienceType: opts.audienceType,
             audienceRef: opts.audienceGroupId,
-            templateIds: [],
+            templateKey: (opts.templateKey || 'CUSTOM').toUpperCase(),
             customBody: opts.customBody,
             recipientMode: opts.recipientMode ?? 'student',
             guardianTargeted: opts.guardianTargeted ?? false,
             triggerKey: opts.triggerKey,
             quietHoursApplied: true,
-            createdByAdmin: new mongoose.Types.ObjectId(opts.adminId),
+            createdByAdminId: new mongoose.Types.ObjectId(opts.adminId),
+            totalTargets: 0,
+            sentCount: 0,
+            failedCount: 0,
+            estimatedCost: 0,
+            actualCost: 0,
         });
         return { jobId: String(job._id), sent: 0, failed: 0, skipped: 0 };
     }
@@ -369,21 +394,31 @@ export async function executeCampaign(
         ((opts.channels.includes('sms') ? smsCost : 0) + (opts.channels.includes('email') ? emailCost : 0));
 
     // Create the job record
+    const manualStudentObjectIds = (opts.manualStudentIds ?? [])
+        .filter(id => mongoose.Types.ObjectId.isValid(id))
+        .map(id => new mongoose.Types.ObjectId(id));
     const job = await NotificationJob.create({
         type: opts.scheduledAtUTC ? 'scheduled' : opts.triggerKey ? 'triggered' : 'bulk',
         campaignName: opts.campaignName,
         status: 'processing',
-        channels: opts.channels,
+        channel: deriveJobChannel(opts.channels),
+        target: deriveJobTarget(opts.audienceType),
+        targetGroupId: opts.audienceGroupId && mongoose.Types.ObjectId.isValid(opts.audienceGroupId)
+            ? new mongoose.Types.ObjectId(opts.audienceGroupId)
+            : undefined,
+        targetStudentIds: manualStudentObjectIds.length > 0 ? manualStudentObjectIds : undefined,
+        targetFilterJson: opts.audienceFilters ? JSON.stringify(opts.audienceFilters) : undefined,
         audienceType: opts.audienceType,
         audienceRef: opts.audienceGroupId,
-        recipientCount: targetRecipients.length,
+        totalTargets: targetRecipients.length,
         recipientMode: opts.recipientMode ?? 'student',
         guardianTargeted: opts.guardianTargeted ?? false,
         estimatedCost,
+        templateKey: (opts.templateKey || 'CUSTOM').toUpperCase(),
         triggerKey: opts.triggerKey,
         customBody: opts.customBody,
         scheduledAtUTC: opts.scheduledAtUTC,
-        createdByAdmin: new mongoose.Types.ObjectId(opts.adminId),
+        createdByAdminId: new mongoose.Types.ObjectId(opts.adminId),
     });
 
     const jobId = String(job._id);
@@ -499,12 +534,22 @@ export async function executeCampaign(
 
     // Update job with final stats
     const actualCost = smsSentCount * smsCost + emailSentCount * emailCost;
+    const totalAttempts = sent + failed;
+    const finalStatus =
+        totalAttempts === 0
+            ? 'done'
+            : sent === 0 && failed > 0
+                ? 'failed'
+                : failed > 0
+                    ? 'partial'
+                    : 'done';
+
     await NotificationJob.findByIdAndUpdate(job._id, {
-        status: failed === targetRecipients.length * opts.channels.length ? 'failed' : 'completed',
+        status: finalStatus,
         sentCount: sent,
         failedCount: failed,
         actualCost,
-        completedAtUTC: new Date(),
+        processedAtUTC: new Date(),
     });
 
     // Finance sync

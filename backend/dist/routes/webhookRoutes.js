@@ -12,6 +12,7 @@ const PaymentWebhookEvent_1 = __importDefault(require("../models/PaymentWebhookE
 const financeStream_1 = require("../realtime/financeStream");
 const securityCenterService_1 = require("../services/securityCenterService");
 const logger_1 = require("../utils/logger");
+const financeCenterService_1 = require("../services/financeCenterService");
 const router = (0, express_1.Router)();
 /**
  * Compute a deterministic hash from the raw request body for deduplication.
@@ -171,6 +172,29 @@ router.post('/sslcommerz/ipn', async (req, res) => {
                 studentId: String(payment.studentId),
             });
             logger_1.logger.info('[Webhook] Payment marked as PAID', req, { tran_id, paymentId: String(payment._id) });
+            // ── Auto-post income to Finance Center ──
+            try {
+                const sourceType = payment.entryType === 'subscription' ? 'subscription_payment'
+                    : payment.entryType === 'exam_fee' ? 'exam_payment'
+                        : 'manual_income';
+                await (0, financeCenterService_1.createIncomeFromPayment)({
+                    paymentId: String(payment._id),
+                    studentId: String(payment.studentId),
+                    amount: Number(payment.amount),
+                    method: String(payment.method || 'gateway'),
+                    sourceType,
+                    accountCode: sourceType === 'subscription_payment' ? '4100' : sourceType === 'exam_payment' ? '4200' : '4900',
+                    categoryLabel: sourceType === 'subscription_payment' ? 'Subscription Revenue' : sourceType === 'exam_payment' ? 'Exam Fee Revenue' : 'Other Income',
+                    description: `Auto-posted from payment ${tran_id}`,
+                    adminId: String(payment.recordedBy || payment.studentId),
+                    planId: payment.subscriptionPlanId ? String(payment.subscriptionPlanId) : undefined,
+                    examId: payment.examId ? String(payment.examId) : undefined,
+                    paidAtUTC: payment.date || new Date(),
+                });
+            }
+            catch (fcErr) {
+                logger_1.logger.error('[Webhook] Finance auto-post failed', req, { tran_id, error: String(fcErr) });
+            }
         }
         else if (status === 'FAILED' || status === 'CANCELLED') {
             payment.status = 'failed';

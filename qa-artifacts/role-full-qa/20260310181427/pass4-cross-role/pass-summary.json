@@ -1,0 +1,158 @@
+{
+  "id": "pass4-cross-role",
+  "title": "PASS 4 - Cross-role / Permission / Sync",
+  "role": "Cross-role",
+  "summary": {
+    "total": 20,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 1,
+    "other": 0
+  },
+  "code": 0,
+  "entries": [
+    {
+      "file": "auth-session.spec.ts",
+      "title": "auth-session.spec.ts > Auth Session Security > new login invalidates old student session",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > public direct URLs cannot access protected student/admin pages",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student cannot reach admin routes by direct URL",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "cross-role-permissions.spec.ts",
+      "title": "cross-role-permissions.spec.ts > Cross-role Permissions > student/admin API tokens are blocked from cross-role endpoints",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > canonical login pages render logo + compact theme toggle",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > legacy /admin/login redirects to secret admin login",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > unauthorized admin dashboard redirects to secret login",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > student login succeeds only from /login and redirects to /dashboard",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > admin login succeeds only from /__cw_admin__/login and redirects to /__cw_admin__/dashboard",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > chairman login redirects to /chairman/dashboard when chairman creds are configured",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "login-unification.spec.ts",
+      "title": "login-unification.spec.ts > Login Unification > role mismatch: student creds fail on admin/chairman portals",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.1 rss ingestion creates pending items and dedupes duplicates",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.1 scheduled publish and default banner fallback update work",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.2 exam session autosubmit cron finalizes expired attempts",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "phase4-pipelines.spec.ts",
+      "title": "phase4-pipelines.spec.ts > Phase4 Pipelines Validation > P4.3 payment pending->paid updates dashboard and P4.4 audit logs capture action",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > student dark/light theme persists across reload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "role-theme-persistence.spec.ts",
+      "title": "role-theme-persistence.spec.ts > Role Theme Persistence > admin dark/light theme persists across reload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > admin highlighted + featured updates are reflected in /api/home",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > exam routes are gated by login and subscription policy",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "step2-core.spec.ts",
+      "title": "step2-core.spec.ts > Step 2 Core Pack > question bank supports BN/EN payload and mobile card layout",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    }
+  ],
+  "logPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310181427\\pass4-cross-role\\playwright.log",
+  "resultPath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310181427\\pass4-cross-role\\playwright.json",
+  "dbEvidencePath": "f:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310181427\\pass4-cross-role\\db-evidence.json"
+}

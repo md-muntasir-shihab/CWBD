@@ -1,0 +1,17 @@
+{
+  "id": "pass5-regression",
+  "title": "PASS 5 - Regression",
+  "role": "Cross-role",
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "other": 0
+  },
+  "code": 1073807364,
+  "entries": [],
+  "logPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass5-regression\\playwright.log",
+  "resultPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass5-regression\\playwright.json",
+  "dbEvidencePath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass5-regression\\db-evidence.json"
+}

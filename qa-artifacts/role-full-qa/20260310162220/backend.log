@@ -1,0 +1,219 @@
+
+> campusway-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+(node:18144) [MONGOOSE] Warning: Duplicate schema index on {"slug":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:18144) [MONGOOSE] Warning: Duplicate schema index on {"slug":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:18144) [MONGOOSE] Warning: Duplicate schema index on {"slug":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:18144) [MONGOOSE] Warning: Duplicate schema index on {"contentHash":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:18144) [MONGOOSE] Warning: Duplicate schema index on {"jobId":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:18144) [MONGOOSE] Warning: Duplicate schema index on {"status":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:18144) [MONGOOSE] Warning: Duplicate schema index on {"slug":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+[db] MongoDB connected successfully
+[db] Failed to ensure critical indexes: MongoServerError: ns does not exist: campusway_role_qa_20260310162220.student_results
+    at Connection.sendCommand (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:559:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Connection.command (F:\CampusWay\backend\node_modules\mongodb\src\cmap\connection.ts:633:22)
+    at async Server.command (F:\CampusWay\backend\node_modules\mongodb\src\sdam\server.ts:350:21)
+    at async tryOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:289:24)
+    at async executeOperation (F:\CampusWay\backend\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async ListIndexesCursor._initialize (F:\CampusWay\backend\node_modules\mongodb\src\cursor\list_indexes_cursor.ts:33:22)
+    at async ListIndexesCursor.cursorInit (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:949:21)
+    at async ListIndexesCursor.fetchBatch (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:987:7)
+    at async ListIndexesCursor.next (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:608:9)
+    at async ListIndexesCursor.[Symbol.asyncIterator] (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:502:26)
+    at async ListIndexesCursor.toArray (F:\CampusWay\backend\node_modules\mongodb\src\cursor\abstract_cursor.ts:696:22)
+    at async Collection.indexes (F:\CampusWay\backend\node_modules\mongodb\src\collection.ts:914:45)
+    at async ensureCriticalIndexes (F:\CampusWay\backend\src\config\db.ts:15:31)
+    at async connectDB (F:\CampusWay\backend\src\config\db.ts:112:9)
+    at async start (F:\CampusWay\backend\src\server.ts:279:5) {
+  errorLabelSet: Set(0) {},
+  errorResponse: {
+    ok: 0,
+    errmsg: 'ns does not exist: campusway_role_qa_20260310162220.student_results',
+    code: 26,
+    codeName: 'NamespaceNotFound'
+  },
+  ok: 0,
+  code: 26,
+  codeName: 'NamespaceNotFound'
+}
+ℹ️  INITIAL_ACCESS_INFO.txt exists — default setup already completed.
+[cron] Starting exam auto-submit worker (every minute).
+[cron] Starting modern exam auto-submit worker (every minute).
+[2026-03-10T16:22:25.895Z] [INFO] [subscriptionExpiryCron] Scheduled daily at 01:00 UTC
+[finance-cron] Recurring engine cron registered
+[FinanceSeed] Seeded 11 default Chart-of-Account entries.
+🚀 CampusWay Backend running on port 5083
+📡 Public API: http://localhost:5083/api
+🔒 Admin API:  http://localhost:5083/api/campusway-secure-admin
+[0mGET /api/health [32m200[0m 19.389 ms - 87[0m
+(node:18144) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+[0mGET /api/home [32m200[0m 301.935 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 355.380 ms - -[0m
+[0mGET /api/home [32m200[0m 249.883 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.551 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 97.641 ms - -[0m
+[0mGET /api/home [32m200[0m 125.273 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.299 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 149.253 ms - -[0m
+[0mGET /api/home [32m200[0m 153.722 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.253 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 94.089 ms - -[0m
+[0mGET /api/home [32m200[0m 95.317 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.265 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 78.603 ms - -[0m
+[0mGET /api/home [32m200[0m 199.112 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.280 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 77.728 ms - -[0m
+[0mGET /api/home [32m200[0m 78.415 ms - -[0m
+[0mGET /api/home [32m200[0m 48.077 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.252 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 156.264 ms - -[0m
+[0mGET /api/home [32m200[0m 159.353 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.252 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 156.495 ms - -[0m
+[0mGET /api/home [32m200[0m 189.504 ms - -[0m
+[0mGET /api/home [32m200[0m 399.973 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.269 ms - -[0m
+[0mGET /api/news/settings [32m200[0m 34.922 ms - -[0m
+[0mGET /api/news-v2/widgets [32m200[0m 28.852 ms - -[0m
+[0mGET /api/news/sources [32m200[0m 46.323 ms - 560[0m
+[0mGET /api/news?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 117.428 ms - -[0m
+[0mGET /api/home [32m200[0m 128.332 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 155.234 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.246 ms - -[0m
+[0mGET /api/exams/public-list?status=live&page=1&limit=24 [32m200[0m 10.920 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 89.605 ms - -[0m
+[0mGET /api/home [32m200[0m 90.255 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.243 ms - -[0m
+[0mGET /api/news/sources [32m200[0m 9.491 ms - 560[0m
+[0mGET /api/news/settings [32m200[0m 7.037 ms - -[0m
+[0mGET /api/news-v2/widgets [32m200[0m 21.748 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 43.019 ms - -[0m
+[0mGET /api/news?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 32.721 ms - -[0m
+[0mGET /api/home [32m200[0m 34.722 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.198 ms - -[0m
+[0mGET /api/exams/public-list?status=live&page=1&limit=24 [32m200[0m 8.882 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 126.497 ms - -[0m
+[0mGET /api/home [32m200[0m 138.502 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.199 ms - -[0m
+[0mGET /api/news/sources [32m200[0m 45.239 ms - 560[0m
+[0mGET /api/news/settings [32m200[0m 37.522 ms - -[0m
+[0mGET /api/news-v2/widgets [32m200[0m 34.351 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.186 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 153.372 ms - -[0m
+[0mGET /api/news?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 130.865 ms - -[0m
+[0mGET /api/home [32m200[0m 131.148 ms - -[0m
+[0mGET /api/exams/public-list?status=live&page=1&limit=24 [32m200[0m 7.903 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 137.184 ms - -[0m
+[0mGET /api/home [32m200[0m 149.532 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.193 ms - -[0m
+[0mGET /api/news/sources [32m200[0m 6.391 ms - 560[0m
+[0mGET /api/news/settings [32m200[0m 10.569 ms - -[0m
+[0mGET /api/news-v2/widgets [32m200[0m 9.423 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 219.262 ms - -[0m
+[0mGET /api/home [32m200[0m 269.244 ms - -[0m
+[0mGET /api/news?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 274.995 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.211 ms - -[0m
+[0mGET /api/exams/public-list?status=live&page=1&limit=24 [32m200[0m 6.824 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 150.712 ms - -[0m
+[0mGET /api/home [32m200[0m 183.493 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.234 ms - -[0m
+[0mGET /api/university-categories [32m200[0m 9.887 ms - 969[0m
+[0mGET /api/home-settings/public [32m200[0m 7.130 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 210.816 ms - -[0m
+[0mGET /api/universities?category=all&sort=closing_soon&page=1&limit=300 [32m200[0m 237.073 ms - -[0m
+[0mGET /api/home [32m200[0m 236.182 ms - -[0m
+[0mGET /api/universities?category=Individual+Admission&sort=closing_soon&page=1&limit=300 [32m200[0m 66.740 ms - -[0m
+[0mGET /api/universities?category=Science+%26+Technology&sort=closing_soon&page=1&limit=300 [32m200[0m 26.698 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.201 ms - -[0m
+[0mGET /api/university-categories [32m200[0m 6.065 ms - 969[0m
+[0mGET /api/home-settings/public [32m200[0m 8.031 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 142.878 ms - -[0m
+[0mGET /api/universities?category=all&sort=closing_soon&page=1&limit=300 [32m200[0m 184.054 ms - -[0m
+[0mGET /api/home [32m200[0m 180.422 ms - -[0m
+[0mGET /api/universities?category=Individual+Admission&sort=closing_soon&page=1&limit=300 [32m200[0m 52.194 ms - -[0m
+[0mGET /api/universities/university-of-dhaka [32m200[0m 2.616 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.197 ms - -[0m
+[0mGET /api/news [32m200[0m 7.335 ms - -[0m
+[0mGET /api/news/settings [32m200[0m 3.913 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 242.250 ms - -[0m
+[0mGET /api/home [32m200[0m 236.376 ms - -[0m
+[0mGET /api/news/du-admission-circular-published-for-2026-session [32m200[0m 240.992 ms - -[0m
+[0mPOST /api/events/track [32m201[0m 246.835 ms - 49[0m
+[0mGET /api/home/stream [32m200[0m 0.222 ms - -[0m
+[0mGET /api/resources [32m200[0m 7.688 ms - -[0m
+[0mGET /api/resources [36m304[0m 28.498 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 240.664 ms - -[0m
+[0mGET /api/home [32m200[0m 253.804 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.238 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 79.096 ms - -[0m
+[0mGET /api/home [32m200[0m 89.182 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 61.022 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.319 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.280 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 194.339 ms - -[0m
+[0mGET /api/home [32m200[0m 204.172 ms - -[0m
+[0mGET /api/subscription-plans [32m200[0m 85.358 ms - -[0m
+[0mGET /api/subscription-plans [32m200[0m 3.946 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 103.439 ms - -[0m
+[0mGET /api/home [32m200[0m 110.763 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.250 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 173.349 ms - -[0m
+[0mGET /api/home [32m200[0m 167.086 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.223 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.214 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 90.163 ms - -[0m
+[0mGET /api/home [32m200[0m 101.634 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 136.195 ms - -[0m
+[0mGET /api/home [32m200[0m 153.776 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.216 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 102.253 ms - -[0m
+[0mGET /api/home [32m200[0m 141.131 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.304 ms - -[0m
+[0mGET /api/home [32m200[0m 144.942 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 155.122 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.264 ms - -[0m
+[0mGET /api/university-categories [32m200[0m 3.971 ms - 969[0m
+[0mGET /api/home-settings/public [32m200[0m 101.509 ms - -[0m
+[0mGET /api/home [32m200[0m 138.128 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 177.440 ms - -[0m
+[0mGET /api/universities?category=all&sort=closing_soon&page=1&limit=300 [32m200[0m 164.714 ms - -[0m
+[0mGET /api/universities?category=Individual+Admission&sort=closing_soon&page=1&limit=300 [32m200[0m 85.879 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.173 ms - -[0m
+[0mGET /api/news/sources [32m200[0m 10.468 ms - 560[0m
+[0mGET /api/news/settings [32m200[0m 7.058 ms - -[0m
+[0mGET /api/news-v2/widgets [32m200[0m 154.949 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 266.271 ms - -[0m
+[0mGET /api/news?page=1&limit=15&source=&category=&tag=&q= [32m200[0m 262.317 ms - -[0m
+[0mGET /api/home [32m200[0m 270.891 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.175 ms - -[0m
+[0mGET /api/subscription-plans [32m200[0m 10.860 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 93.400 ms - -[0m
+[0mGET /api/home [32m200[0m 105.771 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.195 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 194.085 ms - -[0m
+[0mGET /api/home [32m200[0m 194.856 ms - -[0m
+[0mGET /api/subscription-plans [32m200[0m 11.908 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.215 ms - -[0m
+[0mGET /api/exams/public-list?status=live&page=1&limit=24 [32m200[0m 3.551 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 94.440 ms - -[0m
+[0mGET /api/home [32m200[0m 106.786 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.347 ms - -[0m
+[0mGET /api/resources [32m200[0m 7.937 ms - -[0m
+[0mGET /api/resources [36m304[0m 172.094 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 217.365 ms - -[0m
+[0mGET /api/home [32m200[0m 285.092 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.187 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 78.709 ms - -[0m
+[0mGET /api/home [32m200[0m 133.868 ms - -[0m
+[0mGET /api/settings/public [36m304[0m 67.079 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.254 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 159.420 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.204 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 24.018 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.485 ms - -[0m
+[0mGET /api/settings/public [32m200[0m 110.400 ms - -[0m
+[0mGET /api/home/stream [32m200[0m 0.180 ms - -[0m

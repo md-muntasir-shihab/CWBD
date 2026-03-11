@@ -1,8 +1,8 @@
 {
   "/_not-found/page": "/_not-found",
   "/admin-dashboard/page": "/admin-dashboard",
-  "/news/page": "/news",
   "/news/[slug]/page": "/news/[slug]",
-  "/page": "/",
-  "/student/page": "/student"
+  "/student/page": "/student",
+  "/news/page": "/news",
+  "/page": "/"
 }

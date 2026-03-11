@@ -1,0 +1,266 @@
+{
+  "id": "pass3-admin",
+  "title": "PASS 3 - Admin",
+  "role": "Admin",
+  "summary": {
+    "total": 27,
+    "passed": 4,
+    "failed": 11,
+    "skipped": 12,
+    "other": 0
+  },
+  "code": 1,
+  "entries": [
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > site settings save reflects on public settings payload",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > home control toggle save reflects on /api/home",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > news source save reflects on public sources list",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-phase2-micro.spec.ts",
+      "title": "admin-phase2-micro.spec.ts > Admin Phase2 Micro Saves > subscription plan create and support unread simulation work through admin endpoints",
+      "status": "passed",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 360x800",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: undefined\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\n\n  66 |             for (const route of routes) {\n  67 |                 await page.goto(route);\n> 68 |                 await expect(page.locator('body')).toBeVisible();\n     |                                                    ^\n  69 |                 await expect(page.locator('main').first()).toBeVisible();\n  70 |\n  71 |                 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);\n    at F:\\CampusWay\\frontend\\e2e\\admin-responsive-all.spec.ts:68:52",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: undefined\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 390x844",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    8 × locator resolved to <body class=\"antialiased\">…</body>\u001b[22m\n\u001b[2m      - unexpected value \"hidden\"\u001b[22m\n\n\n  66 |             for (const route of routes) {\n  67 |                 await page.goto(route);\n> 68 |                 await expect(page.locator('body')).toBeVisible();\n     |                                                    ^\n  69 |                 await expect(page.locator('main').first()).toBeVisible();\n  70 |\n  71 |                 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);\n    at F:\\CampusWay\\frontend\\e2e\\admin-responsive-all.spec.ts:68:52",
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    8 × locator resolved to <body class=\"antialiased\">…</body>\u001b[22m\n\u001b[2m      - unexpected value \"hidden\"\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-e47e7-s-are-responsive-at-390x844-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-e47e7-s-are-responsive-at-390x844-chromium-desktop\\video.webm"
+      ]
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 768x1024",
+      "status": "failed",
+      "errors": [
+        "Error: worker process exited unexpectedly (code=3221226505, signal=null)",
+        "Error: worker process exited unexpectedly (code=3221226505, signal=null)"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 1024x768",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\admin-responsive-all.spec.ts:39:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-e9483--are-responsive-at-1024x768-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-e9483--are-responsive-at-1024x768-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-e9483--are-responsive-at-1024x768-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "admin-responsive-all.spec.ts",
+      "title": "admin-responsive-all.spec.ts > Admin Responsive Matrix > routes are responsive at 1440x900",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\admin-responsive-all.spec.ts:39:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-f36f8--are-responsive-at-1440x900-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-f36f8--are-responsive-at-1440x900-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\admin-responsive-all-Admin-f36f8--are-responsive-at-1440x900-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "admin-smoke.spec.ts",
+      "title": "admin-smoke.spec.ts > Admin Smoke > admin can login and navigate key tabs",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\admin-smoke.spec.ts:7:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\admin-smoke-Admin-Smoke-ad-0749d-login-and-navigate-key-tabs-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\admin-smoke-Admin-Smoke-ad-0749d-login-and-navigate-key-tabs-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\admin-smoke-Admin-Smoke-ad-0749d-login-and-navigate-key-tabs-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > admin creates student account and assigns subscription plan",
+      "status": "failed",
+      "errors": [
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n\n\n  289 |\n  290 |     for (const creds of candidates) {\n> 291 |         const response = await request.post('/api/auth/login', {\n      |                                        ^\n  292 |             data: { identifier: creds.email, password: creds.password },\n  293 |         });\n  294 |         lastStatus = response.status();\n    at apiLoginWithFallback (F:\\CampusWay\\frontend\\e2e\\finance-support-critical.spec.ts:291:40)\n    at F:\\CampusWay\\frontend\\e2e\\finance-support-critical.spec.ts:39:35",
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > superadmin password reveal requires MFA + reason",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > manual payment and expense entries are accepted",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > due ledger update and reminder flow works",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > student can create support ticket and admin can update it",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "finance-support-critical.spec.ts",
+      "title": "finance-support-critical.spec.ts > Finance + Support Critical Flows > backup run is successful and restore guard requires typed confirmation",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > major import templates and export endpoints respond successfully",
+      "status": "failed",
+      "errors": [
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n\n\n  14 |     password: string,\n  15 | ): Promise<LoginResult> {\n> 16 |     const response = await request.post('/api/auth/login', {\n     |                                    ^\n  17 |         data: { identifier, password },\n  18 |     });\n  19 |     expect(response.status(), `Login failed for ${identifier}`).toBe(200);\n    at apiLogin (F:\\CampusWay\\frontend\\e2e\\import-export-bulk.spec.ts:16:36)\n    at F:\\CampusWay\\frontend\\e2e\\import-export-bulk.spec.ts:36:29",
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n"
+      ],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > bulk update changes university state and persists",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank import preview endpoint accepts file payload and returns non-crashing response",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "import-export-bulk.spec.ts",
+      "title": "import-export-bulk.spec.ts > Import / Export / Bulk Verification > question-bank bulk tag update works for an existing item",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "news-admin-routes.spec.ts",
+      "title": "news-admin-routes.spec.ts > News admin routes > canonical /__cw_admin__/news routes resolve without runtime failures",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\news-admin-routes.spec.ts:7:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-7f176-ve-without-runtime-failures-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-7f176-ve-without-runtime-failures-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-7f176-ve-without-runtime-failures-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "news-admin-routes.spec.ts",
+      "title": "news-admin-routes.spec.ts > News admin routes > legacy /admin/news redirects to secret admin base",
+      "status": "failed",
+      "errors": [
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard\n\n   at helpers.ts:123\n\n  121 |             }\n  122 |             if (i === attempts.length - 1) {\n> 123 |                 throw new Error('Admin login failed: unable to reach /__cw_admin__/dashboard');\n      |                       ^\n  124 |             }\n  125 |         }\n  126 |     }\n    at loginAsAdmin (F:\\CampusWay\\frontend\\e2e\\helpers.ts:123:23)\n    at F:\\CampusWay\\frontend\\e2e\\news-admin-routes.spec.ts:36:9",
+        "Error: Admin login failed: unable to reach /__cw_admin__/dashboard"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-e3765-irects-to-secret-admin-base-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-e3765-irects-to-secret-admin-base-chromium-desktop\\video.webm",
+        "F:\\CampusWay\\frontend\\test-results\\news-admin-routes-News-adm-e3765-irects-to-secret-admin-base-chromium-desktop\\error-context.md"
+      ]
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-add-question-upload-and-link",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-bulk-import-mapping-and-report",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-picker-filter-smart-pick-and-preview",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "qbank-critical.spec.ts",
+      "title": "qbank-critical.spec.ts > Question Bank Critical Flows > qbank-moderator-approve-flow",
+      "status": "skipped",
+      "errors": [],
+      "attachments": []
+    },
+    {
+      "file": "settings-propagation.spec.ts",
+      "title": "settings-propagation.spec.ts > Settings Propagation > site name update propagates to public API and public/student UI",
+      "status": "failed",
+      "errors": [
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n\n\n  13 |     password: string,\n  14 | ): Promise<LoginResult> {\n> 15 |     const response = await request.post('/api/auth/login', {\n     |                                    ^\n  16 |         data: { identifier, password },\n  17 |     });\n  18 |     expect(response.status(), `Login failed for ${identifier}`).toBe(200);\n    at apiLogin (F:\\CampusWay\\frontend\\e2e\\settings-propagation.spec.ts:15:36)\n    at F:\\CampusWay\\frontend\\e2e\\settings-propagation.spec.ts:38:34",
+        "TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - → POST http://127.0.0.1:5283/api/auth/login\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 79\u001b[22m\n"
+      ],
+      "attachments": [
+        "F:\\CampusWay\\frontend\\test-results\\settings-propagation-Setti-2b7f3-c-API-and-public-student-UI-chromium-desktop\\test-failed-1.png",
+        "F:\\CampusWay\\frontend\\test-results\\settings-propagation-Setti-2b7f3-c-API-and-public-student-UI-chromium-desktop\\video.webm"
+      ]
+    }
+  ],
+  "logPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass3-admin\\playwright.log",
+  "resultPath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass3-admin\\playwright.json",
+  "dbEvidencePath": "F:\\CampusWay\\qa-artifacts\\role-full-qa\\20260310162556\\pass3-admin\\db-evidence.json"
+}

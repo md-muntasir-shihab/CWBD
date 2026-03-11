@@ -36,7 +36,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const NotificationDeliveryLogSchema = new mongoose_1.Schema({
     jobId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'NotificationJob', required: true, index: true },
+    campaignId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'NotificationJob', default: null },
     studentId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    guardianTargeted: { type: Boolean, default: false },
     channel: {
         type: String,
         enum: ['sms', 'email'],
@@ -54,6 +56,14 @@ const NotificationDeliveryLogSchema = new mongoose_1.Schema({
     providerMessageId: { type: String, trim: true },
     errorMessage: { type: String },
     sentAtUTC: { type: Date },
+    costAmount: { type: Number, default: 0, min: 0 },
+    retryCount: { type: Number, default: 0, min: 0 },
+    isTestSend: { type: Boolean, default: false, index: true },
+    recipientMode: { type: String, trim: true },
+    messageMode: { type: String, trim: true },
+    recipientDisplay: { type: String, trim: true },
+    renderedPreview: { type: String },
+    financeSynced: { type: Boolean, default: false },
 }, { timestamps: true, collection: 'notification_delivery_logs' });
 NotificationDeliveryLogSchema.index({ studentId: 1, sentAtUTC: -1 });
 NotificationDeliveryLogSchema.index({ jobId: 1 });

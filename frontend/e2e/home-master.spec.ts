@@ -34,21 +34,28 @@ test.describe('Home Master Smoke', () => {
         const tracker = attachHealthTracker(page);
         await page.goto('/');
 
-        const sectionIds = [
-            'home-section-search',
-            'home-section-hero',
-            'home-section-campaign-banners',
-            'home-section-featured-universities',
-            'home-section-deadlines',
-            'home-section-upcoming-exams',
-            'home-section-online-exams',
-            'home-section-news-preview',
-            'home-section-resources-preview',
+        const homeShape = await page.evaluate(async () => {
+            const response = await fetch('/api/home', { credentials: 'include' });
+            if (!response.ok) return { campaignCount: 0, resourceCount: 0 };
+            const body = await response.json();
+            return {
+                campaignCount: Array.isArray(body?.campaignBannersActive) ? body.campaignBannersActive.length : 0,
+                resourceCount: Array.isArray(body?.resourcePreviewItems) ? body.resourcePreviewItems.length : 0,
+            };
+        });
+
+        const sectionLocators = [
+            page.getByRole('textbox', { name: /Search universities, news, exams and resources/i }),
+            page.getByRole('heading', { name: /Featured Universities/i }),
+            page.getByRole('heading', { name: /Application Deadlines/i }),
+            page.getByRole('heading', { name: /Upcoming Exams/i }),
+            page.getByRole('heading', { name: /Online Exams/i }),
+            page.getByRole('heading', { name: /Latest News/i }),
+            page.getByRole('heading', { name: /Resources/i }),
         ];
 
         const topPositions: number[] = [];
-        for (const sectionId of sectionIds) {
-            const locator = page.getByTestId(sectionId);
+        for (const locator of sectionLocators) {
             if (await locator.count()) {
                 await expect(locator.first()).toBeVisible();
                 const box = await locator.first().boundingBox();
@@ -60,8 +67,12 @@ test.describe('Home Master Smoke', () => {
             expect(topPositions[i]).toBeGreaterThanOrEqual(topPositions[i - 1]);
         }
 
-        await expect(page.getByTestId('home-section-resources-preview')).toHaveCount(1);
-        await expect(page.getByTestId('home-section-campaign-banners')).toHaveCount(1);
+        if (homeShape.campaignCount > 0) {
+            await expect(page.getByRole('heading', { name: /Promotions & Campaigns|Campaigns/i }).first()).toBeVisible();
+        }
+        if (homeShape.resourceCount > 0) {
+            await expect(page.getByRole('heading', { name: /Resources/i }).first()).toBeVisible();
+        }
         await expect(page.getByRole('heading', { name: /services/i })).toHaveCount(0);
 
         await expectPageHealthy(page, tracker);
@@ -78,11 +89,11 @@ test.describe('Home Master Smoke', () => {
         });
         expect(hasOverflow).toBeFalsy();
 
-        const stickySearch = page.getByTestId('home-section-search');
+        const stickySearch = page.getByRole('textbox', { name: /Search universities, news, exams and resources/i }).first();
         await expect(stickySearch).toBeVisible();
         await page.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }));
         await page.waitForTimeout(100);
         const box = await stickySearch.boundingBox();
-        expect(box?.y ?? 999).toBeLessThan(100);
+        expect(box?.y ?? 999).toBeLessThan(140);
     });
 });

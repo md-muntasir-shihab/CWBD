@@ -755,15 +755,58 @@ router.post('/student-groups/:id/members/add', ...adminAuth, async (req: Request
     if (!Array.isArray(studentIds) || studentIds.length === 0) {
       return res.status(400).json({ message: 'studentIds array required' });
     }
+
+    const normalizedIds = [...new Set(
+      studentIds
+        .map(id => String(id || '').trim())
+        .filter(Boolean),
+    )];
+
+    const objectIds = normalizedIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+    const unresolvedTokens = normalizedIds.filter(id => !mongoose.Types.ObjectId.isValid(id));
+
+    const resolvedIdSet = new Set<string>(objectIds);
+    if (unresolvedTokens.length > 0) {
+      const lowerTokens = unresolvedTokens.map(token => token.toLowerCase());
+      const [usersByDirectFields, profilesByLegacyIds] = await Promise.all([
+        User.find({
+          role: 'student',
+          $or: [
+            { username: { $in: lowerTokens } },
+            { email: { $in: lowerTokens } },
+            { phone_number: { $in: unresolvedTokens } },
+          ],
+        }).select('_id').lean(),
+        StudentProfile.find({
+          $or: [
+            { user_unique_id: { $in: unresolvedTokens } },
+            { phone_number: { $in: unresolvedTokens } },
+            { email: { $in: lowerTokens } },
+          ],
+        }).select('user_id').lean(),
+      ]);
+
+      usersByDirectFields.forEach(user => resolvedIdSet.add(String(user._id)));
+      profilesByLegacyIds.forEach(profile => resolvedIdSet.add(String(profile.user_id)));
+    }
+
+    const resolvedIds = [...resolvedIdSet];
     const adminUser = (req as unknown as Record<string, unknown>)['user'] as Record<string, unknown> | undefined;
     const adminId = adminUser?.['_id'] as string | undefined;
     const result = await groupMembershipService.bulkAddMembers(
       String(req.params.id),
-      studentIds.filter(id => mongoose.Types.ObjectId.isValid(id)),
+      resolvedIds,
       adminId,
       'Added via group member management'
     );
-    res.json({ message: `Added ${result.added} members`, added: result.added, skipped: result.skipped });
+    res.json({
+      message: `Added ${result.added} members`,
+      added: result.added,
+      skipped: result.skipped,
+      requested: normalizedIds.length,
+      resolved: resolvedIds.length,
+      unresolved: Math.max(0, normalizedIds.length - resolvedIds.length),
+    });
   } catch (err) {
     res.status(500).json({ message: String(err) });
   }

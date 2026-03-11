@@ -64,13 +64,13 @@ export default function CampaignConsolePage() {
 /* ─── Dashboard Panel ─────────────────────────────── */
 function DashboardPanel({ onNavigate }: { onNavigate: (t: Tab) => void }) {
   const { data } = useQuery({ queryKey: ['campaigns', { page: 1, limit: 5 }], queryFn: () => listCampaigns({ page: 1, limit: 5 }) });
-  const campaigns = (data?.data?.items ?? data?.items ?? []) as CampaignListItem[];
+  const campaigns = (data?.items ?? []) as CampaignListItem[];
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Total Campaigns', value: data?.data?.total ?? campaigns.length, color: 'from-indigo-500 to-indigo-600' },
+          { label: 'Total Campaigns', value: data?.total ?? campaigns.length, color: 'from-indigo-500 to-indigo-600' },
           { label: 'Sent Today', value: campaigns.filter(c => c.status === 'completed' && new Date(c.createdAt).toDateString() === new Date().toDateString()).length, color: 'from-emerald-500 to-emerald-600' },
           { label: 'Failed', value: campaigns.filter(c => c.status === 'failed').length, color: 'from-red-500 to-red-600' },
           { label: 'Pending', value: campaigns.filter(c => c.status === 'pending').length, color: 'from-amber-500 to-amber-600' },
@@ -117,8 +117,8 @@ function DashboardPanel({ onNavigate }: { onNavigate: (t: Tab) => void }) {
 function CampaignsListPanel({ onView, onRetry }: { onView: (id: string) => void; onRetry: (id: string) => void }) {
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery({ queryKey: ['campaigns', { page }], queryFn: () => listCampaigns({ page, limit: 20 }) });
-  const campaigns = (data?.data?.items ?? data?.items ?? []) as CampaignListItem[];
-  const total = data?.data?.total ?? 0;
+  const campaigns = (data?.items ?? []) as CampaignListItem[];
+  const total = data?.total ?? campaigns.length;
   const pages = Math.ceil(total / 20);
 
   return (
@@ -194,10 +194,16 @@ function NewCampaignPanel({ showToast, onSent }: { showToast: (m: string, t?: 's
   const [sending, setSending] = useState(false);
 
   const { data: groupsData } = useQuery({ queryKey: ['student-groups'], queryFn: () => getStudentGroups() });
-  const groups = (groupsData?.data?.groups ?? groupsData?.groups ?? []) as { _id: string; name: string }[];
+  const groups = (
+    Array.isArray(groupsData?.data)
+      ? groupsData.data
+      : Array.isArray(groupsData?.groups)
+        ? groupsData.groups
+        : []
+  ) as { _id: string; name: string }[];
 
   const { data: templatesData } = useQuery({ queryKey: ['campaign-templates'], queryFn: () => listTemplates({ limit: 100 }) });
-  const templates = (templatesData?.data?.items ?? templatesData?.items ?? []) as NotificationTemplate[];
+  const templates = (templatesData?.items ?? []) as NotificationTemplate[];
 
   const filteredTemplates = useMemo(() => templates.filter(t => form.channelType === 'both' || t.channel === form.channelType), [templates, form.channelType]);
 
@@ -208,11 +214,11 @@ function NewCampaignPanel({ showToast, onSent }: { showToast: (m: string, t?: 's
         audienceType: form.audienceType,
         audienceRef: form.audienceRef || undefined,
         guardianTargeted: form.guardianTargeted,
-        templateIds: form.templateId ? [form.templateId] : undefined,
+        templateKey: form.templateId || undefined,
         customBody: form.customBody || undefined,
         subject: form.subject || undefined,
       });
-      setPreview(res.data ?? res);
+      setPreview(res);
       setStep(3);
     } catch {
       showToast('Preview failed', 'error');
@@ -228,7 +234,7 @@ function NewCampaignPanel({ showToast, onSent }: { showToast: (m: string, t?: 's
         audienceType: form.audienceType,
         audienceRef: form.audienceRef || undefined,
         guardianTargeted: form.guardianTargeted,
-        templateIds: form.templateId ? [form.templateId] : undefined,
+        templateKey: form.templateId || undefined,
         customBody: form.customBody || undefined,
         subject: form.subject || undefined,
       });
@@ -313,7 +319,7 @@ function NewCampaignPanel({ showToast, onSent }: { showToast: (m: string, t?: 's
             <label className={labelClass}>Use Template</label>
             <select value={form.templateId} onChange={e => setForm(p => ({ ...p, templateId: e.target.value }))} className={fieldClass}>
               <option value="">Write custom message instead...</option>
-              {filteredTemplates.map(t => <option key={t._id} value={t._id}>{t.name} ({t.channel})</option>)}
+              {filteredTemplates.map(t => <option key={t._id} value={t.templateKey}>{t.name} ({t.channel})</option>)}
             </select>
           </div>
           {!form.templateId && (
@@ -395,7 +401,7 @@ function NewCampaignPanel({ showToast, onSent }: { showToast: (m: string, t?: 's
 function TemplatesPanel({ showToast }: { showToast: (m: string, t?: 'success' | 'error') => void }) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['campaign-templates'], queryFn: () => listTemplates({ limit: 100 }) });
-  const templates = (data?.data?.items ?? data?.items ?? []) as NotificationTemplate[];
+  const templates = (data?.items ?? []) as NotificationTemplate[];
   const [editing, setEditing] = useState<NotificationTemplate | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ templateKey: '', name: '', channel: 'sms', subject: '', body: '', category: 'campaign' });
@@ -477,8 +483,8 @@ function LogsPanel() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const { data, isLoading } = useQuery({ queryKey: ['delivery-logs', { page, status: statusFilter }], queryFn: () => getDeliveryLogs({ page, limit: 30, status: statusFilter || undefined }) });
-  const logs = (data?.data?.items ?? data?.items ?? []) as DeliveryLog[];
-  const total = data?.data?.total ?? 0;
+  const logs = (data?.items ?? []) as DeliveryLog[];
+  const total = data?.total ?? logs.length;
   const pages = Math.ceil(total / 30);
 
   return (
@@ -542,7 +548,7 @@ function LogsPanel() {
 function SettingsPanel({ showToast }: { showToast: (m: string, t?: 'success' | 'error') => void }) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['notification-settings'], queryFn: getNotificationSettings });
-  const settings = (data?.data ?? data ?? {}) as Partial<NotificationSettings>;
+  const settings = (data ?? {}) as Partial<NotificationSettings>;
   const [form, setForm] = useState<Partial<NotificationSettings>>({});
   const merged = { ...settings, ...form };
 
@@ -637,7 +643,7 @@ function SettingsPanel({ showToast }: { showToast: (m: string, t?: 'success' | '
 /* ─── Campaign Detail Modal ───────────────────────── */
 function CampaignDetailModal({ id, onClose }: { id: string; onClose: () => void }) {
   const { data, isLoading } = useQuery({ queryKey: ['campaign', id], queryFn: () => getCampaign(id) });
-  const campaign = (data?.data ?? data ?? null) as CampaignDetail | null;
+  const campaign = (data ?? null) as CampaignDetail | null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>

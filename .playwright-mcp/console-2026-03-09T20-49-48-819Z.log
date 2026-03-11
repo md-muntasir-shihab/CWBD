@@ -1,0 +1,5 @@
+[   27106ms] [ERROR] Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information. 
+
+Check the render method of `SocialLinksManager`.  @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=5213783b:18617
+[  253784ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/admin/notifications/campaigns/send:0
+[  272803ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/api/admin/notifications/settings:0

@@ -1,4 +1,4 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -51,7 +51,9 @@ function generateAccessToken(user: IUser, fullName: string, sessionId?: string, 
         role: user.role,
         fullName,
         permissions: user.permissions,
-        permissionsV2: (user.permissionsV2 as Record<string, Record<string, boolean>> | undefined) || resolvePermissionsV2(user.role),
+        permissionsV2: (user.permissionsV2 && Object.keys(user.permissionsV2).length > 0)
+            ? (user.permissionsV2 as Record<string, Record<string, boolean>>)
+            : resolvePermissionsV2(user.role),
         sessionId,
     };
     return jwt.sign(payload, JWT_SECRET, { expiresIn: expiresInSeconds });
@@ -270,7 +272,9 @@ async function buildUserPayload(user: IUser): Promise<Record<string, unknown>> {
         };
     }
 
-    let resolvedPermissionsV2 = user.permissionsV2 || resolvePermissionsV2(user.role);
+    let resolvedPermissionsV2 = (user.permissionsV2 && Object.keys(user.permissionsV2).length > 0)
+        ? user.permissionsV2
+        : resolvePermissionsV2(user.role);
 
     // Merge team role module permissions into permissionsV2
     if (user.teamRoleId) {
@@ -564,7 +568,7 @@ export async function login(req: Request, res: Response): Promise<void> {
         if (!user.permissions) {
             user.permissions = resolvePermissions(user.role);
         }
-        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object') {
+        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object' || Object.keys(user.permissionsV2).length === 0) {
             user.permissionsV2 = resolvePermissionsV2(user.role);
         }
         await user.save();
@@ -832,7 +836,7 @@ export async function verify2fa(req: Request, res: Response): Promise<void> {
         if (!user.permissions) {
             user.permissions = resolvePermissions(user.role);
         }
-        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object') {
+        if (!user.permissionsV2 || typeof user.permissionsV2 !== 'object' || Object.keys(user.permissionsV2).length === 0) {
             user.permissionsV2 = resolvePermissionsV2(user.role);
         }
         await user.save();
@@ -1807,7 +1811,8 @@ export async function changePassword(req: AuthRequest, res: Response): Promise<v
 
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            res.status(401).json({ message: 'Current password is incorrect' });
+            // Wrong current password is a validation failure, not an auth-session failure.
+            res.status(400).json({ message: 'Current password is incorrect' });
             return;
         }
 
@@ -1839,4 +1844,5 @@ export async function changePassword(req: AuthRequest, res: Response): Promise<v
         res.status(500).json({ message: 'Server error' });
     }
 }
+
 

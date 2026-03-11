@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import AdminGuardShell from '../../../components/admin/AdminGuardShell';
+import { ADMIN_PATHS } from '../../../routes/adminPaths';
 import {
   exportDataHub, getExportHistory,
   type ExportHistoryItem,
@@ -18,15 +20,17 @@ const CATEGORIES: { key: ExportCategory; label: string; desc: string; icon: stri
 ];
 
 export default function DataHubPage() {
-  const [tab, setTab] = useState<'export' | 'history'>('export');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tab: 'export' | 'history' = /\/data-hub\/history\/?$/.test(location.pathname) ? 'history' : 'export';
 
   return (
     <AdminGuardShell title="Data Hub" description="Export student data by category, view history of all imports and exports.">
       <div className="mb-6 flex gap-2 border-b border-slate-200 pb-3 dark:border-slate-700">
-        <button onClick={() => setTab('export')} className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${tab === 'export' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+        <button onClick={() => navigate(ADMIN_PATHS.dataHub)} className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${tab === 'export' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
           Export Center
         </button>
-        <button onClick={() => setTab('history')} className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${tab === 'history' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+        <button onClick={() => navigate(ADMIN_PATHS.dataHubHistory)} className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${tab === 'history' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
           History
         </button>
       </div>

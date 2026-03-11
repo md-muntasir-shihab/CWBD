@@ -19,6 +19,8 @@ import ResourcesPage from './pages/Resources';
 import ResourceDetail from './pages/ResourceDetail';
 import AdminSettingsResourcesPage from './pages/AdminSettingsResources';
 import ContactPage from './pages/Contact';
+import HelpCenterPage from './pages/HelpCenter';
+import HelpArticlePage from './pages/HelpArticle';
 import SubscriptionPlansPage from './pages/SubscriptionPlans';
 import SubscriptionPlanDetailPage from './pages/SubscriptionPlanDetail';
 import LoginPage from './pages/Login';
@@ -88,6 +90,7 @@ import {
 } from './pages/AdminCorePages';
 import CampaignConsolePage from './pages/admin/campaigns/CampaignConsolePage';
 import NotificationTestSendPage from './pages/admin/notifications/NotificationTestSendPage';
+import NotificationTriggersPage from './pages/admin/notifications/NotificationTriggersPage';
 import DataHubPage from './pages/admin/datahub/DataHubPage';
 import TeamAccessConsolePage from './pages/admin/team/TeamAccessConsolePage';
 import MemberDetailPage from './pages/admin/team/MemberDetailPage';
@@ -151,6 +154,8 @@ function resolveRouteTitle(pathname: string, siteName: string, defaultTitle: str
     if (pathname === '/resources') return withSite('Resources');
     if (pathname.startsWith('/resources/')) return null;
     if (pathname === '/contact') return withSite('Contact');
+    if (pathname === '/help-center') return withSite('Help Center');
+    if (pathname.startsWith('/help-center/')) return null;
     if (pathname === '/pricing') return withSite('Subscription Plans');
     if (pathname === '/subscription-plans') return withSite('Subscription Plans');
     if (pathname === '/subscription') return withSite('Subscription Plans');
@@ -182,6 +187,7 @@ function resolveRouteTitle(pathname: string, siteName: string, defaultTitle: str
     if (pathname.startsWith('/campusway-secure-admin')) return withSite('Admin Dashboard');
     if (pathname === CHAIRMAN_DASHBOARD) return withSite('Chairman Dashboard');
     if (pathname.startsWith('/dashboard')) return withSite('Student Dashboard');
+    if (pathname === '/profile/security') return withSite('Student Profile');
 
     // Page-level title handlers manage these dynamic pages.
     if (pathname.startsWith('/news/')) return null;
@@ -293,6 +299,8 @@ export default function App() {
                                 <Route path="/resources" element={<ResourcesPage />} />
                                 <Route path="/resources/:slug" element={<ResourceDetail />} />
                                 <Route path="/contact" element={<ContactPage />} />
+                                <Route path="/help-center" element={<HelpCenterPage />} />
+                                <Route path="/help-center/:slug" element={<HelpArticlePage />} />
                                 <Route path="/pricing" element={<Navigate to="/subscription-plans" replace />} />
                                 <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
                                 <Route path="/subscription-plans/:planId" element={<SubscriptionPlanDetailPage />} />
@@ -389,6 +397,7 @@ export default function App() {
                                 <Route path={adminUi('notification-center')} element={<AdminNotificationCenterPage />} />
                                 {/* Campaign Platform */}
                                 <Route path={ADMIN_PATHS.notificationTestSend} element={<NotificationTestSendPage />} />
+                                <Route path={ADMIN_PATHS.notificationTriggers} element={<NotificationTriggersPage />} />
                                 <Route path={ADMIN_PATHS.campaignsDashboard} element={<CampaignConsolePage />} />
                                 <Route path={ADMIN_PATHS.campaignsList} element={<CampaignConsolePage />} />
                                 <Route path={ADMIN_PATHS.campaignsNew} element={<CampaignConsolePage />} />
@@ -433,6 +442,7 @@ export default function App() {
                                 <Route element={<StudentLayout />}>
                                     <Route path="/dashboard" element={<StudentDashboard />} />
                                     <Route path="/profile" element={<StudentProfile />} />
+                                    <Route path="/profile/security" element={<StudentProfile />} />
                                     <Route path="/student/exams-hub" element={<StudentExamsHub />} />
                                     <Route path="/exams/:examId" element={<StudentExamDetail />} />
                                     <Route path="/results" element={<StudentResults />} />

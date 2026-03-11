@@ -40,6 +40,7 @@ const SubscriptionPlan_1 = __importDefault(require("../models/SubscriptionPlan")
 const financeStream_1 = require("../realtime/financeStream");
 const runtimeSettingsService_1 = require("../services/runtimeSettingsService");
 const requestMeta_1 = require("../utils/requestMeta");
+const financeCenterService_1 = require("../services/financeCenterService");
 function parseDate(value) {
     if (!value)
         return null;
@@ -171,6 +172,29 @@ async function settleSuccessfulPayment(payment, actorId) {
                 lastComputedAt: new Date(),
             },
         }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    }
+    // ── Auto-post income to Finance Center ──
+    try {
+        const sourceType = payment.entryType === 'subscription' ? 'subscription_payment'
+            : payment.entryType === 'exam_fee' ? 'exam_payment'
+                : 'manual_income';
+        await (0, financeCenterService_1.createIncomeFromPayment)({
+            paymentId: String(payment._id),
+            studentId: String(payment.studentId),
+            amount: Number(payment.amount),
+            method: String(payment.method || 'manual'),
+            sourceType,
+            accountCode: sourceType === 'subscription_payment' ? '4100' : sourceType === 'exam_payment' ? '4200' : '4900',
+            categoryLabel: sourceType === 'subscription_payment' ? 'Subscription Revenue' : sourceType === 'exam_payment' ? 'Exam Fee Revenue' : 'Other Income',
+            description: `Auto-posted from admin payment ${String(payment._id)}`,
+            adminId: actorId ? String(actorId) : String(payment.recordedBy || payment.studentId),
+            planId: payment.subscriptionPlanId ? String(payment.subscriptionPlanId) : undefined,
+            examId: payment.examId ? String(payment.examId) : undefined,
+            paidAtUTC: payment.date || new Date(),
+        });
+    }
+    catch (fcErr) {
+        console.error('[settleSuccessfulPayment] Finance auto-post failed:', fcErr);
     }
 }
 function periodKey(date, bucket) {

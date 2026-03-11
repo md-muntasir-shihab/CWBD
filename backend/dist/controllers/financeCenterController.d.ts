@@ -6,6 +6,7 @@ export declare function fcGetTransaction(req: AuthRequest, res: Response): Promi
 export declare function fcCreateTransaction(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcUpdateTransaction(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcDeleteTransaction(req: AuthRequest, res: Response): Promise<void>;
+export declare function fcRestoreTransaction(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcBulkApproveTransactions(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcBulkMarkPaid(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcGetInvoices(req: AuthRequest, res: Response): Promise<void>;
@@ -28,6 +29,7 @@ export declare function fcCreateVendor(req: AuthRequest, res: Response): Promise
 export declare function fcGetSettings(_req: AuthRequest, res: Response): Promise<void>;
 export declare function fcUpdateSettings(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcGetAuditLogs(req: AuthRequest, res: Response): Promise<void>;
+export declare function fcGetAuditLogDetail(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcExportTransactions(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcImportPreview(req: AuthRequest, res: Response): Promise<void>;
 export declare function fcImportCommit(req: AuthRequest, res: Response): Promise<void>;
